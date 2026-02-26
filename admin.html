@@ -1,0 +1,2514 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DTZ-LIB Lehrerbereich</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Marcellus&display=swap");
+
+    :root {
+      --bg-1: #0a1a2e;
+      --bg-2: #0d3757;
+      --bg-3: #0f6d65;
+      --paper: #ffffff;
+      --paper-2: #f6fbff;
+      --ink: #122942;
+      --muted: #4e637b;
+      --line: #d4e1ef;
+      --accent: #0f8f74;
+      --accent-2: #1b73ff;
+      --danger: #922d21;
+      --danger-soft: #fde8e5;
+      --ok-soft: #e8f8f2;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --shadow-hero: 0 26px 65px rgba(6, 17, 31, 0.32);
+      --shadow-card: 0 18px 44px rgba(8, 20, 35, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Barlow", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(840px 420px at 8% -14%, rgba(67, 172, 211, 0.34), transparent 62%),
+        radial-gradient(720px 400px at 92% -20%, rgba(66, 111, 255, 0.34), transparent 58%),
+        linear-gradient(155deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+
+    .container {
+      width: min(1160px, 100% - 2rem);
+      margin: 30px auto 44px;
+    }
+
+    .hero {
+      position: relative;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(230, 244, 255, 0.34);
+      color: #eef7ff;
+      padding: 26px;
+      overflow: hidden;
+      box-shadow: var(--shadow-hero);
+      background:
+        linear-gradient(136deg, rgba(10, 28, 52, 0.9), rgba(14, 106, 101, 0.78)),
+        linear-gradient(24deg, rgba(16, 79, 135, 0.74), rgba(14, 30, 58, 0.82));
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      right: -110px;
+      top: -140px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+      pointer-events: none;
+    }
+
+    .hero-brand {
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .hero-brand img {
+      display: block;
+      width: auto;
+      height: 110px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 10px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(223, 239, 255, 0.45);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(8, 26, 46, 0.28);
+      color: #d8ecff;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Marcellus", Georgia, serif;
+      font-size: clamp(1.7rem, 3vw, 2.55rem);
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+    }
+
+    .hero p {
+      margin: 11px 0 0;
+      max-width: 760px;
+      color: rgba(239, 248, 255, 0.94);
+    }
+
+    .layout {
+      margin-top: 16px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .quick-nav {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .quick-nav button {
+      width: auto;
+      min-width: 170px;
+    }
+
+    .ghost-btn {
+      color: #143554;
+      border: 1px solid #b9cde4;
+      background: #f2f7fd;
+      box-shadow: none;
+    }
+
+    .ghost-btn:hover {
+      box-shadow: 0 10px 24px rgba(31, 89, 163, 0.16);
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      padding: 18px;
+      animation: rise 0.36s ease;
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: "Marcellus", Georgia, serif;
+      color: #143554;
+      font-size: 1.55rem;
+    }
+
+    .section-subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .grid {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .row {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .row > div { flex: 1; min-width: 220px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #22415f;
+    }
+
+    input, select, button {
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      border-radius: var(--radius-sm);
+      border: 1px solid #c5d5e8;
+      background: #fff;
+      padding: 10px 11px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #72a8ff;
+      box-shadow: 0 0 0 4px rgba(63, 126, 255, 0.12);
+    }
+
+    button {
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      box-shadow: 0 12px 28px rgba(17, 79, 180, 0.22);
+      transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 32px rgba(17, 79, 180, 0.28);
+    }
+
+    button:disabled {
+      opacity: 0.68;
+      transform: none;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .actions button {
+      width: auto;
+      min-width: 156px;
+    }
+
+    .bulk-wrap {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed #cfe0f2;
+    }
+
+    .bulk-preview {
+      margin-top: 10px;
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      border-radius: var(--radius-sm);
+      border: 1px solid #c5d5e8;
+      padding: 10px 11px;
+      font: 0.9rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #1b3552;
+      background: #f9fcff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      padding: 8px 7px;
+    }
+
+    th {
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: #eef5ff;
+      color: #27476a;
+    }
+
+    .ok {
+      margin-top: 11px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid #b4e6d5;
+      background: var(--ok-soft);
+      color: #0e6756;
+      font-weight: 700;
+    }
+
+    .error {
+      margin-top: 11px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid #f3b8b0;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .source-alert {
+      border: 1px solid #f0b3ad;
+      background: #fff0ee;
+      color: #8f2c21;
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    tr.source-risk td {
+      background: #fff6f5;
+    }
+
+    .hidden { display: none; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .hero-brand img {
+        height: 84px;
+      }
+
+      .actions button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .quick-nav button {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="hero-brand" role="button" tabindex="0" aria-label="Zur Hauptseite" onclick="window.location.href='./index.html'">
+        <img src="./assets/dtzlib-logo.png" alt="DTZ-LIB Logo">
+      </div>
+      <span class="eyebrow">DTZ-LIB</span>
+      <h1>Lehrerbereich</h1>
+      <p>Schülerzugänge verwalten, Texte filtern und CSV-Exporte mit wenigen Klicks durchführen.</p>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <h2 class="section-title">Schnellzugriff</h2>
+        <p class="section-subtitle">Zur Hauptseite wechseln oder direkt zu Konten und Archiv springen.</p>
+        <div class="quick-nav">
+          <button id="goHomeBtn" class="ghost-btn" type="button">Zur Hauptseite</button>
+          <button id="jumpAccountsBtn" type="button">Zu Schülerzugängen</button>
+          <button id="jumpCoursesBtn" type="button">Zu Kursen</button>
+          <button id="jumpAttendanceBtn" type="button">Zu Yoklama</button>
+          <button id="jumpNotifyBtn" type="button">Zu Bildirim</button>
+          <button id="jumpRoomSectionBtn" type="button">Zu Virtuellem Saal</button>
+          <button id="jumpAuditBtn" type="button">Zu Audit</button>
+          <button id="jumpArchiveBtn" type="button">Zu Archiv</button>
+          <button id="refreshStudentsBtn" class="ghost-btn" type="button">Schülerliste aktualisieren</button>
+        </div>
+      </section>
+
+      <section id="loginCard" class="card">
+        <h2 class="section-title">Anmeldung</h2>
+        <p class="section-subtitle">Nur für autorisierte Lehrkraft.</p>
+        <div class="grid">
+          <div>
+            <label for="adminPassword">Passwort</label>
+            <input id="adminPassword" type="password" placeholder="Lehrer-Passwort">
+          </div>
+        </div>
+        <div class="row">
+          <div style="max-width: 280px;"><button id="loginBtn" type="button">Anmelden</button></div>
+        </div>
+        <div id="loginStatus" class="hidden"></div>
+      </section>
+
+      <section id="panelCard" class="card hidden">
+        <div id="accountsSection">
+          <h2 class="section-title">Schülerzugänge</h2>
+          <p class="section-subtitle">Neue Konten erstellen, Passwörter zurücksetzen und Nutzerstatus ändern.</p>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="newStudentUsername">Neuer Benutzername</label>
+            <input id="newStudentUsername" type="text" placeholder="z. B. kursa-01">
+          </div>
+          <div>
+            <label for="newStudentDisplayName">Anzeigename (optional)</label>
+            <input id="newStudentDisplayName" type="text" placeholder="z. B. Ayse Yilmaz">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="newStudentPassword">Passwort</label>
+            <input id="newStudentPassword" type="text" placeholder="Passwort eingeben oder generieren">
+          </div>
+          <div>
+            <label for="newStudentEmail">E-Mail (optional)</label>
+            <input id="newStudentEmail" type="text" placeholder="z. B. kursiyer@mail.com">
+          </div>
+          <div>
+            <label for="newStudentPhone">WhatsApp Telefon (optional)</label>
+            <input id="newStudentPhone" type="text" placeholder="z. B. 905551112233">
+          </div>
+          <div class="actions">
+            <button id="generatePwdBtn" type="button">Passwort generieren</button>
+            <button id="createStudentBtn" type="button">Zugang erstellen</button>
+          </div>
+        </div>
+
+        <div id="userStatus" class="hidden"></div>
+
+        <div class="bulk-wrap">
+          <h3 class="section-title" style="font-size: 1.25rem;">Schnellgenerator (mehrere Schueler)</h3>
+          <p class="section-subtitle">Erzeugt sofort Benutzername+Passwort und legt die Konten in Serie an.</p>
+
+          <div class="grid">
+            <div>
+              <label for="bulkPrefix">Praefix</label>
+              <input id="bulkPrefix" type="text" value="kursa" placeholder="z. B. kursa">
+            </div>
+            <div>
+              <label for="bulkCount">Anzahl</label>
+              <input id="bulkCount" type="number" min="1" max="100" value="20">
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label for="bulkStart">Startnummer</label>
+              <input id="bulkStart" type="number" min="1" max="9999" value="1">
+            </div>
+            <div>
+              <label for="bulkPwdLength">Passwortlaenge</label>
+              <input id="bulkPwdLength" type="number" min="6" max="10" value="6">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="bulkGenerateBtn" type="button">Liste generieren</button>
+            <button id="bulkCreateBtn" type="button">Konten anlegen</button>
+            <button id="quickCreate20Btn" type="button">20 Konten sofort</button>
+            <button id="bulkCopyBtn" class="ghost-btn" type="button">Liste kopieren</button>
+            <button id="bulkCsvBtn" class="ghost-btn" type="button">CSV downloaden</button>
+            <button id="bulkPdfBtn" class="ghost-btn" type="button">PDF drucken</button>
+          </div>
+
+          <textarea id="bulkPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
+          <div id="bulkStatus" class="hidden"></div>
+        </div>
+
+        <div id="userListWrap" style="margin-top: 10px;"></div>
+
+        <div id="coursesSection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Kursverwaltung</h2>
+          <p class="section-subtitle">Kurs oluştur, öğrencileri kursa ata. Yoklama bu kurs üyelerine göre çalışır.</p>
+
+          <div class="grid">
+            <div>
+              <label for="newCourseName">Kurs adı</label>
+              <input id="newCourseName" type="text" placeholder="z. B. BSK B1 Abendkurs">
+            </div>
+            <div>
+              <label for="newCourseLevel">Seviye</label>
+              <input id="newCourseLevel" type="text" placeholder="z. B. B1">
+            </div>
+            <div>
+              <label for="newCourseSchedule">Ders zamanı</label>
+              <input id="newCourseSchedule" type="text" placeholder="z. B. Mo-Mi 18:00-20:15">
+            </div>
+          </div>
+          <div class="actions">
+            <button id="createCourseBtn" type="button">Kurs oluştur</button>
+            <button id="refreshCoursesBtn" class="ghost-btn" type="button">Kursları yenile</button>
+          </div>
+          <div id="courseStatus" class="hidden"></div>
+          <div id="courseListWrap" style="margin-top: 10px;"></div>
+          <div id="courseAssignWrap" style="margin-top: 10px;"></div>
+        </div>
+
+        <div id="attendanceSection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Yoklama (Kilitlemeli)</h2>
+          <p class="section-subtitle">Dersi kaydet, sonra kilitle. Kilitli oturum düzenlenemez.</p>
+
+          <div class="grid">
+            <div>
+              <label for="attendanceCourseId">Kurs seçimi</label>
+              <select id="attendanceCourseId">
+                <option value="">Önce kurs seçin</option>
+              </select>
+            </div>
+            <div>
+              <label for="attendanceCourse">Kurs adı</label>
+              <input id="attendanceCourse" type="text" placeholder="z. B. BSK-B1-Abendkurs" readonly>
+            </div>
+            <div>
+              <label for="attendanceDate">Ders tarihi</label>
+              <input id="attendanceDate" type="date">
+            </div>
+          </div>
+          <div class="grid">
+            <div>
+              <label for="attendanceEvidence">Kanıt notu (online/yüz yüze)</label>
+              <input id="attendanceEvidence" type="text" placeholder="z. B. Zoom Log + Screenshot 18:00-20:15">
+            </div>
+            <div>
+              <label for="attendanceTeacherNote">Öğretmen notu</label>
+              <input id="attendanceTeacherNote" type="text" placeholder="Örn: 2 katılımcı geç geldi">
+            </div>
+          </div>
+          <div class="actions">
+            <button id="loadAttendanceStudentsBtn" type="button">Teilnehmer laden</button>
+            <button id="saveAttendanceBtn" type="button">Yoklama kaydet</button>
+            <button id="lockAttendanceBtn" type="button">Oturumu kilitle</button>
+            <button id="listAttendanceBtn" class="ghost-btn" type="button">Yoklama listesi</button>
+          </div>
+          <div id="attendanceStatus" class="hidden"></div>
+          <div id="attendanceRiskWrap" style="margin-top:10px;"></div>
+          <div id="attendanceEditWrap" style="margin-top:10px;"></div>
+          <div id="attendanceListWrap" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="notifySection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Devamsızlık Bildirim Hazırlayıcı</h2>
+          <p class="section-subtitle">Yüksek devamsızlık hedeflerini bulur, e-posta/WhatsApp metinlerini tek tıkla hazırlar.</p>
+          <div class="grid">
+            <div>
+              <label for="warnThreshold">Uyarı eşiği (%)</label>
+              <input id="warnThreshold" type="number" min="1" max="100" value="20">
+            </div>
+            <div>
+              <label for="critThreshold">Kritik eşik (%)</label>
+              <input id="critThreshold" type="number" min="1" max="100" value="30">
+            </div>
+          </div>
+          <div class="actions">
+            <button id="loadAlertTargetsBtn" type="button">Hedefleri yükle</button>
+            <button id="copyEmailAlertsBtn" class="ghost-btn" type="button">E-Mail metnini kopyala</button>
+            <button id="copyWhatsappAlertsBtn" class="ghost-btn" type="button">WhatsApp metnini kopyala</button>
+          </div>
+          <div id="alertStatus" class="hidden"></div>
+          <div id="alertTargetsWrap" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="attendanceRequestSection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Yoklama Düzeltme Talebi</h2>
+          <p class="section-subtitle">Kilitli oturum için gerekçeli talep oluştur. Onaylanırsa oturum tekrar açılır.</p>
+          <div class="grid">
+            <div>
+              <label for="requestSessionId">Session ID</label>
+              <input id="requestSessionId" type="text" placeholder="att-...">
+            </div>
+            <div>
+              <label for="requestReason">Gerekçe</label>
+              <input id="requestReason" type="text" placeholder="Örn: yanlış yoklama işaretlendi">
+            </div>
+          </div>
+          <div>
+            <label for="requestChanges">İstenen değişiklik</label>
+            <input id="requestChanges" type="text" placeholder="Örn: kursiyer X absent -> excused">
+          </div>
+          <div class="actions">
+            <button id="createAttendanceRequestBtn" type="button">Talep oluştur</button>
+            <button id="loadAttendanceRequestsBtn" class="ghost-btn" type="button">Talepleri yükle</button>
+          </div>
+          <div id="requestStatus" class="hidden"></div>
+          <div id="attendanceRequestWrap" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="roomSection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Virtueller Saal</h2>
+          <p class="section-subtitle">Saal mit Code erstellen und aktive Räume verwalten.</p>
+          <div class="grid">
+            <div>
+              <label for="roomTitle">Titel</label>
+              <input id="roomTitle" type="text" placeholder="z. B. DTZ Schreiben Gruppe A">
+            </div>
+            <div>
+              <label for="roomDuration">Dauer (Minuten)</label>
+              <input id="roomDuration" type="number" min="5" max="180" value="45">
+            </div>
+          </div>
+          <div>
+            <label for="roomPrompt">Aufgabenstellung</label>
+            <input id="roomPrompt" type="text" placeholder="z. B. Schreiben Sie eine E-Mail an die Hausverwaltung...">
+          </div>
+          <div class="actions">
+            <button id="createRoomBtn" type="button">Saal erstellen</button>
+            <button id="refreshRoomBtn" class="ghost-btn" type="button">Räume aktualisieren</button>
+          </div>
+          <div id="roomAdminStatus" class="hidden"></div>
+          <div id="roomAdminListWrap" style="margin-top:10px;"></div>
+          <div class="grid" style="margin-top:10px;">
+            <div>
+              <label for="roomWatchCode">Live-Ansicht (Raumcode)</label>
+              <input id="roomWatchCode" type="text" placeholder="z. B. A7K9P2">
+            </div>
+            <div class="actions" style="align-items:flex-end;">
+              <button id="watchRoomBtn" type="button">Live laden</button>
+              <button id="toggleRoomLiveBtn" class="ghost-btn" type="button">Auto-Refresh: Aus</button>
+              <button id="closeRoomBtn" type="button">Raum schließen</button>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:8px;">
+            <button id="saveAllRoomGradesBtn" type="button">Alle Bewertungen speichern</button>
+            <button id="toggleRoomPendingOnlyBtn" class="ghost-btn" type="button">Nur nicht abgegeben: Aus</button>
+            <button id="toggleRoomUngradedOnlyBtn" class="ghost-btn" type="button">Nur unbewertet: Aus</button>
+            <button id="downloadRoomCsvBtn" class="ghost-btn" type="button">Abgaben als CSV</button>
+          </div>
+          <div id="roomWatchStatus" class="hidden"></div>
+          <div id="roomWatchWrap" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="auditSection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Audit Log</h2>
+          <p class="section-subtitle">Kim ne zaman hangi işlemi yaptı (IP + meta).</p>
+          <div class="grid">
+            <div>
+              <label for="auditActionQuery">Action filtre</label>
+              <input id="auditActionQuery" type="text" placeholder="z. B. attendance_">
+            </div>
+            <div>
+              <label for="auditLimit">Limit</label>
+              <input id="auditLimit" type="number" min="1" max="1000" value="200">
+            </div>
+          </div>
+          <div class="actions">
+            <button id="loadAuditBtn" type="button">Audit yükle</button>
+          </div>
+          <div id="auditStatus" class="hidden"></div>
+          <div id="auditWrap" style="margin-top:10px;"></div>
+        </div>
+
+        <div id="archiveSection">
+          <h2 class="section-title" style="margin-top: 18px;">Archiv</h2>
+          <p class="section-subtitle">Einträge filtern und bei Bedarf als CSV herunterladen.</p>
+        </div>
+        <div class="error" style="margin-top:10px;">
+          Copyright-Hinweis: Keine offiziellen BAMF/g.a.s.t./Goethe-Prüfungsfragen 1:1 übernehmen. Nur eigene oder lizenzierte Inhalte verwenden.
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="filterDateFrom">Datum von</label>
+            <input id="filterDateFrom" type="date">
+          </div>
+          <div>
+            <label for="filterDateTo">Datum bis</label>
+            <input id="filterDateTo" type="date">
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="studentQuery">Schüler suchen</label>
+            <input id="studentQuery" type="text" placeholder="Vor- oder Nachname">
+          </div>
+          <div>
+            <label for="textQuery">Textsuche</label>
+            <input id="textQuery" type="text" placeholder="Suchwort im Brief">
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="listLimit">Eintragslimit</label>
+            <input id="listLimit" type="number" min="1" max="200" value="100">
+          </div>
+          <div class="actions">
+            <button id="listBtn" type="button">Einträge laden</button>
+            <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
+            <button id="listBskBtn" type="button">BSK laden</button>
+            <button id="downloadBskCsvBtn" type="button">BSK-CSV herunterladen</button>
+            <button id="logoutBtn" type="button">Abmelden</button>
+          </div>
+        </div>
+
+        <div id="panelStatus" class="hidden"></div>
+        <div id="archiveWrap" style="margin-top: 10px;"></div>
+        <h3 class="section-title" style="margin-top: 16px;">BSK-Archiv</h3>
+        <div id="bskArchiveWrap" style="margin-top: 10px;"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    let teacherRecords = [];
+    let teacherBskRecords = [];
+    let currentStudents = [];
+    let currentCourses = [];
+    let currentAttendanceSessionId = "";
+    let currentAlertTargets = [];
+    let currentAttendanceRequests = [];
+    let currentRooms = [];
+    let roomLiveTimerId = null;
+    let roomLiveEnabled = false;
+    let roomPendingOnly = false;
+    let roomUngradedOnly = false;
+    let currentRoomDetail = { room: null, participants: [] };
+
+    function clamp(value, min, max, fallback) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n)) return fallback;
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function setBox(id, type, message) {
+      const box = document.getElementById(id);
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearBox(id) {
+      const box = document.getElementById(id);
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    async function parseJsonResponse(response) {
+      const raw = await response.text();
+      let payload = {};
+      try {
+        payload = raw ? JSON.parse(raw) : {};
+      } catch (_) {
+        const snippet = raw.slice(0, 120).replace(/\s+/g, " ").trim();
+        throw new Error(`JSON erwartet, aber erhalten: ${snippet || "leer"}`);
+      }
+      return payload;
+    }
+
+    async function checkSession() {
+      try {
+        const response = await fetch("./api/admin_session.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (response.ok && payload.authenticated) {
+          showPanel();
+        } else {
+          showLogin();
+        }
+      } catch (_) {
+        showLogin();
+      }
+    }
+
+    function showPanel() {
+      document.getElementById("loginCard").classList.add("hidden");
+      document.getElementById("panelCard").classList.remove("hidden");
+      renderBulkPreview(buildBulkCredentials());
+      if (document.getElementById("attendanceDate")) {
+        document.getElementById("attendanceDate").value = new Date().toISOString().slice(0, 10);
+      }
+      listStudents();
+      listCourses();
+      listLetters();
+      listBskRecords();
+      listAttendanceSessions();
+      loadAttendanceRequests();
+      listRooms();
+      loadAuditLogs();
+    }
+
+    function showLogin() {
+      document.getElementById("panelCard").classList.add("hidden");
+      document.getElementById("loginCard").classList.remove("hidden");
+      roomLiveEnabled = false;
+      roomPendingOnly = false;
+      roomUngradedOnly = false;
+      currentRoomDetail = { room: null, participants: [] };
+      stopRoomLivePolling();
+      const liveBtn = document.getElementById("toggleRoomLiveBtn");
+      if (liveBtn) liveBtn.textContent = "Auto-Refresh: Aus";
+      const pendingBtn = document.getElementById("toggleRoomPendingOnlyBtn");
+      if (pendingBtn) pendingBtn.textContent = "Nur nicht abgegeben: Aus";
+      const ungradedBtn = document.getElementById("toggleRoomUngradedOnlyBtn");
+      if (ungradedBtn) ungradedBtn.textContent = "Nur unbewertet: Aus";
+    }
+
+    async function login() {
+      clearBox("loginStatus");
+      const btn = document.getElementById("loginBtn");
+      btn.disabled = true;
+      btn.textContent = "Wird angemeldet...";
+      try {
+        const password = document.getElementById("adminPassword").value;
+        if (!password.trim()) {
+          setBox("loginStatus", "error", "Bitte Passwort eingeben.");
+          return;
+        }
+        const response = await fetch("./api/admin_login.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("loginStatus", "ok", "Anmeldung erfolgreich.");
+        showPanel();
+      } catch (err) {
+        setBox("loginStatus", "error", `Anmeldung fehlgeschlagen: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Anmelden";
+      }
+    }
+
+    async function logout() {
+      clearBox("panelStatus");
+      try {
+        await fetch("./api/admin_logout.php", { method: "POST" });
+      } finally {
+        showLogin();
+      }
+    }
+
+    function randomPassword(length = 12) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
+      let out = "";
+      for (let i = 0; i < length; i += 1) {
+        out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return out;
+    }
+
+    function easyPassword(length = 6) {
+      const safeLength = clamp(length, 6, 10, 6);
+      const syllables = ["la", "mi", "no", "ra", "se", "ti", "ko", "pa", "lu", "ne"];
+      let out = "";
+      while (out.length < Math.max(4, safeLength - 2)) {
+        out += syllables[Math.floor(Math.random() * syllables.length)];
+      }
+      out = out.slice(0, Math.max(4, safeLength - 2));
+      const digits = String(Math.floor(Math.random() * 90) + 10);
+      return `${out}${digits}`.slice(0, safeLength);
+    }
+
+    function normalizePrefix(raw) {
+      return String(raw || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, "")
+        .replace(/^[._-]+/g, "")
+        .slice(0, 20);
+    }
+
+    function buildBulkCredentials() {
+      const prefix = normalizePrefix(document.getElementById("bulkPrefix").value);
+      const count = clamp(document.getElementById("bulkCount").value, 1, 100, 20);
+      const start = clamp(document.getElementById("bulkStart").value, 1, 9999, 1);
+      const pwdLength = clamp(document.getElementById("bulkPwdLength").value, 6, 10, 6);
+      const base = prefix || "kurs";
+      const pad = String(start + count - 1).length;
+      const rows = [];
+      for (let i = 0; i < count; i += 1) {
+        const n = String(start + i).padStart(Math.max(2, pad), "0");
+        rows.push({
+          username: `${base}-${n}`.slice(0, 32),
+          password: easyPassword(pwdLength)
+        });
+      }
+      return rows;
+    }
+
+    function renderBulkPreview(rows) {
+      const box = document.getElementById("bulkPreview");
+      box.value = rows.map(item => `${item.username};${item.password}`).join("\n");
+    }
+
+    async function createStudentViaApi(username, password, displayName = "", email = "", phone = "") {
+      const response = await fetch("./api/student_create.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          display_name: displayName,
+          email,
+          phone,
+          password
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+      return payload;
+    }
+
+    async function createBulkStudents() {
+      clearBox("bulkStatus");
+      const rows = buildBulkCredentials();
+      renderBulkPreview(rows);
+      const btn = document.getElementById("bulkCreateBtn");
+      btn.disabled = true;
+      btn.textContent = "Wird angelegt...";
+
+      let ok = 0;
+      let fail = 0;
+      const failed = [];
+      for (const row of rows) {
+        try {
+          await createStudentViaApi(row.username, row.password, "");
+          ok += 1;
+        } catch (err) {
+          fail += 1;
+          failed.push(`${row.username} (${err.message})`);
+        }
+      }
+
+      if (ok > 0) listStudents();
+      if (fail === 0) {
+        setBox("bulkStatus", "ok", `${ok} Konten wurden erstellt.`);
+      } else {
+        const short = failed.slice(0, 4).join(", ");
+        setBox("bulkStatus", "error", `${ok} erstellt, ${fail} fehlgeschlagen. ${short}`);
+      }
+
+      btn.disabled = false;
+      btn.textContent = "Konten anlegen";
+    }
+
+    async function quickCreate20Students() {
+      document.getElementById("bulkCount").value = "20";
+      renderBulkPreview(buildBulkCredentials());
+      await createBulkStudents();
+    }
+
+    async function copyBulkList() {
+      clearBox("bulkStatus");
+      const box = document.getElementById("bulkPreview");
+      if (!box.value.trim()) {
+        renderBulkPreview(buildBulkCredentials());
+      }
+      try {
+        await navigator.clipboard.writeText(box.value);
+        setBox("bulkStatus", "ok", "Liste wurde kopiert.");
+      } catch (_) {
+        setBox("bulkStatus", "error", "Kopieren nicht moeglich. Bitte manuell markieren.");
+      }
+    }
+
+    function downloadBulkCsv() {
+      clearBox("bulkStatus");
+      const box = document.getElementById("bulkPreview");
+      if (!box.value.trim()) {
+        renderBulkPreview(buildBulkCredentials());
+      }
+      const rows = box.value
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+          const [username, password] = line.split(";");
+          return { username: username || "", password: password || "" };
+        });
+      if (!rows.length) {
+        setBox("bulkStatus", "error", "Keine Daten fuer CSV.");
+        return;
+      }
+      const lines = ["username,password"];
+      rows.forEach(row => {
+        lines.push(`${toCsvCell(row.username)},${toCsvCell(row.password)}`);
+      });
+      const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dtz-students-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBox("bulkStatus", "ok", "CSV wurde heruntergeladen.");
+    }
+
+    function downloadBulkPdf() {
+      clearBox("bulkStatus");
+      const box = document.getElementById("bulkPreview");
+      if (!box.value.trim()) {
+        renderBulkPreview(buildBulkCredentials());
+      }
+      const rows = box.value
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+          const [username, password] = line.split(";");
+          return { username: username || "", password: password || "" };
+        });
+      if (!rows.length) {
+        setBox("bulkStatus", "error", "Keine Daten für PDF.");
+        return;
+      }
+
+      const w = window.open("", "_blank");
+      if (!w) {
+        setBox("bulkStatus", "error", "Popup blockiert. Bitte Popups erlauben.");
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const tableRows = rows.map(r => `<tr><td>${escapeHtml(r.username)}</td><td>${escapeHtml(r.password)}</td></tr>`).join("");
+      w.document.write(`
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>DTZ Schülerliste ${today}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 24px; }
+              h1 { margin: 0 0 10px; font-size: 20px; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #999; padding: 8px; text-align: left; }
+              th { background: #f2f2f2; }
+            </style>
+          </head>
+          <body>
+            <h1>DTZ Schülerzugänge (${today})</h1>
+            <table>
+              <thead><tr><th>Benutzername</th><th>Passwort</th></tr></thead>
+              <tbody>${tableRows}</tbody>
+            </table>
+          </body>
+        </html>
+      `);
+      w.document.close();
+      w.focus();
+      w.print();
+      setBox("bulkStatus", "ok", "Druckansicht geöffnet. Als PDF speichern.");
+    }
+
+    function renderStudents(users) {
+      currentStudents = users.slice();
+      const wrap = document.getElementById("userListWrap");
+      if (!users.length) {
+        wrap.innerHTML = "<p>Noch keine Schülerzugänge.</p>";
+        return;
+      }
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Benutzername</th>
+            <th>Anzeigename</th>
+            <th>E-Mail</th>
+            <th>WhatsApp</th>
+            <th>Aktiv</th>
+            <th>Erstellt</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+      `;
+      const tbody = document.createElement("tbody");
+      users.forEach(user => {
+        const isActive = !!user.active;
+        const username = String(user.username || "");
+        const rowId = `row-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
+        const tr = document.createElement("tr");
+        tr.id = rowId;
+        tr.innerHTML = `
+          <td class="mono">${escapeHtml(username)}</td>
+          <td>${escapeHtml(user.display_name || "-")}</td>
+          <td class="mono">${escapeHtml(user.email || "-")}</td>
+          <td class="mono">${escapeHtml(user.phone || "-")}</td>
+          <td>${isActive ? "Ja" : "Nein"}</td>
+          <td class="mono">${escapeHtml(user.created_at || "")}</td>
+          <td>
+            <div class="actions">
+              <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
+              <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
+              <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.innerHTML = "";
+      wrap.appendChild(table);
+
+      wrap.querySelectorAll("button[data-action='reset-password']").forEach(btn => {
+        btn.addEventListener("click", () => resetStudentPassword(btn.getAttribute("data-username") || ""));
+      });
+      wrap.querySelectorAll("button[data-action='toggle-active']").forEach(btn => {
+        const username = btn.getAttribute("data-username") || "";
+        const activeNow = btn.getAttribute("data-active") === "1";
+        btn.addEventListener("click", () => setStudentActive(username, !activeNow));
+      });
+      wrap.querySelectorAll("button[data-action='edit-contact']").forEach(btn => {
+        const username = btn.getAttribute("data-username") || "";
+        btn.addEventListener("click", () => updateStudentContactPrompt(username));
+      });
+    }
+
+    function renderCourseSelect() {
+      const sel = document.getElementById("attendanceCourseId");
+      const prev = sel.value;
+      const options = ['<option value="">Önce kurs seçin</option>'];
+      currentCourses
+        .filter(c => !!c.active)
+        .forEach(c => {
+          options.push(`<option value="${escapeHtml(c.course_id || "")}">${escapeHtml(`${c.name || c.course_id} (${c.level || "-"})`)}</option>`);
+        });
+      sel.innerHTML = options.join("");
+      if (prev) {
+        sel.value = prev;
+      }
+      updateAttendanceCourseBySelect();
+    }
+
+    function renderCourses(courses) {
+      currentCourses = courses.slice();
+      renderCourseSelect();
+      const wrap = document.getElementById("courseListWrap");
+      if (!courses.length) {
+        wrap.innerHTML = "<p>Henüz kurs yok.</p>";
+        document.getElementById("courseAssignWrap").innerHTML = "";
+        return;
+      }
+      const rows = courses.map(c => `
+        <tr>
+          <td class="mono">${escapeHtml(c.course_id || "")}</td>
+          <td>${escapeHtml(c.name || "")}</td>
+          <td>${escapeHtml(c.level || "-")}</td>
+          <td>${escapeHtml(c.schedule || "-")}</td>
+          <td>${c.active ? "Ja" : "Nein"}</td>
+          <td class="mono">${escapeHtml(String((c.members || []).length))}</td>
+          <td><button type="button" data-course-assign="${escapeHtml(c.course_id || "")}">Üyeleri düzenle</button></td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>ID</th><th>Kurs</th><th>Level</th><th>Schedule</th><th>Aktiv</th><th>Mitglieder</th><th>Aktion</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("button[data-course-assign]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-course-assign") || "";
+          renderCourseAssignEditor(id);
+        });
+      });
+    }
+
+    function renderCourseAssignEditor(courseId) {
+      const wrap = document.getElementById("courseAssignWrap");
+      const course = currentCourses.find(c => String(c.course_id || "") === courseId);
+      if (!course) {
+        wrap.innerHTML = "";
+        return;
+      }
+      const members = new Set(Array.isArray(course.members) ? course.members : []);
+      const users = currentStudents.filter(u => !!u.active);
+      const rows = users.map(u => {
+        const uname = String(u.username || "");
+        const checked = members.has(uname) ? "checked" : "";
+        const label = u.display_name ? `${u.display_name} (${uname})` : uname;
+        return `
+          <label class="mono" style="display:block;padding:4px 0;">
+            <input type="checkbox" data-course-member="${escapeHtml(uname)}" ${checked}> ${escapeHtml(label)}
+          </label>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <div class="card" style="margin-top:8px;padding:12px;">
+          <strong>Kurs üyeleri: ${escapeHtml(course.name || courseId)}</strong>
+          <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">${rows}</div>
+          <div class="actions" style="margin-top:8px;">
+            <button type="button" id="saveCourseMembersBtn">Üyeleri kaydet</button>
+          </div>
+        </div>
+      `;
+      const saveBtn = document.getElementById("saveCourseMembersBtn");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => saveCourseMembers(courseId));
+      }
+    }
+
+    async function listCourses() {
+      try {
+        const response = await fetch("./api/course_list.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        if (Array.isArray(payload.students) && payload.students.length) {
+          currentStudents = payload.students;
+        }
+        renderCourses(Array.isArray(payload.courses) ? payload.courses : []);
+      } catch (err) {
+        document.getElementById("courseListWrap").innerHTML = `<p>Kursliste alınamadı: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    async function createCourse() {
+      clearBox("courseStatus");
+      const name = document.getElementById("newCourseName").value.trim();
+      const level = document.getElementById("newCourseLevel").value.trim();
+      const schedule = document.getElementById("newCourseSchedule").value.trim();
+      if (!name) {
+        setBox("courseStatus", "error", "Kurs adı zorunlu.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", name, level, schedule })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("courseStatus", "ok", "Kurs oluşturuldu.");
+        document.getElementById("newCourseName").value = "";
+        document.getElementById("newCourseLevel").value = "";
+        document.getElementById("newCourseSchedule").value = "";
+        listCourses();
+      } catch (err) {
+        setBox("courseStatus", "error", `Kurs oluşturma hatası: ${err.message}`);
+      }
+    }
+
+    async function saveCourseMembers(courseId) {
+      clearBox("courseStatus");
+      const members = Array.from(document.querySelectorAll("[data-course-member]:checked"))
+        .map(el => String(el.getAttribute("data-course-member") || "").trim())
+        .filter(Boolean);
+      try {
+        const response = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "set_members", course_id: courseId, members })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("courseStatus", "ok", "Kurs üyeleri kaydedildi.");
+        listCourses();
+      } catch (err) {
+        setBox("courseStatus", "error", `Üye kaydetme hatası: ${err.message}`);
+      }
+    }
+
+    function updateAttendanceCourseBySelect() {
+      const courseId = String(document.getElementById("attendanceCourseId").value || "");
+      const course = currentCourses.find(c => String(c.course_id || "") === courseId);
+      document.getElementById("attendanceCourse").value = course ? String(course.name || "") : "";
+    }
+
+    function getSelectedCourseUsers() {
+      const courseId = String(document.getElementById("attendanceCourseId").value || "");
+      const course = currentCourses.find(c => String(c.course_id || "") === courseId);
+      const members = new Set(Array.isArray(course?.members) ? course.members : []);
+      return currentStudents.filter(u => !!u.active && members.has(String(u.username || "")));
+    }
+
+    function renderAttendanceEditor() {
+      const wrap = document.getElementById("attendanceEditWrap");
+      const courseId = String(document.getElementById("attendanceCourseId").value || "");
+      if (!courseId) {
+        wrap.innerHTML = "<p>Önce bir kurs seç.</p>";
+        return;
+      }
+      const users = getSelectedCourseUsers();
+      if (!users.length) {
+        wrap.innerHTML = "<p>Bu kursta üye öğrenci yok. Kurs üyelerini düzenle.</p>";
+        return;
+      }
+      const rows = users.map((u, i) => {
+        const name = u.display_name ? `${u.display_name} (${u.username})` : u.username;
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(u.username)}</td>
+            <td>${escapeHtml(name)}</td>
+            <td>
+              <select data-att-status="${i}">
+                <option value="present">Present</option>
+                <option value="late">Late</option>
+                <option value="absent">Absent</option>
+                <option value="excused">Excused</option>
+              </select>
+            </td>
+            <td><input type="text" data-att-note="${i}" placeholder="Not (opsiyonel)"></td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Username</th><th>Name</th><th>Status</th><th>Not</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function collectAttendanceRows() {
+      const users = getSelectedCourseUsers();
+      return users.map((u, i) => {
+        const statusEl = document.querySelector(`[data-att-status="${i}"]`);
+        const noteEl = document.querySelector(`[data-att-note="${i}"]`);
+        return {
+          username: String(u.username || ""),
+          status: String(statusEl ? statusEl.value : "present"),
+          note: String(noteEl ? noteEl.value : "").trim()
+        };
+      });
+    }
+
+    async function saveAttendance() {
+      clearBox("attendanceStatus");
+      const courseId = String(document.getElementById("attendanceCourseId").value || "");
+      const courseName = document.getElementById("attendanceCourse").value.trim();
+      const lessonDate = document.getElementById("attendanceDate").value;
+      const evidenceNote = document.getElementById("attendanceEvidence").value.trim();
+      const teacherNote = document.getElementById("attendanceTeacherNote").value.trim();
+      const rows = collectAttendanceRows();
+      if (!courseId || !courseName || !lessonDate) {
+        setBox("attendanceStatus", "error", "Kurs seçimi ve ders tarihi zorunlu.");
+        return;
+      }
+      if (!rows.length) {
+        setBox("attendanceStatus", "error", "Önce Teilnehmer laden tıkla.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/attendance_save.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: currentAttendanceSessionId,
+            course_id: courseId,
+            course_name: courseName,
+            lesson_date: lessonDate,
+            evidence_note: evidenceNote,
+            teacher_note: teacherNote,
+            rows
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        currentAttendanceSessionId = String(payload.session_id || "");
+        setBox("attendanceStatus", "ok", `Yoklama kaydedildi (ID: ${currentAttendanceSessionId}).`);
+        listAttendanceSessions();
+      } catch (err) {
+        setBox("attendanceStatus", "error", `Yoklama kayıt hatası: ${err.message}`);
+      }
+    }
+
+    async function lockAttendance() {
+      clearBox("attendanceStatus");
+      if (!currentAttendanceSessionId) {
+        setBox("attendanceStatus", "error", "Önce yoklama kaydet.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/attendance_lock.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: currentAttendanceSessionId })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("attendanceStatus", "ok", "Oturum kilitlendi. Artık düzenlenemez.");
+        listAttendanceSessions();
+      } catch (err) {
+        setBox("attendanceStatus", "error", `Kilitleme hatası: ${err.message}`);
+      }
+    }
+
+    async function createAttendanceRequest() {
+      clearBox("requestStatus");
+      const sessionId = document.getElementById("requestSessionId").value.trim();
+      const reason = document.getElementById("requestReason").value.trim();
+      const changes = document.getElementById("requestChanges").value.trim();
+      if (!sessionId || !reason) {
+        setBox("requestStatus", "error", "Session ID ve gerekçe zorunlu.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/attendance_request_create.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, reason, changes })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("requestStatus", "ok", `Talep oluşturuldu: ${payload.request_id || "-"}`);
+        document.getElementById("requestReason").value = "";
+        document.getElementById("requestChanges").value = "";
+        loadAttendanceRequests();
+      } catch (err) {
+        setBox("requestStatus", "error", `Talep hatası: ${err.message}`);
+      }
+    }
+
+    function renderAttendanceRequests(rows) {
+      const wrap = document.getElementById("attendanceRequestWrap");
+      if (!rows.length) {
+        wrap.innerHTML = "<p>Talep yok.</p>";
+        return;
+      }
+      const tableRows = rows.map(r => `
+        <tr>
+          <td class="mono">${escapeHtml(r.request_id || "")}</td>
+          <td class="mono">${escapeHtml(r.session_id || "")}</td>
+          <td>${escapeHtml(r.reason || "")}</td>
+          <td>${escapeHtml(r.changes || "-")}</td>
+          <td>${escapeHtml(r.status || "")}</td>
+          <td class="mono">${escapeHtml(r.created_at || "")}</td>
+          <td>
+            <button type="button" data-req-approve="${escapeHtml(r.request_id || "")}">Onayla</button>
+            <button type="button" data-req-reject="${escapeHtml(r.request_id || "")}" class="ghost-btn">Reddet</button>
+          </td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>ID</th><th>Session</th><th>Gerekçe</th><th>Değişiklik</th><th>Status</th><th>Oluşturma</th><th>İşlem</th></tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("[data-req-approve]").forEach(btn => {
+        btn.addEventListener("click", () => reviewAttendanceRequest(btn.getAttribute("data-req-approve") || "", "approve"));
+      });
+      wrap.querySelectorAll("[data-req-reject]").forEach(btn => {
+        btn.addEventListener("click", () => reviewAttendanceRequest(btn.getAttribute("data-req-reject") || "", "reject"));
+      });
+    }
+
+    async function loadAttendanceRequests() {
+      try {
+        const response = await fetch("./api/attendance_request_list.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        currentAttendanceRequests = Array.isArray(payload.requests) ? payload.requests : [];
+        renderAttendanceRequests(currentAttendanceRequests);
+      } catch (err) {
+        document.getElementById("attendanceRequestWrap").innerHTML = `<p>Talep listesi alınamadı: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    async function reviewAttendanceRequest(requestId, decision) {
+      clearBox("requestStatus");
+      if (!requestId) return;
+      const note = window.prompt(`${decision === "approve" ? "Onay" : "Red"} notu:`, "");
+      if (note === null) return;
+      try {
+        const response = await fetch("./api/attendance_request_review.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            request_id: requestId,
+            decision,
+            review_note: String(note).trim()
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("requestStatus", "ok", `Talep ${decision === "approve" ? "onaylandı" : "reddedildi"}.`);
+        loadAttendanceRequests();
+        listAttendanceSessions();
+      } catch (err) {
+        setBox("requestStatus", "error", `Review hatası: ${err.message}`);
+      }
+    }
+
+    function renderAuditRecords(records) {
+      const wrap = document.getElementById("auditWrap");
+      if (!records.length) {
+        wrap.innerHTML = "<p>Audit kaydı yok.</p>";
+        return;
+      }
+      const rows = records.map(r => `
+        <tr>
+          <td class="mono">${escapeHtml(r.created_at || "")}</td>
+          <td>${escapeHtml(r.action || "")}</td>
+          <td>${escapeHtml(r.actor_type || "")}</td>
+          <td class="mono">${escapeHtml(r.actor_id || "-")}</td>
+          <td class="mono">${escapeHtml(r.ip || "-")}</td>
+          <td class="mono">${escapeHtml(JSON.stringify(r.meta || {}))}</td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>Zeit</th><th>Action</th><th>Actor</th><th>Actor ID</th><th>IP</th><th>Meta</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadAuditLogs() {
+      clearBox("auditStatus");
+      try {
+        const response = await fetch("./api/audit_log_list.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action_query: document.getElementById("auditActionQuery").value.trim(),
+            date_from: document.getElementById("filterDateFrom").value,
+            date_to: document.getElementById("filterDateTo").value,
+            limit: clamp(document.getElementById("auditLimit").value, 1, 1000, 200)
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const records = Array.isArray(payload.records) ? payload.records : [];
+        renderAuditRecords(records);
+        setBox("auditStatus", "ok", `${records.length} audit kaydı yüklendi.`);
+      } catch (err) {
+        setBox("auditStatus", "error", `Audit yüklenemedi: ${err.message}`);
+      }
+    }
+
+    function renderAttendanceSessions(records) {
+      const wrap = document.getElementById("attendanceListWrap");
+      const riskWrap = document.getElementById("attendanceRiskWrap");
+      const warnCount = records.filter(r => Number(r.absence_rate || 0) >= 20 && Number(r.absence_rate || 0) <= 30).length;
+      const critCount = records.filter(r => Number(r.absence_rate || 0) > 30).length;
+      riskWrap.innerHTML = `
+        <div class="grid" style="margin-top:0;">
+          <div class="ok"><strong>Warnung (>=20%):</strong> ${warnCount}</div>
+          <div class="error"><strong>Kritisch (>30%):</strong> ${critCount}</div>
+        </div>
+      `;
+      if (!records.length) {
+        wrap.innerHTML = "<p>Henüz yoklama kaydı yok.</p>";
+        return;
+      }
+      const rows = records.map(r => {
+        const risk = Number(r.absence_rate || 0) > 30 ? `<span class="source-alert">Risk >30%</span>` : "";
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(r.lesson_date || "")}</td>
+            <td>${escapeHtml(r.course_name || "-")}</td>
+            <td class="mono">${escapeHtml(`${r.present || 0}/${r.total || 0}`)}</td>
+            <td class="mono">${escapeHtml(`${r.absence_rate || 0}%`)}</td>
+            <td>${r.locked ? "Ja" : "Nein"}</td>
+            <td>${risk}</td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Datum</th><th>Kurs</th><th>Present/Total</th><th>Fehlquote</th><th>Locked</th><th>Risk</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function listAttendanceSessions() {
+      try {
+        const courseId = String(document.getElementById("attendanceCourseId").value || "");
+        const response = await fetch("./api/attendance_list.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date_from: document.getElementById("filterDateFrom").value,
+            date_to: document.getElementById("filterDateTo").value,
+            course_query: "",
+            course_id: courseId,
+            limit: 100
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderAttendanceSessions(Array.isArray(payload.records) ? payload.records : []);
+      } catch (err) {
+        document.getElementById("attendanceListWrap").innerHTML = `<p>Yoklama listesi alınamadı: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    function renderAlertTargets(targets) {
+      const wrap = document.getElementById("alertTargetsWrap");
+      if (!targets.length) {
+        wrap.innerHTML = "<p>Eşik üstü hedef bulunamadı.</p>";
+        return;
+      }
+      const buildMailto = target => {
+        const email = String(target.email || "").trim();
+        if (!email) return "";
+        const name = target.display_name || target.username || "Kursiyer";
+        const subject = `Kursanwesenheit Hinweis (${target.course_name || "Kurs"})`;
+        const body = `Merhaba ${name},\n${target.course_name || "kurs"} için devamsızlık oranınız şu an ${target.absence_rate || 0}% (${target.missing || 0}/${target.total || 0}). Lütfen ders devamlılığı için bizimle iletişime geçiniz.`;
+        return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      };
+      const buildWa = target => {
+        const raw = String(target.phone || "");
+        const phone = raw.replace(/[^\d]/g, "");
+        if (!phone) return "";
+        const name = target.display_name || target.username || "Kursiyer";
+        const text = `Merhaba ${name}, ${target.course_name || "kurs"} için devamsızlık oranınız ${target.absence_rate || 0}% (${target.missing || 0}/${target.total || 0}). Devam planı için lütfen bize yazın.`;
+        return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+      };
+      const rows = targets.map(t => `
+        <tr>
+          <td class="mono">${escapeHtml(t.username || "")}</td>
+          <td>${escapeHtml(t.display_name || "-")}</td>
+          <td class="mono">${escapeHtml(t.email || "-")}</td>
+          <td class="mono">${escapeHtml(t.phone || "-")}</td>
+          <td>${escapeHtml(t.course_name || "-")}</td>
+          <td class="mono">${escapeHtml(`${t.missing || 0}/${t.total || 0}`)}</td>
+          <td class="mono">${escapeHtml(`${t.absence_rate || 0}%`)}</td>
+          <td>${t.severity === "critical" ? "<span class='source-alert'>Kritik</span>" : "Warnung"}</td>
+          <td>
+            ${buildMailto(t) ? `<a href="${buildMailto(t)}" class="mono" target="_blank" rel="noopener noreferrer">E-Mail aç</a>` : "-"}
+            ${buildWa(t) ? ` | <a href="${buildWa(t)}" class="mono" target="_blank" rel="noopener noreferrer">WhatsApp aç</a>` : ""}
+          </td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>Username</th><th>Name</th><th>E-Mail</th><th>WhatsApp</th><th>Kurs</th><th>Fehl/Total</th><th>Rate</th><th>Seviye</th><th>Aksiyon</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadAlertTargets() {
+      clearBox("alertStatus");
+      try {
+        const courseId = String(document.getElementById("attendanceCourseId").value || "");
+        const warn = clamp(document.getElementById("warnThreshold").value, 1, 100, 20);
+        const crit = clamp(document.getElementById("critThreshold").value, 1, 100, 30);
+        const response = await fetch("./api/attendance_alert_targets.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date_from: document.getElementById("filterDateFrom").value,
+            date_to: document.getElementById("filterDateTo").value,
+            course_id: courseId,
+            warn_threshold: warn,
+            crit_threshold: crit
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        currentAlertTargets = Array.isArray(payload.targets) ? payload.targets : [];
+        renderAlertTargets(currentAlertTargets);
+        setBox("alertStatus", "ok", `${currentAlertTargets.length} hedef bulundu.`);
+      } catch (err) {
+        setBox("alertStatus", "error", `Hedef yükleme hatası: ${err.message}`);
+      }
+    }
+
+    function buildEmailAlertText(targets) {
+      return targets.map(t => {
+        const name = t.display_name || t.username || "Kursiyer";
+        return `An: ${t.email || "(email yok)"}\nBetreff: Kursanwesenheit Hinweis\nMerhaba ${name},\n${t.course_name || "kurs"} için devamsızlık oranınız şu an ${t.absence_rate || 0}% (${t.missing || 0}/${t.total || 0}). Lütfen ders devamlılığı için bizimle iletişime geçiniz.\n`;
+      }).join("\n---\n");
+    }
+
+    function buildWhatsAppAlertText(targets) {
+      return targets.map(t => {
+        const name = t.display_name || t.username || "Kursiyer";
+        return `Tel: ${t.phone || "(telefon yok)"}\nMerhaba ${name}, ${t.course_name || "kurs"} için devamsızlık oranınız ${t.absence_rate || 0}% (${t.missing || 0}/${t.total || 0}). Devam planı için lütfen bize yazın.`;
+      }).join("\n---\n");
+    }
+
+    async function copyEmailAlerts() {
+      clearBox("alertStatus");
+      if (!currentAlertTargets.length) {
+        setBox("alertStatus", "error", "Önce hedefleri yükleyin.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(buildEmailAlertText(currentAlertTargets));
+        setBox("alertStatus", "ok", "E-Mail metni kopyalandı.");
+      } catch (_) {
+        setBox("alertStatus", "error", "Kopyalama başarısız.");
+      }
+    }
+
+    async function copyWhatsappAlerts() {
+      clearBox("alertStatus");
+      if (!currentAlertTargets.length) {
+        setBox("alertStatus", "error", "Önce hedefleri yükleyin.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(buildWhatsAppAlertText(currentAlertTargets));
+        setBox("alertStatus", "ok", "WhatsApp metni kopyalandı.");
+      } catch (_) {
+        setBox("alertStatus", "error", "Kopyalama başarısız.");
+      }
+    }
+
+    async function listStudents() {
+      try {
+        const response = await fetch("./api/student_list.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderStudents(Array.isArray(payload.users) ? payload.users : []);
+      } catch (_) {
+        renderStudents([]);
+      }
+    }
+
+    async function createStudent() {
+      clearBox("userStatus");
+      const username = document.getElementById("newStudentUsername").value.trim();
+      const displayName = document.getElementById("newStudentDisplayName").value.trim();
+      const password = document.getElementById("newStudentPassword").value;
+      const email = document.getElementById("newStudentEmail").value.trim();
+      const phone = document.getElementById("newStudentPhone").value.trim();
+      if (!username || !password) {
+        setBox("userStatus", "error", "Benutzername und Passwort sind erforderlich.");
+        return;
+      }
+      try {
+        const payload = await createStudentViaApi(username, password, displayName, email, phone);
+        setBox("userStatus", "ok", `Zugang erstellt: ${payload.username}`);
+        document.getElementById("newStudentUsername").value = "";
+        document.getElementById("newStudentDisplayName").value = "";
+        document.getElementById("newStudentPassword").value = "";
+        document.getElementById("newStudentEmail").value = "";
+        document.getElementById("newStudentPhone").value = "";
+        listStudents();
+      } catch (err) {
+        setBox("userStatus", "error", `Erstellen fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function resetStudentPassword(username) {
+      clearBox("userStatus");
+      if (!username) return;
+      const suggested = randomPassword();
+      const newPassword = window.prompt(`Neues Passwort für ${username}:`, suggested);
+      if (newPassword === null) return;
+      if (!newPassword.trim()) {
+        setBox("userStatus", "error", "Passwort darf nicht leer sein.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "reset_password",
+            username,
+            new_password: newPassword
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("userStatus", "ok", `Passwort wurde für ${username} zurückgesetzt.`);
+      } catch (err) {
+        setBox("userStatus", "error", `Reset fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function setStudentActive(username, active) {
+      clearBox("userStatus");
+      if (!username) return;
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_active",
+            username,
+            active
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("userStatus", "ok", `${username} wurde ${active ? "aktiviert" : "deaktiviert"}.`);
+        listStudents();
+      } catch (err) {
+        setBox("userStatus", "error", `Statuswechsel fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function updateStudentContactPrompt(username) {
+      clearBox("userStatus");
+      const user = currentStudents.find(u => String(u.username || "") === username);
+      if (!user) return;
+      const email = window.prompt(`E-Mail für ${username}:`, String(user.email || ""));
+      if (email === null) return;
+      const phone = window.prompt(`WhatsApp Telefon für ${username}:`, String(user.phone || ""));
+      if (phone === null) return;
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update_contact",
+            username,
+            email: String(email).trim(),
+            phone: String(phone).trim()
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("userStatus", "ok", `Kontakt aktualisiert: ${username}`);
+        listStudents();
+      } catch (err) {
+        setBox("userStatus", "error", `Kontakt güncelleme hatası: ${err.message}`);
+      }
+    }
+
+    function renderArchiveRecords(records) {
+      const wrap = document.getElementById("archiveWrap");
+      if (!records.length) {
+        wrap.innerHTML = "<p>Keine Einträge gefunden.</p>";
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Zeit</th>
+            <th>ID</th>
+            <th>Schüler</th>
+            <th>Username</th>
+            <th>Aufgabe</th>
+            <th>Brief</th>
+          </tr>
+        </thead>
+      `;
+      const tbody = document.createElement("tbody");
+      records.forEach(row => {
+        const task = String(row.task_prompt || "").trim();
+        const letter = String(row.letter_text || "").trim();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono">${escapeHtml(row.created_at || "")}</td>
+          <td class="mono">${escapeHtml(row.upload_id || "")}</td>
+          <td>${escapeHtml(row.student_name || "-")}</td>
+          <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
+          <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.innerHTML = "";
+      wrap.appendChild(table);
+    }
+
+    function renderBskRecords(records) {
+      const wrap = document.getElementById("bskArchiveWrap");
+      if (!records.length) {
+        wrap.innerHTML = "<p>Keine BSK-Einträge gefunden.</p>";
+        return;
+      }
+
+      const riskyCount = records.filter(row => String(row.source || "").trim().toLowerCase() !== "generated_internal").length;
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Zeit</th>
+            <th>ID</th>
+            <th>Schüler</th>
+            <th>Username</th>
+            <th>Ziel</th>
+            <th>Niveau</th>
+            <th>Berufsfeld</th>
+            <th>Schwierigkeit</th>
+            <th>Quelle</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+      `;
+      const banner = document.createElement("div");
+      banner.style.marginBottom = "8px";
+      if (riskyCount > 0) {
+        banner.innerHTML = `<span class="source-alert">Achtung: ${riskyCount} Eintrag(e) mit externer/unklarer Quelle.</span>`;
+      } else {
+        banner.innerHTML = `<span class="source-alert" style="border-color:#b4e6d5;background:#ecfaf3;color:#126c58;">Alle Quellen sind intern generiert.</span>`;
+      }
+      const tbody = document.createElement("tbody");
+      records.forEach(row => {
+        const tr = document.createElement("tr");
+        const source = String(row.source || "").trim().toLowerCase();
+        if (source !== "generated_internal") {
+          tr.classList.add("source-risk");
+        }
+        tr.innerHTML = `
+          <td class="mono">${escapeHtml(row.created_at || "")}</td>
+          <td class="mono">${escapeHtml(row.record_id || "")}</td>
+          <td>${escapeHtml(row.student_name || "-")}</td>
+          <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td>${escapeHtml(row.goal || "-")}</td>
+          <td>${escapeHtml(row.level || "-")}</td>
+          <td>${escapeHtml(row.field || "-")}</td>
+          <td>${escapeHtml(row.difficulty || "-")}</td>
+          <td class="mono">${escapeHtml(row.source || "-")}</td>
+          <td class="mono">${escapeHtml(`${row.score_correct ?? 0}/${row.score_total ?? 0}`)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.innerHTML = "";
+      wrap.appendChild(banner);
+      wrap.appendChild(table);
+    }
+
+    async function listLetters() {
+      clearBox("panelStatus");
+      const button = document.getElementById("listBtn");
+      button.disabled = true;
+      button.textContent = "Wird geladen...";
+      try {
+        const response = await fetch("./api/list_letters.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date_from: document.getElementById("filterDateFrom").value,
+            date_to: document.getElementById("filterDateTo").value,
+            student_query: document.getElementById("studentQuery").value.trim(),
+            text_query: document.getElementById("textQuery").value.trim(),
+            limit: clamp(document.getElementById("listLimit").value, 1, 200, 100)
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Listenfehler: ${response.status}`);
+        teacherRecords = Array.isArray(payload.records) ? payload.records : [];
+        renderArchiveRecords(teacherRecords);
+        setBox("panelStatus", "ok", `${teacherRecords.length} Einträge wurden geladen.`);
+      } catch (err) {
+        if (String(err.message || "").toLowerCase().includes("401")) {
+          showLogin();
+        }
+        setBox("panelStatus", "error", `Laden fehlgeschlagen: ${err.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Einträge laden";
+      }
+    }
+
+    async function listBskRecords() {
+      clearBox("panelStatus");
+      const button = document.getElementById("listBskBtn");
+      button.disabled = true;
+      button.textContent = "Wird geladen...";
+      try {
+        const response = await fetch("./api/list_bsk.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date_from: document.getElementById("filterDateFrom").value,
+            date_to: document.getElementById("filterDateTo").value,
+            student_query: document.getElementById("studentQuery").value.trim(),
+            text_query: document.getElementById("textQuery").value.trim(),
+            limit: clamp(document.getElementById("listLimit").value, 1, 200, 100)
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Listenfehler: ${response.status}`);
+        teacherBskRecords = Array.isArray(payload.records) ? payload.records : [];
+        renderBskRecords(teacherBskRecords);
+        setBox("panelStatus", "ok", `${teacherBskRecords.length} BSK-Einträge wurden geladen.`);
+      } catch (err) {
+        if (String(err.message || "").toLowerCase().includes("401")) {
+          showLogin();
+        }
+        setBox("panelStatus", "error", `BSK-Laden fehlgeschlagen: ${err.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = "BSK laden";
+      }
+    }
+
+    function renderRooms(rooms) {
+      currentRooms = rooms.slice();
+      const wrap = document.getElementById("roomAdminListWrap");
+      if (!rooms.length) {
+        wrap.innerHTML = "<p>Noch keine Räume erstellt.</p>";
+        return;
+      }
+      const rows = rooms.map(row => {
+        const participants = Array.isArray(row.participants) ? row.participants.length : 0;
+        const status = String(row.status || "active");
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(row.room_id || "")}</td>
+            <td class="mono">${escapeHtml(row.code || "")}</td>
+            <td>${escapeHtml(row.title || "-")}</td>
+            <td>${escapeHtml((row.created_at || "").slice(0, 16))}</td>
+            <td>${escapeHtml((row.end_at || "").slice(0, 16))}</td>
+            <td>${escapeHtml(status)}</td>
+            <td>${participants}</td>
+            <td>
+              <div class="actions">
+                <button type="button" data-room-code="${escapeHtml(row.code || "")}">Code kopieren</button>
+                <button type="button" data-room-watch="${escapeHtml(row.code || "")}" class="ghost-btn">Ansehen</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>ID</th><th>Code</th><th>Titel</th><th>Start</th><th>Ende</th><th>Status</th><th>Teilnehmer</th><th>Aktion</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("button[data-room-code]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const code = String(btn.getAttribute("data-room-code") || "").trim();
+          if (!code) return;
+          try {
+            await navigator.clipboard.writeText(code);
+            setBox("roomAdminStatus", "ok", `Code ${code} wurde kopiert.`);
+          } catch (_) {
+            setBox("roomAdminStatus", "error", `Code: ${code}`);
+          }
+        });
+      });
+      wrap.querySelectorAll("button[data-room-watch]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const code = String(btn.getAttribute("data-room-watch") || "").trim();
+          if (!code) return;
+          document.getElementById("roomWatchCode").value = code;
+          loadRoomDetail();
+        });
+      });
+    }
+
+    async function listRooms() {
+      try {
+        const response = await fetch("./api/room_admin_list.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderRooms(Array.isArray(payload.rooms) ? payload.rooms : []);
+      } catch (err) {
+        setBox("roomAdminStatus", "error", `Räume konnten nicht geladen werden: ${err.message}`);
+      }
+    }
+
+    async function createRoom() {
+      clearBox("roomAdminStatus");
+      const title = document.getElementById("roomTitle").value.trim();
+      const prompt = document.getElementById("roomPrompt").value.trim();
+      const duration = clamp(document.getElementById("roomDuration").value, 5, 180, 45);
+      if (!prompt) {
+        setBox("roomAdminStatus", "error", "Bitte Aufgabenstellung eingeben.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/room_admin_create.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, prompt, duration_minutes: duration })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const code = String(payload.room?.code || "");
+        setBox("roomAdminStatus", "ok", `Saal erstellt. Code: ${code}`);
+        if (code) {
+          document.getElementById("roomWatchCode").value = code;
+        }
+        if (code) {
+          try { await navigator.clipboard.writeText(code); } catch (_) {}
+        }
+        listRooms();
+      } catch (err) {
+        setBox("roomAdminStatus", "error", `Saal konnte nicht erstellt werden: ${err.message}`);
+      }
+    }
+
+    function stopRoomLivePolling() {
+      if (roomLiveTimerId) {
+        clearInterval(roomLiveTimerId);
+        roomLiveTimerId = null;
+      }
+    }
+
+    function renderRoomDetail(room, participants) {
+      currentRoomDetail = { room, participants: Array.isArray(participants) ? participants.slice() : [] };
+      const wrap = document.getElementById("roomWatchWrap");
+      const sourceRows = Array.isArray(participants) ? participants : [];
+      let filteredRows = sourceRows.slice();
+      if (roomPendingOnly) {
+        filteredRows = filteredRows.filter(p => String(p.submitted_at || "").trim() === "");
+      }
+      if (roomUngradedOnly) {
+        filteredRows = filteredRows.filter(p => {
+          const scoreMissing = p.teacher_score === null || p.teacher_score === undefined || String(p.teacher_score).trim() === "";
+          const gradeMissing = String(p.teacher_grade || "").trim() === "";
+          const noteMissing = String(p.teacher_note || "").trim() === "";
+          return scoreMissing && gradeMissing && noteMissing;
+        });
+      }
+      const rows = filteredRows.map(p => {
+        const submitted = String(p.submitted_at || "").trim() !== "";
+        const preview = submitted ? String(p.submission_text || "").slice(0, 180) : "";
+        const score = (p.teacher_score === null || p.teacher_score === undefined) ? "" : String(p.teacher_score);
+        const grade = String(p.teacher_grade || "");
+        const teacherNote = String(p.teacher_note || "");
+        const username = String(p.username || "");
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(username)}</td>
+            <td>${escapeHtml(p.display_name || "-")}</td>
+            <td class="mono">${escapeHtml((p.joined_at || "").slice(0, 16))}</td>
+            <td class="mono">${escapeHtml((p.submitted_at || "").slice(0, 16)) || "-"}</td>
+            <td>${submitted ? "Ja" : "Nein"}</td>
+            <td>${Number(p.word_count || 0)}</td>
+            <td>${escapeHtml(preview)}${preview.length >= 180 ? "..." : ""}</td>
+            <td><input type="number" min="0" max="20" data-grade-score="${escapeHtml(username)}" value="${escapeHtml(score)}" style="max-width:90px;"></td>
+            <td>
+              <select data-grade-note="${escapeHtml(username)}" style="max-width:100px;">
+                <option value="" ${grade === "" ? "selected" : ""}>-</option>
+                <option value="A2" ${grade === "A2" ? "selected" : ""}>A2</option>
+                <option value="A2-B1" ${grade === "A2-B1" ? "selected" : ""}>A2-B1</option>
+                <option value="B1" ${grade === "B1" ? "selected" : ""}>B1</option>
+                <option value="B1+" ${grade === "B1+" ? "selected" : ""}>B1+</option>
+              </select>
+            </td>
+            <td><input type="text" data-grade-comment="${escapeHtml(username)}" value="${escapeHtml(teacherNote)}" placeholder="Lehrkraft-Notiz"></td>
+            <td><button type="button" data-save-grade="${escapeHtml(username)}">Speichern</button></td>
+          </tr>
+        `;
+      }).join("");
+
+      wrap.innerHTML = `
+        <div class="card" style="padding:12px;">
+          <strong>${escapeHtml(room.title || "-")} (${escapeHtml(room.code || "-")})</strong>
+          <div style="margin-top:6px;">
+            Status: <strong>${escapeHtml(room.status || "-")}</strong> |
+            Restzeit: <strong>${Math.max(0, Number(room.remaining_seconds || 0))} Sek.</strong> |
+            Teilnehmer: <strong>${sourceRows.length}</strong>${(roomPendingOnly || roomUngradedOnly) ? ` | Gefiltert: <strong>${filteredRows.length}</strong>` : ""}
+          </div>
+          <div style="margin-top:6px;border:1px solid #d6e3f0;border-radius:10px;padding:8px;background:#f9fcff;">
+            <strong>Aufgabenstellung:</strong><br>${escapeHtml(room.prompt || "-")}
+          </div>
+          <table style="margin-top:8px;">
+            <thead><tr><th>Username</th><th>Name</th><th>Beitritt</th><th>Abgabe</th><th>Abgegeben</th><th>Wörter</th><th>Vorschau</th><th>Punkte</th><th>Note</th><th>Lehrkraft-Notiz</th><th>Aktion</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="11">Keine Einträge für den aktuellen Filter.</td></tr>'}</tbody>
+          </table>
+        </div>
+      `;
+      wrap.querySelectorAll("button[data-save-grade]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const username = String(btn.getAttribute("data-save-grade") || "");
+          if (!username) return;
+          saveRoomGrade(username);
+        });
+      });
+    }
+
+    async function saveRoomGrade(username) {
+      clearBox("roomWatchStatus");
+      const room = currentRoomDetail.room;
+      if (!room || !room.code) {
+        setBox("roomWatchStatus", "error", "Kein Raum geladen.");
+        return;
+      }
+      const scoreEl = document.querySelector(`[data-grade-score="${username}"]`);
+      const noteEl = document.querySelector(`[data-grade-note="${username}"]`);
+      const commentEl = document.querySelector(`[data-grade-comment="${username}"]`);
+      const scoreRaw = scoreEl ? String(scoreEl.value || "").trim() : "";
+      const grade = noteEl ? String(noteEl.value || "").trim() : "";
+      const teacherNote = commentEl ? String(commentEl.value || "").trim() : "";
+      try {
+        const response = await fetch("./api/room_admin_grade_save.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: room.code,
+            username,
+            score: scoreRaw,
+            grade,
+            teacher_note: teacherNote
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("roomWatchStatus", "ok", `Bewertung gespeichert: ${username}`);
+        loadRoomDetail();
+      } catch (err) {
+        setBox("roomWatchStatus", "error", `Bewertung fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function saveAllRoomGrades() {
+      clearBox("roomWatchStatus");
+      const room = currentRoomDetail.room;
+      if (!room || !room.code) {
+        setBox("roomWatchStatus", "error", "Kein Raum geladen.");
+        return;
+      }
+
+      const buttons = Array.from(document.querySelectorAll("button[data-save-grade]"));
+      if (!buttons.length) {
+        setBox("roomWatchStatus", "error", "Keine sichtbaren Teilnehmer für Sammelspeicherung.");
+        return;
+      }
+
+      const grades = buttons.map(btn => {
+        const username = String(btn.getAttribute("data-save-grade") || "").trim();
+        const scoreEl = document.querySelector(`[data-grade-score="${username}"]`);
+        const noteEl = document.querySelector(`[data-grade-note="${username}"]`);
+        const commentEl = document.querySelector(`[data-grade-comment="${username}"]`);
+        return {
+          username,
+          score: scoreEl ? String(scoreEl.value || "").trim() : "",
+          grade: noteEl ? String(noteEl.value || "").trim() : "",
+          teacher_note: commentEl ? String(commentEl.value || "").trim() : ""
+        };
+      }).filter(row => row.username);
+
+      if (!grades.length) {
+        setBox("roomWatchStatus", "error", "Keine Bewertungsdaten gefunden.");
+        return;
+      }
+
+      try {
+        const response = await fetch("./api/room_admin_grade_save_batch.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: room.code, grades })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("roomWatchStatus", "ok", `${payload.updated || 0} Bewertungen gespeichert.`);
+        loadRoomDetail();
+      } catch (err) {
+        setBox("roomWatchStatus", "error", `Sammelspeicherung fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function loadRoomDetail() {
+      clearBox("roomWatchStatus");
+      const code = String(document.getElementById("roomWatchCode").value || "").trim().toUpperCase();
+      if (!code) {
+        setBox("roomWatchStatus", "error", "Bitte Raumcode eingeben.");
+        return;
+      }
+      try {
+        const response = await fetch(`./api/room_admin_detail.php?code=${encodeURIComponent(code)}`, { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderRoomDetail(payload.room || {}, Array.isArray(payload.participants) ? payload.participants : []);
+        setBox("roomWatchStatus", "ok", "Live-Ansicht aktualisiert.");
+      } catch (err) {
+        setBox("roomWatchStatus", "error", `Live-Ansicht fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    function toggleRoomLive() {
+      roomLiveEnabled = !roomLiveEnabled;
+      const btn = document.getElementById("toggleRoomLiveBtn");
+      if (roomLiveEnabled) {
+        btn.textContent = "Auto-Refresh: An";
+        stopRoomLivePolling();
+        roomLiveTimerId = setInterval(loadRoomDetail, 5000);
+        loadRoomDetail();
+      } else {
+        btn.textContent = "Auto-Refresh: Aus";
+        stopRoomLivePolling();
+      }
+    }
+
+    async function closeRoomNow() {
+      clearBox("roomWatchStatus");
+      const code = String(document.getElementById("roomWatchCode").value || "").trim().toUpperCase();
+      if (!code) {
+        setBox("roomWatchStatus", "error", "Bitte zuerst Raumcode eingeben.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/room_admin_close.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("roomWatchStatus", "ok", `Raum ${code} wurde geschlossen.`);
+        listRooms();
+        loadRoomDetail();
+      } catch (err) {
+        setBox("roomWatchStatus", "error", `Schließen fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    function toggleRoomPendingOnly() {
+      roomPendingOnly = !roomPendingOnly;
+      const btn = document.getElementById("toggleRoomPendingOnlyBtn");
+      btn.textContent = roomPendingOnly ? "Nur nicht abgegeben: An" : "Nur nicht abgegeben: Aus";
+      if (currentRoomDetail.room) {
+        renderRoomDetail(currentRoomDetail.room, currentRoomDetail.participants);
+      }
+    }
+
+    function toggleRoomUngradedOnly() {
+      roomUngradedOnly = !roomUngradedOnly;
+      const btn = document.getElementById("toggleRoomUngradedOnlyBtn");
+      btn.textContent = roomUngradedOnly ? "Nur unbewertet: An" : "Nur unbewertet: Aus";
+      if (currentRoomDetail.room) {
+        renderRoomDetail(currentRoomDetail.room, currentRoomDetail.participants);
+      }
+    }
+
+    function downloadRoomCsv() {
+      clearBox("roomWatchStatus");
+      const room = currentRoomDetail.room;
+      const participants = Array.isArray(currentRoomDetail.participants) ? currentRoomDetail.participants : [];
+      if (!room || !participants.length) {
+        setBox("roomWatchStatus", "error", "Keine Raumdaten für CSV vorhanden.");
+        return;
+      }
+      const header = ["room_code", "room_title", "username", "display_name", "joined_at", "submitted_at", "submitted", "word_count", "teacher_score", "teacher_grade", "teacher_note", "submission_text"];
+      const lines = [header.join(",")];
+      participants.forEach(p => {
+        const submitted = String(p.submitted_at || "").trim() !== "" ? "ja" : "nein";
+        lines.push([
+          toCsvCell(room.code || ""),
+          toCsvCell(room.title || ""),
+          toCsvCell(p.username || ""),
+          toCsvCell(p.display_name || ""),
+          toCsvCell(p.joined_at || ""),
+          toCsvCell(p.submitted_at || ""),
+          toCsvCell(submitted),
+          toCsvCell(String(p.word_count || 0)),
+          toCsvCell((p.teacher_score === null || p.teacher_score === undefined) ? "" : String(p.teacher_score)),
+          toCsvCell(String(p.teacher_grade || "")),
+          toCsvCell(String(p.teacher_note || "")),
+          toCsvCell(p.submission_text || "")
+        ].join(","));
+      });
+      const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dtz-room-${String(room.code || "raum").toLowerCase()}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBox("roomWatchStatus", "ok", "CSV wurde heruntergeladen.");
+    }
+
+    function toCsvCell(value) {
+      const text = String(value || "").replace(/\r?\n/g, " ").replace(/"/g, '""');
+      return `"${text}"`;
+    }
+
+    function downloadCsv() {
+      if (!teacherRecords.length) {
+        setBox("panelStatus", "error", "Zum Download zuerst Einträge laden.");
+        return;
+      }
+      const header = ["upload_id", "created_at", "student_name", "task_prompt", "required_points", "letter_text"];
+      const lines = [header.join(",")];
+      teacherRecords.forEach(row => {
+        lines.push([
+          toCsvCell(row.upload_id),
+          toCsvCell(row.created_at),
+          toCsvCell(row.student_name),
+          toCsvCell(row.task_prompt),
+          toCsvCell(Array.isArray(row.required_points) ? row.required_points.join(" | ") : ""),
+          toCsvCell(row.letter_text)
+        ].join(","));
+      });
+      const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dtz-letters-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBox("panelStatus", "ok", "CSV wurde heruntergeladen.");
+    }
+
+    function downloadBskCsv() {
+      if (!teacherBskRecords.length) {
+        setBox("panelStatus", "error", "Für BSK-CSV zuerst BSK laden.");
+        return;
+      }
+      const header = ["record_id", "created_at", "student_name", "student_username", "goal", "level", "field", "difficulty", "source", "score_correct", "score_total", "score_wrong", "score_open", "recommendation"];
+      const lines = [header.join(",")];
+      teacherBskRecords.forEach(row => {
+        lines.push([
+          toCsvCell(row.record_id),
+          toCsvCell(row.created_at),
+          toCsvCell(row.student_name),
+          toCsvCell(row.student_username),
+          toCsvCell(row.goal),
+          toCsvCell(row.level),
+          toCsvCell(row.field),
+          toCsvCell(row.difficulty),
+          toCsvCell(row.source),
+          toCsvCell(row.score_correct),
+          toCsvCell(row.score_total),
+          toCsvCell(row.score_wrong),
+          toCsvCell(row.score_open),
+          toCsvCell(row.recommendation)
+        ].join(","));
+      });
+      const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dtz-bsk-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBox("panelStatus", "ok", "BSK-CSV wurde heruntergeladen.");
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", login);
+    document.getElementById("listBtn").addEventListener("click", listLetters);
+    document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
+    document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
+    document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+    document.getElementById("createStudentBtn").addEventListener("click", createStudent);
+    document.getElementById("generatePwdBtn").addEventListener("click", () => {
+      document.getElementById("newStudentPassword").value = randomPassword();
+    });
+    document.getElementById("bulkGenerateBtn").addEventListener("click", () => {
+      clearBox("bulkStatus");
+      renderBulkPreview(buildBulkCredentials());
+    });
+    document.getElementById("createCourseBtn").addEventListener("click", createCourse);
+    document.getElementById("refreshCoursesBtn").addEventListener("click", listCourses);
+    document.getElementById("attendanceCourseId").addEventListener("change", () => {
+      updateAttendanceCourseBySelect();
+      renderAttendanceEditor();
+      listAttendanceSessions();
+    });
+    document.getElementById("loadAlertTargetsBtn").addEventListener("click", loadAlertTargets);
+    document.getElementById("copyEmailAlertsBtn").addEventListener("click", copyEmailAlerts);
+    document.getElementById("copyWhatsappAlertsBtn").addEventListener("click", copyWhatsappAlerts);
+    document.getElementById("createAttendanceRequestBtn").addEventListener("click", createAttendanceRequest);
+    document.getElementById("loadAttendanceRequestsBtn").addEventListener("click", loadAttendanceRequests);
+    document.getElementById("createRoomBtn").addEventListener("click", createRoom);
+    document.getElementById("refreshRoomBtn").addEventListener("click", listRooms);
+    document.getElementById("watchRoomBtn").addEventListener("click", loadRoomDetail);
+    document.getElementById("toggleRoomLiveBtn").addEventListener("click", toggleRoomLive);
+    document.getElementById("closeRoomBtn").addEventListener("click", closeRoomNow);
+    document.getElementById("saveAllRoomGradesBtn").addEventListener("click", saveAllRoomGrades);
+    document.getElementById("toggleRoomPendingOnlyBtn").addEventListener("click", toggleRoomPendingOnly);
+    document.getElementById("toggleRoomUngradedOnlyBtn").addEventListener("click", toggleRoomUngradedOnly);
+    document.getElementById("downloadRoomCsvBtn").addEventListener("click", downloadRoomCsv);
+    document.getElementById("loadAuditBtn").addEventListener("click", loadAuditLogs);
+    document.getElementById("loadAttendanceStudentsBtn").addEventListener("click", () => {
+      renderAttendanceEditor();
+      setBox("attendanceStatus", "ok", "Teilnehmer editörü hazır.");
+    });
+    document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendance);
+    document.getElementById("lockAttendanceBtn").addEventListener("click", lockAttendance);
+    document.getElementById("listAttendanceBtn").addEventListener("click", listAttendanceSessions);
+    document.getElementById("bulkCreateBtn").addEventListener("click", createBulkStudents);
+    document.getElementById("quickCreate20Btn").addEventListener("click", quickCreate20Students);
+    document.getElementById("bulkCopyBtn").addEventListener("click", copyBulkList);
+    document.getElementById("bulkCsvBtn").addEventListener("click", downloadBulkCsv);
+    document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
+    document.getElementById("goHomeBtn").addEventListener("click", () => {
+      window.location.href = "./index.html";
+    });
+    document.querySelector(".hero-brand").addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        window.location.href = "./index.html";
+      }
+    });
+    document.getElementById("jumpAccountsBtn").addEventListener("click", () => {
+      document.getElementById("accountsSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("jumpCoursesBtn").addEventListener("click", () => {
+      document.getElementById("coursesSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("jumpAttendanceBtn").addEventListener("click", () => {
+      document.getElementById("attendanceSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("jumpNotifyBtn").addEventListener("click", () => {
+      document.getElementById("notifySection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("jumpRoomSectionBtn").addEventListener("click", () => {
+      document.getElementById("roomSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("jumpAuditBtn").addEventListener("click", () => {
+      document.getElementById("auditSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("jumpArchiveBtn").addEventListener("click", () => {
+      document.getElementById("archiveSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("refreshStudentsBtn").addEventListener("click", listStudents);
+    document.getElementById("adminPassword").addEventListener("keydown", event => {
+      if (event.key === "Enter") login();
+    });
+    checkSession();
+  </script>
+</body>
+</html>

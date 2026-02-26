@@ -1,0 +1,4567 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DTZ Schreiben Korrektur</title>
+  <style>
+    @font-face {
+      font-family: "Comfortaa";
+      src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype");
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Comfortaa";
+      src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Comfortaa";
+      src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg-1: #eceff2;
+      --bg-2: #f6f8fa;
+      --bg-3: #ffffff;
+      --paper: #ffffff;
+      --paper-2: #fbfbfc;
+      --ink: #3c3b45;
+      --muted: #77757f;
+      --line: rgba(199, 202, 210, 0.6);
+      --accent: #f2849e;
+      --accent-2: #f5a4bb;
+      --danger: #8a3026;
+      --danger-soft: #f9e7e4;
+      --ok-soft: #e5f4ec;
+      --radius-lg: 30px;
+      --radius-md: 20px;
+      --radius-sm: 12px;
+      --shadow-soft: 0 16px 34px rgba(40, 40, 46, 0.08);
+      --shadow-hero: 0 28px 58px rgba(38, 38, 44, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      background:
+        linear-gradient(180deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
+      min-height: 100vh;
+      line-height: 1.45;
+    }
+
+    .container {
+      width: min(1180px, 100% - 2rem);
+      margin: 34px auto 50px;
+    }
+
+    .top-nav {
+      position: sticky;
+      top: 10px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid #e7d6de;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px rgba(59, 52, 66, 0.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: #4a4454;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .nav-brand img {
+      width: auto;
+      height: 108px;
+      display: block;
+    }
+
+    .nav-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid #e6cfda;
+      background: #fff7fa;
+      color: #6f4f5f;
+      box-shadow: none;
+      padding: 0;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 45;
+      align-items: stretch;
+      gap: 8px;
+      flex-direction: column;
+      min-width: 210px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #e7d6de;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 12px 24px rgba(59, 52, 66, 0.14);
+      order: 1;
+    }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      min-width: 0;
+      flex-wrap: nowrap;
+      position: relative;
+    }
+
+    .top-nav.open .nav-links {
+      display: flex;
+    }
+
+    .nav-member {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      order: 2;
+    }
+
+    .nav-member .pill {
+      margin: 0;
+      max-width: 420px;
+      background: #fff7fa;
+      border: 1px solid #e6cfda;
+      color: #5a4954;
+    }
+
+    .nav-member #studentIdentity {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .nav-member .ghost-btn {
+      color: #6b4d5c;
+      border: 1px solid #e2c3cf;
+      background: #fff;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+    }
+
+    .nav-link {
+      width: 100%;
+      min-width: 0;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid #e6cfda;
+      background: #fff7fa;
+      color: #6f4f5f;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.9rem;
+      box-shadow: none;
+    }
+
+    .nav-link:hover {
+      color: #f2849e;
+      border-color: #f2b7c9;
+    }
+
+    .hero {
+      position: relative;
+      border: 1px solid rgba(255, 214, 226, 0.36);
+      border-radius: var(--radius-lg);
+      padding: 34px;
+      color: #ffffff;
+      box-shadow: var(--shadow-hero);
+      overflow: hidden;
+      background:
+        radial-gradient(1200px 500px at 0% 0%, rgba(242, 132, 158, 0.12), transparent 58%),
+        linear-gradient(126deg, #2b2936, #45405a 55%, #5e576f);
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero::before {
+      width: 430px;
+      height: 430px;
+      right: -170px;
+      top: -200px;
+      background: radial-gradient(circle, rgba(245, 164, 187, 0.32), rgba(245, 164, 187, 0));
+    }
+
+    .hero::after {
+      width: 380px;
+      height: 380px;
+      left: -200px;
+      bottom: -220px;
+      background: radial-gradient(circle, rgba(245, 164, 187, 0.22), rgba(245, 164, 187, 0));
+    }
+
+    .hero-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 10px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 206, 220, 0.62);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffe5ec;
+      background: rgba(242, 132, 158, 0.17);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      font-size: clamp(2rem, 3.4vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+      font-weight: 600;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      max-width: 840px;
+      color: rgba(255, 243, 247, 0.95);
+      font-size: 1.08rem;
+    }
+
+    .hero-media {
+      position: relative;
+      z-index: 1;
+      margin-top: 20px;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 218, 229, 0.36);
+      box-shadow: 0 18px 34px rgba(30, 23, 34, 0.28);
+      height: 300px;
+      background: #2f2c3c;
+    }
+
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      object-position: center;
+      filter: saturate(0.9) contrast(1.02) brightness(0.99);
+    }
+
+    .hero-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, rgba(44, 37, 53, 0.28), rgba(44, 37, 53, 0.04));
+      pointer-events: none;
+    }
+
+    .hero-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .hero-list li {
+      border: 1px solid rgba(255, 205, 219, 0.56);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: #ffe9ef;
+      background: rgba(242, 132, 158, 0.16);
+    }
+
+    .hero-cta {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-cta button {
+      width: auto;
+      min-width: 180px;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+    }
+
+    .shell {
+      margin-top: 20px;
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid #e8e9ed;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft);
+      padding: 20px;
+      backdrop-filter: none;
+      animation: rise 0.35s ease;
+    }
+
+    .auth-card {
+      width: min(680px, 100%);
+      margin-inline: auto;
+    }
+
+    .menu-card {
+      width: min(860px, 100%);
+      margin-inline: auto;
+    }
+
+    .menu-grid {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .menu-option {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: linear-gradient(180deg, #ffffff, #fcfbfd);
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    .menu-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(53, 47, 65, 0.12);
+    }
+
+    .menu-option h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      color: #17395d;
+    }
+
+    .menu-option p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .menu-actions {
+      margin-top: 14px;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .menu-actions button {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .member-panel {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: linear-gradient(180deg, #ffffff, #fcfbfd);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .member-label {
+      color: #49566b;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .member-panel .pill {
+      margin: 0;
+    }
+
+    .member-panel .ghost-btn {
+      width: auto;
+      min-width: 120px;
+    }
+
+    .menu-tile-btn {
+      min-height: 130px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 7px;
+      padding: 16px 18px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .menu-tile-btn .tile-title {
+      font-weight: 700;
+      font-size: 1.08rem;
+    }
+
+    .menu-tile-btn .tile-text {
+      font-size: 0.92rem;
+      opacity: 0.95;
+    }
+
+    .menu-tile-write {
+      background: linear-gradient(145deg, #f2849e, #f7a2b8);
+      box-shadow: 0 12px 24px rgba(183, 73, 106, 0.28);
+    }
+
+    .menu-tile-lid {
+      background: linear-gradient(145deg, #7ec8c2, #60a6d7);
+      box-shadow: 0 12px 24px rgba(65, 111, 147, 0.25);
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      color: #3f3b4b;
+      font-size: 2rem;
+      letter-spacing: 0.01em;
+      font-weight: 600;
+    }
+
+    .section-subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .grid {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: #22405f;
+      font-size: 0.92rem;
+    }
+
+    input, textarea, button, select {
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      border-radius: var(--radius-sm);
+      border: 1px solid #c9d9e8;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 11px 12px;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #f4a9be;
+      box-shadow: 0 0 0 4px rgba(242, 132, 158, 0.15);
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .letter-panel {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: linear-gradient(180deg, #ffffff, #fcfbfd);
+    }
+
+    .meta-strip {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      margin-top: 8px;
+    }
+
+    .meta-item {
+      border: 1px dashed #bed2ea;
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #f7fbff;
+      color: #204467;
+      font-size: 0.87rem;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      font-size: 0.86rem;
+      letter-spacing: 0.09em;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      box-shadow: 0 12px 24px rgba(189, 91, 120, 0.28);
+      transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.14s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 28px rgba(189, 91, 120, 0.32);
+    }
+
+    .top-nav .nav-link,
+    .top-nav .nav-toggle {
+      box-shadow: none;
+      background: #fff7fa;
+      border: 1px solid #e6cfda;
+      color: #6f4f5f;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.9rem;
+    }
+
+    .top-nav .nav-link:hover,
+    .top-nav .nav-toggle:hover {
+      box-shadow: 0 8px 16px rgba(167, 94, 121, 0.14);
+      color: #f2849e;
+      border-color: #f2b7c9;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.68;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .row-end {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .row-end > div { flex: 1; }
+
+    .btn-wrap {
+      max-width: 240px;
+      min-width: 150px;
+    }
+
+    .ghost-btn {
+      width: auto;
+      background: transparent;
+      border: 1px solid rgba(255, 208, 221, 0.6);
+      box-shadow: none;
+      color: #ffe8ef;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 0.83rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 7px 12px;
+      border: 1px solid rgba(255, 208, 221, 0.62);
+      background: rgba(242, 132, 158, 0.16);
+      color: #ffe9ef;
+      font-weight: 700;
+      font-size: 0.84rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .alert {
+      margin-top: 12px;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+    .error {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid #f4b9b0;
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .ok {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid #b4e6d5;
+      background: var(--ok-soft);
+      color: #0e6756;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .kpi {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      margin-top: 10px;
+    }
+
+    .kpi-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, #fff, var(--paper-2));
+    }
+
+    .kpi-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #536b85;
+    }
+
+    .kpi-value {
+      margin-top: 2px;
+      font-size: 1.34rem;
+      font-weight: 800;
+      color: #12437c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 7px;
+    }
+
+    th {
+      background: #eef5ff;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #27476a;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      border: 1px solid #b6e4d8;
+      padding: 5px 10px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: #0d6655;
+      background: #e8f7f1;
+    }
+
+    .tag.missing {
+      border-color: #f3bab1;
+      color: #8f2d20;
+      background: #fdeae7;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f8fbff;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    details {
+      margin-top: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fbfdff;
+      padding: 10px 11px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: #1d3f65;
+      font-weight: 700;
+    }
+
+    .hidden { display: none; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .secondary-btn {
+      background: linear-gradient(120deg, #6f687f, #4d4760);
+    }
+
+    .lid-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lid-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .lid-chip {
+      border-radius: 999px;
+      border: 1px solid #bdd1e8;
+      background: #f3f9ff;
+      color: #234667;
+      font-size: 0.82rem;
+      padding: 5px 9px;
+      font-weight: 600;
+    }
+
+    .lid-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .lid-question {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .lid-question.correct {
+      border-color: #8fd9ba;
+      background: #e9f8f1;
+    }
+
+    .lid-question.wrong {
+      border-color: #f1b0a8;
+      background: #fdeceb;
+    }
+
+    .lid-question h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: #17395d;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      font-weight: 700;
+    }
+
+    .lid-stimulus {
+      margin: 0 0 8px;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid #d9e5f2;
+      background: #f7fbff;
+      color: #3b4e69;
+      font-size: 0.93rem;
+      white-space: pre-wrap;
+    }
+
+    .lid-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .lid-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      border: 1px solid #d8e3f1;
+      border-radius: 10px;
+      padding: 8px 9px;
+      background: #fbfdff;
+    }
+
+    .lid-option input {
+      width: auto;
+      margin-top: 2px;
+    }
+
+    .lid-answer-note {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #204060;
+    }
+
+    .lid-summary {
+      margin-top: 12px;
+      border: 1px solid #b8cee8;
+      background: #f3f9ff;
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: #1f4368;
+      font-weight: 700;
+    }
+
+    .sim-timer-wrap {
+      margin-top: 12px;
+      border: 1px solid #cfd9ea;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f6f9ff);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sim-timer-label {
+      font-size: 0.88rem;
+      color: #526782;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .sim-timer-value {
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
+      font-weight: 700;
+      color: #17395d;
+      min-width: 120px;
+    }
+
+    .sim-chip {
+      border-radius: 999px;
+      border: 1px solid #d7dde8;
+      background: #f9fbff;
+      color: #4c586b;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 11px;
+    }
+
+    .sim-chip.live {
+      border-color: #f3b2c4;
+      background: #fff2f7;
+      color: #9a3552;
+    }
+
+    .sim-chip.locked {
+      border-color: #f2b8b0;
+      background: #fceceb;
+      color: #8a3026;
+    }
+
+    .sim-report {
+      margin-top: 12px;
+      border: 1px solid #bfd4ea;
+      border-radius: 12px;
+      background: #f5faff;
+      padding: 12px;
+    }
+
+    .sim-report h3 {
+      margin: 0 0 8px;
+      color: #1c426a;
+      font-size: 1.05rem;
+    }
+
+    .portal-grid {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .portal-block {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #fbfcff);
+      padding: 12px;
+    }
+
+    .portal-block h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #2e3f55;
+    }
+
+    .portal-list {
+      margin-top: 8px;
+      color: #4e5a6b;
+      display: grid;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .portal-item {
+      border: 1px solid #d8e3f1;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px 9px;
+    }
+
+    .portal-item strong {
+      display: block;
+      color: #244664;
+      margin-bottom: 3px;
+    }
+
+    .progress-bar {
+      margin-top: 5px;
+      height: 8px;
+      border-radius: 999px;
+      background: #e7edf7;
+      overflow: hidden;
+    }
+
+    .progress-value {
+      height: 100%;
+      background: linear-gradient(120deg, #77c6bf, #5ca7d8);
+    }
+
+    .speak-wrap {
+      display: grid;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .speak-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .speak-tab {
+      width: auto;
+      min-width: 150px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid #e3c7d2;
+      background: #fff6f9;
+      color: #5a4150;
+      text-transform: none;
+      letter-spacing: 0;
+      box-shadow: none;
+    }
+
+    .speak-tab.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, #f2849e, #f5a4bb);
+      box-shadow: 0 10px 20px rgba(189, 91, 120, 0.24);
+    }
+
+    .speak-panel {
+      border: 1px solid #e8d7dd;
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .speak-title {
+      margin: 0;
+      font-size: 1.15rem;
+      color: #443f4e;
+      font-weight: 700;
+    }
+
+    .speak-muted {
+      margin: 6px 0 0;
+      color: #746f7d;
+      font-size: 0.93rem;
+    }
+
+    .speak-list {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: #4e4b58;
+    }
+
+    .speak-list li { margin-bottom: 4px; }
+
+    .speak-note {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid #f0ccd8;
+      background: #fff5f8;
+      color: #5d4754;
+      font-size: 0.92rem;
+    }
+
+    .speak-form-grid {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+
+    .speak-draft {
+      margin-top: 10px;
+      border: 1px solid #e8d7dd;
+      border-radius: 10px;
+      background: #fff;
+      padding: 11px 12px;
+      white-space: pre-wrap;
+      color: #4f4b58;
+      line-height: 1.5;
+      min-height: 96px;
+    }
+
+    .speak-photo {
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #e5d1da;
+      background: #f8f5f7;
+    }
+
+    .speak-photo img {
+      width: 100%;
+      height: clamp(300px, 42vw, 520px);
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      background: #f4f6f9;
+    }
+
+    .speak-photo-caption {
+      padding: 9px 11px;
+      font-size: 0.9rem;
+      color: #5d4754;
+      border-top: 1px solid #e9dbe2;
+      background: #fff;
+    }
+
+    .floating-badge {
+      margin-top: 16px;
+      font-size: 0.82rem;
+      color: rgba(255, 232, 239, 0.95);
+      border: 1px solid rgba(255, 206, 220, 0.58);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      background: rgba(242, 132, 158, 0.16);
+    }
+
+    .site-footer {
+      margin-top: 18px;
+      border: 1px solid #e8e9ed;
+      border-radius: 14px;
+      background: #ffffff;
+      padding: 12px 14px;
+      color: #6f6c77;
+      font-size: 0.86rem;
+      text-align: center;
+    }
+
+    .footer-socials {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e6cfda;
+      color: #7a5563;
+      background: linear-gradient(145deg, #fff7fa, #f9eef3);
+      transition: transform 0.14s ease, box-shadow 0.14s ease, color 0.14s ease;
+      text-decoration: none;
+    }
+
+    .social-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(167, 94, 121, 0.16);
+      color: #f2849e;
+    }
+
+    .social-link svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      display: block;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .top-nav {
+        top: 6px;
+        flex-wrap: nowrap;
+        overflow: visible;
+      }
+
+      .nav-brand img {
+        height: 82px;
+      }
+
+      .nav-toggle {
+        display: inline-flex;
+      }
+
+      .nav-links {
+        width: 220px;
+        flex-direction: column;
+        align-items: stretch;
+        margin-top: 0;
+        right: 0;
+      }
+
+      .nav-right {
+        width: auto;
+        margin-left: auto;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: nowrap;
+      }
+
+      .nav-member {
+        width: auto;
+        justify-content: flex-end;
+      }
+
+      .nav-link {
+        width: 100%;
+        text-align: left;
+        white-space: normal;
+      }
+
+      .hero-top {
+        flex-direction: column;
+      }
+
+      .hero-media {
+        height: 210px;
+      }
+
+      .hero-cta button {
+        width: 100%;
+      }
+
+      .speak-photo img {
+        height: 220px;
+      }
+
+      .row-end {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-wrap {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav id="topNav" class="top-nav">
+      <div id="navLogoBtn" class="nav-brand" role="button" tabindex="0" aria-label="Zum Hauptmenü">
+        <img src="./assets/dtzlib-logo.png" alt="DTZ-LIB Logo">
+      </div>
+      <div class="nav-right">
+        <div id="memberPanel" class="nav-member hidden">
+          <div class="pill">
+            <span id="studentIdentity">Angemeldet</span>
+            <button id="studentLogoutBtn" type="button" class="ghost-btn">Abmelden</button>
+          </div>
+        </div>
+        <div class="nav-links">
+          <button id="navHomeBtn" class="nav-link" type="button">Start</button>
+          <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
+          <button id="navRoomBtn" class="nav-link" type="button">Saal</button>
+          <button id="navSimulationBtn" class="nav-link" type="button">Simulation</button>
+          <button id="navWriteBtn" class="nav-link" type="button">Schreiben</button>
+          <button id="navBskBtn" class="nav-link" type="button">BSK</button>
+          <button id="navLidBtn" class="nav-link" type="button">LiD</button>
+          <button id="navSpeakingBtn" class="nav-link" type="button">Sprechen</button>
+          <button id="navAdminBtn" class="nav-link" type="button">Lehrer-Panel</button>
+        </div>
+      </div>
+      <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <span class="eyebrow">DTZ-LIB</span>
+          <h1>Willkommen im DTZ Training</h1>
+          <p>
+            Schreiben und Sprechen gezielt üben, klar strukturiert und sofort startklar.
+          </p>
+          <div class="hero-cta">
+            <button id="heroPortalBtn" type="button" class="secondary-btn">Portal öffnen</button>
+            <button id="heroRoomBtn" type="button" class="secondary-btn">Saal beitreten</button>
+            <button id="heroSimulationBtn" type="button">Simulation starten</button>
+            <button id="heroWriteBtn" type="button">Schreiben starten</button>
+            <button id="heroSpeakBtn" type="button" class="secondary-btn">Sprechen starten</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="shell">
+      <section id="studentAuthCard" class="card auth-card">
+        <h2 class="section-title">Schüler-Login</h2>
+        <p class="section-subtitle">Zugangsdaten von der Lehrkraft eingeben.</p>
+        <div class="grid">
+          <div>
+            <label for="studentUsername">Benutzername</label>
+            <input id="studentUsername" type="text" autocomplete="username" placeholder="Ihr Benutzername">
+          </div>
+          <div>
+            <label for="studentPassword">Passwort</label>
+            <input id="studentPassword" type="password" autocomplete="current-password" placeholder="Ihr Passwort">
+          </div>
+        </div>
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="studentLoginBtn" type="button">Anmelden</button>
+          </div>
+        </div>
+        <div id="authStatusBox" class="hidden"></div>
+      </section>
+
+      <section id="workCard" class="card hidden">
+        <h2 class="section-title">Mail schreiben und prüfen</h2>
+        <p class="section-subtitle">Bitte im DTZ-Stil schreiben: Anrede, Anlass, Bitte/Wunsch, Schluss.</p>
+
+        <div class="grid">
+          <div>
+            <label for="studentName">Name (optional)</label>
+            <input id="studentName" type="text" placeholder="z. B. Ayse Yilmaz">
+          </div>
+        </div>
+
+        <div class="letter-panel">
+          <label for="letterText">Ihre Mail</label>
+          <textarea id="letterText" required placeholder="Sehr geehrte Damen und Herren, ..."
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+          <div class="meta-strip">
+            <div class="meta-item">Prüfungsmodus: Kopieren, Einfügen, Ausschneiden deaktiviert.</div>
+            <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
+          </div>
+        </div>
+
+        <details>
+          <summary>Aufgabenangaben (optional)</summary>
+          <div class="grid" style="margin-top: 10px;">
+            <div>
+              <label for="taskPrompt">Aufgabenstellung</label>
+              <textarea id="taskPrompt" placeholder="z. B. Sie schreiben einen Brief an Ihren Nachbarn..."></textarea>
+            </div>
+            <div>
+              <label for="requiredPoints">Pflichtpunkte (eine Zeile pro Punkt)</label>
+              <textarea id="requiredPoints" placeholder="- Was ist das Problem?
+- Seit wann besteht es?
+- Welchen Lösungsvorschlag haben Sie?"></textarea>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Technische Einstellungen</summary>
+          <div class="grid" style="margin-top: 10px;">
+            <div>
+              <label for="mode">Analysemodus</label>
+              <select id="mode">
+                <option value="auto">Automatisch (zuerst API, dann lokal)</option>
+                <option value="api">Nur API (api/correct.php)</option>
+                <option value="local">Nur lokal (regelbasiert)</option>
+              </select>
+            </div>
+            <div>
+              <label for="apiUrl">Korrektur-API</label>
+              <input id="apiUrl" type="text" value="https://dtz-lib.com/api/correct.php">
+            </div>
+            <div>
+              <label for="saveUrl">Upload-API</label>
+              <input id="saveUrl" type="text" value="https://dtz-lib.com/api/save_letter.php">
+            </div>
+          </div>
+        </details>
+
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="backToMenuFromWriteBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="analyzeBtn" type="button">Brief korrigieren</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="uploadBtn" type="button">Brief hochladen</button>
+          </div>
+        </div>
+        <div id="statusBox" class="hidden"></div>
+      </section>
+
+      <section id="simulationCard" class="card hidden">
+        <h2 class="section-title">Prüfungssimulation Schreiben</h2>
+        <p class="section-subtitle">Ein Versuch pro Sitzung. Mit Countdown, automatischer Sperre und Ergebnisbericht.</p>
+
+        <div class="grid">
+          <div>
+            <label for="simulationDuration">Prüfungszeit (Minuten)</label>
+            <select id="simulationDuration">
+              <option value="30">30</option>
+              <option value="45" selected>45</option>
+              <option value="60">60</option>
+            </select>
+          </div>
+          <div>
+            <label for="simulationTask">Aufgabenstellung</label>
+            <textarea id="simulationTask" readonly></textarea>
+          </div>
+        </div>
+
+        <div class="sim-timer-wrap">
+          <div class="sim-timer-label">Restzeit</div>
+          <div id="simulationTimer" class="sim-timer-value">00:00</div>
+          <div id="simulationStatus" class="sim-chip">Nicht gestartet</div>
+        </div>
+
+        <div class="letter-panel">
+          <label for="simulationText">Ihre Prüfungsantwort</label>
+          <textarea id="simulationText" placeholder="Schreiben Sie hier Ihre vollständige Antwort..."
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        </div>
+
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="startSimulationBtn" type="button">Simulation beginnen</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="finishSimulationBtn" type="button" class="secondary-btn">Simulation abgeben</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="backToMenuFromSimulationBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
+          </div>
+        </div>
+        <div id="simulationAlert" class="hidden"></div>
+        <div id="simulationReport" class="hidden"></div>
+      </section>
+
+      <section id="roomCard" class="card hidden">
+        <h2 class="section-title">Virtueller Saal</h2>
+        <p class="section-subtitle">Mit Raumcode beitreten, Aufgabe bearbeiten und innerhalb der Zeit abgeben.</p>
+        <div class="grid">
+          <div>
+            <label for="roomCodeInput">Raumcode</label>
+            <input id="roomCodeInput" type="text" placeholder="z. B. A7K9P2" autocomplete="off">
+          </div>
+          <div>
+            <label for="roomTitleInput">Raum</label>
+            <input id="roomTitleInput" type="text" readonly placeholder="Noch kein Raum beigetreten">
+          </div>
+        </div>
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="joinRoomBtn" type="button">Raum beitreten</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="submitRoomBtn" type="button" class="secondary-btn">Antwort abgeben</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="backToMenuFromRoomBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
+          </div>
+        </div>
+
+        <div class="sim-timer-wrap">
+          <div class="sim-timer-label">Saal-Countdown</div>
+          <div id="roomTimer" class="sim-timer-value">00:00</div>
+          <div id="roomStateChip" class="sim-chip">Nicht verbunden</div>
+        </div>
+
+        <div class="letter-panel">
+          <label for="roomPromptText">Aufgabenstellung</label>
+          <textarea id="roomPromptText" readonly></textarea>
+          <label for="roomAnswerText" style="margin-top:8px;">Ihre Antwort</label>
+          <textarea id="roomAnswerText" placeholder="Schreiben Sie Ihre Antwort hier..."
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        </div>
+        <div id="roomStatusBox" class="hidden"></div>
+      </section>
+
+      <section id="portalCard" class="card hidden">
+        <h2 class="section-title">Schüler-Portal</h2>
+        <p class="section-subtitle">Meine Ergebnisse, Hausaufgaben, Lehrkraft-Notizen und Zertifikatsfortschritt.</p>
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="refreshPortalBtn" type="button">Portal aktualisieren</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="backToMenuFromPortalBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
+          </div>
+        </div>
+        <div id="portalStatus" class="hidden"></div>
+
+        <div class="portal-grid">
+          <section class="portal-block">
+            <h3>Meine Ergebnisse</h3>
+            <div id="portalResultsWrap" class="portal-list">Noch keine Ergebnisse.</div>
+          </section>
+          <section class="portal-block">
+            <h3>Meine Hausaufgaben</h3>
+            <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
+          </section>
+          <section class="portal-block">
+            <h3>Lehrkraft-Notizen</h3>
+            <div id="portalNotesWrap" class="portal-list">Noch keine Notizen.</div>
+          </section>
+          <section class="portal-block">
+            <h3>Zertifikatsvorbereitung</h3>
+            <div id="portalReadinessWrap" class="portal-list">Noch keine Daten.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="bskCard" class="card hidden">
+        <h2 class="section-title">BSK Navigator & DTB-Training</h2>
+        <p class="section-subtitle">Originale Prüfungsfragen werden nicht kopiert. Aufgaben sind eigenständig und nur formatähnlich.</p>
+
+        <div class="grid">
+          <div>
+            <label for="bskGoal">Ziel</label>
+            <select id="bskGoal">
+              <option value="job_search">Arbeit suchen</option>
+              <option value="workplace">Arbeitsplatz sichern</option>
+              <option value="qualification">Berufliche Qualifizierung</option>
+            </select>
+          </div>
+          <div>
+            <label for="bskLevel">Sprachniveau</label>
+            <select id="bskLevel">
+              <option value="A2">A2</option>
+              <option value="B1" selected>B1</option>
+              <option value="B2">B2</option>
+              <option value="C1">C1</option>
+            </select>
+          </div>
+          <div>
+            <label for="bskField">Berufsfeld</label>
+            <select id="bskField">
+              <option value="pflege">Pflege</option>
+              <option value="handel">Handel</option>
+              <option value="buero">Büro</option>
+              <option value="logistik">Logistik</option>
+            </select>
+          </div>
+          <div>
+            <label for="bskDifficulty">Schwierigkeit</label>
+            <select id="bskDifficulty">
+              <option value="auto" selected>Automatisch</option>
+              <option value="leicht">Leicht</option>
+              <option value="mittel">Mittel</option>
+              <option value="schwer">Schwer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="buildBskPlanBtn" type="button">BSK-Empfehlung + Aufgaben generieren</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="evaluateBskBtn" type="button" class="secondary-btn">BSK auswerten</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="saveBskBtn" type="button" class="secondary-btn">BSK-Ergebnis speichern</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="backToMenuFromBskBtn" type="button" class="secondary-btn">Zurück zum Schreibbereich</button>
+          </div>
+        </div>
+
+        <div id="bskSummary" class="speak-note" style="margin-top: 12px;">Noch keine Empfehlung erstellt.</div>
+        <div id="bskScoreSummary" class="hidden"></div>
+        <div id="bskTaskWrap" class="lid-list" style="margin-top: 12px;"></div>
+        <div id="bskStatus" class="hidden"></div>
+
+        <div class="lid-summary" style="margin-top: 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <strong>Ihre letzten BSK-Ergebnisse</strong>
+            <button id="refreshBskHistoryBtn" type="button" class="secondary-btn">Verlauf aktualisieren</button>
+          </div>
+          <div id="bskHistoryWrap" style="margin-top:10px;">Noch keine Daten.</div>
+        </div>
+      </section>
+
+      <section id="speakingCard" class="card hidden">
+        <h2 class="section-title">DTZ Sprechen Trainer (Teil 1-3)</h2>
+        <p class="section-subtitle">Üben Sie alle drei Teile mit wechselnden Aufgaben.</p>
+
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="newSpeakingSetBtn" type="button">Neue Sprechaufgaben</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="backToMenuFromSpeakingBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
+          </div>
+        </div>
+
+        <div class="speak-wrap">
+          <div class="speak-tabs">
+            <button id="speakTab1" type="button" class="speak-tab active">Teil 1</button>
+            <button id="speakTab2" type="button" class="speak-tab">Teil 2</button>
+            <button id="speakTab3" type="button" class="speak-tab">Teil 3</button>
+          </div>
+
+          <section id="speakPanel1" class="speak-panel">
+            <h3 class="speak-title" id="speakPart1Title">Teil 1: Sich vorstellen</h3>
+            <p class="speak-muted" id="speakPart1Lead"></p>
+            <ul id="speakPart1Points" class="speak-list"></ul>
+            <div class="speak-note">Grammatik-Tipp: Kurze, korrekte Sätze sprechen. Verwenden Sie im Präsens einfache Strukturen mit Verb auf Position 2.</div>
+
+            <div class="speak-form-grid">
+              <div>
+                <label for="spName">Name</label>
+                <input id="spName" type="text" placeholder="z. B. Elif Yilmaz">
+              </div>
+              <div>
+                <label for="spAlter">Alter</label>
+                <input id="spAlter" type="text" placeholder="z. B. 30">
+              </div>
+              <div>
+                <label for="spLand">Herkunftsland</label>
+                <input id="spLand" type="text" placeholder="z. B. Türkei">
+              </div>
+              <div>
+                <label for="spWohnort">Wohnort</label>
+                <input id="spWohnort" type="text" placeholder="z. B. Berlin">
+              </div>
+              <div>
+                <label for="spSprachen">Sprachen</label>
+                <input id="spSprachen" type="text" placeholder="z. B. Türkisch und Deutsch">
+              </div>
+              <div>
+                <label for="spBeruf">Beruf</label>
+                <input id="spBeruf" type="text" placeholder="z. B. Verkäuferin">
+              </div>
+              <div>
+                <label for="spHobby">Hobby</label>
+                <input id="spHobby" type="text" placeholder="z. B. Lesen und Kochen">
+              </div>
+            </div>
+
+            <div class="row-end">
+              <div class="btn-wrap">
+                <button id="buildPart1DraftBtn" type="button">Teil-1 Beispiel erstellen</button>
+              </div>
+            </div>
+            <div id="speakPart1Draft" class="speak-draft">Klicken Sie auf „Teil-1 Beispiel erstellen“ für ein zufälliges Muster.</div>
+          </section>
+
+          <section id="speakPanel2" class="speak-panel hidden">
+            <h3 class="speak-title" id="speakPart2Title">Teil 2: Bildbeschreibung</h3>
+            <p class="speak-muted" id="speakPart2Lead"></p>
+            <div class="speak-photo">
+              <img id="speakPart2Image" src="" alt="DTZ Sprechen Teil 2 Übungsbild">
+              <div id="speakPart2Caption" class="speak-photo-caption"></div>
+            </div>
+            <ul id="speakPart2Points" class="speak-list"></ul>
+            <div class="speak-note">Tipp: Beschreiben Sie zuerst sachlich das Bild und sprechen Sie dann über eigene Erfahrungen.</div>
+          </section>
+
+          <section id="speakPanel3" class="speak-panel hidden">
+            <h3 class="speak-title" id="speakPart3Title">Teil 3: Gemeinsam etwas planen</h3>
+            <p class="speak-muted" id="speakPart3Lead"></p>
+            <ul id="speakPart3Points" class="speak-list"></ul>
+            <div class="speak-note">Tipp: Reagieren, Vorschläge machen und am Ende eine Einigung formulieren.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="lidClassicCard" class="card hidden">
+        <div class="lid-header">
+          <div>
+            <h2 class="section-title">Leben in Deutschland: Übungstest</h2>
+            <p class="section-subtitle">Jeder Versuch erzeugt eine neue Prüfung mit 33 Fragen.</p>
+          </div>
+          <div class="lid-meta">
+            <span class="lid-chip">30 allgemein</span>
+            <span class="lid-chip">3 Baden-Württemberg</span>
+            <span class="lid-chip">4 Antworten pro Frage</span>
+          </div>
+        </div>
+
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="newClassicLidExamBtn" type="button">Neue Prüfung</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="submitClassicLidExamBtn" type="button">Test auswerten</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="backToMenuFromClassicLidBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
+          </div>
+        </div>
+
+        <div id="classicLidSummary" class="hidden"></div>
+        <div id="classicLidQuestionsWrap" class="lid-list"></div>
+      </section>
+
+      <section id="resultSection" class="hidden">
+        <section class="card">
+          <h2 class="section-title">Ergebnisübersicht</h2>
+          <p class="section-subtitle">Die Bewertung orientiert sich an DTZ-Kriterien für den Schreibteil.</p>
+          <div class="kpi">
+            <div class="kpi-item">
+              <div class="kpi-title">Punkte</div>
+              <div class="kpi-value" id="scoreTotal">0/20</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-title">Niveau</div>
+              <div class="kpi-value" id="niveau">A2</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-title">Quelle</div>
+              <div class="kpi-value" id="source">local</div>
+            </div>
+          </div>
+          <p id="systemNote" class="muted" style="margin-top: 10px;"></p>
+
+          <h3 style="margin: 12px 0 8px;">Korrigierte Mail</h3>
+          <pre id="correctedLetter"></pre>
+
+          <h3 style="margin: 12px 0 8px;">Feedback</h3>
+          <p><strong>Kurz:</strong> <span id="feedbackDe"></span></p>
+
+          <details>
+            <summary>Details anzeigen</summary>
+            <div style="margin-top: 8px;">
+              <h4 style="margin: 0 0 6px;">Rubrik</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kriterium</th>
+                    <th>Punkte</th>
+                  </tr>
+                </thead>
+                <tbody id="rubricBody"></tbody>
+              </table>
+            </div>
+            <div style="margin-top: 10px;">
+              <strong>Erfüllte Punkte</strong>
+              <div id="coveredTags" class="tags"></div>
+            </div>
+            <div style="margin-top: 10px;">
+              <strong>Fehlende Punkte</strong>
+              <div id="missingTags" class="tags"></div>
+            </div>
+            <div style="margin-top: 10px;">
+              <h4 style="margin: 0 0 6px;">Fehlerliste</h4>
+              <div id="mistakesWrap"></div>
+            </div>
+          </details>
+        </section>
+      </section>
+    </div>
+
+    <footer class="site-footer">
+      DTZ-LIB | Unabhaengige Uebungsplattform fuer DTZ. Diese Seite ist nicht offiziell mit g.a.s.t., BAMF oder Goethe-Institut verbunden.
+      <div class="footer-socials">
+        <a class="social-link" href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.8A3.95 3.95 0 0 0 3.8 7.75v8.5a3.95 3.95 0 0 0 3.95 3.95h8.5a3.95 3.95 0 0 0 3.95-3.95v-8.5a3.95 3.95 0 0 0-3.95-3.95h-8.5ZM12 7.3A4.7 4.7 0 1 1 7.3 12 4.7 4.7 0 0 1 12 7.3Zm0 1.8A2.9 2.9 0 1 0 14.9 12 2.9 2.9 0 0 0 12 9.1Zm5.15-2.55a1.1 1.1 0 1 1-1.1 1.1 1.1 1.1 0 0 1 1.1-1.1Z"/>
+          </svg>
+        </a>
+        <a class="social-link" href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M17.98 3H21l-6.56 7.5L22.2 21h-6.1l-4.78-6.27L5.8 21H2.78l7-8L2 3h6.25l4.32 5.72L17.98 3Zm-1.07 16.2h1.68L7.32 4.72H5.5L16.91 19.2Z"/>
+          </svg>
+        </a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    function setAuthStatus(type, message) {
+      const box = document.getElementById("authStatusBox");
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearAuthStatus() {
+      const box = document.getElementById("authStatusBox");
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function setPortalStatus(type, message) {
+      const box = document.getElementById("portalStatus");
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearPortalStatus() {
+      const box = document.getElementById("portalStatus");
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function setRoomStatus(type, message) {
+      const box = document.getElementById("roomStatusBox");
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearRoomStatus() {
+      const box = document.getElementById("roomStatusBox");
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    let currentLidExam = {};
+    let currentLesenTeil = 1;
+    let currentLesenAnswers = { 1: {}, 2: {}, 3: {}, 4: {}, 5: {} };
+    let currentClassicLidExam = [];
+    let currentSpeakingSet = null;
+    let currentBskPack = null;
+    let currentBskResult = null;
+    let currentStudentLabel = "";
+    let currentStudentUsername = "";
+    let simulationTimerId = null;
+    let roomPollTimerId = null;
+    let currentRoom = null;
+    let simulationState = {
+      active: false,
+      locked: false,
+      ended: false,
+      startedAt: null,
+      endAt: null,
+      durationMinutes: 45,
+      taskPrompt: ""
+    };
+
+    const LID_GENERAL_POOL = [
+      { q: "Wozu dient das Grundgesetz?", options: ["Es regelt die wichtigsten Rechte und die staatliche Ordnung.", "Es ist nur ein Gesetz für Schulen.", "Es gilt nur in Bayern.", "Es regelt nur den Straßenverkehr."], correct: 0 },
+      { q: "Wer wählt den Deutschen Bundestag?", options: ["Die Bürgerinnen und Bürger mit Wahlrecht.", "Nur die Bundesländer.", "Nur die Bundesregierung.", "Nur Parteien ohne Mitglieder."], correct: 0 },
+      { q: "Wie oft findet die Bundestagswahl normalerweise statt?", options: ["Alle 4 Jahre.", "Jedes Jahr.", "Alle 10 Jahre.", "Alle 2 Jahre."], correct: 0 },
+      { q: "Was bedeutet Meinungsfreiheit?", options: ["Man darf seine Meinung frei äußern, solange Gesetze beachtet werden.", "Nur Politiker dürfen sprechen.", "Man darf andere beleidigen.", "Nur im Internet darf man reden."], correct: 0 },
+      { q: "Was ist eine Koalition?", options: ["Zusammenarbeit mehrerer Parteien zur Regierungsbildung.", "Ein Gerichtsurteil.", "Eine Bürgerinitiative ohne Parteien.", "Ein Wahlkreis."], correct: 0 },
+      { q: "Wer kontrolliert in Deutschland die Regierung parlamentarisch?", options: ["Der Bundestag.", "Nur die Polizei.", "Nur die Kirchen.", "Die Bundesbank allein."], correct: 0 },
+      { q: "Was ist das Wahlgeheimnis?", options: ["Niemand darf wissen, wen ich gewählt habe.", "Nur die Familie darf es wissen.", "Der Arbeitgeber muss es wissen.", "Die Stimme wird öffentlich abgegeben."], correct: 0 },
+      { q: "Welche Gewalt spricht Recht?", options: ["Die Judikative.", "Die Legislative.", "Die Exekutive.", "Die Medien."], correct: 0 },
+      { q: "Was bedeutet Religionsfreiheit?", options: ["Jeder darf seinen Glauben wählen oder keinen haben.", "Nur eine Religion ist erlaubt.", "Glaube ist nur privat verboten.", "Nur an Feiertagen ist Religion erlaubt."], correct: 0 },
+      { q: "Was ist ein Bundesland?", options: ["Ein Teilstaat der Bundesrepublik Deutschland.", "Ein Stadtviertel.", "Ein Verein.", "Ein Gericht."], correct: 0 },
+      { q: "Wozu gibt es Parteien?", options: ["Sie vertreten politische Ziele und wirken an der Willensbildung mit.", "Sie ersetzen Gerichte.", "Sie führen Personalausweise aus.", "Sie sind nur für Sport zuständig."], correct: 0 },
+      { q: "Welche Farbe hat die Umweltpartei Bündnis 90/Die Grünen traditionell?", options: ["Grün.", "Schwarz.", "Blau.", "Orange."], correct: 0 },
+      { q: "Was ist die Aufgabe von Gerichten?", options: ["Streitfälle nach dem Gesetz entscheiden.", "Wahlen organisieren.", "Steuern eintreiben.", "Schulen bauen."], correct: 0 },
+      { q: "Ab welchem Alter darf man bei Bundestagswahlen wählen?", options: ["Ab 18 Jahren.", "Ab 14 Jahren.", "Ab 16 Jahren.", "Ab 21 Jahren."], correct: 0 },
+      { q: "Was bedeutet Gleichberechtigung von Frauen und Männern?", options: ["Gleiche Rechte und Chancen für alle Geschlechter.", "Nur Männer dürfen arbeiten.", "Nur Frauen dürfen wählen.", "Unterschiedliche Gesetze für Männer und Frauen."], correct: 0 },
+      { q: "Was ist eine Demonstration?", options: ["Öffentliche Versammlung zur Meinungsäußerung.", "Eine geheime Wahl.", "Ein Gerichtsverfahren.", "Ein Schulfach."], correct: 0 },
+      { q: "Wer ist in Deutschland für die Ausstellung eines Personalausweises zuständig?", options: ["Die örtliche Behörde, z. B. Bürgeramt.", "Der Bundestag.", "Die Polizei allein.", "Die Schule."], correct: 0 },
+      { q: "Was bedeutet Sozialstaat?", options: ["Der Staat hilft Menschen in Not und sichert Grundrisiken ab.", "Der Staat bezahlt allen denselben Lohn.", "Der Staat verbietet Arbeit.", "Der Staat unterstützt nur Unternehmen."], correct: 0 },
+      { q: "Was ist mit 'Rechtsstaat' gemeint?", options: ["Staatliches Handeln ist an Gesetze gebunden.", "Nur Richter machen Politik.", "Gesetze gelten nur für Bürger.", "Polizei entscheidet ohne Gerichte."], correct: 0 },
+      { q: "Wofür steht die Abkürzung EU?", options: ["Europäische Union.", "Europäische Universität.", "Einheitliche Union.", "Europa-Unternehmen."], correct: 0 },
+      { q: "Was ist im Arbeitsleben in Deutschland wichtig?", options: ["Pünktlichkeit und Zuverlässigkeit.", "Verträge ignorieren.", "Regeln selbst erfinden.", "Steuern nicht zahlen."], correct: 0 },
+      { q: "Welche Stelle hilft bei Arbeitslosigkeit oft zuerst?", options: ["Agentur für Arbeit bzw. Jobcenter.", "Das Standesamt.", "Das Museum.", "Die Schule."], correct: 0 },
+      { q: "Was regelt ein Mietvertrag?", options: ["Rechte und Pflichten von Mieter und Vermieter.", "Nur Strompreise.", "Nur Hausordnung ohne Rechte.", "Nur Möbelkauf."], correct: 0 },
+      { q: "Was ist eine Pflicht aller Kinder in Deutschland?", options: ["Schulpflicht.", "Autofahren.", "Parteimitgliedschaft.", "Steuererklärung mit 8 Jahren."], correct: 0 },
+      { q: "Wer trägt die Verantwortung für Kinder zuerst?", options: ["Die Eltern bzw. Sorgeberechtigten.", "Der Bundestag.", "Der Arbeitgeber.", "Die Nachbarn."], correct: 0 },
+      { q: "Was bedeutet 'Integration'?", options: ["Aktive Teilhabe am gesellschaftlichen Leben unter Achtung der Regeln.", "Nur in der eigenen Gruppe bleiben.", "Gesetze nicht beachten.", "Ohne Deutschkenntnisse Behörden meiden."], correct: 0 },
+      { q: "Was ist in Deutschland verboten?", options: ["Diskriminierung wegen Herkunft oder Religion.", "Ehrenamtliche Arbeit.", "Meinungsfreiheit.", "Wählen."], correct: 0 },
+      { q: "Wofür zahlt man in Deutschland Steuern?", options: ["Zur Finanzierung öffentlicher Aufgaben wie Schulen und Straßen.", "Nur für private Vereine.", "Nur für Parteien.", "Nur für Sportvereine."], correct: 0 },
+      { q: "Was ist ein Tarifvertrag?", options: ["Vereinbarung über Arbeitsbedingungen zwischen Arbeitgebern und Gewerkschaften.", "Ein Gerichtsbeschluss.", "Ein Mietvertrag.", "Eine Wahlordnung."], correct: 0 },
+      { q: "Was ist typisch für eine Demokratie?", options: ["Freie Wahlen und mehrere Parteien.", "Nur eine Partei.", "Keine Kritik erlaubt.", "Wahlen ohne Geheimnis."], correct: 0 },
+      { q: "Was passiert, wenn man vor Gericht mit einem Urteil nicht einverstanden ist?", options: ["Man kann in vielen Fällen Rechtsmittel einlegen.", "Man darf das Urteil ignorieren.", "Man entscheidet selbst neu.", "Nur die Polizei kann ändern."], correct: 0 },
+      { q: "Welches Recht schützt die Wohnung besonders?", options: ["Unverletzlichkeit der Wohnung.", "Wahlrecht.", "Versammlungsrecht.", "Urheberrecht."], correct: 0 },
+      { q: "Was bedeutet Pressefreiheit?", options: ["Medien dürfen frei berichten, im Rahmen der Gesetze.", "Nur der Staat darf Nachrichten machen.", "Zeitungen sind verboten.", "Nur Online-Medien sind erlaubt."], correct: 0 },
+      { q: "Welche Institution beschließt Bundesgesetze hauptsächlich?", options: ["Der Bundestag.", "Das Rathaus.", "Die Polizei.", "Der Bundespräsident allein."], correct: 0 },
+      { q: "Was muss man bei einem Umzug innerhalb Deutschlands meistens tun?", options: ["Sich beim Einwohnermeldeamt ummelden.", "Neuen Pass im Ausland beantragen.", "Nichts melden.", "Nur die Bank informieren."], correct: 0 },
+      { q: "Wie nennt man die friedliche Beilegung von Konflikten vor Gericht oder durch Vermittlung?", options: ["Rechtliche Streitbeilegung bzw. Mediation.", "Selbstjustiz.", "Boykott.", "Wahlkampf."], correct: 0 },
+      { q: "Was schützt das Allgemeine Gleichbehandlungsgesetz (AGG)?", options: ["Vor Benachteiligung, z. B. wegen Herkunft, Religion oder Geschlecht.", "Vor Steuerpflicht.", "Vor Schulpflicht.", "Vor Wahlen."], correct: 0 },
+      { q: "Welches Dokument zeigt die Regeln für das Zusammenleben im Mietshaus oft zusätzlich?", options: ["Die Hausordnung.", "Der Stundenplan.", "Der Arbeitsvertrag.", "Das Wahlprogramm."], correct: 0 },
+      { q: "Was ist Ehrenamt?", options: ["Freiwilliges Engagement für andere ohne normalen Arbeitslohn.", "Pflichtdienst im Unternehmen.", "Bezahlte Vollzeitstelle.", "Nur Tätigkeit in Parteien."], correct: 0 },
+      { q: "Warum sind Deutschkenntnisse für den Alltag wichtig?", options: ["Für Arbeit, Schule, Behörden und gesellschaftliche Teilhabe.", "Nur für den Urlaub.", "Nur für Fernsehen.", "Nur für den Führerschein."], correct: 0 },
+      { q: "Was bedeutet Gewaltenteilung?", options: ["Legislative, Exekutive und Judikative kontrollieren sich gegenseitig.", "Alle Macht bei einer Behörde.", "Nur Gerichte machen Gesetze.", "Nur Regierung kontrolliert Gerichte."], correct: 0 }
+    ];
+
+    const LID_BW_POOL = [
+      { q: "Wie heißt die Landeshauptstadt von Baden-Württemberg?", options: ["Stuttgart.", "Mannheim.", "Karlsruhe.", "Freiburg."], correct: 0 },
+      { q: "Wie heißt das Landesparlament von Baden-Württemberg?", options: ["Landtag von Baden-Württemberg.", "Bundestag.", "Bundesrat.", "Senat."], correct: 0 },
+      { q: "Welche Farben hat die Landesflagge von Baden-Württemberg?", options: ["Schwarz und Gold.", "Rot und Weiß.", "Blau und Gelb.", "Grün und Weiß."], correct: 0 },
+      { q: "In welcher Stadt hat der Verfassungsgerichtshof von Baden-Württemberg seinen Sitz?", options: ["Stuttgart.", "Ulm.", "Heidelberg.", "Konstanz."], correct: 0 },
+      { q: "Welcher Fluss fließt durch Baden-Württemberg?", options: ["Neckar.", "Ems.", "Saale.", "Werra."], correct: 0 },
+      { q: "Welche Aussage zu Baden-Württemberg ist richtig?", options: ["Das Land grenzt unter anderem an Frankreich und die Schweiz.", "Das Land hat eine Küste an der Nordsee.", "Baden-Württemberg liegt komplett in den Alpen.", "Es gibt dort keine Universitäten."], correct: 0 },
+      { q: "Wie heißt der Regierungschef eines Bundeslandes wie Baden-Württemberg?", options: ["Ministerpräsident.", "Bundeskanzler.", "Bundespräsident.", "Landrat."], correct: 0 },
+      { q: "Welche Stadt in Baden-Württemberg ist als Universitätsstadt bekannt?", options: ["Heidelberg.", "Bremen.", "Kiel.", "Cottbus."], correct: 0 },
+      { q: "Welche Institution beschließt Landesgesetze in Baden-Württemberg?", options: ["Der Landtag.", "Der Bundesrat allein.", "Die Europäische Kommission.", "Die Landkreise zusammen."], correct: 0 },
+      { q: "Wie nennt man die Verwaltungsebene über Landkreisen in Baden-Württemberg?", options: ["Regierungsbezirk.", "Bundesbezirk.", "Ortsrat.", "Amtskreis."], correct: 0 }
+    ];
+
+    const LESEN_PART1_POOL = [
+      {
+        stimulus: "Situation: Sie möchten am Samstag Deutsch sprechen üben.\nAushang A: Deutschkurs Mo/Mi 18:00-20:00\nAushang B: Sprachtreff Samstag 10:00, kostenlos\nAushang C: Computerkurs Freitag 16:00",
+        q: "Welche Information passt am besten?",
+        options: ["Aushang A", "Aushang B", "Aushang C"],
+        correct: 1
+      },
+      {
+        stimulus: "Situation: Sie suchen eine Wohnung mit Balkon.\nAushang A: 1-Zimmer ohne Balkon\nAushang B: 2-Zimmer mit Balkon, ab sofort\nAushang C: WG-Zimmer ohne Küche",
+        q: "Welche Anzeige ist richtig?",
+        options: ["Aushang A", "Aushang B", "Aushang C"],
+        correct: 1
+      },
+      {
+        stimulus: "Situation: Sie wollen nur am Vormittag arbeiten.\nAushang A: Reinigungskraft 6:00-10:00\nAushang B: Kellner 18:00-23:00\nAushang C: Lager 14:00-22:00",
+        q: "Welche Stelle passt?",
+        options: ["Aushang A", "Aushang B", "Aushang C"],
+        correct: 0
+      },
+      {
+        stimulus: "Situation: Ihr Kind ist 7 Jahre alt und mag Fußball.\nAushang A: Fußball 6-9 Jahre, Di/Do\nAushang B: Yoga für Erwachsene\nAushang C: Schwimmen ab 12 Jahre",
+        q: "Welche Anzeige passt?",
+        options: ["Aushang A", "Aushang B", "Aushang C"],
+        correct: 0
+      },
+      {
+        stimulus: "Situation: Sie möchten heute Ihr Fahrrad reparieren lassen.\nAushang A: Fahrradservice Mo-Fr bis 19:00\nAushang B: Schlüsseldienst nur nachts\nAushang C: Fahrradverkauf online",
+        q: "Was ist am besten?",
+        options: ["Aushang A", "Aushang B", "Aushang C"],
+        correct: 0
+      },
+      {
+        stimulus: "Situation: Sie brauchen einen günstigen Deutschkurs mit Kinderbetreuung.\nAushang A: Intensivkurs ohne Betreuung\nAushang B: Abendkurs teuer\nAushang C: Vormittagskurs mit Kinderbetreuung",
+        q: "Welche Anzeige wählen Sie?",
+        options: ["Aushang A", "Aushang B", "Aushang C"],
+        correct: 2
+      }
+    ];
+
+    const LESEN_PART2_POOL = [
+      {
+        stimulus: "Nachricht: 'Der Termin beim Arzt wurde auf Mittwoch 11:30 verschoben.'",
+        q: "Aussage: Der Termin ist wie geplant am Dienstag.",
+        options: ["Richtig", "Falsch", "Nicht im Text"],
+        correct: 1
+      },
+      {
+        stimulus: "SMS: 'Ich komme 20 Minuten später. Bitte warte vor dem Bahnhof.'",
+        q: "Aussage: Die Person bittet um Warten am Bahnhof.",
+        options: ["Richtig", "Falsch", "Nicht im Text"],
+        correct: 0
+      },
+      {
+        stimulus: "Notiz: 'Miete bitte bis zum 3. Werktag überweisen.'",
+        q: "Aussage: Die Miete soll bar bezahlt werden.",
+        options: ["Richtig", "Falsch", "Nicht im Text"],
+        correct: 1
+      },
+      {
+        stimulus: "E-Mail: 'Der Kursraum ist heute B204. Beginn bleibt 17:00 Uhr.'",
+        q: "Aussage: Die Kurszeit wurde geändert.",
+        options: ["Richtig", "Falsch", "Nicht im Text"],
+        correct: 1
+      },
+      {
+        stimulus: "Aushang: 'Am Feiertag bleibt das Bürgerbüro geschlossen.'",
+        q: "Aussage: Das Bürgerbüro ist am Feiertag offen.",
+        options: ["Richtig", "Falsch", "Nicht im Text"],
+        correct: 1
+      },
+      {
+        stimulus: "Kurznachricht: 'Bitte bring zum Treffen deinen Ausweis und den Mietvertrag mit.'",
+        q: "Aussage: Man soll zwei Dokumente mitbringen.",
+        options: ["Richtig", "Falsch", "Nicht im Text"],
+        correct: 0
+      }
+    ];
+
+    const LESEN_PART3_POOL = [
+      {
+        stimulus: "Text: Im Nachbarschaftszentrum gibt es jeden Mittwoch ein kostenloses Beratungsgespräch für neue Bewohner. Eine Anmeldung ist nicht nötig.",
+        q: "Was ist richtig?",
+        options: [
+          "Die Beratung kostet Geld.",
+          "Die Beratung ist mittwochs und ohne Anmeldung.",
+          "Nur Mitglieder dürfen teilnehmen.",
+          "Die Beratung ist nur online."
+        ],
+        correct: 1
+      },
+      {
+        stimulus: "Text: Die Stadtbibliothek verlängert ab Mai die Öffnungszeiten am Samstag bis 18:00 Uhr. Wer einen Ausweis hat, kann auch E-Books ausleihen.",
+        q: "Welche Aussage stimmt?",
+        options: [
+          "Samstags schließt die Bibliothek früher.",
+          "Ohne Ausweis kann man E-Books ausleihen.",
+          "Am Samstag ist bis 18:00 Uhr geöffnet.",
+          "E-Books gibt es nicht."
+        ],
+        correct: 2
+      },
+      {
+        stimulus: "Text: Im Betrieb gilt ab nächster Woche eine neue Pausenregel: 30 Minuten Mittagspause zwischen 12:00 und 14:00 Uhr.",
+        q: "Was passt zum Text?",
+        options: [
+          "Die Pause dauert 15 Minuten.",
+          "Die Pause soll zwischen 12 und 14 Uhr liegen.",
+          "Es gibt keine Mittagspause mehr.",
+          "Die Regel gilt nur am Wochenende."
+        ],
+        correct: 1
+      },
+      {
+        stimulus: "Text: Für den Deutschtest können sich Teilnehmende bis zum 12. Juni anmelden. Die Prüfung findet am 28. Juni statt.",
+        q: "Was ist korrekt?",
+        options: [
+          "Die Anmeldung endet am 28. Juni.",
+          "Die Prüfung ist am 12. Juni.",
+          "Anmeldung bis 12. Juni, Prüfung am 28. Juni.",
+          "Es gibt keinen Prüfungstermin."
+        ],
+        correct: 2
+      },
+      {
+        stimulus: "Text: Das Fitnessstudio bietet im Sommer einen Familienrabatt. Wer mit Partner oder Partnerin kommt, zahlt zusammen weniger.",
+        q: "Welche Aussage stimmt?",
+        options: [
+          "Nur Einzelpersonen bekommen Rabatt.",
+          "Paare zahlen gemeinsam weniger.",
+          "Der Rabatt gilt nur im Winter.",
+          "Kinder dürfen nicht mitkommen."
+        ],
+        correct: 1
+      },
+      {
+        stimulus: "Text: Wegen Bauarbeiten fährt die Buslinie 7 diese Woche nicht zum Rathaus. Nutzen Sie stattdessen die Haltestelle Marktstraße.",
+        q: "Was sollen Fahrgäste tun?",
+        options: [
+          "Buslinie 8 nehmen.",
+          "Zum Rathaus laufen.",
+          "Haltestelle Marktstraße nutzen.",
+          "Zu Hause bleiben."
+        ],
+        correct: 2
+      }
+    ];
+
+    const LESEN_PART4_POOL = [
+      {
+        stimulus: "E-Mail: 'Liebe Frau Kara, ich kann morgen nicht zum Termin kommen. Haben Sie nächste Woche am Dienstag Zeit?'",
+        q: "Welche Antwort passt am besten?",
+        options: [
+          "Danke, ich habe Ihre E-Mail nicht gelesen.",
+          "Dienstag nächste Woche um 10:00 ist möglich.",
+          "Bitte senden Sie keine Termine mehr.",
+          "Der Termin war gestern."
+        ],
+        correct: 1
+      },
+      {
+        stimulus: "Nachricht: 'Können Sie heute den Schlüssel beim Nachbarn abholen? Ich komme erst spät nach Hause.'",
+        q: "Was ist die passende Reaktion?",
+        options: [
+          "Ja, ich hole den Schlüssel beim Nachbarn.",
+          "Ich verkaufe den Schlüssel.",
+          "Ich fahre nächste Woche in den Urlaub.",
+          "Der Nachbar heißt Montag."
+        ],
+        correct: 0
+      },
+      {
+        stimulus: "Hinweis: 'Bitte erscheinen Sie 15 Minuten vor Ihrem Termin und bringen Sie Ihre Versichertenkarte mit.'",
+        q: "Welche Antwort zeigt richtiges Verständnis?",
+        options: [
+          "Ich komme pünktlich und bringe die Karte mit.",
+          "Ich komme eine Stunde zu spät.",
+          "Ich brauche keine Karte.",
+          "Ich komme ohne Termin."
+        ],
+        correct: 0
+      },
+      {
+        stimulus: "E-Mail vom Kursbüro: 'Ihr Kurs beginnt am 3. März in Raum C12. Lehrbuch bitte ab der ersten Stunde mitbringen.'",
+        q: "Welche Antwort passt?",
+        options: [
+          "Danke, ich bin am 3. März in Raum C12 und bringe das Buch mit.",
+          "Ich komme erst im Juli.",
+          "Ich brauche keinen Raum.",
+          "Das Lehrbuch ist verboten."
+        ],
+        correct: 0
+      },
+      {
+        stimulus: "Aushang im Haus: 'Am Freitag wird zwischen 9 und 12 Uhr das Wasser abgestellt.'",
+        q: "Welche Reaktion ist sinnvoll?",
+        options: [
+          "Ich ignoriere den Hinweis.",
+          "Ich speichere vorher Wasser für Freitag.",
+          "Ich rufe die Polizei wegen Stromausfall.",
+          "Ich dusche um 10 Uhr besonders lang."
+        ],
+        correct: 1
+      },
+      {
+        stimulus: "SMS: 'Treffen wir uns statt 18:00 schon um 17:30 im Café am Bahnhof?'",
+        q: "Welche Antwort passt?",
+        options: [
+          "Ja, 17:30 im Café am Bahnhof passt.",
+          "Ich war gestern in Berlin.",
+          "Treffen sind nicht wichtig.",
+          "Bahnhof ist eine Farbe."
+        ],
+        correct: 0
+      }
+    ];
+
+    const LESEN_PART5_POOL = [
+      {
+        stimulus: "Lückentext: 'Ich ___ seit zwei Jahren in Stuttgart.'",
+        q: "Welche Form passt?",
+        options: ["wohne", "wohnt", "wohnst", "wohnen"],
+        correct: 0
+      },
+      {
+        stimulus: "Lückentext: 'Bitte bringen Sie ___ Ausweis mit.'",
+        q: "Welche Lösung ist korrekt?",
+        options: ["Ihren", "Ihr", "Ihre", "Ihrem"],
+        correct: 0
+      },
+      {
+        stimulus: "Lückentext: 'Wenn ich Zeit habe, ___ ich meine Hausaufgaben.'",
+        q: "Welche Verbform passt?",
+        options: ["mache", "macht", "machst", "machen"],
+        correct: 0
+      },
+      {
+        stimulus: "Lückentext: 'Der Bus kommt nicht, ___ es einen Streik gibt.'",
+        q: "Welches Wort passt?",
+        options: ["weil", "denn", "dass", "ob"],
+        correct: 0
+      },
+      {
+        stimulus: "Lückentext: 'Können Sie mir bitte sagen, wo ___ Bahnhof ist?'",
+        q: "Welche Form ist richtig?",
+        options: ["der", "den", "dem", "des"],
+        correct: 0
+      },
+      {
+        stimulus: "Lückentext: 'Am Wochenende ___ wir unsere Freunde.'",
+        q: "Welche Verbform passt?",
+        options: ["besuchen", "besucht", "besuche", "besuchst"],
+        correct: 0
+      }
+    ];
+
+    function randomInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    function buildLesenDynamicPart1(count = 10) {
+      const wants = [
+        "Sie möchten am Wochenende Deutsch üben.",
+        "Sie suchen eine günstige Wohnung mit Balkon.",
+        "Sie brauchen eine Arbeitsstelle am Vormittag.",
+        "Sie möchten Ihr Kind zum Sport anmelden.",
+        "Sie wollen einen Termin beim Bürgeramt buchen.",
+        "Sie suchen einen Kochkurs am Abend."
+      ];
+      const corrects = [
+        "Sprachtreff Samstag 10:00, kostenlos",
+        "2-Zimmer mit Balkon, ab sofort",
+        "Reinigungskraft 6:00-10:00",
+        "Fußball 6-9 Jahre, Di/Do",
+        "Online-Termin Bürgeramt, Mo-Fr",
+        "Kochkurs Dienstag 18:30"
+      ];
+      const distractors = [
+        "Computerkurs Freitag 16:00",
+        "Yoga für Erwachsene",
+        "WG-Zimmer ohne Küche",
+        "Konzert am Sonntag",
+        "Lagerarbeit 14:00-22:00",
+        "Geschlossen wegen Feiertag",
+        "Schwimmkurs ab 14 Jahre",
+        "Nur telefonische Auskunft",
+        "Sprachkurs Montagmorgen",
+        "Kinderkino um 15:00"
+      ];
+
+      const rows = [];
+      for (let i = 0; i < count; i += 1) {
+        const a = pickOne(wants);
+        const correct = pickOne(corrects);
+        let b = pickOne(distractors);
+        let c = pickOne(distractors);
+        while (c === b) c = pickOne(distractors);
+        const correctSlot = randomInt(3);
+        const postings = [b, c, correct];
+        [postings[correctSlot], postings[2]] = [postings[2], postings[correctSlot]];
+        rows.push({
+          stimulus: `Situation: ${a}\nAushang A: ${postings[0]}\nAushang B: ${postings[1]}\nAushang C: ${postings[2]}`,
+          q: "Welche Information passt am besten?",
+          options: ["Aushang A", "Aushang B", "Aushang C"],
+          correct: correctSlot
+        });
+      }
+      return rows;
+    }
+
+    function buildLesenDynamicPart2(count = 10) {
+      const messages = [
+        "Der Termin wurde auf Donnerstag 09:30 verschoben.",
+        "Bitte bringen Sie morgen Ihren Ausweis mit.",
+        "Der Kursraum ist heute C14 statt B02.",
+        "Am Feiertag bleibt das Büro geschlossen.",
+        "Wir treffen uns 15 Minuten später am Bahnhof."
+      ];
+      const statements = [
+        { text: "Der Termin bleibt unverändert.", type: "Falsch" },
+        { text: "Sie sollen ein Dokument mitbringen.", type: "Richtig" },
+        { text: "Der Kurs findet in einem anderen Raum statt.", type: "Richtig" },
+        { text: "Das Büro ist am Feiertag geöffnet.", type: "Falsch" },
+        { text: "Das Treffen beginnt etwas später.", type: "Richtig" }
+      ];
+      const options = ["Richtig", "Falsch", "Nicht im Text"];
+      const rows = [];
+      for (let i = 0; i < count; i += 1) {
+        const m = pickOne(messages);
+        const s = pickOne(statements);
+        rows.push({
+          stimulus: `Nachricht: "${m}"`,
+          q: `Aussage: ${s.text}`,
+          options,
+          correct: options.indexOf(s.type)
+        });
+      }
+      return rows;
+    }
+
+    function buildLesenDynamicPart3(count = 10) {
+      const texts = [
+        "Die Stadtbibliothek verlängert samstags die Öffnungszeiten bis 18 Uhr.",
+        "Wegen Bauarbeiten fährt die Linie 7 nicht bis Rathaus.",
+        "Im Nachbarschaftszentrum gibt es kostenlose Beratung am Mittwoch.",
+        "Die Anmeldung zur Prüfung endet am 12. Juni.",
+        "Im Sommer gibt es einen Familienrabatt im Fitnessstudio."
+      ];
+      const answers = [
+        ["Samstags ist bis 18 Uhr geöffnet.", "Samstags ist geschlossen.", "Nur Kinder dürfen hinein.", "Es gibt keine Bücher."],
+        ["Man soll die Haltestelle Marktstraße nutzen.", "Busse fahren normal bis Rathaus.", "Linie 7 wurde abgeschafft.", "Nur Taxis sind erlaubt."],
+        ["Die Beratung ist kostenlos und mittwochs.", "Beratung kostet 20 Euro.", "Nur am Sonntag geöffnet.", "Nur online möglich."],
+        ["Anmeldung bis 12. Juni.", "Anmeldung bis 12. Juli.", "Prüfung ist jeden Tag.", "Es gibt keine Frist."],
+        ["Paare zahlen gemeinsam weniger.", "Rabatt gibt es nur im Winter.", "Nur Einzelpersonen erhalten Rabatt.", "Das Studio schließt im Sommer."]
+      ];
+      const rows = [];
+      for (let i = 0; i < count; i += 1) {
+        const idx = randomInt(texts.length);
+        rows.push({
+          stimulus: `Text: ${texts[idx]}`,
+          q: "Welche Aussage stimmt?",
+          options: answers[idx],
+          correct: 0
+        });
+      }
+      return rows;
+    }
+
+    function buildLesenDynamicPart4(count = 10) {
+      const prompts = [
+        "Ich kann morgen nicht kommen. Haben Sie am Dienstag Zeit?",
+        "Bitte holen Sie den Schlüssel beim Nachbarn ab.",
+        "Bringen Sie zum Termin bitte Ihre Versichertenkarte mit.",
+        "Der Kurs startet am 3. März in Raum C12.",
+        "Treffen wir uns statt 18:00 schon um 17:30?"
+      ];
+      const goodReplies = [
+        "Dienstag um 10:00 passt, danke.",
+        "Ja, ich hole den Schlüssel beim Nachbarn.",
+        "Ich komme früher und bringe die Karte mit.",
+        "Danke, ich bin am 3. März in Raum C12.",
+        "Ja, 17:30 passt gut."
+      ];
+      const bad1 = [
+        "Ich habe keine Uhr.",
+        "Der Nachbar ist ein Beruf.",
+        "Karten sind immer rund.",
+        "März ist keine Zahl.",
+        "Der Bahnhof ist lila."
+      ];
+      const bad2 = [
+        "Ich antworte nie auf Nachrichten.",
+        "Termine sind grundsätzlich verboten.",
+        "Ich komme absichtlich zu spät.",
+        "Räume brauche ich nicht.",
+        "17:30 ist ein Land."
+      ];
+      const rows = [];
+      for (let i = 0; i < count; i += 1) {
+        const idx = randomInt(prompts.length);
+        rows.push({
+          stimulus: `Nachricht: "${prompts[idx]}"`,
+          q: "Welche Antwort passt am besten?",
+          options: [goodReplies[idx], bad1[idx], bad2[idx], "Ich war vor drei Jahren im Urlaub."],
+          correct: 0
+        });
+      }
+      return rows;
+    }
+
+    function buildLesenDynamicPart5(count = 10) {
+      const rows = [];
+      const items = [
+        { t: "Lückentext: 'Ich ___ seit einem Jahr in Deutschland.'", o: ["wohne", "wohnst", "wohnt", "wohnen"], c: 0 },
+        { t: "Lückentext: 'Wir ___ heute Abend einen Termin.'", o: ["haben", "hat", "hast", "habt"], c: 0 },
+        { t: "Lückentext: 'Kannst du mir sagen, wo ___ Bahnhof ist?'", o: ["der", "den", "dem", "des"], c: 0 },
+        { t: "Lückentext: 'Ich lerne Deutsch, ___ ich in Deutschland arbeite.'", o: ["weil", "dass", "wenn", "ob"], c: 0 },
+        { t: "Lückentext: 'Bitte bringen Sie ___ Pass mit.'", o: ["Ihren", "Ihre", "Ihr", "Ihrem"], c: 0 }
+      ];
+      for (let i = 0; i < count; i += 1) {
+        const x = pickOne(items);
+        rows.push({ stimulus: x.t, q: "Welche Lösung ist korrekt?", options: x.o, correct: x.c });
+      }
+      return rows;
+    }
+
+    const SPEAKING_PART1_FIXED = {
+      lead: "Stellen Sie sich vor. Teil 1 bleibt immer gleich.",
+      points: ["Name", "Alter", "Land", "Wohnort", "Sprachen", "Beruf"]
+    };
+
+    const SPEAKING_PART2_TOPICS = [
+      {
+        title: "Bild: Im Supermarkt",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie danach über eigene Einkaufserfahrungen.",
+        scene: "supermarkt",
+        points: ["Wo sind die Personen?", "Was machen die Personen?", "Wie wirkt die Situation?", "Wie ist das bei Ihnen?"]
+      },
+      {
+        title: "Bild: In der Arztpraxis",
+        lead: "Beschreiben Sie das Bild. Erzählen Sie dann von einem Arztbesuch.",
+        scene: "arzt",
+        points: ["Was sehen Sie im Raum?", "Was machen die Personen?", "Wie fühlen sich die Personen?", "Welche Erfahrung haben Sie?"]
+      },
+      {
+        title: "Bild: Im Sprachkurs",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie danach über Lernen im Kurs.",
+        scene: "kurs",
+        points: ["Wo findet die Situation statt?", "Was machen Lehrkraft und Teilnehmende?", "Welche Materialien sehen Sie?", "Wie lernen Sie am besten?"]
+      },
+      {
+        title: "Bild: Am Bahnhof",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie dann über Mobilität im Alltag.",
+        scene: "bahnhof",
+        points: ["Wo sind die Personen?", "Was passiert gerade?", "Welche Probleme können entstehen?", "Wie fahren Sie normalerweise?"]
+      },
+      {
+        title: "Bild: Familienalltag zu Hause",
+        lead: "Beschreiben Sie das Bild. Erzählen Sie dann über Ihren Tagesablauf.",
+        scene: "familie",
+        points: ["Wer ist im Bild?", "Was machen die Personen?", "Welche Stimmung sehen Sie?", "Wie ist es bei Ihnen zu Hause?"]
+      },
+      {
+        title: "Bild: In der Bibliothek",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie danach über Lernen und Ruheorte.",
+        scene: "bibliothek",
+        points: ["Welche Personen sehen Sie?", "Was machen sie?", "Welche Gegenstände sehen Sie?", "Wo lernen Sie am besten?"]
+      },
+      {
+        title: "Bild: Im Restaurant",
+        lead: "Beschreiben Sie das Bild. Erzählen Sie dann über Essen außer Haus.",
+        scene: "restaurant",
+        points: ["Was passiert im Bild?", "Wer ist da?", "Wie ist die Atmosphäre?", "Wie oft gehen Sie essen?"]
+      },
+      {
+        title: "Bild: Im Büro",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie danach über Ihren Arbeitsalltag.",
+        scene: "buero",
+        points: ["Wo sind die Personen?", "Was arbeiten sie?", "Welche Technik sehen Sie?", "Wie sieht Ihr Arbeitstag aus?"]
+      },
+      {
+        title: "Bild: Auf dem Spielplatz",
+        lead: "Beschreiben Sie das Bild. Erzählen Sie dann über Familienzeit.",
+        scene: "spielplatz",
+        points: ["Wer ist im Bild?", "Was machen die Kinder?", "Welche Stimmung erkennen Sie?", "Was machen Sie am Wochenende?"]
+      },
+      {
+        title: "Bild: Im Park",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie danach über Freizeit und Bewegung.",
+        scene: "park",
+        points: ["Welche Aktivitäten sehen Sie?", "Wie ist das Wetter?", "Welche Personen sind da?", "Was machen Sie gern draußen?"]
+      },
+      {
+        title: "Bild: Beim Einkaufen auf dem Markt",
+        lead: "Beschreiben Sie das Bild. Erzählen Sie dann über Ihren Einkauf.",
+        scene: "markt",
+        points: ["Was wird verkauft?", "Wer kauft ein?", "Wie wirkt der Ort?", "Wo kaufen Sie am liebsten ein?"]
+      },
+      {
+        title: "Bild: Beim Sport",
+        lead: "Beschreiben Sie das Bild. Sprechen Sie danach über Gesundheit und Bewegung.",
+        scene: "sport",
+        points: ["Was machen die Personen?", "Wo findet es statt?", "Welche Kleidung sehen Sie?", "Treiben Sie selbst Sport?"]
+      }
+    ];
+
+    const SPEAKING_PART3_TOPICS = [
+      {
+        task: "eine Wochenendreise machen und in den Bergen wandern",
+        plan: "die Reise",
+        points: ["Anreise", "Unterkunft", "Wanderroute", "Essen/Trinken", "Kosten"]
+      },
+      {
+        task: "einen Tagesausflug an den See machen",
+        plan: "den Ausflug",
+        points: ["Treffpunkt", "Abfahrt", "Was mitnehmen?", "Programm vor Ort", "Rückfahrt"]
+      },
+      {
+        task: "ein Nachbarschaftstreffen organisieren",
+        plan: "das Treffen",
+        points: ["Ort", "Datum/Uhrzeit", "Einladungen", "Essen/Getränke", "Aufgabenverteilung"]
+      },
+      {
+        task: "einen Informationsabend im Kurs vorbereiten",
+        plan: "den Abend",
+        points: ["Thema", "Raum", "Technik/Material", "Moderation", "Ablauf"]
+      },
+      {
+        task: "eine kleine Feier nach dem Kurs planen",
+        plan: "die Feier",
+        points: ["Termin", "Ort", "Musik", "Essen/Getränke", "Budget"]
+      },
+      {
+        task: "einen Arzttermin für eine ältere Nachbarin organisieren",
+        plan: "den Termin",
+        points: ["Datum/Uhrzeit", "Anfahrt", "Unterlagen", "Begleitung", "Rückweg"]
+      },
+      {
+        task: "einen gemeinsamen Lerntag für die Prüfung vorbereiten",
+        plan: "den Lerntag",
+        points: ["Themen", "Zeiten", "Material", "Pausen", "Lernort"]
+      },
+      {
+        task: "eine Geburtstagsüberraschung für eine Freundin planen",
+        plan: "die Überraschung",
+        points: ["Ort", "Gäste", "Geschenk", "Ablauf", "Kosten"]
+      },
+      {
+        task: "einen Umzug für einen Freund organisieren",
+        plan: "den Umzug",
+        points: ["Transport", "Helfer", "Kisten", "Zeitplan", "Verpflegung"]
+      },
+      {
+        task: "eine gemeinsame Fahrradtour am Wochenende machen",
+        plan: "die Tour",
+        points: ["Strecke", "Treffpunkt", "Sicherheit", "Pausen", "Wetter-Alternative"]
+      },
+      {
+        task: "ein Eltern-Kind-Treffen im Park organisieren",
+        plan: "das Treffen",
+        points: ["Uhrzeit", "Spiele", "Essen/Getränke", "Mitbringen", "Kontakt"]
+      },
+      {
+        task: "eine kleine Reise in eine andere Stadt planen",
+        plan: "die Städtereise",
+        points: ["Hin- und Rückfahrt", "Sehenswürdigkeiten", "Unterkunft", "Budget", "Programm"]
+      },
+      {
+        task: "einen gemeinsamen Kochabend mit Freunden organisieren",
+        plan: "den Kochabend",
+        points: ["Menü", "Einkauf", "Aufgaben", "Beginn", "Kostenaufteilung"]
+      },
+      {
+        task: "einen Termin im Bürgeramt vorbereiten",
+        plan: "den Behördentermin",
+        points: ["Unterlagen", "Terminzeit", "Anfahrt", "Wartezeit", "Nachbereitung"]
+      }
+    ];
+
+    const SIMULATION_TASK_POOL = [
+      "Sie können nächste Woche nicht zur Arbeit kommen. Schreiben Sie Ihrer Chefin eine E-Mail. Nennen Sie den Grund, die Dauer und eine Lösung für Ihre Aufgaben.",
+      "Sie haben in Ihrer Wohnung seit drei Tagen kein warmes Wasser. Schreiben Sie an die Hausverwaltung. Beschreiben Sie das Problem und bitten Sie um einen schnellen Termin.",
+      "Ihr Deutschkurs endet bald. Schreiben Sie der Kursleitung eine E-Mail und fragen Sie nach einem B2-Kurs. Nennen Sie Ihre Zeiten und Ihre Lernziele.",
+      "Sie möchten für Ihre Tochter einen Termin beim Kinderarzt verschieben. Schreiben Sie eine kurze E-Mail mit Begründung und neuem Terminwunsch.",
+      "Sie haben im Supermarkt ein defektes Küchengerät gekauft. Schreiben Sie eine Reklamation: Kaufdatum, Problem und was Sie erwarten.",
+      "Ihr Nachbar macht nachts oft Lärm. Schreiben Sie eine höfliche Nachricht. Erklären Sie die Situation und schlagen Sie eine Lösung vor.",
+      "Sie möchten in Ihrer Firma Urlaub nehmen. Schreiben Sie Ihrer Teamleitung: Zeitraum, Vertretung und Rückmeldung.",
+      "Sie waren beim Behördentermin, aber wichtige Unterlagen fehlen. Schreiben Sie eine E-Mail und fragen Sie, welche Dokumente noch notwendig sind.",
+      "Ihr Sprachpartner kann am vereinbarten Lerntag nicht kommen. Schreiben Sie eine Nachricht und machen Sie einen neuen Vorschlag.",
+      "Sie suchen einen Praktikumsplatz im Büro. Schreiben Sie eine kurze Anfrage an ein Unternehmen und stellen Sie sich vor."
+    ];
+
+    const SPEAKING_PART2_PROMPT = "Sie haben in einer Zeitschrift ein Foto gefunden. Berichten Sie Ihrer Gesprächspartnerin / Ihrem Gesprächspartner kurz:";
+    const SPEAKING_PART2_POINTS = [
+      "Was sehen Sie auf dem Foto?",
+      "Was für eine Situation zeigt dieses Bild?"
+    ];
+
+    const BSK_FIELDS = {
+      pflege: ["Schichtplan lesen", "Patientengespräch", "Dokumentation", "Teamübergabe"],
+      handel: ["Kundenanfrage", "Reklamation", "Lagerhinweis", "Kassenvorgang"],
+      buero: ["E-Mail beantworten", "Termin abstimmen", "Formular verstehen", "Telefonnotiz"],
+      logistik: ["Liefermeldung", "Sicherheitsregel", "Schadensbericht", "Toureninfo"]
+    };
+
+    const BSK_QUESTION_POOL = {
+      A2: {
+        pflege: [
+          { stimulus: "Kurze Notiz: Frau Klein braucht um 10:00 Uhr Hilfe beim Aufstehen.", q: "Was tun Sie zuerst?", right: "Die Notiz lesen und den Termin einhalten.", wrong: ["Die Notiz ignorieren.", "Erst morgen reagieren.", "Ohne Rückfrage Schicht tauschen."] },
+          { stimulus: "Kollege sagt: 'Bitte Dokumentation heute noch fertig machen.'", q: "Welche Antwort passt?", right: "Ja, ich mache die Dokumentation bis Schichtende.", wrong: ["Nein, ich mache gar nichts.", "Das ist nicht mein Thema.", "Ich antworte nicht."] },
+          { stimulus: "Aushang: Hände vor und nach dem Kontakt desinfizieren.", q: "Was ist richtig?", right: "Hygieneregel immer beachten.", wrong: ["Nur bei neuen Patienten.", "Nur morgens einmal.", "Nur wenn jemand schaut."] }
+        ],
+        handel: [
+          { stimulus: "Schild im Laden: Neue Ware bitte sofort ins Regal.", q: "Wie handeln Sie?", right: "Ware zügig prüfen und einräumen.", wrong: ["Kartons stehen lassen.", "Nur halbe Ware einräumen.", "Erst nach Feierabend anfangen."] },
+          { stimulus: "Kunde fragt: 'Wo finde ich Milch?'", q: "Was ist die beste Antwort?", right: "Ich zeige Ihnen gern den Weg zum Kühlregal.", wrong: ["Keine Ahnung.", "Suchen Sie selbst.", "Ich habe keine Zeit."] },
+          { stimulus: "Kasse: Bitte Bon anbieten.", q: "Was ist korrekt?", right: "Möchten Sie den Kassenbon?", wrong: ["Bon gibt es nie.", "Nur Stammkunden bekommen Bon.", "Ich frage nicht."] }
+        ],
+        buero: [
+          { stimulus: "E-Mail: 'Bitte Termin auf Freitag verschieben.'", q: "Was antworten Sie kurz und korrekt?", right: "Gern, ich prüfe den Freitag und bestätige Ihnen den Termin.", wrong: ["Geht nicht.", "Warum?", "Später vielleicht."] },
+          { stimulus: "Formular fehlt Unterschrift.", q: "Was tun Sie?", right: "Kunden freundlich um Unterschrift bitten.", wrong: ["Formular wegwerfen.", "Ohne Unterschrift senden.", "Gar nichts tun."] },
+          { stimulus: "Telefonnotiz: Rückruf bis 16 Uhr.", q: "Was ist wichtig?", right: "Rückruf rechtzeitig einplanen.", wrong: ["Notiz ignorieren.", "Morgen zurückrufen.", "Nur wenn Zeit bleibt."] }
+        ],
+        logistik: [
+          { stimulus: "Lieferschein: Paket 3 beschädigt.", q: "Wie reagieren Sie?", right: "Schaden sofort melden und dokumentieren.", wrong: ["Paket trotzdem zustellen.", "Nichts notieren.", "Erst nächste Woche melden."] },
+          { stimulus: "Hinweis: Sicherheitsweste im Lager Pflicht.", q: "Was ist richtig?", right: "Weste im Lager immer tragen.", wrong: ["Nur bei Regen.", "Nur neue Mitarbeiter.", "Nur im Büro."] },
+          { stimulus: "Tourenliste: Adresse geändert.", q: "Was tun Sie zuerst?", right: "Neue Adresse prüfen und Route anpassen.", wrong: ["Alte Adresse nutzen.", "Lieferung stornieren.", "Nicht beachten."] }
+        ]
+      },
+      B1: {
+        pflege: [
+          { stimulus: "Übergabeprotokoll: Patient hat nachts schlecht geschlafen und wirkt unsicher.", q: "Welche Maßnahme ist fachlich und sprachlich passend?", right: "Beobachtung dokumentieren und im Team kurz abstimmen.", wrong: ["Keine Dokumentation machen.", "Nur mündlich erwähnen und vergessen.", "Patient ohne Information umlagern."] },
+          { stimulus: "Angehörige fragen nach Medikamentenzeiten.", q: "Wie antworten Sie professionell?", right: "Ich prüfe den Plan und erkläre Ihnen die Zeiten in Ruhe.", wrong: ["Das geht Sie nichts an.", "Fragen Sie jemand anderen.", "Ich darf nichts sagen, Ende."] },
+          { stimulus: "Interne Nachricht: Sturzprotokoll bis 14 Uhr abschließen.", q: "Welche Formulierung passt in eine Rückmeldung?", right: "Das Protokoll wird bis 14 Uhr vollständig ergänzt.", wrong: ["Ich mache es vielleicht.", "Passt schon irgendwie.", "Kein Plan."] },
+          { stimulus: "Dienstplanänderung wegen Krankmeldung.", q: "Was ist die beste Reaktion im Team?", right: "Änderung bestätigen und Aufgaben klar verteilen.", wrong: ["Nicht reagieren.", "Nur privat diskutieren.", "Regelung ablehnen ohne Begründung."] }
+        ],
+        handel: [
+          { stimulus: "Reklamation: Gerät funktioniert nach zwei Tagen nicht.", q: "Welche Antwort ist kundenorientiert?", right: "Wir prüfen das Gerät und bieten Ihnen eine passende Lösung an.", wrong: ["Dafür sind wir nicht zuständig.", "Selbst schuld.", "Nur mit lautem Ton antworten."] },
+          { stimulus: "Aushang: Rabattaktion gilt nur bis Samstag.", q: "Was kommunizieren Sie korrekt?", right: "Die Aktion endet am Samstag, danach gilt der reguläre Preis.", wrong: ["Rabatt gilt immer.", "Aktion vielleicht länger.", "Preis ist egal."] },
+          { stimulus: "Kunde möchte reservierte Ware später abholen.", q: "Welche Notiz ist angemessen?", right: "Abholung für morgen 17 Uhr vermerkt, Ware ist zurückgelegt.", wrong: ["Vielleicht später.", "Nicht aufschreiben.", "Einfach stornieren."] },
+          { stimulus: "Teamhinweis: Kassenabschluss täglich doppelt prüfen.", q: "Was ist die Hauptaufgabe?", right: "Beträge vergleichen und Abweichungen direkt melden.", wrong: ["Nur grob schätzen.", "Abweichungen ignorieren.", "Prüfung auslassen."] }
+        ],
+        buero: [
+          { stimulus: "Kunde meldet per E-Mail fehlende Unterlagen.", q: "Welche Antwort ist korrekt und serviceorientiert?", right: "Vielen Dank für den Hinweis. Wir senden die Unterlagen heute nach.", wrong: ["Das ist nicht unser Problem.", "Schauen Sie selbst.", "Wir antworten nicht."] },
+          { stimulus: "Terminübersicht: Zwei Meetings überschneiden sich.", q: "Was ist sinnvoll?", right: "Priorität klären und einen Termin frühzeitig verschieben.", wrong: ["Beide ignorieren.", "Niemand informieren.", "Erst am Termin reagieren."] },
+          { stimulus: "Interne Bitte: Protokoll in klarer Sprache schreiben.", q: "Was gehört dazu?", right: "Kurze Sätze, klare Reihenfolge und konkrete Aufgaben.", wrong: ["Lange unklare Texte.", "Nur Stichwörter ohne Kontext.", "Keine Verantwortlichkeiten nennen."] },
+          { stimulus: "Telefonat mit Lieferant war unklar.", q: "Wie sichern Sie Informationen?", right: "Wesentliche Punkte als Notiz bestätigen lassen.", wrong: ["Nichts dokumentieren.", "Nur aus dem Gedächtnis arbeiten.", "Notizen sofort löschen."] }
+        ],
+        logistik: [
+          { stimulus: "Lagerinfo: Prioritätssendung muss heute raus.", q: "Was ist die richtige Reihenfolge?", right: "Sendung priorisieren, prüfen und fristgerecht übergeben.", wrong: ["Normale Sendungen zuerst.", "Prio ignorieren.", "Versand morgen."] },
+          { stimulus: "Fahrer meldet Stau und Verspätung.", q: "Welche Kommunikation ist passend?", right: "Empfänger informieren und neue Lieferzeit abstimmen.", wrong: ["Niemand informieren.", "Lieferung abbrechen.", "Falsche Uhrzeit melden."] },
+          { stimulus: "Sicherheitsunterweisung: Wege freihalten.", q: "Was bedeutet das im Alltag?", right: "Paletten so platzieren, dass Fluchtwege frei bleiben.", wrong: ["Fluchtweg kurz blockieren.", "Nur nachts beachten.", "Nur für Besucher wichtig."] },
+          { stimulus: "Inventur: Bestand stimmt nicht.", q: "Was tun Sie zuerst?", right: "Abweichung dokumentieren und Ursache prüfen.", wrong: ["Zahl schätzen.", "System ohne Prüfung ändern.", "Problem ignorieren."] }
+        ]
+      },
+      B2: {
+        pflege: [
+          { stimulus: "Qualitätsrunde: Fehler bei Übergaben wurden festgestellt.", q: "Welche Reaktion ist professionell?", right: "Ablauf analysieren und verbindliche Verbesserungen festlegen.", wrong: ["Thema vertagen.", "Fehlerpersonen öffentlich kritisieren.", "Dokumentation reduzieren."] },
+          { stimulus: "Teamkonflikt wegen Aufgabenverteilung.", q: "Was ist sprachlich und organisatorisch sinnvoll?", right: "Rollen transparent klären und Absprachen schriftlich sichern.", wrong: ["Keine Moderation.", "Nur informell lösen.", "Konflikt ignorieren."] },
+          { stimulus: "Neue Fachanweisung wurde eingeführt.", q: "Wie sichern Sie die Umsetzung?", right: "Inhalte erklären, Rückfragen sammeln und Umsetzung kontrollieren.", wrong: ["Anweisung ungelesen weitergeben.", "Nur aushängen ohne Erklärung.", "Keine Kontrolle durchführen."] }
+        ],
+        handel: [
+          { stimulus: "Filialleitung fordert ein kurzes Maßnahmenprotokoll zur Reklamationsquote.", q: "Welche Antwortstruktur passt?", right: "Problem, Ursache, Maßnahme, Termin und Verantwortung benennen.", wrong: ["Nur Vermutungen auflisten.", "Keine Fristen nennen.", "Nur mündlich berichten."] },
+          { stimulus: "Stammkundin beschwert sich über wechselnde Informationen.", q: "Was ist die beste Reaktion?", right: "Sachverhalt prüfen, entschuldigen und verbindliche Rückmeldung geben.", wrong: ["Beschwerde ablehnen.", "Kundin an andere Stelle verweisen ohne Übergabe.", "Keine Rückmeldung geben."] },
+          { stimulus: "Aktion führt zu Engpässen im Lager.", q: "Wie kommunizieren Sie intern?", right: "Bedarf priorisieren und klare Nachbestellregeln abstimmen.", wrong: ["Engpässe verschweigen.", "Ungeplante Einzelentscheidungen treffen.", "Keine Daten teilen."] }
+        ],
+        buero: [
+          { stimulus: "Mehrere Abteilungen arbeiten an derselben Kundenanfrage.", q: "Wie vermeiden Sie Missverständnisse?", right: "Zentrale Zuständigkeit definieren und Zwischenstände transparent teilen.", wrong: ["Jede Abteilung antwortet separat.", "Keine Abstimmung einplanen.", "Nur informelle Chats nutzen."] },
+          { stimulus: "Projektfrist wurde kurzfristig verkürzt.", q: "Welche Reaktion ist zielführend?", right: "Prioritäten neu setzen und Risiken früh kommunizieren.", wrong: ["Plan unverändert lassen.", "Verzögerungen nicht melden.", "Dokumentation einstellen."] },
+          { stimulus: "Geschäftspartner bittet um präzise Statusmeldung.", q: "Welche Form passt?", right: "Kurzer Status mit Fakten, Termin und nächstem Schritt.", wrong: ["Unverbindliche Aussage ohne Datum.", "Zu lange private Erklärung.", "Nur Ein-Wort-Antwort."] }
+        ],
+        logistik: [
+          { stimulus: "Audit kündigt Prüfung der Sicherheitsprozesse an.", q: "Welche Vorbereitung ist angemessen?", right: "Nachweise prüfen, Lücken schließen und Team briefen.", wrong: ["Audit ignorieren.", "Nur mündliche Infos bereitstellen.", "Unterlagen ungeprüft lassen."] },
+          { stimulus: "Lieferkette ist durch Ausfall eines Dienstleisters gestört.", q: "Wie handeln Sie?", right: "Alternativen bewerten und Kunden proaktiv informieren.", wrong: ["Keine Alternativen prüfen.", "Störung verheimlichen.", "Alle Aufträge stoppen ohne Plan."] },
+          { stimulus: "Retourenquote steigt deutlich.", q: "Was ist eine professionelle Erstmaßnahme?", right: "Daten auswerten und häufige Fehlerquellen priorisieren.", wrong: ["Retouren pauschal ablehnen.", "Zahlen nicht betrachten.", "Nur spontan reagieren."] }
+        ]
+      }
+    };
+
+    const BSK_DYNAMIC_TEMPLATE_BANK = {
+      A2: [
+        {
+          stimulus: topic => `Kurzinfo am Arbeitsplatz zum Thema "${topic}".`,
+          q: "Welche Reaktion ist am besten?",
+          right: "Hinweis lesen, verstehen und direkt korrekt umsetzen.",
+          wrong: ["Später vielleicht reagieren.", "Hinweis ignorieren.", "Nur teilweise ohne Rückfrage machen."]
+        },
+        {
+          stimulus: topic => `Kollegin fragt Sie zu "${topic}".`,
+          q: "Welche Antwort ist höflich und klar?",
+          right: "Ich schaue kurz nach und gebe Ihnen sofort eine klare Antwort.",
+          wrong: ["Das ist nicht mein Problem.", "Fragen Sie jemand anderen.", "Ich antworte gar nicht."]
+        },
+        {
+          stimulus: topic => `Notiz im Teamheft: "${topic}" ist heute wichtig.`,
+          q: "Was ist im Arbeitsalltag richtig?",
+          right: "Aufgabe notieren, priorisieren und pünktlich erledigen.",
+          wrong: ["Ohne Notiz arbeiten.", "Aufgabe bis morgen warten lassen.", "Nur mündlich versprechen."]
+        }
+      ],
+      B1: [
+        {
+          stimulus: topic => `Interne Mitteilung: Bei "${topic}" gab es heute Rückfragen.`,
+          q: "Welche professionelle Antwort passt am besten?",
+          right: "Ich kläre den Punkt und gebe dem Team eine präzise Rückmeldung.",
+          wrong: ["Das interessiert mich nicht.", "Ich warte einfach ab.", "Ich gebe nur eine sehr vage Antwort."]
+        },
+        {
+          stimulus: topic => `Arbeitsauftrag: "${topic}" muss bis 15:00 Uhr abgeschlossen sein.`,
+          q: "Wie handeln Sie zielführend?",
+          right: "Schritte planen, Priorität setzen und den Abschluss kurz dokumentieren.",
+          wrong: ["Unstrukturiert beginnen.", "Frist ignorieren.", "Nur halbe Informationen weitergeben."]
+        },
+        {
+          stimulus: topic => `Kundenkontakt zum Thema "${topic}".`,
+          q: "Welche Formulierung ist serviceorientiert?",
+          right: "Vielen Dank, ich prüfe das jetzt und melde mich zeitnah mit einer Lösung.",
+          wrong: ["Dafür bin ich nicht zuständig.", "Machen Sie es selbst.", "Darauf antworte ich nicht."]
+        },
+        {
+          stimulus: topic => `Teamabstimmung: "${topic}" ist unklar dokumentiert.`,
+          q: "Was ist sprachlich und organisatorisch sinnvoll?",
+          right: "Offene Punkte sammeln, kurz abstimmen und eindeutig dokumentieren.",
+          wrong: ["Dokumentation weglassen.", "Nur Vermutungen notieren.", "Konflikt vermeiden und nichts sagen."]
+        }
+      ],
+      B2: [
+        {
+          stimulus: topic => `Prozessbesprechung: Bei "${topic}" treten wiederholt Fehler auf.`,
+          q: "Welche Reaktion ist am professionellsten?",
+          right: "Ursache analysieren, Maßnahmen festlegen und deren Wirkung nachverfolgen.",
+          wrong: ["Nur Symptome diskutieren.", "Fehler pauschal ignorieren.", "Ohne Analyse sofort alles ändern."]
+        },
+        {
+          stimulus: topic => `Abteilungsübergreifende Anfrage zu "${topic}".`,
+          q: "Wie sichern Sie klare Kommunikation?",
+          right: "Verantwortung definieren, Zwischenstände transparent teilen und Fristen benennen.",
+          wrong: ["Jeder arbeitet separat.", "Keine Fristen setzen.", "Nur spontane Absprachen treffen."]
+        },
+        {
+          stimulus: topic => `Qualitätssicherung: Bericht zu "${topic}" wird angefordert.`,
+          q: "Welche Struktur ist angemessen?",
+          right: "Ausgangslage, Risiko, Maßnahme, Termin und Zuständigkeit klar darstellen.",
+          wrong: ["Nur Meinungen sammeln.", "Ohne Prioritäten berichten.", "Komplexität komplett ausblenden."]
+        },
+        {
+          stimulus: topic => `Kurzfristige Änderung bei "${topic}" im Tagesablauf.`,
+          q: "Welche Vorgehensweise ist belastbar?",
+          right: "Auswirkungen prüfen, Alternativen abstimmen und Betroffene früh informieren.",
+          wrong: ["Änderung ohne Info umsetzen.", "Nur intern kommunizieren.", "Entscheidung vertagen ohne Plan."]
+        }
+      ]
+    };
+
+    function setBskStatus(type, message) {
+      const box = document.getElementById("bskStatus");
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearBskStatus() {
+      const box = document.getElementById("bskStatus");
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function clearBskScoreSummary() {
+      const box = document.getElementById("bskScoreSummary");
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function buildBskRecommendation(goal, level, field) {
+      const goalText = {
+        job_search: "Fokus auf Bewerbungs- und Einstiegssprache",
+        workplace: "Fokus auf Alltag am Arbeitsplatz",
+        qualification: "Fokus auf fachsprachliche Vertiefung"
+      };
+      const diffRaw = String(document.getElementById("bskDifficulty")?.value || "auto");
+      const difficulty = normalizeDifficulty(level, diffRaw);
+      return `Empfehlung: ${level}-BSK (${field}, ${difficulty}). ${goalText[goal] || ""}. Hinweis: Inhalte sind eigenständig erstellt (kein Original-Prüfungsmaterial).`;
+    }
+
+    function createBskQuestion(stimulus, q, right, wrongOptions) {
+      const options = shuffleArray([right].concat(wrongOptions)).slice(0, 4);
+      return {
+        stimulus,
+        q,
+        options,
+        correct: options.indexOf(right)
+      };
+    }
+
+    function pickManyRandom(items, count) {
+      const arr = shuffleArray(items || []);
+      return arr.slice(0, Math.max(0, Math.min(count, arr.length)));
+    }
+
+    function normalizeDifficulty(level, difficulty) {
+      const d = String(difficulty || "auto");
+      if (d !== "auto") return d;
+      if (level === "A2") return "leicht";
+      if (level === "B2") return "schwer";
+      return "mittel";
+    }
+
+    function levelFallbackDifficulty(level) {
+      if (level === "A2") return "leicht";
+      if (level === "B2") return "schwer";
+      return "mittel";
+    }
+
+    function dynamicTemplateDifficulty(level, index) {
+      if (level === "A2") return index < 2 ? "leicht" : "mittel";
+      if (level === "B2") return index < 1 ? "mittel" : "schwer";
+      if (index === 0) return "leicht";
+      if (index === 3) return "schwer";
+      return "mittel";
+    }
+
+    function buildDynamicBskTasks(level, field) {
+      const templates = BSK_DYNAMIC_TEMPLATE_BANK[level] || BSK_DYNAMIC_TEMPLATE_BANK.B1;
+      const topics = BSK_FIELDS[field] || BSK_FIELDS.buero;
+      const out = [];
+      templates.forEach((tpl, tplIdx) => {
+        topics.forEach(topic => {
+          out.push({
+            stimulus: tpl.stimulus(topic),
+            q: tpl.q,
+            right: tpl.right,
+            wrong: tpl.wrong,
+            difficulty: dynamicTemplateDifficulty(level, tplIdx)
+          });
+        });
+      });
+      return out;
+    }
+
+    function buildBskTasks(level, field, difficulty) {
+      const lvl = BSK_QUESTION_POOL[level] ? level : "B1";
+      const byLevel = BSK_QUESTION_POOL[lvl];
+      const rawPool = (byLevel && byLevel[field]) ? byLevel[field] : (byLevel ? byLevel.buero : []);
+      const rawWithDifficulty = rawPool.map(item => ({
+        ...item,
+        difficulty: levelFallbackDifficulty(lvl)
+      }));
+      const dynamicPool = buildDynamicBskTasks(lvl, field);
+      const mergedPool = shuffleArray([].concat(rawWithDifficulty, dynamicPool));
+      const wanted = normalizeDifficulty(lvl, difficulty);
+      let pool = mergedPool.filter(item => String(item.difficulty || "") === wanted);
+      if (pool.length < 7) {
+        pool = mergedPool;
+      }
+      const selected = pickManyRandom(pool, 10);
+      return selected.map(item => createBskQuestion(item.stimulus, item.q, item.right, item.wrong));
+    }
+
+    function renderBskHistory(records) {
+      const wrap = document.getElementById("bskHistoryWrap");
+      if (!records || !records.length) {
+        wrap.innerHTML = "Noch keine gespeicherten BSK-Ergebnisse.";
+        return;
+      }
+
+      const bars = records.map((row, idx) => {
+        const total = Math.max(1, Number(row.score_total || 0));
+        const ok = Math.max(0, Number(row.score_correct || 0));
+        const pct = Math.max(0, Math.min(100, Math.round((ok / total) * 100)));
+        const date = String(row.created_at || "").slice(0, 10);
+        return `
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;">
+              <span>#${idx + 1} ${escapeHtml(date)} | ${escapeHtml(row.level || "-")} ${escapeHtml(row.field || "-")} ${escapeHtml(row.difficulty || "")}</span>
+              <strong>${ok}/${total}</strong>
+            </div>
+            <div style="height:8px;background:#e8edf5;border-radius:999px;overflow:hidden;">
+              <div style="height:8px;width:${pct}%;background:${pct >= 70 ? "#3ea86f" : pct >= 40 ? "#d79a3a" : "#cc5a5a"};"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      wrap.innerHTML = bars;
+    }
+
+    async function loadBskHistory() {
+      try {
+        const response = await fetch("./api/list_student_bsk.php?limit=10", { method: "GET" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderBskHistory(Array.isArray(payload.records) ? payload.records : []);
+      } catch (err) {
+        document.getElementById("bskHistoryWrap").textContent = `Verlauf konnte nicht geladen werden: ${err.message}`;
+      }
+    }
+
+    function renderBskTasks(tasks) {
+      const wrap = document.getElementById("bskTaskWrap");
+      wrap.innerHTML = "";
+      tasks.forEach((item, idx) => {
+        const box = document.createElement("article");
+        box.className = "lid-question";
+        box.setAttribute("data-bsk-index", String(idx));
+        box.innerHTML = `<h4>${idx + 1}. ${item.q}</h4><p class="lid-stimulus">${escapeHtml(item.stimulus)}</p>`;
+        const options = document.createElement("div");
+        options.className = "lid-options";
+        item.options.forEach((opt, i) => {
+          const label = document.createElement("label");
+          label.className = "lid-option";
+          label.innerHTML = `<input type="radio" name="bsk_q_${idx}" value="${i}"><span>${escapeHtml(opt)}</span>`;
+          options.appendChild(label);
+        });
+        box.appendChild(options);
+        wrap.appendChild(box);
+      });
+    }
+
+    function evaluateBskPack() {
+      if (!currentBskPack || !Array.isArray(currentBskPack.tasks) || !currentBskPack.tasks.length) {
+        setBskStatus("error", "Bitte zuerst BSK-Aufgaben generieren.");
+        return null;
+      }
+
+      clearBskStatus();
+      let correct = 0;
+      let wrong = 0;
+      let unanswered = 0;
+      const details = [];
+
+      currentBskPack.tasks.forEach((item, idx) => {
+        const qNode = document.querySelector(`.lid-question[data-bsk-index="${idx}"]`);
+        if (!qNode) return;
+        qNode.classList.remove("correct", "wrong");
+        const old = qNode.querySelector(".lid-answer-note");
+        if (old) old.remove();
+
+        const checked = document.querySelector(`input[name="bsk_q_${idx}"]:checked`);
+        if (!checked) {
+          unanswered += 1;
+          qNode.classList.add("wrong");
+          const note = document.createElement("div");
+          note.className = "lid-answer-note";
+          note.textContent = `Richtig: ${item.options[item.correct] || "-"}`;
+          qNode.appendChild(note);
+          details.push({ question: item.q, selected: "", correct: item.options[item.correct] || "", is_correct: false });
+          return;
+        }
+
+        const selectedIdx = Number.parseInt(checked.value, 10);
+        const selectedText = item.options[selectedIdx] || "";
+        if (selectedIdx === item.correct) {
+          correct += 1;
+          qNode.classList.add("correct");
+          details.push({ question: item.q, selected: selectedText, correct: item.options[item.correct] || "", is_correct: true });
+          return;
+        }
+
+        wrong += 1;
+        qNode.classList.add("wrong");
+        const note = document.createElement("div");
+        note.className = "lid-answer-note";
+        note.textContent = `Richtig: ${item.options[item.correct] || "-"}`;
+        qNode.appendChild(note);
+        details.push({ question: item.q, selected: selectedText, correct: item.options[item.correct] || "", is_correct: false });
+      });
+
+      const summary = document.getElementById("bskScoreSummary");
+      summary.className = "lid-summary";
+      summary.textContent = `Ergebnis: ${correct}/${currentBskPack.tasks.length} richtig | Falsch: ${wrong} | Offen: ${unanswered}.`;
+
+      currentBskResult = {
+        total: currentBskPack.tasks.length,
+        correct,
+        wrong,
+        unanswered,
+        details
+      };
+      return currentBskResult;
+    }
+
+    async function saveBskResult() {
+      if (!currentBskPack) {
+        setBskStatus("error", "Bitte zuerst BSK-Aufgaben generieren.");
+        return;
+      }
+      const result = currentBskResult || evaluateBskPack();
+      if (!result) return;
+
+      const btn = document.getElementById("saveBskBtn");
+      btn.disabled = true;
+      btn.textContent = "Wird gespeichert...";
+      clearBskStatus();
+
+      try {
+        const response = await fetch("./api/save_bsk.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            goal: currentBskPack.goal,
+            level: currentBskPack.level,
+            field: currentBskPack.field,
+            difficulty: currentBskPack.difficulty || "",
+            source: "generated_internal",
+            recommendation: currentBskPack.recommendation,
+            score_total: result.total,
+            score_correct: result.correct,
+            score_wrong: result.wrong,
+            score_open: result.unanswered,
+            answers: result.details
+          })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBskStatus("ok", `BSK-Ergebnis gespeichert (ID: ${payload.record_id || "-"})`);
+        loadBskHistory();
+      } catch (err) {
+        setBskStatus("error", `Speichern fehlgeschlagen: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "BSK-Ergebnis speichern";
+      }
+    }
+
+    function generateBskPack() {
+      const goal = document.getElementById("bskGoal").value;
+      const level = document.getElementById("bskLevel").value;
+      const field = document.getElementById("bskField").value;
+      const difficultyRaw = document.getElementById("bskDifficulty").value;
+      const difficulty = normalizeDifficulty(level, difficultyRaw);
+      const recommendation = buildBskRecommendation(goal, level, field);
+      const tasks = buildBskTasks(level, field, difficultyRaw);
+
+      currentBskPack = { goal, level, field, difficulty, recommendation, tasks };
+      currentBskResult = null;
+
+      document.getElementById("bskSummary").textContent = recommendation;
+      clearBskScoreSummary();
+      clearBskStatus();
+      renderBskTasks(tasks);
+    }
+
+    function shuffleArray(list) {
+      const arr = list.slice();
+      for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+      }
+      return arr;
+    }
+
+    function setMainView(mode) {
+      const map = {
+        correction: "workCard",
+        portal: "portalCard",
+        room: "roomCard",
+        simulation: "simulationCard",
+        bsk: "bskCard",
+        lid: "lidClassicCard",
+        speaking: "speakingCard"
+      };
+      ["workCard", "portalCard", "roomCard", "simulationCard", "bskCard", "speakingCard", "lidClassicCard"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      if (map[mode]) {
+        document.getElementById(map[mode]).classList.remove("hidden");
+      }
+      if (mode !== "correction") {
+        document.getElementById("resultSection").classList.add("hidden");
+      }
+    }
+
+    function showStudentApp(identityText) {
+      document.getElementById("studentAuthCard").classList.add("hidden");
+      setMainView("portal");
+      const memberPanel = document.getElementById("memberPanel");
+      memberPanel.classList.remove("hidden");
+      document.getElementById("studentIdentity").textContent = identityText || "Angemeldet";
+      currentStudentLabel = identityText || "Angemeldet";
+      loadBskHistory();
+      loadStudentPortal();
+    }
+
+    function openCorrectionView() {
+      setMainView("correction");
+    }
+
+    function openPortalView() {
+      setMainView("portal");
+      loadStudentPortal();
+    }
+
+    function openSimulationView() {
+      setMainView("simulation");
+      ensureSimulationTask();
+      renderSimulationState();
+    }
+
+    function openRoomView() {
+      setMainView("room");
+      if (!currentRoom) {
+        resetRoomView();
+      } else {
+        refreshRoomStatus();
+      }
+    }
+
+    function openBskView() {
+      setMainView("bsk");
+      loadBskHistory();
+    }
+
+    function openLidView() {
+      setMainView("lid");
+      generateClassicLidExam();
+    }
+
+    function openSpeakingView() {
+      setMainView("speaking");
+      generateSpeakingSet();
+      setSpeakingTab(1);
+    }
+
+    function showStudentLogin() {
+      setMainView("");
+      document.getElementById("resultSection").classList.add("hidden");
+      document.getElementById("memberPanel").classList.add("hidden");
+      document.getElementById("studentAuthCard").classList.remove("hidden");
+      stopRoomPolling();
+      if (simulationTimerId) {
+        clearInterval(simulationTimerId);
+        simulationTimerId = null;
+      }
+    }
+
+    function closeNavOnMobile() {
+      const nav = document.getElementById("topNav");
+      if (nav) nav.classList.remove("open");
+    }
+
+    function navigateToSection(target) {
+      const loggedIn = document.getElementById("studentAuthCard").classList.contains("hidden");
+      if (!loggedIn) {
+        showStudentLogin();
+        document.getElementById("studentAuthCard").scrollIntoView({ behavior: "smooth", block: "start" });
+        closeNavOnMobile();
+        return;
+      }
+
+      if (target === "home") {
+        setMainView("portal");
+      } else if (target === "portal") {
+        openPortalView();
+      } else if (target === "simulation") {
+        openSimulationView();
+      } else if (target === "room") {
+        openRoomView();
+      } else if (target === "write") {
+        openCorrectionView();
+      } else if (target === "bsk") {
+        openBskView();
+      } else if (target === "lid") {
+        openLidView();
+      } else if (target === "speaking") {
+        openSpeakingView();
+      }
+
+      const hero = document.querySelector(".hero");
+      if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
+      closeNavOnMobile();
+    }
+
+    function pickOne(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function setList(nodeId, items) {
+      const node = document.getElementById(nodeId);
+      node.innerHTML = "";
+      items.forEach(point => {
+        const li = document.createElement("li");
+        li.textContent = point;
+        node.appendChild(li);
+      });
+    }
+
+    function buildPart2ImageSvg(topic) {
+      const pexels = id => {
+        const raw = String(id || "");
+        const match = raw.match(/\d+/);
+        const photoId = match ? match[0] : "";
+        if (!photoId) return "";
+        return `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=srgb&fit=crop&w=1200&h=560`;
+      };
+      const pool = {
+        bahnhof: [
+          pexels("33983760"),
+          pexels("16487926"),
+          pexels("19091397"),
+          pexels("17621946"),
+          pexels("11218598")
+        ],
+        arzt: [
+          pexels("7108157"),
+          pexels("5215008"),
+          pexels("4266939"),
+          pexels("7659876")
+        ],
+        supermarkt: [
+          pexels("3985055"),
+          pexels("34175286"),
+          pexels("9016541"),
+          pexels("20157487")
+        ],
+        kurs: [
+          pexels("5676667"),
+          pexels("5676748"),
+          pexels("5676746"),
+          pexels("5756744")
+        ],
+        familie: [
+          pexels("5082867"),
+          pexels("5888370"),
+          pexels("4261791"),
+          pexels("4259136")
+        ],
+        bibliothek: [
+          pexels("159711/books-bookstore-book-reading-159711"),
+          pexels("1370295/pexels-photo-1370295"),
+          pexels("590493/pexels-photo-590493"),
+          pexels("256541/pexels-photo-256541")
+        ],
+        restaurant: [
+          pexels("262978/pexels-photo-262978"),
+          pexels("67468/pexels-photo-67468"),
+          pexels("776538/pexels-photo-776538"),
+          pexels("1581384/pexels-photo-1581384")
+        ],
+        buero: [
+          pexels("1181396/pexels-photo-1181396"),
+          pexels("3184291/pexels-photo-3184291"),
+          pexels("3184339/pexels-photo-3184339"),
+          pexels("3184465/pexels-photo-3184465")
+        ],
+        spielplatz: [
+          pexels("3662667/pexels-photo-3662667"),
+          pexels("3662820/pexels-photo-3662820"),
+          pexels("1128318/pexels-photo-1128318"),
+          pexels("3661241/pexels-photo-3661241")
+        ],
+        park: [
+          pexels("853168/pexels-photo-853168"),
+          pexels("842548/pexels-photo-842548"),
+          pexels("1462630/pexels-photo-1462630"),
+          pexels("775201/pexels-photo-775201")
+        ],
+        markt: [
+          pexels("264636/pexels-photo-264636"),
+          pexels("264507/pexels-photo-264507"),
+          pexels("2252584/pexels-photo-2252584"),
+          pexels("533325/pexels-photo-533325")
+        ],
+        sport: [
+          pexels("1552242/pexels-photo-1552242"),
+          pexels("1552106/pexels-photo-1552106"),
+          pexels("3764011/pexels-photo-3764011"),
+          pexels("936094/pexels-photo-936094")
+        ]
+      };
+
+      function buildGeneratedFallback(label) {
+        const safeLabel = String(label || "Bildthema").replace(/</g, "").replace(/>/g, "");
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#24334f"/>
+                <stop offset="100%" stop-color="#4f5b7f"/>
+              </linearGradient>
+            </defs>
+            <rect width="1200" height="720" fill="url(#g1)"/>
+            <circle cx="1030" cy="140" r="170" fill="rgba(242,132,158,0.22)"/>
+            <circle cx="180" cy="640" r="190" fill="rgba(49,146,214,0.16)"/>
+            <rect x="120" y="120" width="960" height="480" rx="26" fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.28)"/>
+            <text x="160" y="210" fill="#ffffff" font-size="44" font-family="Comfortaa, Trebuchet MS, sans-serif">DTZ Sprechen - Teil 2</text>
+            <text x="160" y="290" fill="#e4edff" font-size="54" font-weight="700" font-family="Comfortaa, Trebuchet MS, sans-serif">${safeLabel}</text>
+            <text x="160" y="360" fill="#f6f8ff" font-size="30" font-family="Comfortaa, Trebuchet MS, sans-serif">Beschreiben Sie die Situation auf dem Bild.</text>
+          </svg>
+        `.trim();
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+      }
+
+      const scene = String(topic.scene || "kurs");
+      const items = pool[scene] || pool.kurs;
+      const primaryCandidates = (items || [])
+        .map(url => (url ? `${url}&v=${Date.now()}` : ""))
+        .filter(Boolean);
+      const backup = buildGeneratedFallback(topic.title || scene);
+      return { primaryCandidates, backup };
+    }
+
+    function generateSpeakingSet() {
+      currentSpeakingSet = {
+        part1: SPEAKING_PART1_FIXED,
+        part2: pickOne(SPEAKING_PART2_TOPICS),
+        part3: pickOne(SPEAKING_PART3_TOPICS)
+      };
+
+      document.getElementById("speakPart1Lead").textContent = currentSpeakingSet.part1.lead;
+      setList("speakPart1Points", currentSpeakingSet.part1.points);
+
+      document.getElementById("speakPart2Title").textContent = `Teil 2: ${currentSpeakingSet.part2.title}`;
+      document.getElementById("speakPart2Lead").textContent = SPEAKING_PART2_PROMPT;
+      const imageData = buildPart2ImageSvg(currentSpeakingSet.part2);
+      const img = document.getElementById("speakPart2Image");
+      let candidateIndex = 0;
+      img.onerror = () => {
+        if (candidateIndex < imageData.primaryCandidates.length) {
+          img.src = imageData.primaryCandidates[candidateIndex];
+          candidateIndex += 1;
+          return;
+        }
+        if (img.src !== imageData.backup) {
+          img.src = imageData.backup;
+        }
+      };
+      if (imageData.primaryCandidates.length) {
+        img.src = imageData.primaryCandidates[0];
+        candidateIndex = 1;
+      } else {
+        img.src = imageData.backup;
+      }
+      document.getElementById("speakPart2Caption").textContent = "Übungsbild (automatisch generiert) für die Bildbeschreibung.";
+      setList("speakPart2Points", SPEAKING_PART2_POINTS);
+
+      document.getElementById("speakPart3Lead").textContent =
+        `Sie möchten mit Ihrer Gesprächspartnerin / Ihrem Gesprächspartner ${currentSpeakingSet.part3.task}. ` +
+        `Planen Sie gemeinsam ${currentSpeakingSet.part3.plan}. Planen Sie, was Sie tun möchten. ` +
+        `Hier haben Sie einige Notizen.`;
+      setList("speakPart3Points", currentSpeakingSet.part3.points);
+    }
+
+    function setSpeakingTab(tabNo) {
+      [1, 2, 3].forEach(no => {
+        const tab = document.getElementById(`speakTab${no}`);
+        const panel = document.getElementById(`speakPanel${no}`);
+        if (no === tabNo) {
+          tab.classList.add("active");
+          panel.classList.remove("hidden");
+        } else {
+          tab.classList.remove("active");
+          panel.classList.add("hidden");
+        }
+      });
+    }
+
+    function generatePart1Draft() {
+      const nameInput = document.getElementById("spName").value.trim();
+      const ageInput = document.getElementById("spAlter").value.trim();
+      const countryInput = document.getElementById("spLand").value.trim();
+      const cityInput = document.getElementById("spWohnort").value.trim();
+      const languagesInput = document.getElementById("spSprachen").value.trim();
+      const jobInput = document.getElementById("spBeruf").value.trim();
+      const hobbyInput = document.getElementById("spHobby").value.trim();
+
+      const names = ["Aylin Yilmaz", "Mehmet Kaya", "Sara Demir", "Omar Hassan", "Elena Petrova", "Daniel Novak"];
+      const ages = [24, 27, 31, 35, 38, 42];
+      const countries = ["der Türkei", "Syrien", "Polen", "Rumänien", "Bulgarien", "der Ukraine"];
+      const cities = ["Stuttgart", "München", "Köln", "Frankfurt", "Dortmund", "Nürnberg"];
+      const langSets = [
+        "Türkisch und Deutsch",
+        "Arabisch, Deutsch und Englisch",
+        "Polnisch und Deutsch",
+        "Rumänisch und Deutsch",
+        "Bulgarisch und Deutsch",
+        "Ukrainisch, Russisch und Deutsch"
+      ];
+      const jobs = ["Verkäuferin", "Elektriker", "Krankenpflegerin", "Koch", "Fahrer", "Studentin"];
+      const hobbyLines = [
+        "In meiner Freizeit koche ich gern.",
+        "In meiner Freizeit lese ich gern Bücher.",
+        "In meiner Freizeit spiele ich gern Fußball.",
+        "In meiner Freizeit höre ich gern Musik.",
+        "In meiner Freizeit gehe ich gern spazieren.",
+        "In meiner Freizeit fahre ich gern Fahrrad."
+      ];
+
+      const n = nameInput || pickOne(names);
+      const a = ageInput || String(pickOne(ages));
+      const l = countryInput || pickOne(countries);
+      const w = cityInput || pickOne(cities);
+      const s = languagesInput || pickOne(langSets);
+      const b = jobInput || pickOne(jobs);
+      const h = hobbyInput ? `In meiner Freizeit mache ich gern ${hobbyInput}.` : pickOne(hobbyLines);
+
+      const lines = [
+        "Guten Tag.",
+        `Ich heiße ${n}.`,
+        `Ich bin ${a} Jahre alt und komme aus ${l}.`,
+        `Ich wohne in ${w}.`,
+        `Ich spreche ${s}.`,
+        `Von Beruf bin ich ${b}.`,
+        h,
+        "Vielen Dank."
+      ];
+
+      document.getElementById("speakPart1Draft").textContent = lines.join("\n");
+    }
+
+    function createExamQuestion(raw, index) {
+      const options = raw.options.map((text, i) => ({ id: `q${index}_o${i}`, text, isCorrect: i === raw.correct }));
+      const shuffledOptions = shuffleArray(options);
+      return {
+        teil: raw.teil || 0,
+        q: raw.q,
+        stimulus: raw.stimulus || "",
+        options: shuffledOptions
+      };
+    }
+
+    function generateLidExam() {
+      const pool1 = LESEN_PART1_POOL.concat(buildLesenDynamicPart1(12));
+      const pool2 = LESEN_PART2_POOL.concat(buildLesenDynamicPart2(12));
+      const pool3 = LESEN_PART3_POOL.concat(buildLesenDynamicPart3(12));
+      const pool4 = LESEN_PART4_POOL.concat(buildLesenDynamicPart4(12));
+      const pool5 = LESEN_PART5_POOL.concat(buildLesenDynamicPart5(12));
+
+      const p1 = shuffleArray(pool1).slice(0, 5).map((item, i) => createExamQuestion({ ...item, teil: 1 }, i));
+      const p2 = shuffleArray(pool2).slice(0, 5).map((item, i) => createExamQuestion({ ...item, teil: 2 }, 5 + i));
+      const p3 = shuffleArray(pool3).slice(0, 5).map((item, i) => createExamQuestion({ ...item, teil: 3 }, 10 + i));
+      const p4 = shuffleArray(pool4).slice(0, 5).map((item, i) => createExamQuestion({ ...item, teil: 4 }, 15 + i));
+      const p5 = shuffleArray(pool5).slice(0, 5).map((item, i) => createExamQuestion({ ...item, teil: 5 }, 20 + i));
+      currentLidExam = {
+        1: p1,
+        2: p2,
+        3: p3,
+        4: p4,
+        5: p5
+      };
+      currentLesenAnswers = { 1: {}, 2: {}, 3: {}, 4: {}, 5: {} };
+      currentLesenTeil = 1;
+      setLesenTab(1);
+      renderLidExam();
+      clearLidSummary();
+    }
+
+    function setLesenTab(tabNo) {
+      currentLesenTeil = tabNo;
+      [1, 2, 3, 4, 5].forEach(no => {
+        const tab = document.getElementById(`lesenTab${no}`);
+        if (!tab) return;
+        if (no === tabNo) tab.classList.add("active");
+        else tab.classList.remove("active");
+      });
+      renderLidExam();
+      clearLidSummary();
+    }
+
+    function renderLidExam() {
+      const wrap = document.getElementById("lidQuestionsWrap");
+      wrap.innerHTML = "";
+      const items = currentLidExam[currentLesenTeil] || [];
+      items.forEach((item, idx) => {
+        const box = document.createElement("article");
+        box.className = "lid-question";
+        box.setAttribute("data-q-index", String(idx));
+        const title = document.createElement("h4");
+        title.textContent = `${idx + 1}. Teil ${currentLesenTeil}: ${item.q}`;
+        box.appendChild(title);
+
+        if (item.stimulus) {
+          const stimulus = document.createElement("p");
+          stimulus.className = "lid-stimulus";
+          stimulus.textContent = item.stimulus;
+          box.appendChild(stimulus);
+        }
+
+        const optionsWrap = document.createElement("div");
+        optionsWrap.className = "lid-options";
+
+        item.options.forEach((option, opIdx) => {
+          const label = document.createElement("label");
+          label.className = "lid-option";
+          const checked = currentLesenAnswers[currentLesenTeil] && currentLesenAnswers[currentLesenTeil][idx] === opIdx ? "checked" : "";
+          label.innerHTML = `
+            <input type="radio" name="lid_q_${currentLesenTeil}_${idx}" value="${opIdx}" ${checked}>
+            <span>${escapeHtml(option.text)}</span>
+          `;
+          optionsWrap.appendChild(label);
+        });
+
+        box.appendChild(optionsWrap);
+        wrap.appendChild(box);
+      });
+
+      wrap.querySelectorAll("input[type='radio']").forEach(input => {
+        input.addEventListener("change", () => {
+          const name = input.getAttribute("name") || "";
+          const m = name.match(/^lid_q_(\d+)_(\d+)$/);
+          if (!m) return;
+          const teil = Number.parseInt(m[1], 10);
+          const qIdx = Number.parseInt(m[2], 10);
+          const value = Number.parseInt(input.value, 10);
+          if (!currentLesenAnswers[teil]) currentLesenAnswers[teil] = {};
+          currentLesenAnswers[teil][qIdx] = value;
+        });
+      });
+    }
+
+    function clearLidSummary() {
+      const summary = document.getElementById("lidSummary");
+      summary.className = "hidden";
+      summary.textContent = "";
+    }
+
+    function evaluateLidExam() {
+      const items = currentLidExam[currentLesenTeil] || [];
+      if (!items.length) {
+        generateLidExam();
+        return;
+      }
+      let correct = 0;
+      let wrong = 0;
+      let unanswered = 0;
+
+      items.forEach((item, idx) => {
+        const qNode = document.querySelector(`.lid-question[data-q-index="${idx}"]`);
+        if (!qNode) return;
+        qNode.classList.remove("correct", "wrong");
+        const existingNote = qNode.querySelector(".lid-answer-note");
+        if (existingNote) existingNote.remove();
+
+        const stored = currentLesenAnswers[currentLesenTeil] ? currentLesenAnswers[currentLesenTeil][idx] : undefined;
+        if (stored === undefined || stored === null || Number.isNaN(stored)) {
+          unanswered += 1;
+          qNode.classList.add("wrong");
+          const note = document.createElement("div");
+          note.className = "lid-answer-note";
+          const right = item.options.find(x => x.isCorrect);
+          note.textContent = `Richtig: ${right ? right.text : "-"}`;
+          qNode.appendChild(note);
+          return;
+        }
+
+        const selected = item.options[stored];
+        if (selected && selected.isCorrect) {
+          correct += 1;
+          qNode.classList.add("correct");
+        } else {
+          wrong += 1;
+          qNode.classList.add("wrong");
+          const note = document.createElement("div");
+          note.className = "lid-answer-note";
+          const right = item.options.find(x => x.isCorrect);
+          note.textContent = `Richtig: ${right ? right.text : "-"}`;
+          qNode.appendChild(note);
+        }
+      });
+
+      const summary = document.getElementById("lidSummary");
+      summary.className = "lid-summary";
+      summary.textContent = `Teil ${currentLesenTeil}: ${correct}/5 richtig | Falsch: ${wrong} | Offen: ${unanswered}.`;
+    }
+
+    function createClassicLidQuestion(raw, index) {
+      const options = raw.options.map((text, i) => ({ id: `clq${index}_o${i}`, text, isCorrect: i === raw.correct }));
+      return {
+        q: raw.q,
+        isBw: !!raw.isBw,
+        options: shuffleArray(options)
+      };
+    }
+
+    function generateClassicLidExam() {
+      const general = shuffleArray(LID_GENERAL_POOL).slice(0, 30).map((item, i) => createClassicLidQuestion({ ...item, isBw: false }, i));
+      const bw = shuffleArray(LID_BW_POOL).slice(0, 3).map((item, i) => createClassicLidQuestion({ ...item, isBw: true }, 30 + i));
+      currentClassicLidExam = shuffleArray(general.concat(bw));
+      renderClassicLidExam();
+      clearClassicLidSummary();
+    }
+
+    function renderClassicLidExam() {
+      const wrap = document.getElementById("classicLidQuestionsWrap");
+      wrap.innerHTML = "";
+      currentClassicLidExam.forEach((item, idx) => {
+        const box = document.createElement("article");
+        box.className = "lid-question";
+        box.setAttribute("data-clq-index", String(idx));
+        const title = document.createElement("h4");
+        title.textContent = `${idx + 1}. ${item.q}${item.isBw ? " (Baden-Württemberg)" : ""}`;
+        box.appendChild(title);
+
+        const optionsWrap = document.createElement("div");
+        optionsWrap.className = "lid-options";
+        item.options.forEach((option, opIdx) => {
+          const label = document.createElement("label");
+          label.className = "lid-option";
+          label.innerHTML = `
+            <input type="radio" name="classic_lid_q_${idx}" value="${opIdx}">
+            <span>${escapeHtml(option.text)}</span>
+          `;
+          optionsWrap.appendChild(label);
+        });
+        box.appendChild(optionsWrap);
+        wrap.appendChild(box);
+      });
+    }
+
+    function clearClassicLidSummary() {
+      const summary = document.getElementById("classicLidSummary");
+      summary.className = "hidden";
+      summary.textContent = "";
+    }
+
+    function evaluateClassicLidExam() {
+      if (!currentClassicLidExam.length) {
+        generateClassicLidExam();
+        return;
+      }
+      let correct = 0;
+      let wrong = 0;
+      let unanswered = 0;
+
+      currentClassicLidExam.forEach((item, idx) => {
+        const qNode = document.querySelector(`.lid-question[data-clq-index="${idx}"]`);
+        if (!qNode) return;
+        qNode.classList.remove("correct", "wrong");
+        const existingNote = qNode.querySelector(".lid-answer-note");
+        if (existingNote) existingNote.remove();
+
+        const checked = document.querySelector(`input[name="classic_lid_q_${idx}"]:checked`);
+        if (!checked) {
+          unanswered += 1;
+          qNode.classList.add("wrong");
+          const note = document.createElement("div");
+          note.className = "lid-answer-note";
+          const right = item.options.find(x => x.isCorrect);
+          note.textContent = `Richtig: ${right ? right.text : "-"}`;
+          qNode.appendChild(note);
+          return;
+        }
+
+        const selectedIdx = Number.parseInt(checked.value, 10);
+        const selected = item.options[selectedIdx];
+        if (selected && selected.isCorrect) {
+          correct += 1;
+          qNode.classList.add("correct");
+        } else {
+          wrong += 1;
+          qNode.classList.add("wrong");
+          const note = document.createElement("div");
+          note.className = "lid-answer-note";
+          const right = item.options.find(x => x.isCorrect);
+          note.textContent = `Richtig: ${right ? right.text : "-"}`;
+          qNode.appendChild(note);
+        }
+      });
+
+      const summary = document.getElementById("classicLidSummary");
+      summary.className = "lid-summary";
+      summary.textContent = `Ergebnis: ${correct}/33 richtig | Falsch: ${wrong} | Offen: ${unanswered}. Für die nächste Übung bitte "Neue Prüfung" klicken.`;
+    }
+
+    function formatSeconds(totalSeconds) {
+      const sec = Math.max(0, Number(totalSeconds || 0));
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function renderPortalList(nodeId, rows, emptyText, renderer) {
+      const wrap = document.getElementById(nodeId);
+      if (!rows || !rows.length) {
+        wrap.textContent = emptyText;
+        return;
+      }
+      wrap.innerHTML = rows.map(renderer).join("");
+    }
+
+    function renderPortalData(payload) {
+      const results = Array.isArray(payload.results) ? payload.results : [];
+      const homeworks = Array.isArray(payload.homeworks) ? payload.homeworks : [];
+      const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
+      const readiness = payload.readiness || {};
+
+      renderPortalList(
+        "portalResultsWrap",
+        results,
+        "Noch keine Ergebnisse.",
+        row => `
+          <div class="portal-item">
+            <strong>${escapeHtml(row.type || "Eintrag")} | ${escapeHtml((row.created_at || "").slice(0, 10))}</strong>
+            <div>${escapeHtml(row.detail || "-")}</div>
+            <div>Wert: ${escapeHtml(row.score_label || "-")} (${Math.max(0, Math.min(100, Number(row.percent || 0)))}%)</div>
+          </div>
+        `
+      );
+
+      renderPortalList(
+        "portalHomeworkWrap",
+        homeworks,
+        "Noch keine Hausaufgaben.",
+        row => `
+          <div class="portal-item">
+            <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
+            <div>${escapeHtml(row.description || "-")}</div>
+            <div>Fällig: ${escapeHtml(row.due_date || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
+          </div>
+        `
+      );
+
+      renderPortalList(
+        "portalNotesWrap",
+        notes,
+        "Noch keine Notizen.",
+        row => `
+          <div class="portal-item">
+            <strong>${escapeHtml((row.created_at || "").slice(0, 10))} | ${escapeHtml(row.teacher || "Lehrkraft")}</strong>
+            <div>${escapeHtml(row.note || "-")}</div>
+          </div>
+        `
+      );
+
+      const dtz = Math.max(0, Math.min(100, Number(readiness.dtz || 0)));
+      const dtb = Math.max(0, Math.min(100, Number(readiness.dtb || 0)));
+      const missing = Array.isArray(readiness.missing_topics) ? readiness.missing_topics : [];
+      const missingHtml = missing.length
+        ? missing.map(item => `<span class="tag missing">${escapeHtml(item)}</span>`).join("")
+        : '<span class="muted">Keine kritischen Lücken erkannt.</span>';
+      document.getElementById("portalReadinessWrap").innerHTML = `
+        <div class="portal-item">
+          <strong>DTZ-Bereitschaft: ${dtz}%</strong>
+          <div class="progress-bar"><div class="progress-value" style="width:${dtz}%;"></div></div>
+        </div>
+        <div class="portal-item">
+          <strong>DTB-Bereitschaft: ${dtb}%</strong>
+          <div class="progress-bar"><div class="progress-value" style="width:${dtb}%;"></div></div>
+        </div>
+        <div class="portal-item">
+          <strong>Fehlende Schwerpunkte</strong>
+          <div class="tags" style="margin-top:6px;">${missingHtml}</div>
+        </div>
+      `;
+    }
+
+    async function loadStudentPortal() {
+      clearPortalStatus();
+      try {
+        const response = await fetch("./api/student_portal.php", { method: "GET" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderPortalData(payload);
+      } catch (err) {
+        setPortalStatus("error", `Portal konnte nicht geladen werden: ${err.message}`);
+      }
+    }
+
+    function ensureSimulationTask() {
+      if (!simulationState.taskPrompt) {
+        simulationState.taskPrompt = pickOne(SIMULATION_TASK_POOL);
+      }
+      const taskNode = document.getElementById("simulationTask");
+      if (taskNode) taskNode.value = simulationState.taskPrompt;
+    }
+
+    function updateSimulationTimer() {
+      const timerNode = document.getElementById("simulationTimer");
+      const chip = document.getElementById("simulationStatus");
+      const textNode = document.getElementById("simulationText");
+      const remaining = simulationState.endAt ? Math.floor((simulationState.endAt - Date.now()) / 1000) : 0;
+      timerNode.textContent = formatSeconds(remaining);
+
+      if (!simulationState.active) {
+        chip.textContent = simulationState.locked ? "Gesperrt" : "Nicht gestartet";
+        chip.className = simulationState.locked ? "sim-chip locked" : "sim-chip";
+        textNode.readOnly = !!simulationState.locked;
+        return;
+      }
+      chip.textContent = "Läuft";
+      chip.className = "sim-chip live";
+      textNode.readOnly = false;
+
+      if (remaining <= 0) {
+        finishSimulation(true);
+      }
+    }
+
+    function renderSimulationState() {
+      ensureSimulationTask();
+      updateSimulationTimer();
+    }
+
+    function inferMissingTopics(result) {
+      const map = {};
+      (result.mistakes || []).forEach(m => {
+        const t = String(m.type || "").toLowerCase();
+        if (t.includes("grammatik")) map["Grammatik"] = (map["Grammatik"] || 0) + 1;
+        if (t.includes("rechtschreibung")) map["Orthografie"] = (map["Orthografie"] || 0) + 1;
+        if (t.includes("aufgaben")) map["Aufgabenbezug"] = (map["Aufgabenbezug"] || 0) + 1;
+        if (t.includes("text")) map["Textaufbau"] = (map["Textaufbau"] || 0) + 1;
+      });
+      return Object.keys(map).sort((a, b) => map[b] - map[a]).slice(0, 5);
+    }
+
+    function renderSimulationReport(result, autoLocked) {
+      const report = document.getElementById("simulationReport");
+      report.className = "sim-report";
+      report.innerHTML = `
+        <h3>Simulationsbericht</h3>
+        <div>Punkte: <strong>${result.score_total}/20</strong> | Niveau: <strong>${escapeHtml(result.niveau_einschaetzung || "-")}</strong></div>
+        <div>Wörter: <strong>${countWords(document.getElementById("simulationText").value)}</strong> | Abschluss: <strong>${autoLocked ? "Automatisch" : "Manuell"}</strong></div>
+      `;
+    }
+
+    async function persistSimulationResult(result, autoLocked) {
+      try {
+        await fetch("./api/save_simulation.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            duration_minutes: simulationState.durationMinutes,
+            score_total: result.score_total,
+            niveau: result.niveau_einschaetzung,
+            word_count: countWords(document.getElementById("simulationText").value),
+            started_at: simulationState.startedAt ? new Date(simulationState.startedAt).toISOString() : "",
+            ended_at: new Date().toISOString(),
+            auto_locked: autoLocked,
+            task_prompt: simulationState.taskPrompt,
+            letter_text: document.getElementById("simulationText").value.trim(),
+            rubric: result.rubric || {},
+            missing_topics: inferMissingTopics(result)
+          })
+        });
+      } catch (_) {
+      }
+    }
+
+    function startSimulation() {
+      clearStatus();
+      const text = document.getElementById("simulationText").value.trim();
+      if (text.length > 0) {
+        document.getElementById("simulationText").value = "";
+      }
+      ensureSimulationTask();
+      simulationState.durationMinutes = Number.parseInt(document.getElementById("simulationDuration").value, 10) || 45;
+      simulationState.startedAt = Date.now();
+      simulationState.endAt = simulationState.startedAt + simulationState.durationMinutes * 60 * 1000;
+      simulationState.active = true;
+      simulationState.locked = false;
+      simulationState.ended = false;
+      document.getElementById("simulationAlert").className = "ok";
+      document.getElementById("simulationAlert").textContent = "Simulation läuft. Der Text wird bei Zeitablauf automatisch gesperrt.";
+      document.getElementById("simulationReport").className = "hidden";
+      if (simulationTimerId) clearInterval(simulationTimerId);
+      simulationTimerId = setInterval(updateSimulationTimer, 1000);
+      updateSimulationTimer();
+    }
+
+    function finishSimulation(autoLocked) {
+      if (simulationState.ended) return;
+      simulationState.ended = true;
+      simulationState.active = false;
+      simulationState.locked = true;
+      if (simulationTimerId) {
+        clearInterval(simulationTimerId);
+        simulationTimerId = null;
+      }
+      const letterText = document.getElementById("simulationText").value.trim();
+      const result = localCorrection(letterText || " ", []);
+      renderSimulationReport(result, autoLocked);
+      persistSimulationResult(result, autoLocked);
+      document.getElementById("simulationStatus").className = "sim-chip locked";
+      document.getElementById("simulationStatus").textContent = autoLocked ? "Automatisch beendet" : "Abgegeben";
+      document.getElementById("simulationText").readOnly = true;
+      document.getElementById("simulationAlert").className = autoLocked ? "error" : "ok";
+      document.getElementById("simulationAlert").textContent = autoLocked
+        ? "Zeit ist abgelaufen. Die Sitzung wurde automatisch gesperrt."
+        : "Simulation wurde abgegeben und gesperrt.";
+      loadStudentPortal();
+    }
+
+    function resetRoomView() {
+      const chip = document.getElementById("roomStateChip");
+      const timer = document.getElementById("roomTimer");
+      chip.className = "sim-chip";
+      chip.textContent = "Nicht verbunden";
+      timer.textContent = "00:00";
+      document.getElementById("roomPromptText").value = "";
+      document.getElementById("roomTitleInput").value = "";
+      document.getElementById("roomAnswerText").readOnly = true;
+    }
+
+    function stopRoomPolling() {
+      if (roomPollTimerId) {
+        clearInterval(roomPollTimerId);
+        roomPollTimerId = null;
+      }
+    }
+
+    async function joinRoom() {
+      clearRoomStatus();
+      const code = document.getElementById("roomCodeInput").value.trim().toUpperCase();
+      if (!code) {
+        setRoomStatus("error", "Bitte Raumcode eingeben.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/room_join.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        currentRoom = payload.room || null;
+        document.getElementById("roomTitleInput").value = `${currentRoom.title || "Saal"} (${currentRoom.code || code})`;
+        document.getElementById("roomPromptText").value = currentRoom.prompt || "";
+        document.getElementById("roomAnswerText").readOnly = false;
+        setRoomStatus("ok", "Beitritt erfolgreich. Bearbeiten Sie die Aufgabe im Zeitfenster.");
+        stopRoomPolling();
+        roomPollTimerId = setInterval(refreshRoomStatus, 5000);
+        refreshRoomStatus();
+      } catch (err) {
+        setRoomStatus("error", `Beitritt fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function refreshRoomStatus() {
+      if (!currentRoom || !currentRoom.code) return;
+      try {
+        const response = await fetch(`./api/room_status.php?code=${encodeURIComponent(currentRoom.code)}`, { method: "GET" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const room = payload.room || {};
+        const remaining = Number(room.remaining_seconds || 0);
+        document.getElementById("roomTimer").textContent = formatSeconds(remaining);
+        const chip = document.getElementById("roomStateChip");
+        const closed = !!room.closed;
+        const submitted = !!room.submitted;
+        if (closed || submitted || remaining <= 0) {
+          chip.className = "sim-chip locked";
+          chip.textContent = submitted ? "Abgegeben" : "Geschlossen";
+          document.getElementById("roomAnswerText").readOnly = true;
+          stopRoomPolling();
+          if (closed && !submitted) {
+            setRoomStatus("error", "Zeitfenster beendet. Raum wurde geschlossen.");
+          }
+        } else {
+          chip.className = "sim-chip live";
+          chip.textContent = "Aktiv";
+          document.getElementById("roomAnswerText").readOnly = false;
+        }
+      } catch (err) {
+        stopRoomPolling();
+        setRoomStatus("error", `Statusfehler: ${err.message}`);
+      }
+    }
+
+    async function submitRoomAnswer() {
+      clearRoomStatus();
+      if (!currentRoom || !currentRoom.code) {
+        setRoomStatus("error", "Bitte zuerst einem Raum beitreten.");
+        return;
+      }
+      const text = document.getElementById("roomAnswerText").value.trim();
+      if (!text) {
+        setRoomStatus("error", "Bitte zuerst eine Antwort schreiben.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/room_submit.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: currentRoom.code, text })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        document.getElementById("roomAnswerText").readOnly = true;
+        document.getElementById("roomStateChip").className = "sim-chip locked";
+        document.getElementById("roomStateChip").textContent = "Abgegeben";
+        setRoomStatus("ok", "Antwort erfolgreich abgegeben.");
+        stopRoomPolling();
+      } catch (err) {
+        setRoomStatus("error", `Abgabe fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function checkStudentSession() {
+      try {
+        const response = await fetch("./api/student_session.php", { method: "GET" });
+        const payload = await response.json();
+        if (response.ok && payload.authenticated) {
+          const label = payload.display_name ? `${payload.display_name} (${payload.username || ""})` : (payload.username || "Angemeldet");
+          currentStudentUsername = String(payload.username || "");
+          showStudentApp(label);
+        } else {
+          currentStudentUsername = "";
+          showStudentLogin();
+          resetRoomView();
+        }
+      } catch (_) {
+        currentStudentUsername = "";
+        showStudentLogin();
+        resetRoomView();
+      }
+    }
+
+    async function loginStudent() {
+      clearAuthStatus();
+      const button = document.getElementById("studentLoginBtn");
+      button.disabled = true;
+      button.textContent = "Wird angemeldet...";
+      try {
+        const username = document.getElementById("studentUsername").value.trim();
+        const password = document.getElementById("studentPassword").value;
+        if (!username || !password) {
+          setAuthStatus("error", "Bitte Benutzername und Passwort eingeben.");
+          return;
+        }
+        const response = await fetch("./api/student_login.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setAuthStatus("ok", "Login erfolgreich.");
+        currentStudentUsername = String(payload.username || "");
+        const label = payload.display_name ? `${payload.display_name} (${payload.username || ""})` : (payload.username || "Angemeldet");
+        showStudentApp(label);
+      } catch (err) {
+        setAuthStatus("error", `Login fehlgeschlagen: ${err.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Anmelden";
+      }
+    }
+
+    async function logoutStudent() {
+      try {
+        await fetch("./api/student_logout.php", { method: "POST" });
+      } finally {
+        currentStudentUsername = "";
+        currentRoom = null;
+        stopRoomPolling();
+        showStudentLogin();
+      }
+    }
+
+    function clamp(value, min, max, fallback) {
+      const n = Number.parseInt(value, 10);
+      if (Number.isNaN(n)) return fallback;
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function countWords(text) {
+      return (String(text || "").trim().match(/\S+/g) || []).length;
+    }
+
+    function isLikelyMeaningfulGermanText(text) {
+      const normalized = String(text || "").toLowerCase();
+      const tokens = (normalized.match(/[a-zäöüß]+/g) || []).filter(t => t.length >= 2);
+      if (tokens.length < 8) return true;
+
+      const markers = new Set([
+        "ich", "sie", "wir", "und", "oder", "aber", "nicht", "bitte", "danke",
+        "sehr", "geehrte", "mit", "freundlichen", "grüßen", "gruesen", "habe",
+        "möchte", "moechte", "kann", "können", "koennen", "weil", "dass", "für",
+        "fuer", "eine", "einen", "mein", "meine", "dear"
+      ]);
+      const markerHits = tokens.filter(t => markers.has(t)).length;
+      const hardClusterWords = tokens.filter(t => /[bcdfghjklmnpqrstvwxyzß]{5,}/i.test(t)).length;
+      const longWords = tokens.filter(t => t.length >= 12).length;
+      const avgLen = tokens.reduce((sum, t) => sum + t.length, 0) / tokens.length;
+
+      const clusterRatio = hardClusterWords / tokens.length;
+      const longRatio = longWords / tokens.length;
+
+      if (markerHits >= 2) return true;
+      if (clusterRatio > 0.18) return false;
+      if (longRatio > 0.28 && avgLen > 7.5) return false;
+      if (avgLen > 8.6) return false;
+      return true;
+    }
+
+    function parsePoints(raw) {
+      return raw
+        .split(/\r?\n/)
+        .map(line => line.trim().replace(/^[\-•]\s*/, ""))
+        .filter(Boolean);
+    }
+
+    function findLine(text, snippet) {
+      if (!snippet || !snippet.trim()) return 1;
+      const lines = text.split(/\r?\n/);
+      const target = snippet.trim().toLowerCase();
+      for (let i = 0; i < lines.length; i += 1) {
+        if (lines[i].toLowerCase().includes(target)) return i + 1;
+      }
+      return 1;
+    }
+
+    function keywordMatch(point, letterText) {
+      const lower = letterText.toLowerCase();
+      const tokens = (point.toLowerCase().match(/\w+/g) || []).filter(t => t.length >= 4);
+      if (!tokens.length) return lower.includes(point.toLowerCase());
+      return tokens.slice(0, 4).some(t => lower.includes(t));
+    }
+
+    function evaluatePoints(letterText, requiredPoints) {
+      const covered = [];
+      const missing = [];
+      requiredPoints.forEach(point => {
+        if (keywordMatch(point, letterText)) covered.push(point);
+        else missing.push(point);
+      });
+      return { covered, missing };
+    }
+
+    function improveSimple(text) {
+      let out = text.trim()
+        .replace(/[ \t]{2,}/g, " ")
+        .replace(/\s+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n");
+
+      out = out.replace(/(^|[.!?]\s+)([a-z])/gm, (_, p1, p2) => `${p1}${p2.toUpperCase()}`);
+      if (out && !/[.!?]$/.test(out)) out += ".";
+      return out;
+    }
+
+    function normalizeResult(payload, letterText, requiredPoints, source, systemNote) {
+      const rubricRaw = payload && typeof payload.rubric === "object" ? payload.rubric : {};
+      const rubric = {
+        aufgabenbezug: clamp(rubricRaw.aufgabenbezug, 0, 5, 0),
+        textaufbau: clamp(rubricRaw.textaufbau, 0, 5, 0),
+        grammatik: clamp(rubricRaw.grammatik, 0, 5, 0),
+        wortschatz_orthografie: clamp(rubricRaw.wortschatz_orthografie, 0, 5, 0)
+      };
+      let scoreTotal = clamp(payload.score_total, 0, 20, rubric.aufgabenbezug + rubric.textaufbau + rubric.grammatik + rubric.wortschatz_orthografie);
+
+      const mistakesRaw = Array.isArray(payload.mistakes) ? payload.mistakes : [];
+      const mistakes = mistakesRaw.map(item => {
+        const original = String(item.original || "").trim();
+        return {
+          line: clamp(item.line, 1, 9999, findLine(letterText, original)),
+          original,
+          correction: String(item.correction || "").trim(),
+          type: String(item.type || "Sonstiges").trim() || "Sonstiges",
+          explanation_de: String(item.explanation_de || "").trim()
+        };
+      });
+
+      const points = evaluatePoints(letterText, requiredPoints);
+      let niveau = String(payload.niveau_einschaetzung || "").trim();
+      if (!niveau) {
+        if (scoreTotal >= 16) niveau = "B1";
+        else if (scoreTotal >= 10) niveau = "A2-B1";
+        else niveau = "A2";
+      }
+
+      // Word-count guardrails for realistic DTZ levels.
+      const words = countWords(letterText);
+      if (words < 20) {
+        scoreTotal = Math.min(scoreTotal, 6);
+        niveau = "A2";
+      } else if (words < 40) {
+        scoreTotal = Math.min(scoreTotal, 10);
+        if (niveau === "B1") niveau = "A2-B1";
+      }
+      // B1 is only allowed for 50-80 words.
+      if (niveau === "B1" && (words < 50 || words > 80)) {
+        niveau = "A2-B1";
+        scoreTotal = Math.min(scoreTotal, 15);
+      }
+
+      return {
+        score_total: scoreTotal,
+        niveau_einschaetzung: niveau,
+        rubric,
+        mistakes,
+        corrected_letter: String(payload.corrected_letter || "").trim() || letterText.trim(),
+        teacher_feedback_de: String(payload.teacher_feedback_de || "").trim() || "Bitte arbeiten Sie die Fehlerliste durch.",
+        covered_points: points.covered,
+        missing_points: points.missing,
+        source,
+        system_note: systemNote || ""
+      };
+    }
+
+    function localCorrection(letterText, requiredPoints) {
+      const mistakes = [];
+      const seenMistakes = new Set();
+      const addMistake = entry => {
+        const key = `${entry.line}|${entry.type}|${entry.original}`;
+        if (seenMistakes.has(key)) return;
+        seenMistakes.add(key);
+        mistakes.push(entry);
+      };
+      const lines = letterText.split(/\r?\n/);
+      const nonEmpty = lines
+        .map((line, idx) => ({ line: idx + 1, text: line.trim() }))
+        .filter(row => row.text);
+      const words = countWords(letterText);
+      const lowerText = letterText.toLowerCase();
+
+      let salutationOk = false;
+      let closingOk = false;
+      const hasAnlass = /(ich schreibe|ich möchte|ich moechte|wegen|bezüglich|bezueglich|da ich|weil|grund|anliegen)/i.test(lowerText);
+      const hasRequest = /(bitte|könnten sie|koennten sie|ich bitte|wäre es möglich|waere es moeglich|können sie|koennen sie|ich würde mich freuen|ich wuerde mich freuen)/i.test(lowerText);
+
+      if (nonEmpty.length) {
+        const first = nonEmpty[0];
+        if (/^(sehr geehrte|liebe|hallo)/i.test(first.text)) {
+          salutationOk = true;
+        } else {
+          addMistake({
+            line: first.line,
+            original: first.text,
+            correction: "Sehr geehrte Damen und Herren,",
+            type: "Textaufbau",
+            explanation_de: "Am Anfang sollte eine passende Anrede stehen."
+          });
+        }
+
+        const last = nonEmpty[nonEmpty.length - 1];
+        if (/(mit freundlichen grüßen|mit freundlichen gruessen|viele grüße|viele gruesse|freundliche grüße|freundliche gruesse)/i.test(last.text)) {
+          closingOk = true;
+        } else {
+          addMistake({
+            line: last.line,
+            original: last.text,
+            correction: "Mit freundlichen Grüßen\n[Name]",
+            type: "Textaufbau",
+            explanation_de: "Am Ende sollte eine passende Grußformel stehen."
+          });
+        }
+      }
+
+      lines.forEach((line, idx) => {
+        if (/[ \t]{2,}/.test(line)) {
+          addMistake({
+            line: idx + 1,
+            original: line.trim() || line,
+            correction: line.replace(/[ \t]{2,}/g, " "),
+            type: "Rechtschreibung",
+            explanation_de: "Bitte nur ein Leerzeichen verwenden."
+          });
+        }
+      });
+
+      const sentences = letterText.match(/[^.!?\n][^.!?\n]*[.!?]?/g) || [];
+      sentences.forEach(sentence => {
+        const stripped = sentence.trim();
+        if (stripped.split(/\s+/).length < 4) return;
+
+        const lineNo = findLine(letterText, stripped.slice(0, 40));
+        const firstChar = (stripped.match(/[A-Za-zÄÖÜäöüß]/) || [""])[0];
+        if (firstChar && firstChar === firstChar.toLowerCase()) {
+          addMistake({
+            line: lineNo,
+            original: stripped,
+            correction: stripped.replace(firstChar, firstChar.toUpperCase()),
+            type: "Grammatik",
+            explanation_de: "Ein Satz sollte mit Großbuchstaben beginnen."
+          });
+        }
+        if (!/[.!?]$/.test(stripped) && stripped.length > 20) {
+          addMistake({
+            line: lineNo,
+            original: stripped,
+            correction: `${stripped}.`,
+            type: "Rechtschreibung",
+            explanation_de: "Am Satzende fehlt ein Satzzeichen."
+          });
+        }
+      });
+
+      const points = evaluatePoints(letterText, requiredPoints);
+      if (points.missing.length) {
+        addMistake({
+          line: 1,
+          original: "Aufgabenpunkte",
+          correction: "Ergänzen Sie die fehlenden Aufgabenpunkte im Brief.",
+          type: "Aufgabenbezug",
+          explanation_de: "Einige Aufgabenpunkte fehlen im Text."
+        });
+      }
+
+      if (!hasAnlass) {
+        addMistake({
+          line: 1,
+          original: "Anlass fehlt",
+          correction: "Nennen Sie den Grund Ihres Schreibens klar (z. B. 'Ich schreibe Ihnen, weil ...').",
+          type: "Textaufbau",
+          explanation_de: "Ein klarer Anlass ist für DTZ-Schreiben wichtig."
+        });
+      }
+
+      if (!hasRequest) {
+        addMistake({
+          line: 1,
+          original: "Bitte/Wunsch fehlt",
+          correction: "Formulieren Sie eine konkrete Bitte oder einen Wunsch (z. B. 'Könnten Sie bitte ...').",
+          type: "Aufgabenbezug",
+          explanation_de: "Im Brief sollte eine klare Bitte oder Erwartung stehen."
+        });
+      }
+
+      const grammarIssues = mistakes.filter(m => m.type === "Grammatik").length;
+      const writingIssues = mistakes.filter(m => m.type === "Rechtschreibung").length;
+      const structurePenalty = (salutationOk ? 0 : 1) + (closingOk ? 0 : 1) + (hasAnlass ? 0 : 1) + (hasRequest ? 0 : 1);
+      const contentPenalty = points.missing.length + (hasRequest ? 0 : 1);
+      const rubric = {
+        aufgabenbezug: Math.max(0, 5 - Math.min(5, contentPenalty)),
+        textaufbau: Math.max(0, 5 - Math.min(5, structurePenalty) - (words < 40 ? 1 : 0)),
+        grammatik: Math.max(0, 5 - Math.min(4, grammarIssues)),
+        wortschatz_orthografie: Math.max(0, 5 - Math.min(4, writingIssues))
+      };
+      const score = rubric.aufgabenbezug + rubric.textaufbau + rubric.grammatik + rubric.wortschatz_orthografie;
+
+      const payload = {
+        score_total: score,
+        niveau_einschaetzung: (score >= 16 && words >= 50 && words <= 80) ? "B1" : (score >= 10 ? "A2-B1" : "A2"),
+        rubric,
+        mistakes,
+        corrected_letter: improveSimple(letterText),
+        teacher_feedback_de: `Es gibt ${mistakes.length} Korrekturhinweise. Achten Sie auf Aufgabenpunkte und Satzzeichen.`
+      };
+
+      return normalizeResult(payload, letterText, requiredPoints, "local", "Lokale regelbasierte Analyse wurde verwendet.");
+    }
+
+    function extractJson(raw) {
+      if (typeof raw === "object" && raw !== null) return raw;
+      let text = String(raw || "").trim();
+      if (text.startsWith("```")) {
+        text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+      }
+      try {
+        return JSON.parse(text);
+      } catch (_) {
+        const m = text.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error("In der API-Antwort wurde kein JSON gefunden.");
+        return JSON.parse(m[0]);
+      }
+    }
+
+    async function apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints) {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          letter_text: letterText,
+          task_prompt: taskPrompt,
+          required_points: requiredPoints
+        })
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (_) {
+        const text = await response.text();
+        data = extractJson(text);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || `API-Fehler: ${response.status}`);
+      }
+
+      return normalizeResult(
+        data,
+        letterText,
+        requiredPoints,
+        data.source || "api",
+        data.system_note || "API-Modus wurde verwendet."
+      );
+    }
+
+    function collectFormData() {
+      return {
+        studentName: document.getElementById("studentName").value.trim(),
+        letterText: document.getElementById("letterText").value.trim(),
+        taskPrompt: document.getElementById("taskPrompt").value.trim(),
+        requiredPoints: parsePoints(document.getElementById("requiredPoints").value)
+      };
+    }
+
+    function resolveSaveUrl() {
+      const explicit = document.getElementById("saveUrl").value.trim();
+      if (explicit) return explicit;
+      const apiUrl = document.getElementById("apiUrl").value.trim();
+      if (!apiUrl) return "./api/save_letter.php";
+      return apiUrl.replace(/correct\.php(?:\?.*)?$/i, "save_letter.php");
+    }
+
+    async function uploadLetter() {
+      clearStatus();
+      const button = document.getElementById("uploadBtn");
+      button.disabled = true;
+      button.textContent = "Wird hochgeladen...";
+
+      try {
+        const data = collectFormData();
+        if (!data.letterText) {
+          setStatus("error", "Bitte geben Sie den Schülerbrief ein.");
+          return;
+        }
+
+        const response = await fetch(resolveSaveUrl(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            student_name: data.studentName,
+            letter_text: data.letterText,
+            task_prompt: data.taskPrompt,
+            required_points: data.requiredPoints
+          })
+        });
+
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `Upload-Fehler: ${response.status}`);
+        }
+
+        const uploadId = String(payload.upload_id || "").trim();
+        const createdAt = String(payload.created_at || "").trim();
+        const details = [uploadId ? `ID: ${uploadId}` : "", createdAt ? `Zeit: ${createdAt}` : ""]
+          .filter(Boolean)
+          .join(" | ");
+        setStatus("ok", details ? `Brief wurde hochgeladen. ${details}` : "Brief wurde hochgeladen.");
+      } catch (err) {
+        setStatus("error", `Upload fehlgeschlagen: ${err.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Brief hochladen";
+      }
+    }
+
+    function setStatus(type, message) {
+      const box = document.getElementById("statusBox");
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearStatus() {
+      const box = document.getElementById("statusBox");
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function renderTags(node, items, cssClass) {
+      node.innerHTML = "";
+      if (!items.length) {
+        const span = document.createElement("span");
+        span.className = "muted";
+        span.textContent = cssClass === "missing" ? "Keine fehlenden Punkte." : "Keine Punkte vorhanden.";
+        node.appendChild(span);
+        return;
+      }
+      items.forEach(item => {
+        const span = document.createElement("span");
+        span.className = cssClass ? `tag ${cssClass}` : "tag";
+        span.textContent = item;
+        node.appendChild(span);
+      });
+    }
+
+    function renderMistakes(mistakes) {
+      const wrap = document.getElementById("mistakesWrap");
+      if (!mistakes.length) {
+        wrap.innerHTML = "<p>Keine Fehler gefunden.</p>";
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Zeile</th>
+            <th>Fehler</th>
+            <th>Korrektur</th>
+            <th>Typ</th>
+            <th>Erklärung</th>
+          </tr>
+        </thead>
+      `;
+      const tbody = document.createElement("tbody");
+
+      mistakes.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.line}</td>
+          <td>${escapeHtml(row.original)}</td>
+          <td>${escapeHtml(row.correction)}</td>
+          <td>${escapeHtml(row.type)}</td>
+          <td>${escapeHtml(row.explanation_de)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      wrap.innerHTML = "";
+      wrap.appendChild(table);
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function renderResult(result) {
+      document.getElementById("resultSection").classList.remove("hidden");
+      document.getElementById("scoreTotal").textContent = `${result.score_total}/20`;
+      document.getElementById("niveau").textContent = result.niveau_einschaetzung;
+      document.getElementById("source").textContent = result.source || "local";
+      document.getElementById("systemNote").textContent = result.system_note || "";
+
+      const rubricBody = document.getElementById("rubricBody");
+      rubricBody.innerHTML = `
+        <tr><td>Aufgabenbezug</td><td>${result.rubric.aufgabenbezug}</td></tr>
+        <tr><td>Textaufbau</td><td>${result.rubric.textaufbau}</td></tr>
+        <tr><td>Grammatik</td><td>${result.rubric.grammatik}</td></tr>
+        <tr><td>Wortschatz + Orthografie</td><td>${result.rubric.wortschatz_orthografie}</td></tr>
+      `;
+
+      renderTags(document.getElementById("coveredTags"), result.covered_points || [], "");
+      renderTags(document.getElementById("missingTags"), result.missing_points || [], "missing");
+      renderMistakes(result.mistakes || []);
+
+      document.getElementById("correctedLetter").textContent = result.corrected_letter || "";
+      document.getElementById("feedbackDe").textContent = result.teacher_feedback_de || "";
+    }
+
+    async function analyze() {
+      clearStatus();
+      const button = document.getElementById("analyzeBtn");
+      button.disabled = true;
+      button.textContent = "Analyse läuft...";
+
+      try {
+        const formData = collectFormData();
+        const letterText = formData.letterText;
+        const taskPrompt = formData.taskPrompt;
+        const requiredPoints = formData.requiredPoints;
+        const mode = document.getElementById("mode").value;
+        const apiUrl = document.getElementById("apiUrl").value.trim() || "./api/correct.php";
+        const words = countWords(letterText);
+
+        if (!letterText) {
+          setStatus("error", "Bitte geben Sie den Schülerbrief ein.");
+          return;
+        }
+        if (words < 5) {
+          setStatus("error", "Text ist zu kurz für eine sinnvolle DTZ-Bewertung.");
+          return;
+        }
+        if (!isLikelyMeaningfulGermanText(letterText)) {
+          setStatus("error", "Der Text wirkt nicht sinnvoll (zufällige Zeichen/Wörter). Bitte einen verständlichen Brief eingeben.");
+          return;
+        }
+
+        let result = null;
+        if (mode === "api") {
+          result = await apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints);
+          setStatus("ok", "Analyse über die API abgeschlossen.");
+        } else if (mode === "local") {
+          result = localCorrection(letterText, requiredPoints);
+          setStatus("ok", "Lokale Analyse abgeschlossen.");
+        } else {
+          try {
+            result = await apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints);
+            setStatus("ok", "Analyse im API-Modus abgeschlossen.");
+          } catch (err) {
+            result = localCorrection(letterText, requiredPoints);
+            setStatus("error", `API nicht erreichbar: ${err.message}. Es wurde auf den lokalen Modus umgeschaltet.`);
+          }
+        }
+
+        renderResult(result);
+      } catch (err) {
+        setStatus("error", `Unerwarteter Fehler: ${err.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Brief korrigieren";
+      }
+    }
+
+    function enforceExamInputRules() {
+      const letterBox = document.getElementById("letterText");
+      if (!letterBox) return;
+
+      const blockEvent = event => {
+        event.preventDefault();
+        setStatus("error", "Prüfungsmodus aktiv: Kopieren, Einfügen und Ausschneiden sind gesperrt.");
+      };
+
+      ["paste", "copy", "cut", "drop"].forEach(type => {
+        letterBox.addEventListener(type, blockEvent);
+      });
+
+      letterBox.addEventListener("beforeinput", event => {
+        const blocked = ["insertFromPaste", "insertFromDrop", "deleteByCut"];
+        if (blocked.includes(event.inputType)) {
+          blockEvent(event);
+        }
+      });
+
+      letterBox.addEventListener("keydown", event => {
+        const key = String(event.key || "").toLowerCase();
+        const withCommand = event.ctrlKey || event.metaKey;
+        const isPasteShortcut = withCommand && (key === "v" || key === "x" || key === "c");
+        const isShiftInsert = event.shiftKey && key === "insert";
+        if (isPasteShortcut || isShiftInsert) {
+          blockEvent(event);
+        }
+      });
+
+      letterBox.addEventListener("contextmenu", event => {
+        event.preventDefault();
+      });
+    }
+
+    enforceExamInputRules();
+    document.getElementById("analyzeBtn").addEventListener("click", analyze);
+    document.getElementById("uploadBtn").addEventListener("click", uploadLetter);
+    document.getElementById("studentLoginBtn").addEventListener("click", loginStudent);
+    document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);
+    document.getElementById("newClassicLidExamBtn").addEventListener("click", generateClassicLidExam);
+    document.getElementById("submitClassicLidExamBtn").addEventListener("click", evaluateClassicLidExam);
+    document.getElementById("newSpeakingSetBtn").addEventListener("click", generateSpeakingSet);
+    document.getElementById("buildBskPlanBtn").addEventListener("click", generateBskPack);
+    document.getElementById("evaluateBskBtn").addEventListener("click", evaluateBskPack);
+    document.getElementById("saveBskBtn").addEventListener("click", saveBskResult);
+    document.getElementById("refreshBskHistoryBtn").addEventListener("click", loadBskHistory);
+    document.getElementById("buildPart1DraftBtn").addEventListener("click", generatePart1Draft);
+    document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
+    document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
+    document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
+    document.getElementById("refreshPortalBtn").addEventListener("click", loadStudentPortal);
+    document.getElementById("startSimulationBtn").addEventListener("click", startSimulation);
+    document.getElementById("finishSimulationBtn").addEventListener("click", () => finishSimulation(false));
+    document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);
+    document.getElementById("submitRoomBtn").addEventListener("click", submitRoomAnswer);
+    document.getElementById("backToMenuFromWriteBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromPortalBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromSimulationBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromRoomBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromBskBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromClassicLidBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromSpeakingBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("navToggleBtn").addEventListener("click", () => {
+      document.getElementById("topNav").classList.toggle("open");
+    });
+    document.getElementById("navLogoBtn").addEventListener("click", () => navigateToSection("home"));
+    document.getElementById("navLogoBtn").addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        navigateToSection("home");
+      }
+    });
+    document.getElementById("navHomeBtn").addEventListener("click", () => navigateToSection("home"));
+    document.getElementById("navPortalBtn").addEventListener("click", () => navigateToSection("portal"));
+    document.getElementById("navRoomBtn").addEventListener("click", () => navigateToSection("room"));
+    document.getElementById("navSimulationBtn").addEventListener("click", () => navigateToSection("simulation"));
+    document.getElementById("navWriteBtn").addEventListener("click", () => navigateToSection("write"));
+    document.getElementById("navBskBtn").addEventListener("click", () => navigateToSection("bsk"));
+    document.getElementById("navLidBtn").addEventListener("click", () => navigateToSection("lid"));
+    document.getElementById("navSpeakingBtn").addEventListener("click", () => navigateToSection("speaking"));
+    document.getElementById("navAdminBtn").addEventListener("click", () => {
+      window.location.href = "./admin.html";
+    });
+    document.getElementById("heroPortalBtn").addEventListener("click", () => navigateToSection("portal"));
+    document.getElementById("heroRoomBtn").addEventListener("click", () => navigateToSection("room"));
+    document.getElementById("heroSimulationBtn").addEventListener("click", () => navigateToSection("simulation"));
+    document.getElementById("heroWriteBtn").addEventListener("click", () => navigateToSection("write"));
+    document.getElementById("heroSpeakBtn").addEventListener("click", () => navigateToSection("speaking"));
+    checkStudentSession();
+  </script>
+</body>
+</html>
