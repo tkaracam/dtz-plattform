@@ -372,6 +372,9 @@
           <button id="jumpRoomSectionBtn" type="button">Zu Virtuellem Saal</button>
           <button id="jumpAuditBtn" type="button">Zu Audit</button>
           <button id="jumpArchiveBtn" type="button">Zu Archiv</button>
+          <button id="openOpsChecklistBtn" class="ghost-btn" type="button">Betrieb-Checkliste</button>
+          <button id="openTeacherGuideBtn" class="ghost-btn" type="button">Lehrkraft-Anleitung</button>
+          <button id="openStudentGuideBtn" class="ghost-btn" type="button">Schüler-Anleitung</button>
           <button id="refreshStudentsBtn" class="ghost-btn" type="button">Schülerliste aktualisieren</button>
         </div>
       </section>
@@ -2503,6 +2506,15 @@
     });
     document.getElementById("jumpArchiveBtn").addEventListener("click", () => {
       document.getElementById("archiveSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("openOpsChecklistBtn").addEventListener("click", () => {
+      window.open("./docs/BETRIEB-CHECKLISTE.md", "_blank", "noopener,noreferrer");
+    });
+    document.getElementById("openTeacherGuideBtn").addEventListener("click", () => {
+      window.open("./docs/LEHRKRAFT-KURZANLEITUNG.md", "_blank", "noopener,noreferrer");
+    });
+    document.getElementById("openStudentGuideBtn").addEventListener("click", () => {
+      window.open("./docs/SCHUELER-KURZANLEITUNG.md", "_blank", "noopener,noreferrer");
     });
     document.getElementById("refreshStudentsBtn").addEventListener("click", listStudents);
     document.getElementById("adminPassword").addEventListener("keydown", event => {
