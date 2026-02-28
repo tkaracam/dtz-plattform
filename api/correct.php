@@ -274,6 +274,18 @@ function extract_json_text(string $raw): array
     throw new RuntimeException('Ungueltiges JSON in der OpenAI-Antwort.');
 }
 
+function sanitize_external_error(string $message): string
+{
+    $clean = trim($message);
+    if ($clean === '') {
+        return 'Externer Dienstfehler.';
+    }
+    // Mask common OpenAI key formats and long key-like fragments.
+    $clean = preg_replace('/sk-[A-Za-z0-9_\-]{10,}/', 'sk-***', $clean);
+    $clean = preg_replace('/\b[A-Za-z0-9]{20,}\b/', '***', $clean);
+    return $clean ?? 'Externer Dienstfehler.';
+}
+
 $pointsText = '';
 foreach ($requiredPoints as $point) {
     $pointsText .= "- {$point}\n";
@@ -358,7 +370,7 @@ if ($resp === false) {
     $err = curl_error($ch);
     curl_close($ch);
     http_response_code(502);
-    echo json_encode(['error' => 'OpenAI-Verbindungsfehler: ' . $err], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'OpenAI-Verbindungsfehler: ' . sanitize_external_error($err)], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -368,14 +380,14 @@ curl_close($ch);
 $json = json_decode($resp, true);
 if (!is_array($json)) {
     http_response_code(502);
-    echo json_encode(['error' => 'OpenAI-Antwort konnte nicht gelesen werden.', 'raw' => $resp], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'OpenAI-Antwort konnte nicht gelesen werden.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 if ($httpCode < 200 || $httpCode >= 300) {
     $msg = $json['error']['message'] ?? 'OpenAI-Anfrage fehlgeschlagen.';
     http_response_code(502);
-    echo json_encode(['error' => $msg, 'openai_status' => $httpCode], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => sanitize_external_error((string)$msg), 'openai_status' => $httpCode], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -416,5 +428,5 @@ try {
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     http_response_code(502);
-    echo json_encode(['error' => 'JSON-Parse-Fehler: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'JSON-Parse-Fehler: ' . sanitize_external_error($e->getMessage())], JSON_UNESCAPED_UNICODE);
 }
