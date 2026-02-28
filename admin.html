@@ -539,6 +539,16 @@
       background: #fff2f1;
     }
 
+    .pulse-critical {
+      animation: pulseCritical 1.2s ease-in-out 2;
+    }
+
+    @keyframes pulseCritical {
+      0% { box-shadow: 0 0 0 0 rgba(178, 45, 35, 0.35); }
+      50% { box-shadow: 0 0 0 10px rgba(178, 45, 35, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(178, 45, 35, 0); }
+    }
+
     .hidden { display: none; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
@@ -1048,8 +1058,10 @@
           <button id="pendingBulkApproveBtn" type="button">Ausgewählte freigeben</button>
           <button id="pendingBulkRejectBtn" type="button" class="ghost-btn">Ausgewählte ablehnen</button>
           <button id="pendingCriticalFilterBtn" type="button" class="ghost-btn">Nur kritisch: Aus</button>
+          <button id="pendingLiveToggleBtn" type="button" class="ghost-btn">Auto-Refresh: Aus</button>
         </div>
         <div id="pendingSlaSummary" class="muted" style="margin-top: 8px;">Kritisch: 0 | Warnung: 0</div>
+        <div id="pendingLiveStatus" class="hidden"></div>
         <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">Alle Einträge</h3>
         <div id="archiveWrap" style="margin-top: 10px;"></div>
@@ -1074,6 +1086,11 @@
     let roomPendingOnly = false;
     let roomUngradedOnly = false;
     let pendingCriticalFilterOnly = false;
+    let pendingLiveTimerId = null;
+    let pendingLiveEnabled = false;
+    let pendingSeenInitialized = false;
+    let pendingSeenIds = new Set();
+    let pendingLastCritical = 0;
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "accounts";
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
@@ -1291,11 +1308,19 @@
       roomLiveEnabled = false;
       roomPendingOnly = false;
       roomUngradedOnly = false;
+      pendingLiveEnabled = false;
+      pendingSeenInitialized = false;
+      pendingSeenIds = new Set();
+      pendingLastCritical = 0;
       currentRoomDetail = { room: null, participants: [] };
       stopRoomLivePolling();
+      stopPendingLivePolling();
+      clearPendingLiveStatus();
       closeAdminMenu();
       const liveBtn = document.getElementById("toggleRoomLiveBtn");
       if (liveBtn) liveBtn.textContent = "Auto-Refresh: Aus";
+      const pendingLiveBtn = document.getElementById("pendingLiveToggleBtn");
+      if (pendingLiveBtn) pendingLiveBtn.textContent = "Auto-Refresh: Aus";
       const pendingBtn = document.getElementById("toggleRoomPendingOnlyBtn");
       if (pendingBtn) pendingBtn.textContent = "Nur nicht abgegeben: Aus";
       const ungradedBtn = document.getElementById("toggleRoomUngradedOnlyBtn");
@@ -2366,6 +2391,65 @@
       return `${h}h ${m}m`;
     }
 
+    function setPendingLiveStatus(type, message) {
+      const box = document.getElementById("pendingLiveStatus");
+      if (!box) return;
+      box.className = type === "error" ? "error" : "ok";
+      box.textContent = message;
+    }
+
+    function clearPendingLiveStatus() {
+      const box = document.getElementById("pendingLiveStatus");
+      if (!box) return;
+      box.className = "hidden";
+      box.textContent = "";
+    }
+
+    function stopPendingLivePolling() {
+      if (pendingLiveTimerId) {
+        clearInterval(pendingLiveTimerId);
+        pendingLiveTimerId = null;
+      }
+    }
+
+    function processPendingLiveSignals(records, silent) {
+      const pendingRows = records.filter(row => String(row.review_status || "pending") === "pending");
+      const criticalNow = pendingRows.filter(row => getSlaLevel(getPendingAgeMinutes(row.created_at || "")) === "critical").length;
+      const nowIds = new Set(pendingRows.map(row => String(row.upload_id || "").trim()).filter(Boolean));
+
+      if (!pendingSeenInitialized) {
+        pendingSeenInitialized = true;
+        pendingSeenIds = nowIds;
+        pendingLastCritical = criticalNow;
+        return;
+      }
+
+      if (silent) {
+        const newIds = [];
+        nowIds.forEach(id => {
+          if (!pendingSeenIds.has(id)) newIds.push(id);
+        });
+        if (newIds.length) {
+          const latest = pendingRows.find(row => String(row.upload_id || "").trim() === newIds[0]);
+          const who = latest ? String(latest.student_username || latest.student_name || "neuer Eintrag") : "neuer Eintrag";
+          setPendingLiveStatus("ok", `Neue Einreichung: ${who} (${newIds.length} neu).`);
+        }
+        if (criticalNow > pendingLastCritical) {
+          setPendingLiveStatus("error", `Kritische Warteschlange gestiegen: ${pendingLastCritical} -> ${criticalNow}.`);
+          const summary = document.getElementById("pendingSlaSummary");
+          if (summary) {
+            summary.classList.remove("pulse-critical");
+            void summary.offsetWidth;
+            summary.classList.add("pulse-critical");
+            setTimeout(() => summary.classList.remove("pulse-critical"), 2800);
+          }
+        }
+      }
+
+      pendingSeenIds = nowIds;
+      pendingLastCritical = criticalNow;
+    }
+
     function renderArchiveRecords(records) {
       const wrap = document.getElementById("archiveWrap");
       const pendingRows = records.filter(row => String(row.review_status || "pending") === "pending");
@@ -2601,6 +2685,24 @@
       renderPendingQueue(pendingRows);
     }
 
+    function togglePendingLive() {
+      pendingLiveEnabled = !pendingLiveEnabled;
+      const btn = document.getElementById("pendingLiveToggleBtn");
+      if (btn) {
+        btn.textContent = `Auto-Refresh: ${pendingLiveEnabled ? "An" : "Aus"}`;
+      }
+      if (pendingLiveEnabled) {
+        clearPendingLiveStatus();
+        stopPendingLivePolling();
+        pendingLiveTimerId = setInterval(() => {
+          listLetters({ silent: true });
+        }, 30000);
+        listLetters({ silent: true });
+      } else {
+        stopPendingLivePolling();
+      }
+    }
+
     function renderBskRecords(records) {
       const wrap = document.getElementById("bskArchiveWrap");
       if (!records.length) {
@@ -2661,11 +2763,14 @@
       wrap.appendChild(table);
     }
 
-    async function listLetters() {
-      clearBox("panelStatus");
+    async function listLetters(options = {}) {
+      const silent = !!options.silent;
+      if (!silent) clearBox("panelStatus");
       const button = document.getElementById("listBtn");
-      button.disabled = true;
-      button.textContent = "Wird geladen...";
+      if (!silent) {
+        button.disabled = true;
+        button.textContent = "Wird geladen...";
+      }
       try {
         const response = await fetch("./api/list_letters.php", {
           method: "POST",
@@ -2681,16 +2786,23 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Listenfehler: ${response.status}`);
         teacherRecords = Array.isArray(payload.records) ? payload.records : [];
+        processPendingLiveSignals(teacherRecords, silent);
         renderArchiveRecords(teacherRecords);
-        setBox("panelStatus", "ok", `${teacherRecords.length} Einträge wurden geladen.`);
+        if (!silent) setBox("panelStatus", "ok", `${teacherRecords.length} Einträge wurden geladen.`);
       } catch (err) {
         if (String(err.message || "").toLowerCase().includes("401")) {
           showLogin();
         }
-        setBox("panelStatus", "error", `Laden fehlgeschlagen: ${err.message}`);
+        if (!silent) {
+          setBox("panelStatus", "error", `Laden fehlgeschlagen: ${err.message}`);
+        } else {
+          setPendingLiveStatus("error", `Auto-Refresh fehlgeschlagen: ${err.message}`);
+        }
       } finally {
-        button.disabled = false;
-        button.textContent = "Einträge laden";
+        if (!silent) {
+          button.disabled = false;
+          button.textContent = "Einträge laden";
+        }
       }
     }
 
@@ -3272,6 +3384,7 @@
     document.getElementById("pendingBulkApproveBtn").addEventListener("click", () => bulkReviewPending("approve"));
     document.getElementById("pendingBulkRejectBtn").addEventListener("click", () => bulkReviewPending("reject"));
     document.getElementById("pendingCriticalFilterBtn").addEventListener("click", togglePendingCriticalFilter);
+    document.getElementById("pendingLiveToggleBtn").addEventListener("click", togglePendingLive);
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
     document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
     document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
