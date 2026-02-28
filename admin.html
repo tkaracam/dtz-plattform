@@ -1002,6 +1002,7 @@
           </div>
           <div class="actions">
             <button id="listBtn" type="button">Einträge laden</button>
+            <button id="loadPendingBtn" type="button" class="ghost-btn">Nur Warteschlange</button>
             <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
             <button id="listBskBtn" type="button">BSK laden</button>
             <button id="downloadBskCsvBtn" type="button">BSK-CSV herunterladen</button>
@@ -1009,6 +1010,9 @@
         </div>
 
         <div id="panelStatus" class="hidden"></div>
+        <h3 class="section-title" style="margin-top: 16px;">Warteschlange (ausstehend)</h3>
+        <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
+        <h3 class="section-title" style="margin-top: 16px;">Alle Einträge</h3>
         <div id="archiveWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">BSK-Archiv</h3>
         <div id="bskArchiveWrap" style="margin-top: 10px;"></div>
@@ -2286,6 +2290,8 @@
 
     function renderArchiveRecords(records) {
       const wrap = document.getElementById("archiveWrap");
+      const pendingRows = records.filter(row => String(row.review_status || "pending") === "pending");
+      renderPendingQueue(pendingRows);
       if (!records.length) {
         wrap.innerHTML = "<p>Keine Einträge gefunden.</p>";
         return;
@@ -2312,7 +2318,7 @@
         const task = String(row.task_prompt || "").trim();
         const letter = String(row.letter_text || "").trim();
         const status = String(row.review_status || "pending");
-        const canApprove = status !== "freigegeben";
+        const canApprove = status === "pending";
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="mono">${escapeHtml(row.created_at || "")}</td>
@@ -2324,7 +2330,9 @@
           <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
           <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
           <td>
-            ${canApprove ? `<button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button>` : '<span class="muted">Freigegeben</span>'}
+            ${canApprove
+              ? `<div class="actions"><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
+              : '<span class="muted">Abgeschlossen</span>'}
           </td>
         `;
         tbody.appendChild(tr);
@@ -2333,29 +2341,76 @@
       wrap.innerHTML = "";
       wrap.appendChild(table);
       wrap.querySelectorAll("[data-letter-approve]").forEach(btn => {
-        btn.addEventListener("click", () => approveLetter(btn.getAttribute("data-letter-approve") || ""));
+        btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-letter-approve") || "", "approve"));
+      });
+      wrap.querySelectorAll("[data-letter-reject]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-letter-reject") || "", "reject"));
       });
     }
 
-    async function approveLetter(uploadId) {
+    function renderPendingQueue(rows) {
+      const wrap = document.getElementById("pendingQueueWrap");
+      if (!rows.length) {
+        wrap.innerHTML = "<p>Keine offenen Freigaben.</p>";
+        return;
+      }
+      const rowsHtml = rows.map(row => `
+        <tr>
+          <td class="mono">${escapeHtml(row.created_at || "")}</td>
+          <td class="mono">${escapeHtml(row.upload_id || "")}</td>
+          <td>${escapeHtml(row.student_name || "-")}</td>
+          <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td>
+            <div class="actions">
+              <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button>
+              <button type="button" data-pending-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>Zeit</th><th>ID</th><th>Schüler</th><th>Username</th><th>Aktion</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("[data-pending-approve]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-pending-approve") || "", "approve"));
+      });
+      wrap.querySelectorAll("[data-pending-reject]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-pending-reject") || "", "reject"));
+      });
+    }
+
+    async function reviewLetter(uploadId, decision) {
       clearBox("panelStatus");
       if (!uploadId) return;
+      const note = window.prompt(decision === "approve" ? "Freigabe-Notiz (optional):" : "Ablehnungsgrund (optional):", "");
+      if (note === null) return;
       try {
         const response = await fetch("./api/letter_review.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             upload_id: uploadId,
-            decision: "approve"
+            decision,
+            note: String(note || "").trim()
           })
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("panelStatus", "ok", `Freigabe gespeichert: ${uploadId}`);
+        setBox("panelStatus", "ok", `${decision === "approve" ? "Freigabe" : "Ablehnung"} gespeichert: ${uploadId}`);
         listLetters();
       } catch (err) {
-        setBox("panelStatus", "error", `Freigabe fehlgeschlagen: ${err.message}`);
+        setBox("panelStatus", "error", `Aktion fehlgeschlagen: ${err.message}`);
       }
+    }
+
+    async function loadPendingQueueOnly() {
+      await listLetters();
+      const pendingRows = teacherRecords.filter(row => String(row.review_status || "pending") === "pending");
+      renderPendingQueue(pendingRows);
+      setBox("panelStatus", "ok", `${pendingRows.length} offene Freigaben.`);
     }
 
     function renderBskRecords(records) {
@@ -3023,6 +3078,7 @@
 
     document.getElementById("loginBtn").addEventListener("click", login);
     document.getElementById("listBtn").addEventListener("click", listLetters);
+    document.getElementById("loadPendingBtn").addEventListener("click", loadPendingQueueOnly);
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
     document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
     document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
