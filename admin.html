@@ -121,6 +121,47 @@
       gap: 16px;
     }
 
+    .admin-menu-wrap {
+      border: 1px solid #d4e1ef;
+      border-radius: 14px;
+      padding: 12px;
+      background: #f7fbff;
+      margin-bottom: 14px;
+    }
+
+    .admin-tabs {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .admin-tab-btn {
+      width: auto;
+      min-width: 132px;
+      border-radius: 999px;
+      border: 1px solid #b9cde4;
+      background: #f2f7fd;
+      color: #143554;
+      box-shadow: none;
+      padding: 8px 12px;
+      font-weight: 700;
+    }
+
+    .admin-tab-btn:hover {
+      box-shadow: 0 8px 20px rgba(31, 89, 163, 0.16);
+    }
+
+    .admin-tab-btn.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      box-shadow: 0 12px 28px rgba(17, 79, 180, 0.22);
+    }
+
+    .admin-pane { display: none; }
+    .admin-pane.active { display: block; }
+
     .quick-nav {
       margin-top: 12px;
       display: flex;
@@ -332,6 +373,11 @@
     }
 
     @media (max-width: 800px) {
+      .container {
+        width: min(1160px, 100% - 1rem);
+        margin-top: 14px;
+      }
+
       .hero-brand img {
         height: 84px;
       }
@@ -344,6 +390,26 @@
       .quick-nav button {
         width: 100%;
         min-width: 0;
+      }
+
+      .admin-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .admin-tab-btn {
+        flex: 0 0 auto;
+      }
+
+      .card {
+        padding: 14px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
       }
     }
   </style>
@@ -395,6 +461,21 @@
       </section>
 
       <section id="panelCard" class="card hidden">
+        <div class="admin-menu-wrap">
+          <h2 class="section-title" style="font-size:1.2rem;">Menü</h2>
+          <p class="section-subtitle">Nur der gewählte Bereich wird angezeigt.</p>
+          <div class="admin-tabs">
+            <button type="button" class="admin-tab-btn active" data-pane="accounts">Schülerzugänge</button>
+            <button type="button" class="admin-tab-btn" data-pane="courses">Kurse</button>
+            <button type="button" class="admin-tab-btn" data-pane="attendance">Yoklama</button>
+            <button type="button" class="admin-tab-btn" data-pane="notify">Bildirim</button>
+            <button type="button" class="admin-tab-btn" data-pane="room">Saal</button>
+            <button type="button" class="admin-tab-btn" data-pane="audit">Audit</button>
+            <button type="button" class="admin-tab-btn" data-pane="archive">Archiv</button>
+          </div>
+        </div>
+
+        <div id="paneAccounts" class="admin-pane active">
         <div id="accountsSection">
           <h2 class="section-title">Schülerzugänge</h2>
           <p class="section-subtitle">Neue Konten erstellen, Passwörter zurücksetzen und Nutzerstatus ändern.</p>
@@ -472,7 +553,9 @@
         </div>
 
         <div id="userListWrap" style="margin-top: 10px;"></div>
+        </div>
 
+        <div id="paneCourses" class="admin-pane">
         <div id="coursesSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Kursverwaltung</h2>
           <p class="section-subtitle">Kurs oluştur, öğrencileri kursa ata. Yoklama bu kurs üyelerine göre çalışır.</p>
@@ -499,7 +582,9 @@
           <div id="courseListWrap" style="margin-top: 10px;"></div>
           <div id="courseAssignWrap" style="margin-top: 10px;"></div>
         </div>
+        </div>
 
+        <div id="paneAttendance" class="admin-pane">
         <div id="attendanceSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Yoklama (Kilitlemeli)</h2>
           <p class="section-subtitle">Dersi kaydet, sonra kilitle. Kilitli oturum düzenlenemez.</p>
@@ -541,7 +626,9 @@
           <div id="attendanceEditWrap" style="margin-top:10px;"></div>
           <div id="attendanceListWrap" style="margin-top:10px;"></div>
         </div>
+        </div>
 
+        <div id="paneNotify" class="admin-pane">
         <div id="notifySection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Devamsızlık Bildirim Hazırlayıcı</h2>
           <p class="section-subtitle">Yüksek devamsızlık hedeflerini bulur, e-posta/WhatsApp metinlerini tek tıkla hazırlar.</p>
@@ -588,7 +675,9 @@
           <div id="requestStatus" class="hidden"></div>
           <div id="attendanceRequestWrap" style="margin-top:10px;"></div>
         </div>
+        </div>
 
+        <div id="paneRoom" class="admin-pane">
         <div id="roomSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Virtueller Saal</h2>
           <p class="section-subtitle">Saal mit Code erstellen und aktive Räume verwalten.</p>
@@ -632,7 +721,9 @@
           <div id="roomWatchStatus" class="hidden"></div>
           <div id="roomWatchWrap" style="margin-top:10px;"></div>
         </div>
+        </div>
 
+        <div id="paneAudit" class="admin-pane">
         <div id="auditSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Audit Log</h2>
           <p class="section-subtitle">Kim ne zaman hangi işlemi yaptı (IP + meta).</p>
@@ -652,7 +743,9 @@
           <div id="auditStatus" class="hidden"></div>
           <div id="auditWrap" style="margin-top:10px;"></div>
         </div>
+        </div>
 
+        <div id="paneArchive" class="admin-pane">
         <div id="archiveSection">
           <h2 class="section-title" style="margin-top: 18px;">Archiv</h2>
           <p class="section-subtitle">Einträge filtern und bei Bedarf als CSV herunterladen.</p>
@@ -701,6 +794,7 @@
         <div id="archiveWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">BSK-Archiv</h3>
         <div id="bskArchiveWrap" style="margin-top: 10px;"></div>
+        </div>
       </section>
     </div>
   </div>
@@ -719,6 +813,17 @@
     let roomPendingOnly = false;
     let roomUngradedOnly = false;
     let currentRoomDetail = { room: null, participants: [] };
+    let activeAdminPane = "accounts";
+
+    const adminPaneMap = {
+      accounts: "paneAccounts",
+      courses: "paneCourses",
+      attendance: "paneAttendance",
+      notify: "paneNotify",
+      room: "paneRoom",
+      audit: "paneAudit",
+      archive: "paneArchive"
+    };
 
     function clamp(value, min, max, fallback) {
       const n = Number.parseInt(value, 10);
@@ -743,6 +848,22 @@
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
+    }
+
+    function setAdminPane(paneName) {
+      if (!adminPaneMap[paneName]) return;
+      activeAdminPane = paneName;
+      Object.values(adminPaneMap).forEach(id => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.classList.remove("active");
+      });
+      const activePane = document.getElementById(adminPaneMap[paneName]);
+      if (activePane) activePane.classList.add("active");
+
+      document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.pane === paneName);
+      });
     }
 
     async function parseJsonResponse(response) {
@@ -774,6 +895,7 @@
     function showPanel() {
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
+      setAdminPane(activeAdminPane || "accounts");
       renderBulkPreview(buildBulkCredentials());
       if (document.getElementById("attendanceDate")) {
         document.getElementById("attendanceDate").value = new Date().toISOString().slice(0, 10);
@@ -791,6 +913,7 @@
     function showLogin() {
       document.getElementById("panelCard").classList.add("hidden");
       document.getElementById("loginCard").classList.remove("hidden");
+      setAdminPane("accounts");
       roomLiveEnabled = false;
       roomPendingOnly = false;
       roomUngradedOnly = false;
@@ -2487,25 +2610,35 @@
       }
     });
     document.getElementById("jumpAccountsBtn").addEventListener("click", () => {
-      document.getElementById("accountsSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("accounts");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpCoursesBtn").addEventListener("click", () => {
-      document.getElementById("coursesSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("courses");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpAttendanceBtn").addEventListener("click", () => {
-      document.getElementById("attendanceSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("attendance");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpNotifyBtn").addEventListener("click", () => {
-      document.getElementById("notifySection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("notify");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpRoomSectionBtn").addEventListener("click", () => {
-      document.getElementById("roomSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("room");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpAuditBtn").addEventListener("click", () => {
-      document.getElementById("auditSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("audit");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpArchiveBtn").addEventListener("click", () => {
-      document.getElementById("archiveSection").scrollIntoView({ behavior: "smooth", block: "start" });
+      setAdminPane("archive");
+      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => setAdminPane(btn.dataset.pane));
     });
     document.getElementById("openOpsChecklistBtn").addEventListener("click", () => {
       window.open("./docs/BETRIEB-CHECKLISTE.md", "_blank", "noopener,noreferrer");
