@@ -751,6 +751,55 @@
       line-height: 1.5;
     }
 
+    .teacher-correction {
+      margin: 8px 0 0;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f8fbff;
+    }
+
+    .corr-item {
+      padding: 8px 10px;
+      border: 1px dashed #d5e2f0;
+      border-radius: 10px;
+      background: #fff;
+      margin-bottom: 8px;
+    }
+
+    .corr-fix {
+      color: #0f7a3b;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .corr-err {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    .corr-meta {
+      margin-top: 3px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .corr-final-title {
+      margin-top: 10px;
+      font-weight: 700;
+      color: #1d3f65;
+    }
+
+    .corr-final-text {
+      margin-top: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d5e2f0;
+      background: #fff;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
     details {
       margin-top: 12px;
       border-radius: 12px;
@@ -1711,10 +1760,10 @@
               <div class="kpi-value" id="source">local</div>
             </div>
           </div>
-          <p id="systemNote" class="muted" style="margin-top: 10px;"></p>
+          <p id="systemNote" class="muted hidden" style="margin-top: 10px;"></p>
 
           <h3 style="margin: 12px 0 8px;">Korrigierte Mail</h3>
-          <pre id="correctedLetter"></pre>
+          <div id="correctedLetter" class="teacher-correction"></div>
 
           <h3 style="margin: 12px 0 8px;">Feedback</h3>
           <p><strong>Kurz:</strong> <span id="feedbackDe"></span></p>
@@ -4388,6 +4437,35 @@
       wrap.appendChild(table);
     }
 
+    function renderTeacherCorrection(result) {
+      const wrap = document.getElementById("correctedLetter");
+      const mistakes = Array.isArray(result.mistakes) ? result.mistakes.slice() : [];
+      const correctedText = String(result.corrected_letter || "").trim();
+
+      if (!mistakes.length) {
+        wrap.innerHTML = `<div class="corr-final-text">${escapeHtml(correctedText)}</div>`;
+        return;
+      }
+
+      mistakes.sort((a, b) => Number(a.line || 0) - Number(b.line || 0));
+      const blocks = mistakes.map(item => `
+        <div class="corr-item">
+          <div class="corr-fix">${escapeHtml(item.correction || "-")}</div>
+          <div class="corr-err">${escapeHtml(item.original || "-")}</div>
+          <div class="corr-meta">Zeile ${escapeHtml(item.line || "-")} | ${escapeHtml(item.type || "Fehler")}</div>
+        </div>
+      `).join("");
+
+      const finalBlock = correctedText
+        ? `
+          <div class="corr-final-title">Vollständig korrigierte Fassung</div>
+          <div class="corr-final-text">${escapeHtml(correctedText)}</div>
+        `
+        : "";
+
+      wrap.innerHTML = `${blocks}${finalBlock}`;
+    }
+
     function escapeHtml(text) {
       return String(text || "")
         .replace(/&/g, "&amp;")
@@ -4400,7 +4478,7 @@
       document.getElementById("scoreTotal").textContent = `${result.score_total}/20`;
       document.getElementById("niveau").textContent = result.niveau_einschaetzung;
       document.getElementById("source").textContent = result.source || "local";
-      document.getElementById("systemNote").textContent = result.system_note || "";
+      document.getElementById("systemNote").textContent = "";
 
       const rubricBody = document.getElementById("rubricBody");
       rubricBody.innerHTML = `
@@ -4414,7 +4492,7 @@
       renderTags(document.getElementById("missingTags"), result.missing_points || [], "missing");
       renderMistakes(result.mistakes || []);
 
-      document.getElementById("correctedLetter").textContent = result.corrected_letter || "";
+      renderTeacherCorrection(result);
       document.getElementById("feedbackDe").textContent = result.teacher_feedback_de || "";
     }
 
@@ -4449,14 +4527,14 @@
         let result = null;
         if (mode === "api") {
           result = await apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints);
-          setStatus("ok", "Analyse über die API abgeschlossen.");
+          clearStatus();
         } else if (mode === "local") {
           result = localCorrection(letterText, requiredPoints);
-          setStatus("ok", "Lokale Analyse abgeschlossen.");
+          clearStatus();
         } else {
           try {
             result = await apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints);
-            setStatus("ok", "Analyse im API-Modus abgeschlossen.");
+            clearStatus();
           } catch (err) {
             result = localCorrection(letterText, requiredPoints);
             setStatus("error", `API nicht erreichbar: ${err.message}. Es wurde auf den lokalen Modus umgeschaltet.`);
