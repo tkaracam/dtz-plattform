@@ -1002,7 +1002,7 @@
           </div>
           <div class="actions">
             <button id="listBtn" type="button">Einträge laden</button>
-            <button id="loadPendingBtn" type="button" class="ghost-btn">Nur Warteschlange</button>
+            <button id="loadPendingBtn" type="button" class="ghost-btn">Nur Warteschlange (0)</button>
             <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
             <button id="listBskBtn" type="button">BSK laden</button>
             <button id="downloadBskCsvBtn" type="button">BSK-CSV herunterladen</button>
@@ -1010,7 +1010,7 @@
         </div>
 
         <div id="panelStatus" class="hidden"></div>
-        <h3 class="section-title" style="margin-top: 16px;">Warteschlange (ausstehend)</h3>
+        <h3 id="pendingQueueTitle" class="section-title" style="margin-top: 16px;">Warteschlange (ausstehend: 0)</h3>
         <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">Alle Einträge</h3>
         <div id="archiveWrap" style="margin-top: 10px;"></div>
@@ -2288,9 +2288,22 @@
       }
     }
 
+    function updatePendingCounters(count) {
+      const safeCount = Math.max(0, Number(count || 0));
+      const title = document.getElementById("pendingQueueTitle");
+      const btn = document.getElementById("loadPendingBtn");
+      if (title) {
+        title.textContent = `Warteschlange (ausstehend: ${safeCount})`;
+      }
+      if (btn) {
+        btn.textContent = `Nur Warteschlange (${safeCount})`;
+      }
+    }
+
     function renderArchiveRecords(records) {
       const wrap = document.getElementById("archiveWrap");
       const pendingRows = records.filter(row => String(row.review_status || "pending") === "pending");
+      updatePendingCounters(pendingRows.length);
       renderPendingQueue(pendingRows);
       if (!records.length) {
         wrap.innerHTML = "<p>Keine Einträge gefunden.</p>";
@@ -2350,6 +2363,7 @@
 
     function renderPendingQueue(rows) {
       const wrap = document.getElementById("pendingQueueWrap");
+      updatePendingCounters(rows.length);
       if (!rows.length) {
         wrap.innerHTML = "<p>Keine offenen Freigaben.</p>";
         return;
