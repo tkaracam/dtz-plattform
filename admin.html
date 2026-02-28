@@ -394,6 +394,30 @@
       color: #27476a;
     }
 
+    #userListWrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #userListWrap table {
+      min-width: 920px;
+    }
+
+    #userListWrap td .actions {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      margin-top: 0;
+    }
+
+    #userListWrap td .actions button {
+      width: 100%;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
     .ok {
       margin-top: 11px;
       padding: 11px 12px;
