@@ -121,57 +121,80 @@
       gap: 16px;
     }
 
-    .admin-menu-wrap {
-      border: 1px solid #d4e1ef;
-      border-radius: 14px;
-      padding: 12px;
-      background: #f7fbff;
-      margin-bottom: 14px;
-    }
-
-    .admin-tabs {
-      margin-top: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .admin-tab-btn {
-      width: auto;
-      min-width: 132px;
-      border-radius: 999px;
-      border: 1px solid #b9cde4;
-      background: #f2f7fd;
-      color: #143554;
-      box-shadow: none;
-      padding: 8px 12px;
-      font-weight: 700;
-    }
-
-    .admin-tab-btn:hover {
-      box-shadow: 0 8px 20px rgba(31, 89, 163, 0.16);
-    }
-
-    .admin-tab-btn.active {
-      color: #fff;
-      border-color: transparent;
-      background: linear-gradient(120deg, var(--accent), var(--accent-2));
-      box-shadow: 0 12px 28px rgba(17, 79, 180, 0.22);
-    }
-
     .admin-pane { display: none; }
     .admin-pane.active { display: block; }
 
-    .quick-nav {
+    .admin-topbar {
       margin-top: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(230, 244, 255, 0.34);
+      padding: 10px 12px;
+      background: rgba(10, 28, 52, 0.74);
+      box-shadow: var(--shadow-hero);
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      color: #e9f4ff;
+      position: relative;
+      z-index: 5;
     }
 
-    .quick-nav button {
+    .admin-topbar-left {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .admin-topbar-right {
+      position: relative;
+    }
+
+    .admin-menu-trigger {
       width: auto;
-      min-width: 170px;
+      min-width: 140px;
+      color: #143554;
+      border: 1px solid #b9cde4;
+      background: #f2f7fd;
+      box-shadow: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 700;
+    }
+
+    .admin-menu-dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      width: min(320px, 92vw);
+      border-radius: 14px;
+      border: 1px solid #c8d9eb;
+      background: #fff;
+      box-shadow: 0 22px 40px rgba(12, 28, 49, 0.28);
+      padding: 8px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .admin-menu-item {
+      width: 100%;
+      text-align: left;
+      color: #143554;
+      border: 1px solid #d8e4f1;
+      background: #f8fbff;
+      box-shadow: none;
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-weight: 600;
+    }
+
+    .admin-menu-item:hover {
+      box-shadow: 0 10px 24px rgba(31, 89, 163, 0.16);
+    }
+
+    .admin-menu-item.critical {
+      color: #8a2f25;
+      border-color: #f1c1b9;
+      background: #fff3f0;
     }
 
     .ghost-btn {
@@ -387,23 +410,35 @@
         min-width: 0;
       }
 
-      .quick-nav button {
-        width: 100%;
-        min-width: 0;
+      .admin-topbar {
+        flex-direction: row;
+        align-items: center;
       }
 
-      .admin-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 2px;
+      .admin-topbar-left {
+        font-size: 0.86rem;
       }
 
-      .admin-tab-btn {
-        flex: 0 0 auto;
+      .admin-menu-trigger {
+        min-width: 116px;
+        font-size: 0.9rem;
       }
 
       .card {
         padding: 14px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .row > div {
+        min-width: 0;
       }
 
       table {
@@ -425,26 +460,29 @@
       <p>Schülerzugänge verwalten, Texte filtern und CSV-Exporte mit wenigen Klicks durchführen.</p>
     </section>
 
-    <div class="layout">
-      <section class="card">
-        <h2 class="section-title">Schnellzugriff</h2>
-        <p class="section-subtitle">Zur Hauptseite wechseln oder direkt zu Konten und Archiv springen.</p>
-        <div class="quick-nav">
-          <button id="goHomeBtn" class="ghost-btn" type="button">Zur Hauptseite</button>
-          <button id="jumpAccountsBtn" type="button">Zu Schülerzugängen</button>
-          <button id="jumpCoursesBtn" type="button">Zu Kursen</button>
-          <button id="jumpAttendanceBtn" type="button">Zu Yoklama</button>
-          <button id="jumpNotifyBtn" type="button">Zu Bildirim</button>
-          <button id="jumpRoomSectionBtn" type="button">Zu Virtuellem Saal</button>
-          <button id="jumpAuditBtn" type="button">Zu Audit</button>
-          <button id="jumpArchiveBtn" type="button">Zu Archiv</button>
-          <button id="openOpsChecklistBtn" class="ghost-btn" type="button">Betrieb-Checkliste</button>
-          <button id="openTeacherGuideBtn" class="ghost-btn" type="button">Lehrkraft-Anleitung</button>
-          <button id="openStudentGuideBtn" class="ghost-btn" type="button">Schüler-Anleitung</button>
-          <button id="refreshStudentsBtn" class="ghost-btn" type="button">Schülerliste aktualisieren</button>
+    <nav class="admin-topbar">
+      <div class="admin-topbar-left">Bereich: <span id="activePaneLabel">Anmeldung</span></div>
+      <div class="admin-topbar-right">
+        <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger">Menü</button>
+        <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
+          <button id="goHomeBtn" class="admin-menu-item" type="button">Startseite</button>
+          <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
+          <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
+          <button id="jumpAttendanceBtn" class="admin-menu-item" type="button">Anwesenheit</button>
+          <button id="jumpNotifyBtn" class="admin-menu-item" type="button">Benachrichtigungen</button>
+          <button id="jumpRoomSectionBtn" class="admin-menu-item" type="button">Virtueller Saal</button>
+          <button id="jumpAuditBtn" class="admin-menu-item" type="button">Audit</button>
+          <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Archiv</button>
+          <button id="openOpsChecklistBtn" class="admin-menu-item" type="button">Betrieb-Checkliste</button>
+          <button id="openTeacherGuideBtn" class="admin-menu-item" type="button">Lehrkraft-Anleitung</button>
+          <button id="openStudentGuideBtn" class="admin-menu-item" type="button">Schüler-Anleitung</button>
+          <button id="refreshStudentsBtn" class="admin-menu-item" type="button">Schülerliste aktualisieren</button>
+          <button id="navLogoutBtn" class="admin-menu-item critical" type="button">Abmelden</button>
         </div>
-      </section>
+      </div>
+    </nav>
 
+    <div class="layout">
       <section id="loginCard" class="card">
         <h2 class="section-title">Anmeldung</h2>
         <p class="section-subtitle">Nur für autorisierte Lehrkraft.</p>
@@ -461,20 +499,6 @@
       </section>
 
       <section id="panelCard" class="card hidden">
-        <div class="admin-menu-wrap">
-          <h2 class="section-title" style="font-size:1.2rem;">Menü</h2>
-          <p class="section-subtitle">Nur der gewählte Bereich wird angezeigt.</p>
-          <div class="admin-tabs">
-            <button type="button" class="admin-tab-btn active" data-pane="accounts">Schülerzugänge</button>
-            <button type="button" class="admin-tab-btn" data-pane="courses">Kurse</button>
-            <button type="button" class="admin-tab-btn" data-pane="attendance">Yoklama</button>
-            <button type="button" class="admin-tab-btn" data-pane="notify">Bildirim</button>
-            <button type="button" class="admin-tab-btn" data-pane="room">Saal</button>
-            <button type="button" class="admin-tab-btn" data-pane="audit">Audit</button>
-            <button type="button" class="admin-tab-btn" data-pane="archive">Archiv</button>
-          </div>
-        </div>
-
         <div id="paneAccounts" class="admin-pane active">
         <div id="accountsSection">
           <h2 class="section-title">Schülerzugänge</h2>
@@ -499,7 +523,7 @@
           </div>
           <div>
             <label for="newStudentEmail">E-Mail (optional)</label>
-            <input id="newStudentEmail" type="text" placeholder="z. B. kursiyer@mail.com">
+            <input id="newStudentEmail" type="text" placeholder="z. B. teilnehmer@mail.com">
           </div>
           <div>
             <label for="newStudentPhone">WhatsApp Telefon (optional)</label>
@@ -558,25 +582,25 @@
         <div id="paneCourses" class="admin-pane">
         <div id="coursesSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Kursverwaltung</h2>
-          <p class="section-subtitle">Kurs oluştur, öğrencileri kursa ata. Yoklama bu kurs üyelerine göre çalışır.</p>
+          <p class="section-subtitle">Kurse erstellen und Teilnehmende zuweisen. Die Anwesenheit basiert auf den Kursmitgliedern.</p>
 
           <div class="grid">
             <div>
-              <label for="newCourseName">Kurs adı</label>
+              <label for="newCourseName">Kursname</label>
               <input id="newCourseName" type="text" placeholder="z. B. BSK B1 Abendkurs">
             </div>
             <div>
-              <label for="newCourseLevel">Seviye</label>
+              <label for="newCourseLevel">Niveau</label>
               <input id="newCourseLevel" type="text" placeholder="z. B. B1">
             </div>
             <div>
-              <label for="newCourseSchedule">Ders zamanı</label>
+              <label for="newCourseSchedule">Kurszeiten</label>
               <input id="newCourseSchedule" type="text" placeholder="z. B. Mo-Mi 18:00-20:15">
             </div>
           </div>
           <div class="actions">
-            <button id="createCourseBtn" type="button">Kurs oluştur</button>
-            <button id="refreshCoursesBtn" class="ghost-btn" type="button">Kursları yenile</button>
+            <button id="createCourseBtn" type="button">Kurs erstellen</button>
+            <button id="refreshCoursesBtn" class="ghost-btn" type="button">Kurse aktualisieren</button>
           </div>
           <div id="courseStatus" class="hidden"></div>
           <div id="courseListWrap" style="margin-top: 10px;"></div>
@@ -586,18 +610,18 @@
 
         <div id="paneAttendance" class="admin-pane">
         <div id="attendanceSection" class="bulk-wrap">
-          <h2 class="section-title" style="font-size: 1.35rem;">Yoklama (Kilitlemeli)</h2>
-          <p class="section-subtitle">Dersi kaydet, sonra kilitle. Kilitli oturum düzenlenemez.</p>
+          <h2 class="section-title" style="font-size: 1.35rem;">Anwesenheit (Kilitlemeli)</h2>
+          <p class="section-subtitle">Sitzung speichern und dann sperren. Gesperrte Sitzungen können nicht bearbeitet werden.</p>
 
           <div class="grid">
             <div>
-              <label for="attendanceCourseId">Kurs seçimi</label>
+              <label for="attendanceCourseId">Kursauswahl</label>
               <select id="attendanceCourseId">
-                <option value="">Önce kurs seçin</option>
+                <option value="">Bitte zuerst einen Kurs wählen</option>
               </select>
             </div>
             <div>
-              <label for="attendanceCourse">Kurs adı</label>
+              <label for="attendanceCourse">Kursname</label>
               <input id="attendanceCourse" type="text" placeholder="z. B. BSK-B1-Abendkurs" readonly>
             </div>
             <div>
@@ -607,19 +631,19 @@
           </div>
           <div class="grid">
             <div>
-              <label for="attendanceEvidence">Kanıt notu (online/yüz yüze)</label>
+              <label for="attendanceEvidence">Nachweis (online/praesenz)</label>
               <input id="attendanceEvidence" type="text" placeholder="z. B. Zoom Log + Screenshot 18:00-20:15">
             </div>
             <div>
-              <label for="attendanceTeacherNote">Öğretmen notu</label>
-              <input id="attendanceTeacherNote" type="text" placeholder="Örn: 2 katılımcı geç geldi">
+              <label for="attendanceTeacherNote">Lehrkraft-Notiz</label>
+              <input id="attendanceTeacherNote" type="text" placeholder="Beispiel: 2 Teilnehmende waren verspätet">
             </div>
           </div>
           <div class="actions">
             <button id="loadAttendanceStudentsBtn" type="button">Teilnehmer laden</button>
-            <button id="saveAttendanceBtn" type="button">Yoklama kaydet</button>
-            <button id="lockAttendanceBtn" type="button">Oturumu kilitle</button>
-            <button id="listAttendanceBtn" class="ghost-btn" type="button">Yoklama listesi</button>
+            <button id="saveAttendanceBtn" type="button">Anwesenheit speichern</button>
+            <button id="lockAttendanceBtn" type="button">Sitzung sperren</button>
+            <button id="listAttendanceBtn" class="ghost-btn" type="button">Anwesenheit listesi</button>
           </div>
           <div id="attendanceStatus" class="hidden"></div>
           <div id="attendanceRiskWrap" style="margin-top:10px;"></div>
@@ -630,47 +654,47 @@
 
         <div id="paneNotify" class="admin-pane">
         <div id="notifySection" class="bulk-wrap">
-          <h2 class="section-title" style="font-size: 1.35rem;">Devamsızlık Bildirim Hazırlayıcı</h2>
-          <p class="section-subtitle">Yüksek devamsızlık hedeflerini bulur, e-posta/WhatsApp metinlerini tek tıkla hazırlar.</p>
+          <h2 class="section-title" style="font-size: 1.35rem;">Benachrichtigungsassistent bei Fehlzeiten</h2>
+          <p class="section-subtitle">Findet hohe Fehlzeiten und erstellt E-Mail/WhatsApp-Texte mit einem Klick.</p>
           <div class="grid">
             <div>
-              <label for="warnThreshold">Uyarı eşiği (%)</label>
+              <label for="warnThreshold">Warnschwelle (%)</label>
               <input id="warnThreshold" type="number" min="1" max="100" value="20">
             </div>
             <div>
-              <label for="critThreshold">Kritik eşik (%)</label>
+              <label for="critThreshold">Kritische Schwelle (%)</label>
               <input id="critThreshold" type="number" min="1" max="100" value="30">
             </div>
           </div>
           <div class="actions">
-            <button id="loadAlertTargetsBtn" type="button">Hedefleri yükle</button>
-            <button id="copyEmailAlertsBtn" class="ghost-btn" type="button">E-Mail metnini kopyala</button>
-            <button id="copyWhatsappAlertsBtn" class="ghost-btn" type="button">WhatsApp metnini kopyala</button>
+            <button id="loadAlertTargetsBtn" type="button">Ziele laden</button>
+            <button id="copyEmailAlertsBtn" class="ghost-btn" type="button">E-Mail-Text kopieren</button>
+            <button id="copyWhatsappAlertsBtn" class="ghost-btn" type="button">WhatsApp-Text kopieren</button>
           </div>
           <div id="alertStatus" class="hidden"></div>
           <div id="alertTargetsWrap" style="margin-top:10px;"></div>
         </div>
 
         <div id="attendanceRequestSection" class="bulk-wrap">
-          <h2 class="section-title" style="font-size: 1.35rem;">Yoklama Düzeltme Talebi</h2>
-          <p class="section-subtitle">Kilitli oturum için gerekçeli talep oluştur. Onaylanırsa oturum tekrar açılır.</p>
+          <h2 class="section-title" style="font-size: 1.35rem;">Antrag auf Anwesenheitskorrektur</h2>
+          <p class="section-subtitle">Begründeten Antrag für gesperrte Sitzung erstellen. Bei Freigabe wird die Sitzung wieder geöffnet.</p>
           <div class="grid">
             <div>
               <label for="requestSessionId">Session ID</label>
               <input id="requestSessionId" type="text" placeholder="att-...">
             </div>
             <div>
-              <label for="requestReason">Gerekçe</label>
-              <input id="requestReason" type="text" placeholder="Örn: yanlış yoklama işaretlendi">
+              <label for="requestReason">Begründung</label>
+              <input id="requestReason" type="text" placeholder="Beispiel: Anwesenheit wurde falsch markiert">
             </div>
           </div>
           <div>
-            <label for="requestChanges">İstenen değişiklik</label>
-            <input id="requestChanges" type="text" placeholder="Örn: kursiyer X absent -> excused">
+            <label for="requestChanges">Gewünschte Änderung</label>
+            <input id="requestChanges" type="text" placeholder="Beispiel: Teilnehmer X absent -> excused">
           </div>
           <div class="actions">
-            <button id="createAttendanceRequestBtn" type="button">Talep oluştur</button>
-            <button id="loadAttendanceRequestsBtn" class="ghost-btn" type="button">Talepleri yükle</button>
+            <button id="createAttendanceRequestBtn" type="button">Antrag erstellen</button>
+            <button id="loadAttendanceRequestsBtn" class="ghost-btn" type="button">Anträge laden</button>
           </div>
           <div id="requestStatus" class="hidden"></div>
           <div id="attendanceRequestWrap" style="margin-top:10px;"></div>
@@ -726,7 +750,7 @@
         <div id="paneAudit" class="admin-pane">
         <div id="auditSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Audit Log</h2>
-          <p class="section-subtitle">Kim ne zaman hangi işlemi yaptı (IP + meta).</p>
+          <p class="section-subtitle">Wer hat wann welche Aktion ausgeführt (IP + Meta).</p>
           <div class="grid">
             <div>
               <label for="auditActionQuery">Action filtre</label>
@@ -738,7 +762,7 @@
             </div>
           </div>
           <div class="actions">
-            <button id="loadAuditBtn" type="button">Audit yükle</button>
+            <button id="loadAuditBtn" type="button">Audit laden</button>
           </div>
           <div id="auditStatus" class="hidden"></div>
           <div id="auditWrap" style="margin-top:10px;"></div>
@@ -786,7 +810,6 @@
             <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
             <button id="listBskBtn" type="button">BSK laden</button>
             <button id="downloadBskCsvBtn" type="button">BSK-CSV herunterladen</button>
-            <button id="logoutBtn" type="button">Abmelden</button>
           </div>
         </div>
 
@@ -825,6 +848,16 @@
       archive: "paneArchive"
     };
 
+    const adminPaneLabels = {
+      accounts: "Schülerzugänge",
+      courses: "Kurse",
+      attendance: "Anwesenheit",
+      notify: "Benachrichtigungen",
+      room: "Virtueller Saal",
+      audit: "Audit",
+      archive: "Archiv"
+    };
+
     function clamp(value, min, max, fallback) {
       const n = Number.parseInt(value, 10);
       if (Number.isNaN(n)) return fallback;
@@ -861,9 +894,21 @@
       const activePane = document.getElementById(adminPaneMap[paneName]);
       if (activePane) activePane.classList.add("active");
 
-      document.querySelectorAll(".admin-tab-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.pane === paneName);
-      });
+      const labelNode = document.getElementById("activePaneLabel");
+      if (labelNode) {
+        labelNode.textContent = adminPaneLabels[paneName] || "Bereich";
+      }
+    }
+
+    function closeAdminMenu() {
+      const menu = document.getElementById("adminMenuDropdown");
+      if (menu) menu.classList.add("hidden");
+    }
+
+    function toggleAdminMenu() {
+      const menu = document.getElementById("adminMenuDropdown");
+      if (!menu) return;
+      menu.classList.toggle("hidden");
     }
 
     async function parseJsonResponse(response) {
@@ -914,11 +959,14 @@
       document.getElementById("panelCard").classList.add("hidden");
       document.getElementById("loginCard").classList.remove("hidden");
       setAdminPane("accounts");
+      const labelNode = document.getElementById("activePaneLabel");
+      if (labelNode) labelNode.textContent = "Anmeldung";
       roomLiveEnabled = false;
       roomPendingOnly = false;
       roomUngradedOnly = false;
       currentRoomDetail = { room: null, participants: [] };
       stopRoomLivePolling();
+      closeAdminMenu();
       const liveBtn = document.getElementById("toggleRoomLiveBtn");
       if (liveBtn) liveBtn.textContent = "Auto-Refresh: Aus";
       const pendingBtn = document.getElementById("toggleRoomPendingOnlyBtn");
@@ -1241,7 +1289,7 @@
     function renderCourseSelect() {
       const sel = document.getElementById("attendanceCourseId");
       const prev = sel.value;
-      const options = ['<option value="">Önce kurs seçin</option>'];
+      const options = ['<option value="">Bitte zuerst einen Kurs wählen</option>'];
       currentCourses
         .filter(c => !!c.active)
         .forEach(c => {
@@ -1259,7 +1307,7 @@
       renderCourseSelect();
       const wrap = document.getElementById("courseListWrap");
       if (!courses.length) {
-        wrap.innerHTML = "<p>Henüz kurs yok.</p>";
+        wrap.innerHTML = "<p>Noch keine Kurse vorhanden.</p>";
         document.getElementById("courseAssignWrap").innerHTML = "";
         return;
       }
@@ -1271,7 +1319,7 @@
           <td>${escapeHtml(c.schedule || "-")}</td>
           <td>${c.active ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(String((c.members || []).length))}</td>
-          <td><button type="button" data-course-assign="${escapeHtml(c.course_id || "")}">Üyeleri düzenle</button></td>
+          <td><button type="button" data-course-assign="${escapeHtml(c.course_id || "")}">Mitglieder bearbeiten</button></td>
         </tr>
       `).join("");
       wrap.innerHTML = `
@@ -1309,10 +1357,10 @@
       }).join("");
       wrap.innerHTML = `
         <div class="card" style="margin-top:8px;padding:12px;">
-          <strong>Kurs üyeleri: ${escapeHtml(course.name || courseId)}</strong>
+          <strong>Kursmitglieder: ${escapeHtml(course.name || courseId)}</strong>
           <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">${rows}</div>
           <div class="actions" style="margin-top:8px;">
-            <button type="button" id="saveCourseMembersBtn">Üyeleri kaydet</button>
+            <button type="button" id="saveCourseMembersBtn">Mitglieder speichern</button>
           </div>
         </div>
       `;
@@ -1332,7 +1380,7 @@
         }
         renderCourses(Array.isArray(payload.courses) ? payload.courses : []);
       } catch (err) {
-        document.getElementById("courseListWrap").innerHTML = `<p>Kursliste alınamadı: ${escapeHtml(err.message)}</p>`;
+        document.getElementById("courseListWrap").innerHTML = `<p>Kursliste konnte nicht geladen werden: ${escapeHtml(err.message)}</p>`;
       }
     }
 
@@ -1342,7 +1390,7 @@
       const level = document.getElementById("newCourseLevel").value.trim();
       const schedule = document.getElementById("newCourseSchedule").value.trim();
       if (!name) {
-        setBox("courseStatus", "error", "Kurs adı zorunlu.");
+        setBox("courseStatus", "error", "Kursname ist erforderlich.");
         return;
       }
       try {
@@ -1353,13 +1401,13 @@
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("courseStatus", "ok", "Kurs oluşturuldu.");
+        setBox("courseStatus", "ok", "Kurs wurde erstellt.");
         document.getElementById("newCourseName").value = "";
         document.getElementById("newCourseLevel").value = "";
         document.getElementById("newCourseSchedule").value = "";
         listCourses();
       } catch (err) {
-        setBox("courseStatus", "error", `Kurs oluşturma hatası: ${err.message}`);
+        setBox("courseStatus", "error", `Kurs konnte nicht erstellt werden: ${err.message}`);
       }
     }
 
@@ -1376,10 +1424,10 @@
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("courseStatus", "ok", "Kurs üyeleri kaydedildi.");
+        setBox("courseStatus", "ok", "Kursmitglieder wurden gespeichert.");
         listCourses();
       } catch (err) {
-        setBox("courseStatus", "error", `Üye kaydetme hatası: ${err.message}`);
+        setBox("courseStatus", "error", `Speichern der Kursmitglieder fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -1400,12 +1448,12 @@
       const wrap = document.getElementById("attendanceEditWrap");
       const courseId = String(document.getElementById("attendanceCourseId").value || "");
       if (!courseId) {
-        wrap.innerHTML = "<p>Önce bir kurs seç.</p>";
+        wrap.innerHTML = "<p>Bitte zuerst einen Kurs wählen.</p>";
         return;
       }
       const users = getSelectedCourseUsers();
       if (!users.length) {
-        wrap.innerHTML = "<p>Bu kursta üye öğrenci yok. Kurs üyelerini düzenle.</p>";
+        wrap.innerHTML = "<p>Dieser Kurs hat noch keine Teilnehmenden. Bitte Kursmitglieder bearbeiten.</p>";
         return;
       }
       const rows = users.map((u, i) => {
@@ -1422,7 +1470,7 @@
                 <option value="excused">Excused</option>
               </select>
             </td>
-            <td><input type="text" data-att-note="${i}" placeholder="Not (opsiyonel)"></td>
+            <td><input type="text" data-att-note="${i}" placeholder="Notiz (optional)"></td>
           </tr>
         `;
       }).join("");
@@ -1458,11 +1506,11 @@
       const teacherNote = document.getElementById("attendanceTeacherNote").value.trim();
       const rows = collectAttendanceRows();
       if (!courseId || !courseName || !lessonDate) {
-        setBox("attendanceStatus", "error", "Kurs seçimi ve ders tarihi zorunlu.");
+        setBox("attendanceStatus", "error", "Kursauswahl und Kurstermin sind erforderlich.");
         return;
       }
       if (!rows.length) {
-        setBox("attendanceStatus", "error", "Önce Teilnehmer laden tıkla.");
+        setBox("attendanceStatus", "error", "Bitte zuerst auf 'Teilnehmer laden' klicken.");
         return;
       }
       try {
@@ -1482,17 +1530,17 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         currentAttendanceSessionId = String(payload.session_id || "");
-        setBox("attendanceStatus", "ok", `Yoklama kaydedildi (ID: ${currentAttendanceSessionId}).`);
+        setBox("attendanceStatus", "ok", `Anwesenheit gespeichert (ID: ${currentAttendanceSessionId}).`);
         listAttendanceSessions();
       } catch (err) {
-        setBox("attendanceStatus", "error", `Yoklama kayıt hatası: ${err.message}`);
+        setBox("attendanceStatus", "error", `Fehler beim Speichern der Anwesenheit: ${err.message}`);
       }
     }
 
     async function lockAttendance() {
       clearBox("attendanceStatus");
       if (!currentAttendanceSessionId) {
-        setBox("attendanceStatus", "error", "Önce yoklama kaydet.");
+        setBox("attendanceStatus", "error", "Bitte zuerst die Anwesenheit speichern.");
         return;
       }
       try {
@@ -1503,10 +1551,10 @@
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("attendanceStatus", "ok", "Oturum kilitlendi. Artık düzenlenemez.");
+        setBox("attendanceStatus", "ok", "Sitzung wurde gesperrt und kann nicht mehr bearbeitet werden.");
         listAttendanceSessions();
       } catch (err) {
-        setBox("attendanceStatus", "error", `Kilitleme hatası: ${err.message}`);
+        setBox("attendanceStatus", "error", `Sperren fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -1516,7 +1564,7 @@
       const reason = document.getElementById("requestReason").value.trim();
       const changes = document.getElementById("requestChanges").value.trim();
       if (!sessionId || !reason) {
-        setBox("requestStatus", "error", "Session ID ve gerekçe zorunlu.");
+        setBox("requestStatus", "error", "Session-ID und Begründung sind erforderlich.");
         return;
       }
       try {
@@ -1527,19 +1575,19 @@
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("requestStatus", "ok", `Talep oluşturuldu: ${payload.request_id || "-"}`);
+        setBox("requestStatus", "ok", `Antrag erstellt: ${payload.request_id || "-"}`);
         document.getElementById("requestReason").value = "";
         document.getElementById("requestChanges").value = "";
         loadAttendanceRequests();
       } catch (err) {
-        setBox("requestStatus", "error", `Talep hatası: ${err.message}`);
+        setBox("requestStatus", "error", `Antragsfehler: ${err.message}`);
       }
     }
 
     function renderAttendanceRequests(rows) {
       const wrap = document.getElementById("attendanceRequestWrap");
       if (!rows.length) {
-        wrap.innerHTML = "<p>Talep yok.</p>";
+        wrap.innerHTML = "<p>Keine Anträge.</p>";
         return;
       }
       const tableRows = rows.map(r => `
@@ -1551,14 +1599,14 @@
           <td>${escapeHtml(r.status || "")}</td>
           <td class="mono">${escapeHtml(r.created_at || "")}</td>
           <td>
-            <button type="button" data-req-approve="${escapeHtml(r.request_id || "")}">Onayla</button>
-            <button type="button" data-req-reject="${escapeHtml(r.request_id || "")}" class="ghost-btn">Reddet</button>
+            <button type="button" data-req-approve="${escapeHtml(r.request_id || "")}">Freigeben</button>
+            <button type="button" data-req-reject="${escapeHtml(r.request_id || "")}" class="ghost-btn">Ablehnen</button>
           </td>
         </tr>
       `).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th>ID</th><th>Session</th><th>Gerekçe</th><th>Değişiklik</th><th>Status</th><th>Oluşturma</th><th>İşlem</th></tr></thead>
+          <thead><tr><th>ID</th><th>Sitzung</th><th>Begründung</th><th>Änderung</th><th>Status</th><th>Erstellt</th><th>Aktion</th></tr></thead>
           <tbody>${tableRows}</tbody>
         </table>
       `;
@@ -1578,14 +1626,14 @@
         currentAttendanceRequests = Array.isArray(payload.requests) ? payload.requests : [];
         renderAttendanceRequests(currentAttendanceRequests);
       } catch (err) {
-        document.getElementById("attendanceRequestWrap").innerHTML = `<p>Talep listesi alınamadı: ${escapeHtml(err.message)}</p>`;
+        document.getElementById("attendanceRequestWrap").innerHTML = `<p>Antragsliste konnte nicht geladen werden: ${escapeHtml(err.message)}</p>`;
       }
     }
 
     async function reviewAttendanceRequest(requestId, decision) {
       clearBox("requestStatus");
       if (!requestId) return;
-      const note = window.prompt(`${decision === "approve" ? "Onay" : "Red"} notu:`, "");
+      const note = window.prompt(`${decision === "approve" ? "Freigabe" : "Ablehnung"}-Notiz:`, "");
       if (note === null) return;
       try {
         const response = await fetch("./api/attendance_request_review.php", {
@@ -1599,18 +1647,18 @@
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("requestStatus", "ok", `Talep ${decision === "approve" ? "onaylandı" : "reddedildi"}.`);
+        setBox("requestStatus", "ok", `Antrag ${decision === "approve" ? "freigegeben" : "abgelehnt"}.`);
         loadAttendanceRequests();
         listAttendanceSessions();
       } catch (err) {
-        setBox("requestStatus", "error", `Review hatası: ${err.message}`);
+        setBox("requestStatus", "error", `Prüfung fehlgeschlagen: ${err.message}`);
       }
     }
 
     function renderAuditRecords(records) {
       const wrap = document.getElementById("auditWrap");
       if (!records.length) {
-        wrap.innerHTML = "<p>Audit kaydı yok.</p>";
+        wrap.innerHTML = "<p>Keine Audit-Einträge.</p>";
         return;
       }
       const rows = records.map(r => `
@@ -1648,9 +1696,9 @@
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         const records = Array.isArray(payload.records) ? payload.records : [];
         renderAuditRecords(records);
-        setBox("auditStatus", "ok", `${records.length} audit kaydı yüklendi.`);
+        setBox("auditStatus", "ok", `${records.length} Audit-Einträge geladen.`);
       } catch (err) {
-        setBox("auditStatus", "error", `Audit yüklenemedi: ${err.message}`);
+        setBox("auditStatus", "error", `Audit konnte nicht geladen werden: ${err.message}`);
       }
     }
 
@@ -1666,7 +1714,7 @@
         </div>
       `;
       if (!records.length) {
-        wrap.innerHTML = "<p>Henüz yoklama kaydı yok.</p>";
+        wrap.innerHTML = "<p>Noch keine Anwesenheitseinträge.</p>";
         return;
       }
       const rows = records.map(r => {
@@ -1710,30 +1758,30 @@
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderAttendanceSessions(Array.isArray(payload.records) ? payload.records : []);
       } catch (err) {
-        document.getElementById("attendanceListWrap").innerHTML = `<p>Yoklama listesi alınamadı: ${escapeHtml(err.message)}</p>`;
+        document.getElementById("attendanceListWrap").innerHTML = `<p>Anwesenheitsliste konnte nicht geladen werden: ${escapeHtml(err.message)}</p>`;
       }
     }
 
     function renderAlertTargets(targets) {
       const wrap = document.getElementById("alertTargetsWrap");
       if (!targets.length) {
-        wrap.innerHTML = "<p>Eşik üstü hedef bulunamadı.</p>";
+        wrap.innerHTML = "<p>Keine Ziele über der Schwelle gefunden.</p>";
         return;
       }
       const buildMailto = target => {
         const email = String(target.email || "").trim();
         if (!email) return "";
-        const name = target.display_name || target.username || "Kursiyer";
+        const name = target.display_name || target.username || "Teilnehmende/r";
         const subject = `Kursanwesenheit Hinweis (${target.course_name || "Kurs"})`;
-        const body = `Merhaba ${name},\n${target.course_name || "kurs"} için devamsızlık oranınız şu an ${target.absence_rate || 0}% (${target.missing || 0}/${target.total || 0}). Lütfen ders devamlılığı için bizimle iletişime geçiniz.`;
+        const body = `Guten Tag ${name},\n${target.course_name || "kurs"} Ihre Fehlzeitenquote im Kurs beträgt aktuell ${target.absence_rate || 0}% (${target.missing || 0}/${target.total || 0}). Bitte melden Sie sich bei uns zur Planung Ihrer Teilnahme.`;
         return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       };
       const buildWa = target => {
         const raw = String(target.phone || "");
         const phone = raw.replace(/[^\d]/g, "");
         if (!phone) return "";
-        const name = target.display_name || target.username || "Kursiyer";
-        const text = `Merhaba ${name}, ${target.course_name || "kurs"} için devamsızlık oranınız ${target.absence_rate || 0}% (${target.missing || 0}/${target.total || 0}). Devam planı için lütfen bize yazın.`;
+        const name = target.display_name || target.username || "Teilnehmende/r";
+        const text = `Guten Tag ${name}, ${target.course_name || "kurs"} Ihre Fehlzeitenquote im Kurs beträgt ${target.absence_rate || 0}% (${target.missing || 0}/${target.total || 0}). Bitte schreiben Sie uns für einen Teilnahmeplan.`;
         return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
       };
       const rows = targets.map(t => `
@@ -1747,14 +1795,14 @@
           <td class="mono">${escapeHtml(`${t.absence_rate || 0}%`)}</td>
           <td>${t.severity === "critical" ? "<span class='source-alert'>Kritik</span>" : "Warnung"}</td>
           <td>
-            ${buildMailto(t) ? `<a href="${buildMailto(t)}" class="mono" target="_blank" rel="noopener noreferrer">E-Mail aç</a>` : "-"}
-            ${buildWa(t) ? ` | <a href="${buildWa(t)}" class="mono" target="_blank" rel="noopener noreferrer">WhatsApp aç</a>` : ""}
+            ${buildMailto(t) ? `<a href="${buildMailto(t)}" class="mono" target="_blank" rel="noopener noreferrer">E-Mail öffnen</a>` : "-"}
+            ${buildWa(t) ? ` | <a href="${buildWa(t)}" class="mono" target="_blank" rel="noopener noreferrer">WhatsApp öffnen</a>` : ""}
           </td>
         </tr>
       `).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th>Username</th><th>Name</th><th>E-Mail</th><th>WhatsApp</th><th>Kurs</th><th>Fehl/Total</th><th>Rate</th><th>Seviye</th><th>Aksiyon</th></tr></thead>
+          <thead><tr><th>Username</th><th>Name</th><th>E-Mail</th><th>WhatsApp</th><th>Kurs</th><th>Fehl/Total</th><th>Rate</th><th>Niveau</th><th>Aktion</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       `;
@@ -1781,51 +1829,51 @@
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         currentAlertTargets = Array.isArray(payload.targets) ? payload.targets : [];
         renderAlertTargets(currentAlertTargets);
-        setBox("alertStatus", "ok", `${currentAlertTargets.length} hedef bulundu.`);
+        setBox("alertStatus", "ok", `${currentAlertTargets.length} Ziele gefunden.`);
       } catch (err) {
-        setBox("alertStatus", "error", `Hedef yükleme hatası: ${err.message}`);
+        setBox("alertStatus", "error", `Ziele konnten nicht geladen werden: ${err.message}`);
       }
     }
 
     function buildEmailAlertText(targets) {
       return targets.map(t => {
-        const name = t.display_name || t.username || "Kursiyer";
-        return `An: ${t.email || "(email yok)"}\nBetreff: Kursanwesenheit Hinweis\nMerhaba ${name},\n${t.course_name || "kurs"} için devamsızlık oranınız şu an ${t.absence_rate || 0}% (${t.missing || 0}/${t.total || 0}). Lütfen ders devamlılığı için bizimle iletişime geçiniz.\n`;
+        const name = t.display_name || t.username || "Teilnehmende/r";
+        return `An: ${t.email || "(keine E-Mail)"}\nBetreff: Kursanwesenheit Hinweis\nGuten Tag ${name},\n${t.course_name || "kurs"} Ihre Fehlzeitenquote im Kurs beträgt aktuell ${t.absence_rate || 0}% (${t.missing || 0}/${t.total || 0}). Bitte melden Sie sich bei uns zur Planung Ihrer Teilnahme.\n`;
       }).join("\n---\n");
     }
 
     function buildWhatsAppAlertText(targets) {
       return targets.map(t => {
-        const name = t.display_name || t.username || "Kursiyer";
-        return `Tel: ${t.phone || "(telefon yok)"}\nMerhaba ${name}, ${t.course_name || "kurs"} için devamsızlık oranınız ${t.absence_rate || 0}% (${t.missing || 0}/${t.total || 0}). Devam planı için lütfen bize yazın.`;
+        const name = t.display_name || t.username || "Teilnehmende/r";
+        return `Tel: ${t.phone || "(keine Telefonnummer)"}\nGuten Tag ${name}, ${t.course_name || "kurs"} Ihre Fehlzeitenquote im Kurs beträgt ${t.absence_rate || 0}% (${t.missing || 0}/${t.total || 0}). Bitte schreiben Sie uns für einen Teilnahmeplan.`;
       }).join("\n---\n");
     }
 
     async function copyEmailAlerts() {
       clearBox("alertStatus");
       if (!currentAlertTargets.length) {
-        setBox("alertStatus", "error", "Önce hedefleri yükleyin.");
+        setBox("alertStatus", "error", "Bitte zuerst Ziele laden.");
         return;
       }
       try {
         await navigator.clipboard.writeText(buildEmailAlertText(currentAlertTargets));
-        setBox("alertStatus", "ok", "E-Mail metni kopyalandı.");
+        setBox("alertStatus", "ok", "E-Mail-Text wurde kopiert.");
       } catch (_) {
-        setBox("alertStatus", "error", "Kopyalama başarısız.");
+        setBox("alertStatus", "error", "Kopieren fehlgeschlagen.");
       }
     }
 
     async function copyWhatsappAlerts() {
       clearBox("alertStatus");
       if (!currentAlertTargets.length) {
-        setBox("alertStatus", "error", "Önce hedefleri yükleyin.");
+        setBox("alertStatus", "error", "Bitte zuerst Ziele laden.");
         return;
       }
       try {
         await navigator.clipboard.writeText(buildWhatsAppAlertText(currentAlertTargets));
-        setBox("alertStatus", "ok", "WhatsApp metni kopyalandı.");
+        setBox("alertStatus", "ok", "WhatsApp-Text wurde kopiert.");
       } catch (_) {
-        setBox("alertStatus", "error", "Kopyalama başarısız.");
+        setBox("alertStatus", "error", "Kopieren fehlgeschlagen.");
       }
     }
 
@@ -1939,7 +1987,7 @@
         setBox("userStatus", "ok", `Kontakt aktualisiert: ${username}`);
         listStudents();
       } catch (err) {
-        setBox("userStatus", "error", `Kontakt güncelleme hatası: ${err.message}`);
+        setBox("userStatus", "error", `Kontaktaktualisierung fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -2557,7 +2605,10 @@
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
     document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
     document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
-    document.getElementById("logoutBtn").addEventListener("click", logout);
+    document.getElementById("navLogoutBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      logout();
+    });
     document.getElementById("createStudentBtn").addEventListener("click", createStudent);
     document.getElementById("generatePwdBtn").addEventListener("click", () => {
       document.getElementById("newStudentPassword").value = randomPassword();
@@ -2590,7 +2641,7 @@
     document.getElementById("loadAuditBtn").addEventListener("click", loadAuditLogs);
     document.getElementById("loadAttendanceStudentsBtn").addEventListener("click", () => {
       renderAttendanceEditor();
-      setBox("attendanceStatus", "ok", "Teilnehmer editörü hazır.");
+      setBox("attendanceStatus", "ok", "Teilnehmer-Editor ist bereit.");
     });
     document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendance);
     document.getElementById("lockAttendanceBtn").addEventListener("click", lockAttendance);
@@ -2601,6 +2652,7 @@
     document.getElementById("bulkCsvBtn").addEventListener("click", downloadBulkCsv);
     document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
     document.getElementById("goHomeBtn").addEventListener("click", () => {
+      closeAdminMenu();
       window.location.href = "./index.html";
     });
     document.querySelector(".hero-brand").addEventListener("keydown", event => {
@@ -2610,46 +2662,66 @@
       }
     });
     document.getElementById("jumpAccountsBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("accounts");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpCoursesBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("courses");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpAttendanceBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("attendance");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpNotifyBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("notify");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpRoomSectionBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("room");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpAuditBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("audit");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
     document.getElementById("jumpArchiveBtn").addEventListener("click", () => {
+      closeAdminMenu();
       setAdminPane("archive");
       document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    document.querySelectorAll(".admin-tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => setAdminPane(btn.dataset.pane));
-    });
     document.getElementById("openOpsChecklistBtn").addEventListener("click", () => {
+      closeAdminMenu();
       window.open("./docs/BETRIEB-CHECKLISTE.md", "_blank", "noopener,noreferrer");
     });
     document.getElementById("openTeacherGuideBtn").addEventListener("click", () => {
+      closeAdminMenu();
       window.open("./docs/LEHRKRAFT-KURZANLEITUNG.md", "_blank", "noopener,noreferrer");
     });
     document.getElementById("openStudentGuideBtn").addEventListener("click", () => {
+      closeAdminMenu();
       window.open("./docs/SCHUELER-KURZANLEITUNG.md", "_blank", "noopener,noreferrer");
     });
-    document.getElementById("refreshStudentsBtn").addEventListener("click", listStudents);
+    document.getElementById("refreshStudentsBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      listStudents();
+    });
+    document.getElementById("adminMenuToggleBtn").addEventListener("click", event => {
+      event.stopPropagation();
+      toggleAdminMenu();
+    });
+    document.getElementById("adminMenuDropdown").addEventListener("click", event => {
+      event.stopPropagation();
+    });
+    document.addEventListener("click", () => {
+      closeAdminMenu();
+    });
     document.getElementById("adminPassword").addEventListener("keydown", event => {
       if (event.key === "Enter") login();
     });
