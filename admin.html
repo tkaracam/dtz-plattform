@@ -118,7 +118,7 @@
     }
 
     .layout {
-      margin-top: 16px;
+      margin-top: 10px;
       display: grid;
       gap: 16px;
     }
@@ -182,6 +182,9 @@
       color: #e9f4ff;
       position: relative;
       z-index: 5;
+      position: sticky;
+      top: 8px;
+      z-index: 40;
     }
 
     .admin-topbar-left {
@@ -463,16 +466,26 @@
     @media (max-width: 800px) {
       .container {
         width: min(1160px, calc(100% - 1rem));
-        margin-top: 14px;
+        margin-top: 8px;
       }
 
       .hero-brand img {
-        height: 84px;
+        height: 68px;
+      }
+
+      .hero {
+        padding: 16px;
+      }
+
+      .hero p {
+        margin-top: 8px;
+        font-size: 0.95rem;
       }
 
       .admin-topbar {
         flex-direction: row;
         align-items: center;
+        top: 4px;
       }
 
       .admin-topbar-left {
@@ -776,6 +789,20 @@
             <label for="roomPrompt">Aufgabenstellung</label>
             <input id="roomPrompt" type="text" placeholder="z. B. Schreiben Sie eine E-Mail an die Hausverwaltung...">
           </div>
+          <div class="grid">
+            <div>
+              <label for="roomTemplateLevel">Vorlage (Niveau)</label>
+              <select id="roomTemplateLevel">
+                <option value="A2">A2</option>
+                <option value="B1" selected>B1</option>
+                <option value="B2">B2</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="applyRoomTemplateBtn" class="ghost-btn" type="button">Vorlage einsetzen</button>
+              <button id="randomRoomTemplateBtn" class="ghost-btn" type="button">Zufällige Vorlage</button>
+            </div>
+          </div>
           <div class="actions">
             <button id="createRoomBtn" type="button">Saal erstellen</button>
             <button id="refreshRoomBtn" class="ghost-btn" type="button">Räume aktualisieren</button>
@@ -915,6 +942,60 @@
       archive: "Archiv"
     };
 
+    const roomTemplates = {
+      A2: [
+        {
+          title: "A2 Alltag: Termin verschieben",
+          duration: 25,
+          prompt: "Sie können morgen nicht zum Sprachkurs kommen. Schreiben Sie der Kursleitung eine kurze Nachricht: Grund, neuer Terminwunsch und Entschuldigung."
+        },
+        {
+          title: "A2 Alltag: Bitte an Nachbarn",
+          duration: 25,
+          prompt: "Ihr Nachbar ist heute Abend zu laut. Schreiben Sie eine höfliche Nachricht mit Problem, Uhrzeit und Lösungsvorschlag."
+        },
+        {
+          title: "A2 Alltag: Arzttermin",
+          duration: 25,
+          prompt: "Sie brauchen einen neuen Arzttermin. Schreiben Sie eine E-Mail mit Grund, Wunschdatum und Telefonnummer."
+        }
+      ],
+      B1: [
+        {
+          title: "B1 DTZ: Hausverwaltung",
+          duration: 35,
+          prompt: "In Ihrer Wohnung gibt es seit drei Tagen kein warmes Wasser. Schreiben Sie an die Hausverwaltung: Problem, seit wann, Ihre Bitte und gewünschter Termin."
+        },
+        {
+          title: "B1 DTZ: Arbeitgeber",
+          duration: 35,
+          prompt: "Sie können nächste Woche nicht zur Arbeit kommen. Schreiben Sie Ihrer Teamleitung: Grund, Dauer, Vertretung und Rückmeldung."
+        },
+        {
+          title: "B1 DTZ: Kursanfrage",
+          duration: 35,
+          prompt: "Ihr Deutschkurs endet bald. Schreiben Sie der Sprachschule: Interesse an B2-Kurs, verfügbare Zeiten, Lernziele und Bitte um Informationen."
+        }
+      ],
+      B2: [
+        {
+          title: "B2 Beruf: Beschwerde",
+          duration: 45,
+          prompt: "Ein wichtiges Lieferpaket ist trotz Zusage nicht angekommen. Schreiben Sie an den Kundendienst: Situation, Folgen für Ihren Arbeitsablauf und klare Forderung."
+        },
+        {
+          title: "B2 Beruf: Projektabstimmung",
+          duration: 45,
+          prompt: "Ihr Team plant ein Wochenendprojekt, aber es gibt Terminprobleme. Schreiben Sie eine strukturierte E-Mail mit Optionen, Bewertung und einem konkreten Vorschlag."
+        },
+        {
+          title: "B2 Beruf: Fortbildung",
+          duration: 45,
+          prompt: "Sie möchten an einer beruflichen Fortbildung teilnehmen. Schreiben Sie Ihrer Leitung: Nutzen für die Abteilung, Zeitplan, Kosten und Organisation."
+        }
+      ]
+    };
+
     function clamp(value, min, max, fallback) {
       const n = Number.parseInt(value, 10);
       if (Number.isNaN(n)) return fallback;
@@ -955,6 +1036,11 @@
       if (labelNode) {
         labelNode.textContent = adminPaneLabels[paneName] || "Bereich";
       }
+    }
+
+    function openAdminPane(paneName) {
+      setAdminPane(paneName);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function closeAdminMenu() {
@@ -2281,6 +2367,22 @@
       }
     }
 
+    function applyRoomTemplate(randomPick = false) {
+      clearBox("roomAdminStatus");
+      const level = String(document.getElementById("roomTemplateLevel").value || "B1");
+      const pool = Array.isArray(roomTemplates[level]) ? roomTemplates[level] : [];
+      if (!pool.length) {
+        setBox("roomAdminStatus", "error", "Keine Vorlagen für dieses Niveau gefunden.");
+        return;
+      }
+      const index = randomPick ? Math.floor(Math.random() * pool.length) : 0;
+      const chosen = pool[index];
+      document.getElementById("roomTitle").value = chosen.title;
+      document.getElementById("roomPrompt").value = chosen.prompt;
+      document.getElementById("roomDuration").value = String(chosen.duration);
+      setBox("roomAdminStatus", "ok", `Vorlage (${level}) wurde eingesetzt.`);
+    }
+
     async function createRoom() {
       clearBox("roomAdminStatus");
       const title = document.getElementById("roomTitle").value.trim();
@@ -2686,6 +2788,8 @@
     document.getElementById("copyWhatsappAlertsBtn").addEventListener("click", copyWhatsappAlerts);
     document.getElementById("createAttendanceRequestBtn").addEventListener("click", createAttendanceRequest);
     document.getElementById("loadAttendanceRequestsBtn").addEventListener("click", loadAttendanceRequests);
+    document.getElementById("applyRoomTemplateBtn").addEventListener("click", () => applyRoomTemplate(false));
+    document.getElementById("randomRoomTemplateBtn").addEventListener("click", () => applyRoomTemplate(true));
     document.getElementById("createRoomBtn").addEventListener("click", createRoom);
     document.getElementById("refreshRoomBtn").addEventListener("click", listRooms);
     document.getElementById("watchRoomBtn").addEventListener("click", loadRoomDetail);
@@ -2720,38 +2824,31 @@
     });
     document.getElementById("jumpAccountsBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("accounts");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("accounts");
     });
     document.getElementById("jumpCoursesBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("courses");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("courses");
     });
     document.getElementById("jumpAttendanceBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("attendance");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("attendance");
     });
     document.getElementById("jumpNotifyBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("notify");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("notify");
     });
     document.getElementById("jumpRoomSectionBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("room");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("room");
     });
     document.getElementById("jumpAuditBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("audit");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("audit");
     });
     document.getElementById("jumpArchiveBtn").addEventListener("click", () => {
       closeAdminMenu();
-      setAdminPane("archive");
-      document.getElementById("panelCard").scrollIntoView({ behavior: "smooth", block: "start" });
+      openAdminPane("archive");
     });
     document.getElementById("openOpsChecklistBtn").addEventListener("click", () => {
       closeAdminMenu();
