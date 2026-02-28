@@ -294,9 +294,14 @@ function dtz_run_correction(string $letterText, string $taskPrompt, array $requi
 
     $taskText = $taskPrompt !== '' ? $taskPrompt : 'Keine Aufgabenstellung angegeben.';
     $systemPrompt = <<<SYS
-Du bist eine erfahrene Deutschlehrkraft fuer DTZ Schreiben.
+Du bist eine erfahrene Deutschlehrkraft fuer DTZ Schreiben (g.a.s.t.-orientiert).
 Antworte ausschliesslich mit gueltigem JSON.
 Bewerte konstruktiv, klar und auf DTZ-Niveau.
+Nutze bei der Bewertung die Perspektive der DTZ-Kriterien:
+- Inhalt
+- Kommunikative Gestaltung
+- Ausdruck
+- Korrektheit
 SYS;
 
     $userPrompt = <<<USR
@@ -339,6 +344,11 @@ Regeln:
 - Jede Rubrikkategorie zwischen 0 und 5.
 - Der korrigierte Brief soll DTZ-gerecht, klar und natürlich sein.
 - Schreibe nichts ausserhalb des JSON.
+- Orthografie streng nach Standarddeutsch:
+  - Nach Komma wird klein weitergeschrieben, ausser es folgt ein Nomen/Eigenname oder der Beginn eines neuen Satzes.
+  - Satzanfang immer gross.
+  - Achte auf Gross-/Kleinschreibung bei Nomen.
+- Prüfe explizit Anrede, Anlass, Bitte/Wunsch und Schlussformel.
 USR;
 
     $payload = [
