@@ -549,6 +549,49 @@
       100% { box-shadow: 0 0 0 0 rgba(178, 45, 35, 0); }
     }
 
+    .toast-stack {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 9999;
+      display: grid;
+      gap: 8px;
+      width: min(340px, calc(100vw - 28px));
+      pointer-events: none;
+    }
+
+    .toast {
+      border-radius: 12px;
+      border: 1px solid #c8d9eb;
+      background: #f7fbff;
+      color: #183f63;
+      padding: 10px 12px;
+      font-weight: 700;
+      box-shadow: 0 14px 30px rgba(9, 24, 42, 0.2);
+      opacity: 0;
+      transform: translateY(-8px);
+      animation: toastIn 0.18s ease forwards;
+    }
+
+    .toast.ok {
+      border-color: #b4e6d5;
+      background: #ecfaf3;
+      color: #126c58;
+    }
+
+    .toast.error {
+      border-color: #efb8b1;
+      background: #fff0ee;
+      color: #8e2d22;
+    }
+
+    @keyframes toastIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .hidden { display: none; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
@@ -1071,6 +1114,7 @@
       </section>
     </div>
   </div>
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
 
   <script>
     let teacherRecords = [];
@@ -2398,6 +2442,22 @@
       box.textContent = message;
     }
 
+    function showToast(type, message) {
+      const stack = document.getElementById("toastStack");
+      if (!stack) return;
+      const node = document.createElement("div");
+      node.className = `toast ${type === "error" ? "error" : "ok"}`;
+      node.textContent = String(message || "");
+      stack.appendChild(node);
+      window.setTimeout(() => {
+        node.style.opacity = "0";
+        node.style.transform = "translateY(-6px)";
+      }, 4300);
+      window.setTimeout(() => {
+        if (node.parentNode) node.parentNode.removeChild(node);
+      }, 4800);
+    }
+
     function clearPendingLiveStatus() {
       const box = document.getElementById("pendingLiveStatus");
       if (!box) return;
@@ -2432,10 +2492,14 @@
         if (newIds.length) {
           const latest = pendingRows.find(row => String(row.upload_id || "").trim() === newIds[0]);
           const who = latest ? String(latest.student_username || latest.student_name || "neuer Eintrag") : "neuer Eintrag";
-          setPendingLiveStatus("ok", `Neue Einreichung: ${who} (${newIds.length} neu).`);
+          const msg = `Neue Einreichung: ${who} (${newIds.length} neu).`;
+          setPendingLiveStatus("ok", msg);
+          showToast("ok", msg);
         }
         if (criticalNow > pendingLastCritical) {
-          setPendingLiveStatus("error", `Kritische Warteschlange gestiegen: ${pendingLastCritical} -> ${criticalNow}.`);
+          const msg = `Kritische Warteschlange gestiegen: ${pendingLastCritical} -> ${criticalNow}.`;
+          setPendingLiveStatus("error", msg);
+          showToast("error", msg);
           const summary = document.getElementById("pendingSlaSummary");
           if (summary) {
             summary.classList.remove("pulse-critical");
@@ -2796,7 +2860,9 @@
         if (!silent) {
           setBox("panelStatus", "error", `Laden fehlgeschlagen: ${err.message}`);
         } else {
-          setPendingLiveStatus("error", `Auto-Refresh fehlgeschlagen: ${err.message}`);
+          const msg = `Auto-Refresh fehlgeschlagen: ${err.message}`;
+          setPendingLiveStatus("error", msg);
+          showToast("error", msg);
         }
       } finally {
         if (!silent) {
