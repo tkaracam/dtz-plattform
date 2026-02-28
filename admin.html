@@ -508,6 +508,37 @@
       background: #fff6f5;
     }
 
+    .sla-chip {
+      display: inline-block;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid #cfdceb;
+      background: #f4f8fd;
+      color: #27476a;
+    }
+
+    .sla-chip.warn {
+      border-color: #f1d193;
+      background: #fff7e7;
+      color: #8d620d;
+    }
+
+    .sla-chip.critical {
+      border-color: #efb8b1;
+      background: #fff0ee;
+      color: #8e2d22;
+    }
+
+    tr.sla-warn td {
+      background: #fffaf1;
+    }
+
+    tr.sla-critical td {
+      background: #fff2f1;
+    }
+
     .hidden { display: none; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
@@ -1016,7 +1047,9 @@
           <button id="pendingClearSelectionBtn" type="button" class="ghost-btn">Auswahl löschen</button>
           <button id="pendingBulkApproveBtn" type="button">Ausgewählte freigeben</button>
           <button id="pendingBulkRejectBtn" type="button" class="ghost-btn">Ausgewählte ablehnen</button>
+          <button id="pendingCriticalFilterBtn" type="button" class="ghost-btn">Nur kritisch: Aus</button>
         </div>
+        <div id="pendingSlaSummary" class="muted" style="margin-top: 8px;">Kritisch: 0 | Warnung: 0</div>
         <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">Alle Einträge</h3>
         <div id="archiveWrap" style="margin-top: 10px;"></div>
@@ -1040,6 +1073,7 @@
     let roomLiveEnabled = false;
     let roomPendingOnly = false;
     let roomUngradedOnly = false;
+    let pendingCriticalFilterOnly = false;
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "accounts";
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
@@ -2294,22 +2328,50 @@
       }
     }
 
-    function updatePendingCounters(count) {
+    function updatePendingCounters(count, criticalCount = 0, warnCount = 0) {
       const safeCount = Math.max(0, Number(count || 0));
+      const safeCritical = Math.max(0, Number(criticalCount || 0));
+      const safeWarn = Math.max(0, Number(warnCount || 0));
       const title = document.getElementById("pendingQueueTitle");
       const btn = document.getElementById("loadPendingBtn");
+      const slaSummary = document.getElementById("pendingSlaSummary");
       if (title) {
         title.textContent = `Warteschlange (ausstehend: ${safeCount})`;
       }
       if (btn) {
         btn.textContent = `Nur Warteschlange (${safeCount})`;
       }
+      if (slaSummary) {
+        slaSummary.textContent = `Kritisch: ${safeCritical} | Warnung: ${safeWarn}`;
+      }
+    }
+
+    function getPendingAgeMinutes(createdAt) {
+      const ts = Date.parse(String(createdAt || ""));
+      if (!Number.isFinite(ts)) return 0;
+      return Math.max(0, Math.floor((Date.now() - ts) / 60000));
+    }
+
+    function getSlaLevel(ageMinutes) {
+      if (ageMinutes >= 120) return "critical";
+      if (ageMinutes >= 60) return "warn";
+      return "ok";
+    }
+
+    function formatPendingAge(ageMinutes) {
+      const mins = Math.max(0, Number(ageMinutes || 0));
+      if (mins < 60) return `${mins} Min`;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${h}h ${m}m`;
     }
 
     function renderArchiveRecords(records) {
       const wrap = document.getElementById("archiveWrap");
       const pendingRows = records.filter(row => String(row.review_status || "pending") === "pending");
-      updatePendingCounters(pendingRows.length);
+      const criticalCount = pendingRows.filter(row => getSlaLevel(getPendingAgeMinutes(row.created_at || "")) === "critical").length;
+      const warnCount = pendingRows.filter(row => getSlaLevel(getPendingAgeMinutes(row.created_at || "")) === "warn").length;
+      updatePendingCounters(pendingRows.length, criticalCount, warnCount);
       renderPendingQueue(pendingRows);
       if (!records.length) {
         wrap.innerHTML = "<p>Keine Einträge gefunden.</p>";
@@ -2370,20 +2432,34 @@
     function renderPendingQueue(rows) {
       const wrap = document.getElementById("pendingQueueWrap");
       const bulkActions = document.getElementById("pendingBulkActions");
-      updatePendingCounters(rows.length);
+      const decorated = rows.map(row => {
+        const ageMinutes = getPendingAgeMinutes(row.created_at || "");
+        const slaLevel = getSlaLevel(ageMinutes);
+        return { row, ageMinutes, slaLevel };
+      });
+      const criticalCount = decorated.filter(item => item.slaLevel === "critical").length;
+      const warnCount = decorated.filter(item => item.slaLevel === "warn").length;
+      updatePendingCounters(rows.length, criticalCount, warnCount);
       if (!rows.length) {
         wrap.innerHTML = "<p>Keine offenen Freigaben.</p>";
         if (bulkActions) bulkActions.style.display = "none";
         return;
       }
       if (bulkActions) bulkActions.style.display = "flex";
-      const rowsHtml = rows.map(row => `
-        <tr>
+      const visible = pendingCriticalFilterOnly ? decorated.filter(item => item.slaLevel === "critical") : decorated;
+      if (!visible.length) {
+        wrap.innerHTML = "<p>Keine Einträge für den aktuellen Filter.</p>";
+        return;
+      }
+      const rowsHtml = visible.map(({ row, ageMinutes, slaLevel }) => `
+        <tr class="${slaLevel === "critical" ? "sla-critical" : (slaLevel === "warn" ? "sla-warn" : "")}">
           <td><input type="checkbox" data-pending-pick="${escapeHtml(row.upload_id || "")}"></td>
           <td class="mono">${escapeHtml(row.created_at || "")}</td>
           <td class="mono">${escapeHtml(row.upload_id || "")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td><span class="sla-chip ${slaLevel === "critical" ? "critical" : (slaLevel === "warn" ? "warn" : "")}">${slaLevel === "critical" ? "Kritisch" : (slaLevel === "warn" ? "Warnung" : "OK")}</span></td>
+          <td class="mono">${escapeHtml(formatPendingAge(ageMinutes))}</td>
           <td>
             <div class="actions">
               <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button>
@@ -2394,7 +2470,7 @@
       `).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>ID</th><th>Schüler</th><th>Username</th><th>Aktion</th></tr></thead>
+          <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>ID</th><th>Schüler</th><th>Username</th><th>SLA</th><th>Wartet seit</th><th>Aktion</th></tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
       `;
@@ -2512,7 +2588,17 @@
       await listLetters();
       const pendingRows = teacherRecords.filter(row => String(row.review_status || "pending") === "pending");
       renderPendingQueue(pendingRows);
-      setBox("panelStatus", "ok", `${pendingRows.length} offene Freigaben.`);
+      setBox("panelStatus", "ok", `${pendingRows.length} offene Freigaben${pendingCriticalFilterOnly ? " (Filter: nur kritisch)" : ""}.`);
+    }
+
+    function togglePendingCriticalFilter() {
+      pendingCriticalFilterOnly = !pendingCriticalFilterOnly;
+      const btn = document.getElementById("pendingCriticalFilterBtn");
+      if (btn) {
+        btn.textContent = `Nur kritisch: ${pendingCriticalFilterOnly ? "An" : "Aus"}`;
+      }
+      const pendingRows = teacherRecords.filter(row => String(row.review_status || "pending") === "pending");
+      renderPendingQueue(pendingRows);
     }
 
     function renderBskRecords(records) {
@@ -3185,6 +3271,7 @@
     document.getElementById("pendingClearSelectionBtn").addEventListener("click", () => setPendingSelection(false));
     document.getElementById("pendingBulkApproveBtn").addEventListener("click", () => bulkReviewPending("approve"));
     document.getElementById("pendingBulkRejectBtn").addEventListener("click", () => bulkReviewPending("reject"));
+    document.getElementById("pendingCriticalFilterBtn").addEventListener("click", togglePendingCriticalFilter);
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
     document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
     document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
