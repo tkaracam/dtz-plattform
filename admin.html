@@ -2522,9 +2522,14 @@
       const level = String(document.getElementById("roomTemplateLevel").value || "B1");
       const topic = String(document.getElementById("roomTemplateTopic").value || "ALLE");
       const allByLevel = Array.isArray(roomTemplates[level]) ? roomTemplates[level] : [];
-      const pool = topic === "ALLE" ? allByLevel : allByLevel.filter(item => String(item.topic || "") === topic);
+      let pool = topic === "ALLE" ? allByLevel : allByLevel.filter(item => String(item.topic || "") === topic);
+      let usedFallback = false;
       if (!pool.length) {
-        setBox("roomAdminStatus", "error", "Keine Vorlage für die aktuelle Auswahl gefunden.");
+        pool = allByLevel;
+        usedFallback = true;
+      }
+      if (!pool.length) {
+        setBox("roomAdminStatus", "error", "Für dieses Niveau sind keine Vorlagen vorhanden.");
         return;
       }
       const index = randomPick ? Math.floor(Math.random() * pool.length) : 0;
@@ -2539,7 +2544,11 @@
         title: chosen.title,
         prompt: chosen.prompt
       });
-      setBox("roomAdminStatus", "ok", `Vorlage (${level}${topic !== "ALLE" ? `, ${topic}` : ""}) wurde eingesetzt.`);
+      if (usedFallback && topic !== "ALLE") {
+        setBox("roomAdminStatus", "ok", `Keine direkte Vorlage für ${level}/${topic}. Es wurde eine ${level}-Vorlage aus "Alle Themen" eingesetzt.`);
+      } else {
+        setBox("roomAdminStatus", "ok", `Vorlage (${level}${topic !== "ALLE" ? `, ${topic}` : ""}) wurde eingesetzt.`);
+      }
     }
 
     async function createRoom() {
