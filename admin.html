@@ -40,11 +40,13 @@
         linear-gradient(155deg, var(--bg-1), var(--bg-2) 48%, var(--bg-3));
       min-height: 100vh;
       line-height: 1.45;
+      overflow-x: hidden;
     }
 
     .container {
-      width: min(1160px, 100% - 2rem);
+      width: min(1160px, calc(100% - 2rem));
       margin: 30px auto 44px;
+      max-width: 100vw;
     }
 
     .hero {
@@ -440,7 +442,7 @@
 
     @media (max-width: 800px) {
       .container {
-        width: min(1160px, 100% - 1rem);
+        width: min(1160px, calc(100% - 1rem));
         margin-top: 14px;
       }
 
