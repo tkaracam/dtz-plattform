@@ -1331,7 +1331,7 @@
           <textarea id="letterText" required placeholder="Sehr geehrte Damen und Herren, ..."
             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
           <div class="meta-strip">
-            <div class="meta-item">Prüfungsmodus: Kopieren, Einfügen, Ausschneiden deaktiviert.</div>
+            <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind erlaubt.</div>
             <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
           </div>
         </div>
@@ -4473,38 +4473,7 @@
     }
 
     function enforceExamInputRules() {
-      const letterBox = document.getElementById("letterText");
-      if (!letterBox) return;
-
-      const blockEvent = event => {
-        event.preventDefault();
-        setStatus("error", "Prüfungsmodus aktiv: Kopieren, Einfügen und Ausschneiden sind gesperrt.");
-      };
-
-      ["paste", "copy", "cut", "drop"].forEach(type => {
-        letterBox.addEventListener(type, blockEvent);
-      });
-
-      letterBox.addEventListener("beforeinput", event => {
-        const blocked = ["insertFromPaste", "insertFromDrop", "deleteByCut"];
-        if (blocked.includes(event.inputType)) {
-          blockEvent(event);
-        }
-      });
-
-      letterBox.addEventListener("keydown", event => {
-        const key = String(event.key || "").toLowerCase();
-        const withCommand = event.ctrlKey || event.metaKey;
-        const isPasteShortcut = withCommand && (key === "v" || key === "x" || key === "c");
-        const isShiftInsert = event.shiftKey && key === "insert";
-        if (isPasteShortcut || isShiftInsert) {
-          blockEvent(event);
-        }
-      });
-
-      letterBox.addEventListener("contextmenu", event => {
-        event.preventDefault();
-      });
+      // Clipboard restrictions disabled by request.
     }
 
     enforceExamInputRules();
