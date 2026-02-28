@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2d2a43"/>
+      <stop offset="100%" stop-color="#5a4f76"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#g3)"/>
+  <circle cx="180" cy="100" r="130" fill="#ffffff18"/>
+  <rect x="150" y="110" width="900" height="480" rx="26" fill="#ffffff14" stroke="#ffffff2e"/>
+  <rect x="210" y="170" width="780" height="340" rx="20" fill="#111a29"/>
+  <rect x="260" y="230" width="250" height="180" rx="14" fill="#1f3f64"/>
+  <rect x="545" y="230" width="390" height="28" rx="8" fill="#f3f6fb"/>
+  <rect x="545" y="280" width="320" height="22" rx="8" fill="#d8dfeb"/>
+  <rect x="545" y="325" width="350" height="22" rx="8" fill="#d8dfeb"/>
+  <rect x="545" y="370" width="280" height="22" rx="8" fill="#d8dfeb"/>
+  <circle cx="385" cy="320" r="72" fill="#f2849e"/>
+  <text x="330" y="335" fill="#fff" font-size="44" font-family="Comfortaa, sans-serif">45</text>
+  <text x="410" y="335" fill="#fff" font-size="32" font-family="Comfortaa, sans-serif">min</text>
+</svg>
