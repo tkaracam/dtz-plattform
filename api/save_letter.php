@@ -74,6 +74,7 @@ $filePath = $storageDir . '/letters-' . gmdate('Y-m-d') . '.jsonl';
 $record = [
     'upload_id' => $uploadId,
     'created_at' => $createdAt,
+    'review_status' => 'pending',
     'student_name' => $studentName !== '' ? $studentName : ($studentSession['display_name'] !== '' ? $studentSession['display_name'] : $studentSession['username']),
     'student_username' => $studentSession['username'],
     'task_prompt' => $taskPrompt,

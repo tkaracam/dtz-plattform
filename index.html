@@ -1428,7 +1428,7 @@
             <button id="backToMenuFromWriteBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
           </div>
           <div class="btn-wrap">
-            <button id="analyzeBtn" type="button">Brief korrigieren</button>
+            <button id="analyzeBtn" type="button">Zur Freigabe senden</button>
           </div>
           <div class="btn-wrap">
             <button id="uploadBtn" type="button">Brief hochladen</button>
@@ -3683,6 +3683,10 @@
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderPortalData(payload);
+        const latest = payload.latest_letter_correction;
+        if (latest && typeof latest === "object" && latest.corrected_letter) {
+          renderResult(latest);
+        }
       } catch (err) {
         setPortalStatus("error", `Portal konnte nicht geladen werden: ${err.message}`);
       }
@@ -4361,13 +4365,34 @@
         const details = [uploadId ? `ID: ${uploadId}` : "", createdAt ? `Zeit: ${createdAt}` : ""]
           .filter(Boolean)
           .join(" | ");
-        setStatus("ok", details ? `Brief wurde hochgeladen. ${details}` : "Brief wurde hochgeladen.");
+        setStatus("ok", details
+          ? `Brief wurde eingereicht. Freigabe durch Lehrkraft ausstehend. ${details}`
+          : "Brief wurde eingereicht. Freigabe durch Lehrkraft ausstehend.");
       } catch (err) {
         setStatus("error", `Upload fehlgeschlagen: ${err.message}`);
       } finally {
         button.disabled = false;
         button.textContent = "Brief hochladen";
       }
+    }
+
+    async function submitForTeacherApproval(formData) {
+      const response = await fetch(resolveSaveUrl(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          student_name: formData.studentName,
+          letter_text: formData.letterText,
+          task_prompt: formData.taskPrompt,
+          required_points: formData.requiredPoints
+        })
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || `Fehler: ${response.status}`);
+      }
+      return payload;
     }
 
     function setStatus(type, message) {
@@ -4500,15 +4525,12 @@
       clearStatus();
       const button = document.getElementById("analyzeBtn");
       button.disabled = true;
-      button.textContent = "Analyse läuft...";
+      button.textContent = "Wird eingereicht...";
 
       try {
         const formData = collectFormData();
         const letterText = formData.letterText;
         const taskPrompt = formData.taskPrompt;
-        const requiredPoints = formData.requiredPoints;
-        const mode = document.getElementById("mode").value;
-        const apiUrl = document.getElementById("apiUrl").value.trim() || "./api/correct.php";
         const words = countWords(letterText);
 
         if (!letterText) {
@@ -4524,29 +4546,21 @@
           return;
         }
 
-        let result = null;
-        if (mode === "api") {
-          result = await apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints);
-          clearStatus();
-        } else if (mode === "local") {
-          result = localCorrection(letterText, requiredPoints);
-          clearStatus();
-        } else {
-          try {
-            result = await apiCorrection(apiUrl, letterText, taskPrompt, requiredPoints);
-            clearStatus();
-          } catch (err) {
-            result = localCorrection(letterText, requiredPoints);
-            setStatus("error", `API nicht erreichbar: ${err.message}. Es wurde auf den lokalen Modus umgeschaltet.`);
-          }
-        }
-
-        renderResult(result);
+        const payload = await submitForTeacherApproval(formData);
+        document.getElementById("resultSection").classList.add("hidden");
+        const uploadId = String(payload.upload_id || "").trim();
+        setStatus(
+          "ok",
+          uploadId
+            ? `Zur Korrektur eingereicht (ID: ${uploadId}). Freigabe durch Lehrkraft erforderlich.`
+            : "Zur Korrektur eingereicht. Freigabe durch Lehrkraft erforderlich."
+        );
+        loadStudentPortal();
       } catch (err) {
         setStatus("error", `Unerwarteter Fehler: ${err.message}`);
       } finally {
         button.disabled = false;
-        button.textContent = "Brief korrigieren";
+        button.textContent = "Zur Freigabe senden";
       }
     }
 

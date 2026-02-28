@@ -2299,8 +2299,11 @@
             <th>ID</th>
             <th>Schüler</th>
             <th>Username</th>
+            <th>Status</th>
+            <th>Punkte</th>
             <th>Aufgabe</th>
             <th>Brief</th>
+            <th>Aktion</th>
           </tr>
         </thead>
       `;
@@ -2308,20 +2311,51 @@
       records.forEach(row => {
         const task = String(row.task_prompt || "").trim();
         const letter = String(row.letter_text || "").trim();
+        const status = String(row.review_status || "pending");
+        const canApprove = status !== "freigegeben";
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="mono">${escapeHtml(row.created_at || "")}</td>
           <td class="mono">${escapeHtml(row.upload_id || "")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td>${escapeHtml(status)}</td>
+          <td>${row.score_total == null ? "-" : escapeHtml(String(row.score_total) + "/20")}</td>
           <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
           <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
+          <td>
+            ${canApprove ? `<button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button>` : '<span class="muted">Freigegeben</span>'}
+          </td>
         `;
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
       wrap.innerHTML = "";
       wrap.appendChild(table);
+      wrap.querySelectorAll("[data-letter-approve]").forEach(btn => {
+        btn.addEventListener("click", () => approveLetter(btn.getAttribute("data-letter-approve") || ""));
+      });
+    }
+
+    async function approveLetter(uploadId) {
+      clearBox("panelStatus");
+      if (!uploadId) return;
+      try {
+        const response = await fetch("./api/letter_review.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            upload_id: uploadId,
+            decision: "approve"
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("panelStatus", "ok", `Freigabe gespeichert: ${uploadId}`);
+        listLetters();
+      } catch (err) {
+        setBox("panelStatus", "error", `Freigabe fehlgeschlagen: ${err.message}`);
+      }
     }
 
     function renderBskRecords(records) {

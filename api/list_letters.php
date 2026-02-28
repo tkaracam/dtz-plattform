@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/auth.php';
 require_admin_session_json();
+require_once __DIR__ . '/letter_reviews.php';
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -59,6 +60,8 @@ if (!is_dir($storageDir)) {
     echo json_encode(['records' => []], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+$reviewsByUpload = load_letter_reviews_index($storageDir);
 
 $files = glob($storageDir . '/letters-*.jsonl') ?: [];
 rsort($files, SORT_STRING);
@@ -118,11 +121,32 @@ foreach ($files as $file) {
             'task_prompt' => $taskPrompt,
             'required_points' => is_array($record['required_points'] ?? null) ? $record['required_points'] : [],
             'letter_text' => $letterText,
+            'review_status' => 'pending',
+            'reviewed_at' => '',
+            'review_decision' => '',
+            'score_total' => null,
         ];
     }
 
     fclose($handle);
 }
+
+foreach ($records as &$row) {
+    $uploadId = (string)($row['upload_id'] ?? '');
+    $review = is_array($reviewsByUpload[$uploadId] ?? null) ? $reviewsByUpload[$uploadId] : null;
+    if (!$review) {
+        continue;
+    }
+    $decision = strtolower((string)($review['decision'] ?? ''));
+    $row['review_status'] = $decision === 'approve' ? 'freigegeben' : ($decision === 'reject' ? 'abgelehnt' : 'pending');
+    $row['review_decision'] = $decision;
+    $row['reviewed_at'] = (string)($review['reviewed_at'] ?? '');
+    $result = is_array($review['correction_result'] ?? null) ? $review['correction_result'] : null;
+    if ($result) {
+        $row['score_total'] = isset($result['score_total']) ? (int)$result['score_total'] : null;
+    }
+}
+unset($row);
 
 usort($records, static function (array $a, array $b): int {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));

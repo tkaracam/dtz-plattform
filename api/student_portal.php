@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/letter_reviews.php';
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 
@@ -73,6 +74,11 @@ function read_jsonl_records(string $pattern): array
 $bskRecords = [];
 $simRecords = [];
 $letterRecords = [];
+$approvedLetterResults = [];
+$latestLetterCorrection = null;
+$latestLetterCorrectionTs = 0;
+
+$reviewsByUpload = load_letter_reviews_index($storageDir);
 
 foreach (read_jsonl_records($storageDir . '/bsk-*.jsonl') as $row) {
     $u = mb_strtolower(trim((string)($row['student_username'] ?? '')));
@@ -109,16 +115,48 @@ foreach (read_jsonl_records($storageDir . '/letters-*.jsonl') as $row) {
     if ($u !== $username) {
         continue;
     }
+    $uploadId = trim((string)($row['upload_id'] ?? ''));
+    $review = is_array($reviewsByUpload[$uploadId] ?? null) ? $reviewsByUpload[$uploadId] : null;
+    $decision = strtolower((string)($review['decision'] ?? ''));
+    if ($decision === 'approve') {
+        $result = is_array($review['correction_result'] ?? null) ? $review['correction_result'] : null;
+        $score = is_array($result) ? (int)($result['score_total'] ?? 0) : 0;
+        $approvedLetterResults[] = [
+            'type' => 'Brief-Korrektur freigegeben',
+            'created_at' => (string)($review['reviewed_at'] ?? $row['created_at'] ?? ''),
+            'score_label' => $score . '/20',
+            'percent' => (int)round(($score / 20) * 100),
+            'detail' => mb_substr(trim((string)($row['task_prompt'] ?? 'Ohne Aufgabenangabe')), 0, 80),
+        ];
+        $reviewTs = strtotime((string)($review['reviewed_at'] ?? '')) ?: 0;
+        if ($result && $reviewTs >= $latestLetterCorrectionTs) {
+            $latestLetterCorrection = $result;
+            $latestLetterCorrectionTs = $reviewTs;
+        }
+        continue;
+    }
+
+    if ($decision === 'reject') {
+        $letterRecords[] = [
+            'type' => 'Brief abgelehnt',
+            'created_at' => (string)($review['reviewed_at'] ?? $row['created_at'] ?? ''),
+            'score_label' => '-',
+            'percent' => 0,
+            'detail' => 'Bitte überarbeiten und erneut senden.',
+        ];
+        continue;
+    }
+
     $letterRecords[] = [
-        'type' => 'Brief-Upload',
+        'type' => 'Brief eingereicht',
         'created_at' => (string)($row['created_at'] ?? ''),
         'score_label' => '-',
         'percent' => 0,
-        'detail' => mb_substr(trim((string)($row['task_prompt'] ?? 'Ohne Aufgabenangabe')), 0, 80),
+        'detail' => 'Wartet auf Freigabe durch Lehrkraft.',
     ];
 }
 
-$allResults = array_merge($simRecords, $bskRecords, $letterRecords);
+$allResults = array_merge($simRecords, $bskRecords, $approvedLetterResults, $letterRecords);
 usort($allResults, static function (array $a, array $b): int {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
 });
@@ -202,6 +240,7 @@ echo json_encode([
     'results' => $allResults,
     'homeworks' => $homeworks,
     'teacher_notes' => array_slice($teacherNotes, 0, 20),
+    'latest_letter_correction' => $latestLetterCorrection,
     'readiness' => [
         'dtz' => max(0, min(100, $dtzReadiness)),
         'dtb' => max(0, min(100, $dtbReadiness)),
