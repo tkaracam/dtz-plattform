@@ -146,6 +146,30 @@
       color: #294560;
     }
 
+    .recent-tasks {
+      margin-top: 10px;
+      border: 1px solid #d4e1ef;
+      border-radius: 12px;
+      background: #f7fbff;
+      padding: 10px;
+    }
+
+    .recent-tasks h4 {
+      margin: 0 0 8px;
+      color: #143554;
+      font-size: 1rem;
+    }
+
+    .recent-tasks ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #27476a;
+    }
+
+    .recent-tasks li {
+      margin-bottom: 6px;
+    }
+
     #paneAccounts .grid {
       display: grid !important;
       grid-template-columns: 1fr !important;
@@ -418,6 +442,37 @@
       white-space: nowrap;
     }
 
+    .user-actions-mobile {
+      display: none;
+    }
+
+    .user-actions-mobile details {
+      border: 1px solid #c8d9eb;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 2px;
+    }
+
+    .user-actions-mobile summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 700;
+      color: #183f63;
+      padding: 8px 10px;
+      user-select: none;
+    }
+
+    .user-actions-mobile summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .user-actions-mobile .menu-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 6px 6px;
+    }
+
     .ok {
       margin-top: 11px;
       padding: 11px 12px;
@@ -529,6 +584,23 @@
         display: block;
         overflow-x: auto;
         white-space: nowrap;
+      }
+
+      #userListWrap table {
+        min-width: 720px;
+      }
+
+      #userListWrap th:nth-child(6),
+      #userListWrap td:nth-child(6) {
+        display: none;
+      }
+
+      #userListWrap .user-actions-desktop {
+        display: none;
+      }
+
+      #userListWrap .user-actions-mobile {
+        display: block;
       }
     }
   </style>
@@ -822,10 +894,25 @@
                 <option value="B2">B2</option>
               </select>
             </div>
+            <div>
+              <label for="roomTemplateTopic">Thema</label>
+              <select id="roomTemplateTopic">
+                <option value="ALLE" selected>Alle Themen</option>
+                <option value="Arbeit">Arbeit</option>
+                <option value="Wohnen">Wohnen</option>
+                <option value="Gesundheit">Gesundheit</option>
+                <option value="Behörde">Behörde</option>
+                <option value="Kurs">Kurs</option>
+              </select>
+            </div>
             <div class="actions">
               <button id="applyRoomTemplateBtn" class="ghost-btn" type="button">Vorlage einsetzen</button>
               <button id="randomRoomTemplateBtn" class="ghost-btn" type="button">Zufällige Vorlage</button>
             </div>
+          </div>
+          <div class="recent-tasks">
+            <h4>Zuletzt verwendete Aufgaben (5)</h4>
+            <div id="roomRecentTasksWrap">Noch keine Einträge.</div>
           </div>
           <div class="actions">
             <button id="createRoomBtn" type="button">Saal erstellen</button>
@@ -945,6 +1032,7 @@
     let roomUngradedOnly = false;
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "accounts";
+    const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
 
     const adminPaneMap = {
       accounts: "paneAccounts",
@@ -970,52 +1058,79 @@
       A2: [
         {
           title: "A2 Alltag: Termin verschieben",
+          topic: "Kurs",
           duration: 25,
           prompt: "Sie können morgen nicht zum Sprachkurs kommen. Schreiben Sie der Kursleitung eine kurze Nachricht: Grund, neuer Terminwunsch und Entschuldigung."
         },
         {
           title: "A2 Alltag: Bitte an Nachbarn",
+          topic: "Wohnen",
           duration: 25,
           prompt: "Ihr Nachbar ist heute Abend zu laut. Schreiben Sie eine höfliche Nachricht mit Problem, Uhrzeit und Lösungsvorschlag."
         },
         {
           title: "A2 Alltag: Arzttermin",
+          topic: "Gesundheit",
           duration: 25,
           prompt: "Sie brauchen einen neuen Arzttermin. Schreiben Sie eine E-Mail mit Grund, Wunschdatum und Telefonnummer."
+        },
+        {
+          title: "A2 Alltag: Termin im Bürgeramt",
+          topic: "Behörde",
+          duration: 25,
+          prompt: "Sie können Ihren Termin im Bürgeramt nicht wahrnehmen. Schreiben Sie eine kurze Nachricht mit Grund und neuem Terminwunsch."
         }
       ],
       B1: [
         {
           title: "B1 DTZ: Hausverwaltung",
+          topic: "Wohnen",
           duration: 35,
           prompt: "In Ihrer Wohnung gibt es seit drei Tagen kein warmes Wasser. Schreiben Sie an die Hausverwaltung: Problem, seit wann, Ihre Bitte und gewünschter Termin."
         },
         {
           title: "B1 DTZ: Arbeitgeber",
+          topic: "Arbeit",
           duration: 35,
           prompt: "Sie können nächste Woche nicht zur Arbeit kommen. Schreiben Sie Ihrer Teamleitung: Grund, Dauer, Vertretung und Rückmeldung."
         },
         {
           title: "B1 DTZ: Kursanfrage",
+          topic: "Kurs",
           duration: 35,
           prompt: "Ihr Deutschkurs endet bald. Schreiben Sie der Sprachschule: Interesse an B2-Kurs, verfügbare Zeiten, Lernziele und Bitte um Informationen."
+        },
+        {
+          title: "B1 DTZ: Anfrage an Behörde",
+          topic: "Behörde",
+          duration: 35,
+          prompt: "Für Ihren Antrag fehlen Unterlagen. Schreiben Sie an die Behörde: welche Dokumente fehlen, bis wann Sie nachreichen können und eine kurze Bitte um Rückmeldung."
         }
       ],
       B2: [
         {
           title: "B2 Beruf: Beschwerde",
+          topic: "Arbeit",
           duration: 45,
           prompt: "Ein wichtiges Lieferpaket ist trotz Zusage nicht angekommen. Schreiben Sie an den Kundendienst: Situation, Folgen für Ihren Arbeitsablauf und klare Forderung."
         },
         {
           title: "B2 Beruf: Projektabstimmung",
+          topic: "Arbeit",
           duration: 45,
           prompt: "Ihr Team plant ein Wochenendprojekt, aber es gibt Terminprobleme. Schreiben Sie eine strukturierte E-Mail mit Optionen, Bewertung und einem konkreten Vorschlag."
         },
         {
           title: "B2 Beruf: Fortbildung",
+          topic: "Arbeit",
           duration: 45,
           prompt: "Sie möchten an einer beruflichen Fortbildung teilnehmen. Schreiben Sie Ihrer Leitung: Nutzen für die Abteilung, Zeitplan, Kosten und Organisation."
+        },
+        {
+          title: "B2 Verwaltung: Stellungnahme",
+          topic: "Behörde",
+          duration: 45,
+          prompt: "Sie haben eine behördliche Aufforderung erhalten und müssen schriftlich Stellung nehmen. Formulieren Sie den Sachverhalt, nennen Sie Nachweise und bitten Sie um Fristverlängerung."
         }
       ]
     };
@@ -1108,6 +1223,7 @@
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       setAdminPane(activeAdminPane || "accounts");
+      renderRecentRoomTasks();
       renderBulkPreview(buildBulkCredentials());
       if (document.getElementById("attendanceDate")) {
         document.getElementById("attendanceDate").value = new Date().toISOString().slice(0, 10);
@@ -1426,10 +1542,20 @@
           <td>${isActive ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(user.created_at || "")}</td>
           <td>
-            <div class="actions">
+            <div class="actions user-actions-desktop">
               <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
               <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
               <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+            </div>
+            <div class="user-actions-mobile">
+              <details>
+                <summary>Aktionen</summary>
+                <div class="menu-actions">
+                  <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
+                  <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
+                  <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+                </div>
+              </details>
             </div>
           </td>
         `;
@@ -2394,9 +2520,11 @@
     function applyRoomTemplate(randomPick = false) {
       clearBox("roomAdminStatus");
       const level = String(document.getElementById("roomTemplateLevel").value || "B1");
-      const pool = Array.isArray(roomTemplates[level]) ? roomTemplates[level] : [];
+      const topic = String(document.getElementById("roomTemplateTopic").value || "ALLE");
+      const allByLevel = Array.isArray(roomTemplates[level]) ? roomTemplates[level] : [];
+      const pool = topic === "ALLE" ? allByLevel : allByLevel.filter(item => String(item.topic || "") === topic);
       if (!pool.length) {
-        setBox("roomAdminStatus", "error", "Keine Vorlagen für dieses Niveau gefunden.");
+        setBox("roomAdminStatus", "error", "Keine Vorlage für die aktuelle Auswahl gefunden.");
         return;
       }
       const index = randomPick ? Math.floor(Math.random() * pool.length) : 0;
@@ -2404,7 +2532,14 @@
       document.getElementById("roomTitle").value = chosen.title;
       document.getElementById("roomPrompt").value = chosen.prompt;
       document.getElementById("roomDuration").value = String(chosen.duration);
-      setBox("roomAdminStatus", "ok", `Vorlage (${level}) wurde eingesetzt.`);
+      addRecentRoomTask({
+        source: "vorlage",
+        level,
+        topic: chosen.topic || topic,
+        title: chosen.title,
+        prompt: chosen.prompt
+      });
+      setBox("roomAdminStatus", "ok", `Vorlage (${level}${topic !== "ALLE" ? `, ${topic}` : ""}) wurde eingesetzt.`);
     }
 
     async function createRoom() {
@@ -2432,10 +2567,70 @@
         if (code) {
           try { await navigator.clipboard.writeText(code); } catch (_) {}
         }
+        addRecentRoomTask({
+          source: "manuell",
+          level: String(document.getElementById("roomTemplateLevel").value || "B1"),
+          topic: String(document.getElementById("roomTemplateTopic").value || "ALLE"),
+          title: title || "(ohne Titel)",
+          prompt
+        });
         listRooms();
       } catch (err) {
         setBox("roomAdminStatus", "error", `Saal konnte nicht erstellt werden: ${err.message}`);
       }
+    }
+
+    function readRecentRoomTasks() {
+      try {
+        const raw = localStorage.getItem(ROOM_RECENT_TASKS_KEY) || "[]";
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function writeRecentRoomTasks(items) {
+      try {
+        localStorage.setItem(ROOM_RECENT_TASKS_KEY, JSON.stringify(items.slice(0, 5)));
+      } catch (_) {
+        // ignore storage errors
+      }
+    }
+
+    function renderRecentRoomTasks() {
+      const wrap = document.getElementById("roomRecentTasksWrap");
+      if (!wrap) return;
+      const items = readRecentRoomTasks();
+      if (!items.length) {
+        wrap.textContent = "Noch keine Einträge.";
+        return;
+      }
+      const list = items.map(item => {
+        const title = escapeHtml(item.title || "-");
+        const level = escapeHtml(item.level || "-");
+        const topic = escapeHtml(item.topic || "-");
+        return `<li><strong>${title}</strong> <span class="mono">[${level} | ${topic}]</span></li>`;
+      }).join("");
+      wrap.innerHTML = `<ul>${list}</ul>`;
+    }
+
+    function addRecentRoomTask(task) {
+      const entry = {
+        title: String(task.title || "").trim() || "(ohne Titel)",
+        prompt: String(task.prompt || "").trim(),
+        level: String(task.level || "B1"),
+        topic: String(task.topic || "ALLE"),
+        source: String(task.source || "manuell"),
+        created_at: new Date().toISOString()
+      };
+      const prev = readRecentRoomTasks();
+      const deduped = prev.filter(item =>
+        !(String(item.title || "") === entry.title && String(item.prompt || "") === entry.prompt)
+      );
+      const next = [entry, ...deduped].slice(0, 5);
+      writeRecentRoomTasks(next);
+      renderRecentRoomTasks();
     }
 
     function stopRoomLivePolling() {
