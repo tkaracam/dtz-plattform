@@ -125,17 +125,26 @@
     .admin-pane.active { display: block; }
 
     #paneAccounts .grid {
-      grid-template-columns: 1fr;
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+    }
+
+    #paneAccounts .grid > div {
+      min-width: 0 !important;
     }
 
     #paneAccounts .actions {
-      flex-direction: column;
-      align-items: stretch;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 8px !important;
     }
 
-    #paneAccounts .actions button {
-      width: 100%;
-      min-width: 0;
+    #paneAccounts .actions button,
+    #paneAccounts input,
+    #paneAccounts select {
+      width: 100% !important;
+      min-width: 0 !important;
     }
 
     .admin-topbar {
