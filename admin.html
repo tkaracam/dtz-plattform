@@ -126,6 +126,26 @@
     .admin-pane { display: none; }
     .admin-pane.active { display: block; }
 
+    .start-checklist {
+      border: 1px solid #d4e1ef;
+      border-radius: 14px;
+      background: #f7fbff;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .start-checklist h3 {
+      margin: 0 0 6px;
+      font-size: 1.08rem;
+      color: #143554;
+    }
+
+    .start-checklist ol {
+      margin: 0;
+      padding-left: 18px;
+      color: #294560;
+    }
+
     #paneAccounts .grid {
       display: grid !important;
       grid-template-columns: 1fr !important;
@@ -526,6 +546,16 @@
       </section>
 
       <section id="panelCard" class="card hidden">
+        <div class="start-checklist">
+          <h3>Start-Checkliste</h3>
+          <ol>
+            <li>Schülerzugänge öffnen und Konten erstellen.</li>
+            <li>Virtueller Saal öffnen und Aufgabe plus Raumcode erzeugen.</li>
+            <li>Nach der Übung Archiv öffnen und Einträge/CSV prüfen.</li>
+            <li>Einmal pro Woche Backup von api/storage erstellen.</li>
+          </ol>
+        </div>
+
         <div id="paneAccounts" class="admin-pane active">
         <div id="accountsSection">
           <h2 class="section-title">Schülerzugänge</h2>
