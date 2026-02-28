@@ -1798,10 +1798,6 @@
               <div class="kpi-title">Niveau</div>
               <div class="kpi-value" id="niveau">A2</div>
             </div>
-            <div class="kpi-item">
-              <div class="kpi-title">Quelle</div>
-              <div class="kpi-value" id="source">local</div>
-            </div>
           </div>
           <p id="systemNote" class="muted hidden" style="margin-top: 10px;"></p>
 
@@ -4545,7 +4541,6 @@
       document.getElementById("resultSection").classList.remove("hidden");
       document.getElementById("scoreTotal").textContent = `${result.score_total}/20`;
       document.getElementById("niveau").textContent = result.niveau_einschaetzung;
-      document.getElementById("source").textContent = result.source || "local";
       document.getElementById("systemNote").textContent = "";
 
       const rubricBody = document.getElementById("rubricBody");
