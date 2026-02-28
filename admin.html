@@ -1011,6 +1011,12 @@
 
         <div id="panelStatus" class="hidden"></div>
         <h3 id="pendingQueueTitle" class="section-title" style="margin-top: 16px;">Warteschlange (ausstehend: 0)</h3>
+        <div id="pendingBulkActions" class="actions" style="margin-top: 8px; display: none;">
+          <button id="pendingSelectAllBtn" type="button" class="ghost-btn">Alle markieren</button>
+          <button id="pendingClearSelectionBtn" type="button" class="ghost-btn">Auswahl löschen</button>
+          <button id="pendingBulkApproveBtn" type="button">Ausgewählte freigeben</button>
+          <button id="pendingBulkRejectBtn" type="button" class="ghost-btn">Ausgewählte ablehnen</button>
+        </div>
         <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">Alle Einträge</h3>
         <div id="archiveWrap" style="margin-top: 10px;"></div>
@@ -2363,13 +2369,17 @@
 
     function renderPendingQueue(rows) {
       const wrap = document.getElementById("pendingQueueWrap");
+      const bulkActions = document.getElementById("pendingBulkActions");
       updatePendingCounters(rows.length);
       if (!rows.length) {
         wrap.innerHTML = "<p>Keine offenen Freigaben.</p>";
+        if (bulkActions) bulkActions.style.display = "none";
         return;
       }
+      if (bulkActions) bulkActions.style.display = "flex";
       const rowsHtml = rows.map(row => `
         <tr>
+          <td><input type="checkbox" data-pending-pick="${escapeHtml(row.upload_id || "")}"></td>
           <td class="mono">${escapeHtml(row.created_at || "")}</td>
           <td class="mono">${escapeHtml(row.upload_id || "")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
@@ -2384,10 +2394,18 @@
       `).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th>Zeit</th><th>ID</th><th>Schüler</th><th>Username</th><th>Aktion</th></tr></thead>
+          <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>ID</th><th>Schüler</th><th>Username</th><th>Aktion</th></tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
       `;
+      const pickAll = document.getElementById("pendingPickAll");
+      if (pickAll) {
+        pickAll.addEventListener("change", () => {
+          wrap.querySelectorAll("[data-pending-pick]").forEach(el => {
+            el.checked = !!pickAll.checked;
+          });
+        });
+      }
       wrap.querySelectorAll("[data-pending-approve]").forEach(btn => {
         btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-pending-approve") || "", "approve"));
       });
@@ -2396,28 +2414,95 @@
       });
     }
 
+    function getSelectedPendingIds() {
+      const wrap = document.getElementById("pendingQueueWrap");
+      const ids = [];
+      wrap.querySelectorAll("[data-pending-pick]").forEach(el => {
+        if (el.checked) {
+          const id = String(el.getAttribute("data-pending-pick") || "").trim();
+          if (id) ids.push(id);
+        }
+      });
+      return ids;
+    }
+
+    function setPendingSelection(selectAll) {
+      const wrap = document.getElementById("pendingQueueWrap");
+      wrap.querySelectorAll("[data-pending-pick]").forEach(el => {
+        el.checked = !!selectAll;
+      });
+      const pickAll = document.getElementById("pendingPickAll");
+      if (pickAll) pickAll.checked = !!selectAll;
+    }
+
+    async function sendLetterReview(uploadId, decision, note) {
+      const response = await fetch("./api/letter_review.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          upload_id: uploadId,
+          decision,
+          note: String(note || "").trim()
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+      return payload;
+    }
+
     async function reviewLetter(uploadId, decision) {
       clearBox("panelStatus");
       if (!uploadId) return;
       const note = window.prompt(decision === "approve" ? "Freigabe-Notiz (optional):" : "Ablehnungsgrund (optional):", "");
       if (note === null) return;
       try {
-        const response = await fetch("./api/letter_review.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            upload_id: uploadId,
-            decision,
-            note: String(note || "").trim()
-          })
-        });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        await sendLetterReview(uploadId, decision, note);
         setBox("panelStatus", "ok", `${decision === "approve" ? "Freigabe" : "Ablehnung"} gespeichert: ${uploadId}`);
         listLetters();
       } catch (err) {
         setBox("panelStatus", "error", `Aktion fehlgeschlagen: ${err.message}`);
       }
+    }
+
+    async function bulkReviewPending(decision) {
+      clearBox("panelStatus");
+      const selectedIds = getSelectedPendingIds();
+      if (!selectedIds.length) {
+        setBox("panelStatus", "error", "Bitte zuerst Einträge in der Warteschlange markieren.");
+        return;
+      }
+      const note = window.prompt(
+        decision === "approve"
+          ? "Notiz für alle freigegebenen Einträge (optional):"
+          : "Notiz für alle abgelehnten Einträge (optional):",
+        ""
+      );
+      if (note === null) return;
+
+      const approveBtn = document.getElementById("pendingBulkApproveBtn");
+      const rejectBtn = document.getElementById("pendingBulkRejectBtn");
+      approveBtn.disabled = true;
+      rejectBtn.disabled = true;
+
+      let okCount = 0;
+      let failCount = 0;
+      for (const uploadId of selectedIds) {
+        try {
+          await sendLetterReview(uploadId, decision, note);
+          okCount += 1;
+        } catch (_) {
+          failCount += 1;
+        }
+      }
+
+      approveBtn.disabled = false;
+      rejectBtn.disabled = false;
+      await listLetters();
+      setBox(
+        "panelStatus",
+        failCount === 0 ? "ok" : "error",
+        `${decision === "approve" ? "Freigabe" : "Ablehnung"} abgeschlossen. Erfolg: ${okCount}, Fehler: ${failCount}.`
+      );
     }
 
     async function loadPendingQueueOnly() {
@@ -3093,6 +3178,10 @@
     document.getElementById("loginBtn").addEventListener("click", login);
     document.getElementById("listBtn").addEventListener("click", listLetters);
     document.getElementById("loadPendingBtn").addEventListener("click", loadPendingQueueOnly);
+    document.getElementById("pendingSelectAllBtn").addEventListener("click", () => setPendingSelection(true));
+    document.getElementById("pendingClearSelectionBtn").addEventListener("click", () => setPendingSelection(false));
+    document.getElementById("pendingBulkApproveBtn").addEventListener("click", () => bulkReviewPending("approve"));
+    document.getElementById("pendingBulkRejectBtn").addEventListener("click", () => bulkReviewPending("reject"));
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
     document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
     document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
