@@ -1415,7 +1415,7 @@
             <div class="level-tile a1 inactive">A1<small>Grundstufe</small></div>
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
             <button type="button" class="level-tile b1" id="levelB1Btn">A2-B1<small>DTZ Fokus</small></button>
-            <button type="button" class="level-tile bsk" id="levelBskBtn">BSK<small>Berufssprache</small></button>
+            <button type="button" class="level-tile bsk" id="levelBskBtn">BSK<small>DTB-Training</small></button>
           </div>
           <div class="hero-cta" aria-hidden="true"></div>
         </div>
@@ -3150,6 +3150,13 @@
       setSpeakingTab(1);
     }
 
+    function openBskSuiteView() {
+      showCards(["bskCard", "workCard", "speakingCard"]);
+      loadBskHistory();
+      generateSpeakingSet();
+      setSpeakingTab(1);
+    }
+
     function showStudentLogin() {
       setMainView("");
       document.getElementById("resultSection").classList.add("hidden");
@@ -3188,6 +3195,8 @@
         openCorrectionView();
       } else if (target === "bsk") {
         openBskView();
+      } else if (target === "bsk-suite") {
+        openBskSuiteView();
       } else if (target === "lid") {
         openLidView();
       } else if (target === "speaking") {
@@ -4716,7 +4725,7 @@
     });
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
-    document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk"));
+    document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk-suite"));
     checkStudentSession();
   </script>
 </body>
