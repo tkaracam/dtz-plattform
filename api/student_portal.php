@@ -130,15 +130,16 @@ foreach (read_jsonl_records($storageDir . '/letters-*.jsonl') as $row) {
             'detail' => mb_substr(trim((string)($row['task_prompt'] ?? 'Ohne Aufgabenangabe')), 0, 80),
         ];
         if (is_array($result)) {
-            $approvedLetterCorrections[] = array_merge($result, [
+            $recordWithMeta = array_merge($result, [
                 'created_at' => (string)($review['reviewed_at'] ?? $row['created_at'] ?? ''),
                 'topic' => trim((string)($row['task_prompt'] ?? '')),
                 'upload_id' => $uploadId,
             ]);
+            $approvedLetterCorrections[] = $recordWithMeta;
         }
         $reviewTs = strtotime((string)($review['reviewed_at'] ?? '')) ?: 0;
-        if ($result && $reviewTs >= $latestLetterCorrectionTs) {
-            $latestLetterCorrection = $result;
+        if (!empty($recordWithMeta) && $reviewTs >= $latestLetterCorrectionTs) {
+            $latestLetterCorrection = $recordWithMeta;
             $latestLetterCorrectionTs = $reviewTs;
         }
         continue;

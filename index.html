@@ -1865,7 +1865,7 @@
       <section id="resultSection" class="hidden">
         <section class="card">
           <h2 class="section-title">Ergebnisübersicht</h2>
-          <p class="section-subtitle">Die Bewertung orientiert sich an DTZ-Kriterien für den Schreibteil.</p>
+          <p class="section-subtitle" id="resultSubtitle">Die Bewertung orientiert sich an DTZ-Kriterien für den Schreibteil.</p>
           <div class="kpi">
             <div class="kpi-item">
               <div class="kpi-title">Punkte</div>
@@ -1932,6 +1932,10 @@
                 <option value="newest" selected>Neueste zuerst</option>
                 <option value="oldest">Älteste zuerst</option>
               </select>
+            </div>
+            <div>
+              <label for="archiveSelect">Korrektur anzeigen</label>
+              <select id="archiveSelect"></select>
             </div>
           </div>
           <div id="archiveList" class="archive-list"></div>
@@ -4793,6 +4797,11 @@
 
     function renderResult(result) {
       document.getElementById("resultSection").classList.remove("hidden");
+      const subtitle = document.getElementById("resultSubtitle");
+      const topic = String(result.topic || result.task_prompt || "").trim();
+      subtitle.textContent = topic
+        ? `Bewertung zur Aufgabe: ${topic}`
+        : "Die Bewertung orientiert sich an DTZ-Kriterien für den Schreibteil.";
       document.getElementById("scoreTotal").textContent = `${result.score_total}/20`;
       document.getElementById("niveau").textContent = result.niveau_einschaetzung;
       document.getElementById("systemNote").textContent = "";
@@ -4877,10 +4886,36 @@
 
     function setLetterArchive(rows) {
       letterArchive = Array.isArray(rows) ? rows.slice() : [];
+      letterArchive.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
       if (letterArchive.length) {
         document.getElementById("resultSection").classList.remove("hidden");
       }
+      renderArchiveSelect(letterArchive);
       applyArchiveFilters();
+    }
+
+    function archiveKey(row, idx) {
+      return String(row.upload_id || `${row.created_at || ""}#${idx}`);
+    }
+
+    function renderArchiveSelect(rows) {
+      const select = document.getElementById("archiveSelect");
+      if (!select) return;
+      if (!rows.length) {
+        select.innerHTML = '<option value="">Keine Korrekturen</option>';
+        return;
+      }
+      select.innerHTML = rows.map((row, idx) => {
+        const date = normalizeDateString(row.created_at);
+        const topic = String(row.topic || row.task_prompt || "Ohne Aufgabe").trim();
+        const score = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
+        const label = `${date || "-"} | ${topic} | ${score}`;
+        return `<option value="${archiveKey(row, idx)}">${escapeHtml(label)}</option>`;
+      }).join("");
+    }
+
+    function findArchiveByKey(key) {
+      return letterArchive.find((row, idx) => archiveKey(row, idx) === key) || null;
     }
 
     function formatTaskPoints(points) {
@@ -5010,6 +5045,13 @@
     });
     const archiveSort = document.getElementById("archiveSort");
     if (archiveSort) archiveSort.addEventListener("change", applyArchiveFilters);
+    const archiveSelect = document.getElementById("archiveSelect");
+    if (archiveSelect) {
+      archiveSelect.addEventListener("change", () => {
+        const row = findArchiveByKey(archiveSelect.value);
+        if (row) renderResult(row);
+      });
+    }
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
     document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk-suite"));
