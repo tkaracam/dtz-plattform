@@ -890,6 +890,16 @@
       gap: 10px;
     }
 
+    .task-status-panel summary {
+      cursor: pointer;
+      font-weight: 700;
+      list-style: none;
+    }
+
+    .task-status-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
     .task-status-row {
       display: flex;
       flex-wrap: wrap;
@@ -1598,8 +1608,9 @@
             </div>
           </div>
           <p class="muted" style="margin-top: 8px;">Aufgaben sind eigenständig erstellt und am DTZ-Format orientiert.</p>
-          <div class="task-status-panel">
-            <div class="task-status-row">
+          <details class="task-status-panel">
+            <summary>Aufgabenstatus</summary>
+            <div class="task-status-row" style="margin-top:10px;">
               <label>
                 <input id="taskDoneToggle" type="checkbox">
                 Aufgabe als erledigt markieren
@@ -1612,7 +1623,7 @@
               <button id="taskFilterDone" type="button" class="ghost-btn">Erledigt</button>
             </div>
             <div id="taskStatusList" class="task-status-list"></div>
-          </div>
+          </details>
         </div>
 
         <div class="letter-panel">
@@ -1626,12 +1637,6 @@
         </div>
 
         <div class="row-end">
-          <div class="btn-wrap">
-            <button id="backToMenuFromWriteBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
-          </div>
-          <div class="btn-wrap">
-            <button id="analyzeBtn" type="button">Zur Freigabe senden</button>
-          </div>
           <div class="btn-wrap">
             <button id="uploadBtn" type="button">Brief hochladen</button>
           </div>
@@ -4799,14 +4804,7 @@
           throw new Error(payload.error || `Upload-Fehler: ${response.status}`);
         }
 
-        const uploadId = String(payload.upload_id || "").trim();
-        const createdAt = String(payload.created_at || "").trim();
-        const details = [uploadId ? `ID: ${uploadId}` : "", createdAt ? `Zeit: ${createdAt}` : ""]
-          .filter(Boolean)
-          .join(" | ");
-        setStatus("ok", details
-          ? `Brief wurde eingereicht. Freigabe durch Lehrkraft ausstehend. ${details}`
-          : "Brief wurde eingereicht. Freigabe durch Lehrkraft ausstehend.");
+        setStatus("ok", "Brief hochgeladen. Der Brief wird in Kürze korrigiert.");
       } catch (err) {
         setStatus("error", `Upload fehlgeschlagen: ${err.message}`);
       } finally {
@@ -5248,7 +5246,8 @@
     }
 
     enforceExamInputRules();
-    document.getElementById("analyzeBtn").addEventListener("click", analyze);
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    if (analyzeBtn) analyzeBtn.addEventListener("click", analyze);
     document.getElementById("uploadBtn").addEventListener("click", uploadLetter);
     document.getElementById("studentLoginBtn").addEventListener("click", loginStudent);
     document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);
@@ -5268,7 +5267,8 @@
     document.getElementById("finishSimulationBtn").addEventListener("click", () => finishSimulation(false));
     document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);
     document.getElementById("submitRoomBtn").addEventListener("click", submitRoomAnswer);
-    document.getElementById("backToMenuFromWriteBtn").addEventListener("click", () => setMainView("portal"));
+    const backToWrite = document.getElementById("backToMenuFromWriteBtn");
+    if (backToWrite) backToWrite.addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromPortalBtn").addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromSimulationBtn").addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromRoomBtn").addEventListener("click", () => setMainView("portal"));
