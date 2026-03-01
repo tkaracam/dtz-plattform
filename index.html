@@ -1748,7 +1748,7 @@
 
       <section id="portalCard" class="card hidden">
         <h2 class="section-title">Schüler-Portal</h2>
-        <p class="section-subtitle">Meine Ergebnisse, Hausaufgaben, Lehrkraft-Notizen und Zertifikatsfortschritt.</p>
+        <p class="section-subtitle">Hausaufgaben, Lehrkraft-Notizen und Zertifikatsfortschritt.</p>
         <div class="row-end">
           <div class="btn-wrap">
             <button id="refreshPortalBtn" type="button">Portal aktualisieren</button>
@@ -1776,14 +1776,6 @@
                 </div>
               </div>
               <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
-            </div>
-          </section>
-          <section class="portal-block">
-            <h3>Meine Ergebnisse</h3>
-            <div class="portal-list">
-              <label for="portalResultSelect">Ergebnis auswählen</label>
-              <select id="portalResultSelect"></select>
-              <div id="portalResultsWrap" class="portal-list" style="margin-top:10px;">Noch keine Ergebnisse.</div>
             </div>
           </section>
           <section class="portal-block">
@@ -4039,8 +4031,6 @@
       const readiness = payload.readiness || {};
       const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];
 
-      renderPortalResults(results);
-
       renderPortalList(
         "portalHomeworkWrap",
         homeworks,
@@ -4090,42 +4080,6 @@
       renderPortalCorrections(corrections);
     }
 
-    function renderPortalResults(rows) {
-      const select = document.getElementById("portalResultSelect");
-      const wrap = document.getElementById("portalResultsWrap");
-      if (!select || !wrap) return;
-      if (!rows.length) {
-        select.innerHTML = '<option value="">Keine Ergebnisse</option>';
-        wrap.innerHTML = "Noch keine Ergebnisse.";
-        return;
-      }
-      rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-      select.innerHTML = rows.map((row, idx) => {
-        const date = normalizeDateString(row.created_at);
-        const type = String(row.type || "Eintrag");
-        const score = String(row.score_label || "-");
-        const label = `${date || "-"} | ${type} | ${score}`;
-        return `<option value="${idx}">${escapeHtml(label)}</option>`;
-      }).join("");
-
-      const renderByIndex = idx => {
-        const row = rows[idx];
-        if (!row) return;
-        wrap.innerHTML = `
-          <div class="portal-item">
-            <strong>${escapeHtml(row.type || "Eintrag")} | ${escapeHtml((row.created_at || "").slice(0, 10))}</strong>
-            <div>${escapeHtml(row.detail || "-")}</div>
-            <div>Wert: ${escapeHtml(row.score_label || "-")} (${Math.max(0, Math.min(100, Number(row.percent || 0)))}%)</div>
-          </div>
-        `;
-      };
-
-      select.addEventListener("change", () => {
-        const idx = Number(select.value || 0);
-        renderByIndex(Number.isFinite(idx) ? idx : 0);
-      });
-      renderByIndex(0);
-    }
 
     function renderPortalCorrections(rows) {
       const select = document.getElementById("portalCorrectionSelect");
