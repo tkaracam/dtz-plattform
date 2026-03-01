@@ -3448,11 +3448,6 @@
 
     function openB1View() {
       showCards(["workCard", "speakingCard"]);
-      const shell = document.querySelector(".shell");
-      const resultSection = document.getElementById("resultSection");
-      if (shell && resultSection) {
-        shell.appendChild(resultSection);
-      }
       generateSpeakingSet();
       setSpeakingTab(1);
     }
