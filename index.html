@@ -4749,8 +4749,11 @@
     }
 
     function collectFormData() {
+      const nameField = document.getElementById("studentName");
+      const fallbackName = currentStudentLabel || currentStudentUsername || "";
+      const studentName = nameField ? nameField.value.trim() : fallbackName;
       return {
-        studentName: document.getElementById("studentName").value.trim(),
+        studentName,
         letterText: document.getElementById("letterText").value.trim(),
         taskPrompt: document.getElementById("taskPrompt").value.trim(),
         requiredPoints: parsePoints(document.getElementById("requiredPoints").value)
@@ -4758,9 +4761,11 @@
     }
 
     function resolveSaveUrl() {
-      const explicit = document.getElementById("saveUrl").value.trim();
+      const saveEl = document.getElementById("saveUrl");
+      const apiEl = document.getElementById("apiUrl");
+      const explicit = saveEl ? saveEl.value.trim() : "";
       if (explicit) return explicit;
-      const apiUrl = document.getElementById("apiUrl").value.trim();
+      const apiUrl = apiEl ? apiEl.value.trim() : "";
       if (!apiUrl) return "./api/save_letter.php";
       return apiUrl.replace(/correct\.php(?:\?.*)?$/i, "save_letter.php");
     }
