@@ -338,10 +338,7 @@
     }
 
     .hero-cta {
-      margin-top: 18px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      display: none;
     }
 
     .level-bar {
@@ -399,13 +396,6 @@
     .level-tile.b1 { border-color: rgba(176, 226, 255, 0.7); }
     .level-tile.bsk { border-color: rgba(196, 255, 214, 0.7); }
 
-    .hero-cta button {
-      width: auto;
-      min-width: 180px;
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-size: 0.9rem;
-    }
 
 
     .shell {
@@ -1352,10 +1342,6 @@
         height: 210px;
       }
 
-      .hero-cta button {
-        width: 100%;
-      }
-
       .speak-photo img {
         height: 220px;
       }
@@ -1435,13 +1421,7 @@
             <button type="button" class="level-tile b1" id="levelB1Btn">B1<small>DTZ Fokus</small></button>
             <button type="button" class="level-tile bsk" id="levelBskBtn">BSK<small>Berufssprache</small></button>
           </div>
-          <div class="hero-cta">
-            <button id="heroPortalBtn" type="button" class="secondary-btn">Portal öffnen</button>
-            <button id="heroRoomBtn" type="button" class="secondary-btn">Saal beitreten</button>
-            <button id="heroSimulationBtn" type="button">Simulation starten</button>
-            <button id="heroWriteBtn" type="button">Schreiben starten</button>
-            <button id="heroSpeakBtn" type="button" class="secondary-btn">Sprechen starten</button>
-          </div>
+          <div class="hero-cta" aria-hidden="true"></div>
         </div>
       </div>
     </section>
@@ -4716,11 +4696,6 @@
     document.getElementById("navAdminBtn").addEventListener("click", () => {
       window.location.href = "./admin.html";
     });
-    document.getElementById("heroPortalBtn").addEventListener("click", () => navigateToSection("portal"));
-    document.getElementById("heroRoomBtn").addEventListener("click", () => navigateToSection("room"));
-    document.getElementById("heroSimulationBtn").addEventListener("click", () => navigateToSection("simulation"));
-    document.getElementById("heroWriteBtn").addEventListener("click", () => navigateToSection("write"));
-    document.getElementById("heroSpeakBtn").addEventListener("click", () => navigateToSection("speaking"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("simulation"));
     document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk"));
     checkStudentSession();
