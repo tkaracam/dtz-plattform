@@ -1765,6 +1765,16 @@
             <div class="portal-list">
               <label for="portalCorrectionSelect">Korrektur auswählen</label>
               <select id="portalCorrectionSelect"></select>
+              <div id="portalCorrectionSummary" class="kpi" style="margin-top:10px;">
+                <div class="kpi-item">
+                  <div class="kpi-title">Punkte</div>
+                  <div class="kpi-value" id="portalCorrectionScore">-</div>
+                </div>
+                <div class="kpi-item">
+                  <div class="kpi-title">Niveau</div>
+                  <div class="kpi-value" id="portalCorrectionLevel">-</div>
+                </div>
+              </div>
               <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
             </div>
           </section>
@@ -4120,10 +4130,14 @@
     function renderPortalCorrections(rows) {
       const select = document.getElementById("portalCorrectionSelect");
       const preview = document.getElementById("portalCorrectionPreview");
+      const scoreNode = document.getElementById("portalCorrectionScore");
+      const levelNode = document.getElementById("portalCorrectionLevel");
       if (!select || !preview) return;
       if (!rows.length) {
         select.innerHTML = '<option value="">Keine Korrekturen</option>';
         preview.innerHTML = '<p class="muted">Noch keine freigegebenen Briefe.</p>';
+        if (scoreNode) scoreNode.textContent = "-";
+        if (levelNode) levelNode.textContent = "-";
         return;
       }
       rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
@@ -4139,10 +4153,15 @@
         const row = rows[idx];
         if (!row) return;
         const feedback = String(row.teacher_feedback_de || "").trim();
+        const topic = String(row.topic || row.task_prompt || "").trim();
+        const topicHtml = topic ? `<div class="muted" style="margin-bottom:6px;"><strong>Bewertung zur Aufgabe:</strong> ${escapeHtml(topic)}</div>` : "";
         preview.innerHTML = `
+          ${topicHtml}
           ${feedback ? `<div class="muted" style="margin-bottom:6px;"><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : ""}
           ${buildTeacherCorrectionHtml(row)}
         `;
+        if (scoreNode) scoreNode.textContent = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
+        if (levelNode) levelNode.textContent = String(row.niveau_einschaetzung || "-");
       };
 
       select.addEventListener("change", () => {
