@@ -3058,6 +3058,25 @@
       return arr;
     }
 
+    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "bskCard", "speakingCard", "lidClassicCard"];
+
+    function hideMainCards() {
+      MAIN_CARDS.forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+    }
+
+    function showCards(cardIds) {
+      hideMainCards();
+      cardIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("hidden");
+      });
+      if (!cardIds.includes("workCard")) {
+        document.getElementById("resultSection").classList.add("hidden");
+      }
+    }
+
     function setMainView(mode) {
       const map = {
         correction: "workCard",
@@ -3068,12 +3087,7 @@
         lid: "lidClassicCard",
         speaking: "speakingCard"
       };
-      ["workCard", "portalCard", "roomCard", "simulationCard", "bskCard", "speakingCard", "lidClassicCard"].forEach(id => {
-        document.getElementById(id).classList.add("hidden");
-      });
-      if (map[mode]) {
-        document.getElementById(map[mode]).classList.remove("hidden");
-      }
+      showCards(map[mode] ? [map[mode]] : []);
       if (mode !== "correction") {
         document.getElementById("resultSection").classList.add("hidden");
       }
@@ -3130,6 +3144,12 @@
       setSpeakingTab(1);
     }
 
+    function openB1View() {
+      showCards(["workCard", "speakingCard"]);
+      generateSpeakingSet();
+      setSpeakingTab(1);
+    }
+
     function showStudentLogin() {
       setMainView("");
       document.getElementById("resultSection").classList.add("hidden");
@@ -3172,6 +3192,8 @@
         openLidView();
       } else if (target === "speaking") {
         openSpeakingView();
+      } else if (target === "b1") {
+        openB1View();
       }
 
       const hero = document.querySelector(".hero");
@@ -4692,7 +4714,7 @@
     document.getElementById("navAdminBtn").addEventListener("click", () => {
       window.location.href = "./admin.html";
     });
-    document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("simulation"));
+    document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
     document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk"));
     checkStudentSession();
   </script>
