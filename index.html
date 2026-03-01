@@ -348,6 +348,13 @@
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
 
+    .portal-wide {
+      grid-column: 1 / -1;
+      font-size: 1.02rem;
+      letter-spacing: 0.06em;
+      padding: 12px 18px;
+    }
+
     .level-tile {
       border-radius: 16px;
       border: none;
@@ -1573,10 +1580,10 @@
             Schreiben und Sprechen gezielt üben, klar strukturiert und sofort startklar.
           </p>
           <div class="level-bar">
-            <button type="button" class="level-tile a1" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
             <button type="button" class="level-tile b1" id="levelB1Btn">A2-B1<small>DTZ Fokus</small></button>
             <button type="button" class="level-tile bsk" id="levelBskBtn">BSK<small>DTB-Training</small></button>
+            <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
           </div>
           <div class="hero-cta" aria-hidden="true"></div>
         </div>
