@@ -1776,6 +1776,63 @@
                 </div>
               </div>
               <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
+              <p id="systemNote" class="muted hidden" style="margin-top: 8px;"></p>
+
+              <details style="margin-top: 10px;">
+                <summary>Details anzeigen</summary>
+                <div style="margin-top: 8px;">
+                  <h4 style="margin: 0 0 6px;">Rubrik</h4>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Kriterium</th>
+                        <th>Punkte</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rubricBody"></tbody>
+                  </table>
+                </div>
+                <div style="margin-top: 10px;">
+                  <strong>Erfüllte Punkte</strong>
+                  <div id="coveredTags" class="tags"></div>
+                </div>
+                <div style="margin-top: 10px;">
+                  <strong>Fehlende Punkte</strong>
+                  <div id="missingTags" class="tags"></div>
+                </div>
+                <div style="margin-top: 10px;">
+                  <h4 style="margin: 0 0 6px;">Fehlerliste</h4>
+                  <div id="mistakesWrap"></div>
+                </div>
+              </details>
+
+              <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
+              <div class="archive-filters">
+                <div>
+                  <label for="archiveFrom">Datum von</label>
+                  <input id="archiveFrom" type="date">
+                </div>
+                <div>
+                  <label for="archiveTo">Datum bis</label>
+                  <input id="archiveTo" type="date">
+                </div>
+                <div>
+                  <label for="archiveTopic">Thema / Kontext</label>
+                  <input id="archiveTopic" type="text" placeholder="z. B. Termin, Nachbar, Kurs">
+                </div>
+                <div>
+                  <label for="archiveSort">Sortierung</label>
+                  <select id="archiveSort">
+                    <option value="newest" selected>Neueste zuerst</option>
+                    <option value="oldest">Älteste zuerst</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="archiveSelect">Korrektur anzeigen</label>
+                  <select id="archiveSelect"></select>
+                </div>
+              </div>
+              <div id="archiveList" class="archive-list"></div>
             </div>
           </section>
           <section class="portal-block">
@@ -1978,85 +2035,6 @@
         <div id="classicLidQuestionsWrap" class="lid-list"></div>
       </section>
 
-      <section id="resultSection" class="hidden">
-        <section class="card">
-          <h2 class="section-title">Ergebnisübersicht</h2>
-          <p class="section-subtitle" id="resultSubtitle">Die Bewertung orientiert sich an DTZ-Kriterien für den Schreibteil.</p>
-          <div class="kpi">
-            <div class="kpi-item">
-              <div class="kpi-title">Punkte</div>
-              <div class="kpi-value" id="scoreTotal">0/20</div>
-            </div>
-            <div class="kpi-item">
-              <div class="kpi-title">Niveau</div>
-              <div class="kpi-value" id="niveau">A2</div>
-            </div>
-          </div>
-          <p id="systemNote" class="muted hidden" style="margin-top: 10px;"></p>
-
-          <h3 style="margin: 12px 0 8px;">Korrigierte Mail</h3>
-          <div id="correctedLetter" class="teacher-correction"></div>
-
-          <h3 style="margin: 12px 0 8px;">Feedback</h3>
-          <p><strong>Kurz:</strong> <span id="feedbackDe"></span></p>
-
-          <details>
-            <summary>Details anzeigen</summary>
-            <div style="margin-top: 8px;">
-              <h4 style="margin: 0 0 6px;">Rubrik</h4>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Kriterium</th>
-                    <th>Punkte</th>
-                  </tr>
-                </thead>
-                <tbody id="rubricBody"></tbody>
-              </table>
-            </div>
-            <div style="margin-top: 10px;">
-              <strong>Erfüllte Punkte</strong>
-              <div id="coveredTags" class="tags"></div>
-            </div>
-            <div style="margin-top: 10px;">
-              <strong>Fehlende Punkte</strong>
-              <div id="missingTags" class="tags"></div>
-            </div>
-            <div style="margin-top: 10px;">
-              <h4 style="margin: 0 0 6px;">Fehlerliste</h4>
-              <div id="mistakesWrap"></div>
-            </div>
-          </details>
-
-          <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
-          <div class="archive-filters">
-            <div>
-              <label for="archiveFrom">Datum von</label>
-              <input id="archiveFrom" type="date">
-            </div>
-            <div>
-              <label for="archiveTo">Datum bis</label>
-              <input id="archiveTo" type="date">
-            </div>
-            <div>
-              <label for="archiveTopic">Thema / Kontext</label>
-              <input id="archiveTopic" type="text" placeholder="z. B. Termin, Nachbar, Kurs">
-            </div>
-            <div>
-              <label for="archiveSort">Sortierung</label>
-              <select id="archiveSort">
-                <option value="newest" selected>Neueste zuerst</option>
-                <option value="oldest">Älteste zuerst</option>
-              </select>
-            </div>
-            <div>
-              <label for="archiveSelect">Korrektur anzeigen</label>
-              <select id="archiveSelect"></select>
-            </div>
-          </div>
-          <div id="archiveList" class="archive-list"></div>
-        </section>
-      </section>
     </div>
 
     <footer class="site-footer">
@@ -3372,8 +3350,9 @@
         const el = document.getElementById(id);
         if (el) el.classList.remove("hidden");
       });
-      if (!cardIds.includes("workCard")) {
-        document.getElementById("resultSection").classList.add("hidden");
+      const resultSection = document.getElementById("resultSection");
+      if (!cardIds.includes("workCard") && resultSection) {
+        resultSection.classList.add("hidden");
       }
     }
 
@@ -3388,8 +3367,9 @@
         speaking: "speakingCard"
       };
       showCards(map[mode] ? [map[mode]] : []);
-      if (mode !== "correction") {
-        document.getElementById("resultSection").classList.add("hidden");
+      const resultSection = document.getElementById("resultSection");
+      if (mode !== "correction" && resultSection) {
+        resultSection.classList.add("hidden");
       }
     }
 
@@ -3461,7 +3441,8 @@
 
     function showStudentLogin() {
       setMainView("");
-      document.getElementById("resultSection").classList.add("hidden");
+      const resultSection = document.getElementById("resultSection");
+      if (resultSection) resultSection.classList.add("hidden");
       document.getElementById("memberPanel").classList.add("hidden");
       document.getElementById("studentAuthCard").classList.remove("hidden");
       stopRoomPolling();
@@ -4106,16 +4087,7 @@
       const renderByIndex = idx => {
         const row = rows[idx];
         if (!row) return;
-        const feedback = String(row.teacher_feedback_de || "").trim();
-        const topic = String(row.topic || row.task_prompt || "").trim();
-        const topicHtml = topic ? `<div class="muted" style="margin-bottom:6px;"><strong>Bewertung zur Aufgabe:</strong> ${escapeHtml(topic)}</div>` : "";
-        preview.innerHTML = `
-          ${topicHtml}
-          ${feedback ? `<div class="muted" style="margin-bottom:6px;"><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : ""}
-          ${buildTeacherCorrectionHtml(row)}
-        `;
-        if (scoreNode) scoreNode.textContent = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
-        if (levelNode) levelNode.textContent = String(row.niveau_einschaetzung || "-");
+        renderResult(row);
       };
 
       select.addEventListener("change", () => {
@@ -4940,8 +4912,13 @@
     }
 
     function renderTeacherCorrection(result) {
-      const wrap = document.getElementById("correctedLetter");
-      wrap.innerHTML = buildTeacherCorrectionHtml(result);
+      const wrap = document.getElementById("portalCorrectionPreview") || document.getElementById("correctedLetter");
+      if (!wrap) return;
+      const topic = String(result.topic || result.task_prompt || "").trim();
+      const topicHtml = topic ? `<div class="muted" style="margin-bottom:6px;"><strong>Bewertung zur Aufgabe:</strong> ${escapeHtml(topic)}</div>` : "";
+      const feedback = String(result.teacher_feedback_de || "").trim();
+      const feedbackHtml = feedback ? `<div class="muted" style="margin-bottom:6px;"><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : "";
+      wrap.innerHTML = `${topicHtml}${feedbackHtml}${buildTeacherCorrectionHtml(result)}`;
     }
 
     function escapeHtml(text) {
@@ -4952,30 +4929,30 @@
     }
 
     function renderResult(result) {
-      document.getElementById("resultSection").classList.remove("hidden");
-      const subtitle = document.getElementById("resultSubtitle");
-      const topic = String(result.topic || result.task_prompt || "").trim();
-      subtitle.textContent = topic
-        ? `Bewertung zur Aufgabe: ${topic}`
-        : "Die Bewertung orientiert sich an DTZ-Kriterien für den Schreibteil.";
-      document.getElementById("scoreTotal").textContent = `${result.score_total}/20`;
-      document.getElementById("niveau").textContent = result.niveau_einschaetzung;
-      document.getElementById("systemNote").textContent = "";
+      const scoreNode = document.getElementById("portalCorrectionScore");
+      const levelNode = document.getElementById("portalCorrectionLevel");
+      if (scoreNode) scoreNode.textContent = `${result.score_total}/20`;
+      if (levelNode) levelNode.textContent = result.niveau_einschaetzung;
+      const systemNote = document.getElementById("systemNote");
+      if (systemNote) systemNote.textContent = "";
 
       const rubricBody = document.getElementById("rubricBody");
-      rubricBody.innerHTML = `
-        <tr><td>Aufgabenbezug</td><td>${result.rubric.aufgabenbezug}</td></tr>
-        <tr><td>Textaufbau</td><td>${result.rubric.textaufbau}</td></tr>
-        <tr><td>Grammatik</td><td>${result.rubric.grammatik}</td></tr>
-        <tr><td>Wortschatz + Orthografie</td><td>${result.rubric.wortschatz_orthografie}</td></tr>
-      `;
+      if (rubricBody) {
+        rubricBody.innerHTML = `
+          <tr><td>Aufgabenbezug</td><td>${result.rubric.aufgabenbezug}</td></tr>
+          <tr><td>Textaufbau</td><td>${result.rubric.textaufbau}</td></tr>
+          <tr><td>Grammatik</td><td>${result.rubric.grammatik}</td></tr>
+          <tr><td>Wortschatz + Orthografie</td><td>${result.rubric.wortschatz_orthografie}</td></tr>
+        `;
+      }
 
       renderTags(document.getElementById("coveredTags"), result.covered_points || [], "");
       renderTags(document.getElementById("missingTags"), result.missing_points || [], "missing");
       renderMistakes(result.mistakes || []);
 
       renderTeacherCorrection(result);
-      document.getElementById("feedbackDe").textContent = result.teacher_feedback_de || "";
+      const feedback = document.getElementById("feedbackDe");
+      if (feedback) feedback.textContent = result.teacher_feedback_de || "";
     }
 
     function normalizeDateString(value) {
@@ -5043,9 +5020,6 @@
     function setLetterArchive(rows) {
       letterArchive = Array.isArray(rows) ? rows.slice() : [];
       letterArchive.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-      if (letterArchive.length) {
-        document.getElementById("resultSection").classList.remove("hidden");
-      }
       renderArchiveSelect(letterArchive);
       applyArchiveFilters();
     }
@@ -5237,7 +5211,8 @@
         }
 
         const payload = await submitForTeacherApproval(formData);
-        document.getElementById("resultSection").classList.add("hidden");
+        const resultSection = document.getElementById("resultSection");
+        if (resultSection) resultSection.classList.add("hidden");
         const uploadId = String(payload.upload_id || "").trim();
         setStatus(
           "ok",
