@@ -1807,32 +1807,11 @@
               </details>
 
               <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
-              <div class="archive-filters">
-                <div>
-                  <label for="archiveFrom">Datum von</label>
-                  <input id="archiveFrom" type="date">
-                </div>
-                <div>
-                  <label for="archiveTo">Datum bis</label>
-                  <input id="archiveTo" type="date">
-                </div>
-                <div>
-                  <label for="archiveTopic">Thema / Kontext</label>
-                  <input id="archiveTopic" type="text" placeholder="z. B. Termin, Nachbar, Kurs">
-                </div>
-                <div>
-                  <label for="archiveSort">Sortierung</label>
-                  <select id="archiveSort">
-                    <option value="newest" selected>Neueste zuerst</option>
-                    <option value="oldest">Älteste zuerst</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="archiveSelect">Korrektur anzeigen</label>
-                  <select id="archiveSelect"></select>
-                </div>
+              <div>
+                <label for="archiveSelect">Korrektur anzeigen</label>
+                <select id="archiveSelect"></select>
               </div>
-              <div id="archiveList" class="archive-list"></div>
+              <div id="archiveList" class="archive-list" style="margin-top:10px;"></div>
             </div>
           </section>
           <section class="portal-block">
@@ -5002,27 +4981,8 @@
     }
 
     function applyArchiveFilters() {
-      const from = document.getElementById("archiveFrom").value;
-      const to = document.getElementById("archiveTo").value;
-      const topic = document.getElementById("archiveTopic").value.trim().toLowerCase();
-      const sort = document.getElementById("archiveSort").value;
-
       let rows = Array.isArray(letterArchive) ? letterArchive.slice() : [];
-      if (from) {
-        rows = rows.filter(row => normalizeDateString(row.created_at) >= from);
-      }
-      if (to) {
-        rows = rows.filter(row => normalizeDateString(row.created_at) <= to);
-      }
-      if (topic) {
-        rows = rows.filter(row => String(row.topic || row.task_prompt || "").toLowerCase().includes(topic));
-      }
-
-      rows.sort((a, b) => {
-        const aDate = String(a.created_at || "");
-        const bDate = String(b.created_at || "");
-        return sort === "oldest" ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
-      });
+      rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
 
       renderLetterArchiveRows(rows);
     }
@@ -5298,12 +5258,6 @@
       window.location.href = "./admin.html";
     });
     initTaskSelect();
-    ["archiveFrom", "archiveTo", "archiveTopic"].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener("input", applyArchiveFilters);
-    });
-    const archiveSort = document.getElementById("archiveSort");
-    if (archiveSort) archiveSort.addEventListener("change", applyArchiveFilters);
     const archiveSelect = document.getElementById("archiveSelect");
     if (archiveSelect) {
       archiveSelect.addEventListener("change", () => {
