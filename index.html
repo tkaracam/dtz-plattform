@@ -1214,40 +1214,6 @@
       max-width: 100%;
     }
 
-    .portal-read-btn {
-      margin-top: 8px;
-      display: none;
-    }
-
-    .portal-read-btn.show {
-      display: inline-flex;
-    }
-
-    .portal-read-view {
-      margin-top: 12px;
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 24, 39, 0.45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 2000;
-    }
-
-    .overlay-card {
-      width: min(840px, 92vw);
-      max-height: 90vh;
-      overflow: auto;
-      background: #fff;
-      border-radius: 16px;
-      border: 1px solid #d8e4f1;
-      padding: 18px;
-      box-shadow: 0 24px 56px rgba(12, 28, 49, 0.28);
-    }
 
     .portal-block {
       border: 1px solid var(--line);
@@ -1800,16 +1766,15 @@
               <label for="portalCorrectionSelect">Korrektur auswählen</label>
               <select id="portalCorrectionSelect"></select>
               <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
-              <div class="row-end" style="margin-top:8px;">
-                <div class="btn-wrap">
-                  <button id="portalReadBtn" type="button" class="portal-read-btn ghost-btn">Lesen</button>
-                </div>
-              </div>
             </div>
           </section>
           <section class="portal-block">
             <h3>Meine Ergebnisse</h3>
-            <div id="portalResultsWrap" class="portal-list">Noch keine Ergebnisse.</div>
+            <div class="portal-list">
+              <label for="portalResultSelect">Ergebnis auswählen</label>
+              <select id="portalResultSelect"></select>
+              <div id="portalResultsWrap" class="portal-list" style="margin-top:10px;">Noch keine Ergebnisse.</div>
+            </div>
           </section>
           <section class="portal-block">
             <h3>Meine Hausaufgaben</h3>
@@ -4069,18 +4034,7 @@
       const readiness = payload.readiness || {};
       const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];
 
-      renderPortalList(
-        "portalResultsWrap",
-        results,
-        "Noch keine Ergebnisse.",
-        row => `
-          <div class="portal-item">
-            <strong>${escapeHtml(row.type || "Eintrag")} | ${escapeHtml((row.created_at || "").slice(0, 10))}</strong>
-            <div>${escapeHtml(row.detail || "-")}</div>
-            <div>Wert: ${escapeHtml(row.score_label || "-")} (${Math.max(0, Math.min(100, Number(row.percent || 0)))}%)</div>
-          </div>
-        `
-      );
+      renderPortalResults(results);
 
       renderPortalList(
         "portalHomeworkWrap",
@@ -4131,15 +4085,50 @@
       renderPortalCorrections(corrections);
     }
 
+    function renderPortalResults(rows) {
+      const select = document.getElementById("portalResultSelect");
+      const wrap = document.getElementById("portalResultsWrap");
+      if (!select || !wrap) return;
+      if (!rows.length) {
+        select.innerHTML = '<option value="">Keine Ergebnisse</option>';
+        wrap.innerHTML = "Noch keine Ergebnisse.";
+        return;
+      }
+      rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      select.innerHTML = rows.map((row, idx) => {
+        const date = normalizeDateString(row.created_at);
+        const type = String(row.type || "Eintrag");
+        const score = String(row.score_label || "-");
+        const label = `${date || "-"} | ${type} | ${score}`;
+        return `<option value="${idx}">${escapeHtml(label)}</option>`;
+      }).join("");
+
+      const renderByIndex = idx => {
+        const row = rows[idx];
+        if (!row) return;
+        wrap.innerHTML = `
+          <div class="portal-item">
+            <strong>${escapeHtml(row.type || "Eintrag")} | ${escapeHtml((row.created_at || "").slice(0, 10))}</strong>
+            <div>${escapeHtml(row.detail || "-")}</div>
+            <div>Wert: ${escapeHtml(row.score_label || "-")} (${Math.max(0, Math.min(100, Number(row.percent || 0)))}%)</div>
+          </div>
+        `;
+      };
+
+      select.addEventListener("change", () => {
+        const idx = Number(select.value || 0);
+        renderByIndex(Number.isFinite(idx) ? idx : 0);
+      });
+      renderByIndex(0);
+    }
+
     function renderPortalCorrections(rows) {
       const select = document.getElementById("portalCorrectionSelect");
       const preview = document.getElementById("portalCorrectionPreview");
-      const readBtn = document.getElementById("portalReadBtn");
       if (!select || !preview) return;
       if (!rows.length) {
         select.innerHTML = '<option value="">Keine Korrekturen</option>';
         preview.innerHTML = '<p class="muted">Noch keine freigegebenen Briefe.</p>';
-        if (readBtn) readBtn.classList.remove("show");
         return;
       }
       rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
@@ -4159,45 +4148,13 @@
           ${feedback ? `<div class="muted" style="margin-bottom:6px;"><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : ""}
           ${buildTeacherCorrectionHtml(row)}
         `;
-        if (readBtn) readBtn.classList.add("show");
-        if (readBtn) readBtn.setAttribute("data-read-index", String(idx));
       };
 
       select.addEventListener("change", () => {
         const idx = Number(select.value || 0);
         renderByIndex(Number.isFinite(idx) ? idx : 0);
       });
-      if (readBtn && !readBtn.dataset.bound) {
-        readBtn.dataset.bound = "1";
-        readBtn.addEventListener("click", () => {
-          const idx = Number(readBtn.getAttribute("data-read-index") || 0);
-          const row = rows[idx];
-          if (row) openCorrectionReader(row);
-        });
-      }
       renderByIndex(0);
-    }
-
-    function openCorrectionReader(row) {
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
-      overlay.innerHTML = `
-        <div class="overlay-card portal-read-view">
-          <div class="row-end">
-            <div class="btn-wrap">
-              <button type="button" class="secondary-btn" data-close>Zurück</button>
-            </div>
-          </div>
-          <h3 style="margin: 6px 0;">${escapeHtml(String(row.topic || row.task_prompt || "Korrigierter Brief"))}</h3>
-          <div class="teacher-correction">${buildTeacherCorrectionHtml(row)}</div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-      const close = () => overlay.remove();
-      overlay.addEventListener("click", event => {
-        if (event.target === overlay) close();
-      });
-      overlay.querySelector("[data-close]")?.addEventListener("click", close);
     }
 
     async function loadStudentPortal() {
