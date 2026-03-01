@@ -818,6 +818,68 @@
       background: #f8fbff;
     }
 
+    .archive-filters {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .archive-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .archive-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px;
+      background: #f8fbff;
+    }
+
+    .archive-item summary {
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .archive-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.92rem;
+      color: #2a3f5f;
+    }
+
+    .archive-topic {
+      font-weight: 700;
+    }
+
+    .archive-score {
+      font-weight: 700;
+      color: #0b6b5a;
+    }
+
+    .archive-body {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .archive-empty {
+      padding: 12px;
+      border-radius: 12px;
+      background: #f3f6fb;
+      border: 1px dashed #c8d4e4;
+      color: #52667f;
+    }
+
     .corr-item {
       padding: 8px 10px;
       border: 1px dashed #d5e2f0;
@@ -1849,6 +1911,30 @@
               <div id="mistakesWrap"></div>
             </div>
           </details>
+
+          <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
+          <div class="archive-filters">
+            <div>
+              <label for="archiveFrom">Datum von</label>
+              <input id="archiveFrom" type="date">
+            </div>
+            <div>
+              <label for="archiveTo">Datum bis</label>
+              <input id="archiveTo" type="date">
+            </div>
+            <div>
+              <label for="archiveTopic">Thema / Kontext</label>
+              <input id="archiveTopic" type="text" placeholder="z. B. Termin, Nachbar, Kurs">
+            </div>
+            <div>
+              <label for="archiveSort">Sortierung</label>
+              <select id="archiveSort">
+                <option value="newest" selected>Neueste zuerst</option>
+                <option value="oldest">Älteste zuerst</option>
+              </select>
+            </div>
+          </div>
+          <div id="archiveList" class="archive-list"></div>
         </section>
       </section>
     </div>
@@ -1916,6 +2002,7 @@
     let currentBskResult = null;
     let currentStudentLabel = "";
     let currentStudentUsername = "";
+    let letterArchive = [];
     let simulationTimerId = null;
     let roomPollTimerId = null;
     let currentRoom = null;
@@ -3780,9 +3867,12 @@
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderPortalData(payload);
+        setLetterArchive(payload.letter_corrections || []);
         const latest = payload.latest_letter_correction;
         if (latest && typeof latest === "object" && latest.corrected_letter) {
           renderResult(latest);
+        } else if (Array.isArray(payload.letter_corrections) && payload.letter_corrections.length) {
+          renderResult(payload.letter_corrections[0]);
         }
       } catch (err) {
         setPortalStatus("error", `Portal konnte nicht geladen werden: ${err.message}`);
@@ -4559,14 +4649,12 @@
       wrap.appendChild(table);
     }
 
-    function renderTeacherCorrection(result) {
-      const wrap = document.getElementById("correctedLetter");
+    function buildTeacherCorrectionHtml(result) {
       const mistakes = Array.isArray(result.mistakes) ? result.mistakes.slice() : [];
       const correctedText = String(result.corrected_letter || "").trim();
 
       if (!mistakes.length) {
-        wrap.innerHTML = `<div class="corr-final-text">${escapeHtml(correctedText)}</div>`;
-        return;
+        return `<div class="corr-final-text">${escapeHtml(correctedText)}</div>`;
       }
 
       mistakes.sort((a, b) => Number(a.line || 0) - Number(b.line || 0));
@@ -4585,7 +4673,12 @@
         `
         : "";
 
-      wrap.innerHTML = `${blocks}${finalBlock}`;
+      return `${blocks}${finalBlock}`;
+    }
+
+    function renderTeacherCorrection(result) {
+      const wrap = document.getElementById("correctedLetter");
+      wrap.innerHTML = buildTeacherCorrectionHtml(result);
     }
 
     function escapeHtml(text) {
@@ -4615,6 +4708,76 @@
 
       renderTeacherCorrection(result);
       document.getElementById("feedbackDe").textContent = result.teacher_feedback_de || "";
+    }
+
+    function normalizeDateString(value) {
+      return String(value || "").slice(0, 10);
+    }
+
+    function renderLetterArchiveRows(rows) {
+      const wrap = document.getElementById("archiveList");
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="archive-empty">Noch keine freigegebenen Briefe vorhanden.</div>`;
+        return;
+      }
+      wrap.innerHTML = rows.map(row => {
+        const date = normalizeDateString(row.created_at);
+        const topic = String(row.topic || row.task_prompt || "Ohne Aufgabenangabe").trim();
+        const score = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
+        const niveau = String(row.niveau_einschaetzung || "-");
+        const feedback = String(row.teacher_feedback_de || "").trim();
+        const correctionHtml = buildTeacherCorrectionHtml(row);
+        return `
+          <details class="archive-item">
+            <summary>
+              <div class="archive-meta">
+                <span>${escapeHtml(date || "-")}</span>
+                <span class="archive-score">${escapeHtml(score)}</span>
+                <span>${escapeHtml(niveau)}</span>
+              </div>
+              <span class="archive-topic">${escapeHtml(topic || "Ohne Thema")}</span>
+            </summary>
+            <div class="archive-body">
+              ${feedback ? `<div><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : ""}
+              <div class="teacher-correction">${correctionHtml}</div>
+            </div>
+          </details>
+        `;
+      }).join("");
+    }
+
+    function applyArchiveFilters() {
+      const from = document.getElementById("archiveFrom").value;
+      const to = document.getElementById("archiveTo").value;
+      const topic = document.getElementById("archiveTopic").value.trim().toLowerCase();
+      const sort = document.getElementById("archiveSort").value;
+
+      let rows = Array.isArray(letterArchive) ? letterArchive.slice() : [];
+      if (from) {
+        rows = rows.filter(row => normalizeDateString(row.created_at) >= from);
+      }
+      if (to) {
+        rows = rows.filter(row => normalizeDateString(row.created_at) <= to);
+      }
+      if (topic) {
+        rows = rows.filter(row => String(row.topic || row.task_prompt || "").toLowerCase().includes(topic));
+      }
+
+      rows.sort((a, b) => {
+        const aDate = String(a.created_at || "");
+        const bDate = String(b.created_at || "");
+        return sort === "oldest" ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
+      });
+
+      renderLetterArchiveRows(rows);
+    }
+
+    function setLetterArchive(rows) {
+      letterArchive = Array.isArray(rows) ? rows.slice() : [];
+      if (letterArchive.length) {
+        document.getElementById("resultSection").classList.remove("hidden");
+      }
+      applyArchiveFilters();
     }
 
     async function analyze() {
@@ -4713,6 +4876,12 @@
     document.getElementById("navAdminBtn").addEventListener("click", () => {
       window.location.href = "./admin.html";
     });
+    ["archiveFrom", "archiveTo", "archiveTopic"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("input", applyArchiveFilters);
+    });
+    const archiveSort = document.getElementById("archiveSort");
+    if (archiveSort) archiveSort.addEventListener("change", applyArchiveFilters);
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
     document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk-suite"));

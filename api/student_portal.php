@@ -75,6 +75,7 @@ $bskRecords = [];
 $simRecords = [];
 $letterRecords = [];
 $approvedLetterResults = [];
+$approvedLetterCorrections = [];
 $latestLetterCorrection = null;
 $latestLetterCorrectionTs = 0;
 
@@ -128,6 +129,13 @@ foreach (read_jsonl_records($storageDir . '/letters-*.jsonl') as $row) {
             'percent' => (int)round(($score / 20) * 100),
             'detail' => mb_substr(trim((string)($row['task_prompt'] ?? 'Ohne Aufgabenangabe')), 0, 80),
         ];
+        if (is_array($result)) {
+            $approvedLetterCorrections[] = array_merge($result, [
+                'created_at' => (string)($review['reviewed_at'] ?? $row['created_at'] ?? ''),
+                'topic' => trim((string)($row['task_prompt'] ?? '')),
+                'upload_id' => $uploadId,
+            ]);
+        }
         $reviewTs = strtotime((string)($review['reviewed_at'] ?? '')) ?: 0;
         if ($result && $reviewTs >= $latestLetterCorrectionTs) {
             $latestLetterCorrection = $result;
@@ -161,6 +169,10 @@ usort($allResults, static function (array $a, array $b): int {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
 });
 $allResults = array_slice($allResults, 0, 20);
+
+usort($approvedLetterCorrections, static function (array $a, array $b): int {
+    return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
+});
 
 $homeworkRaw = read_json_file_array($storageDir . '/student_homeworks.json');
 $homeworks = [];
@@ -241,6 +253,7 @@ echo json_encode([
     'homeworks' => $homeworks,
     'teacher_notes' => array_slice($teacherNotes, 0, 20),
     'latest_letter_correction' => $latestLetterCorrection,
+    'letter_corrections' => $approvedLetterCorrections,
     'readiness' => [
         'dtz' => max(0, min(100, $dtzReadiness)),
         'dtb' => max(0, min(100, $dtbReadiness)),
