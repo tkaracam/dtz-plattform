@@ -3133,6 +3133,11 @@
 
     function openB1View() {
       showCards(["speakingCard", "workCard"]);
+      const shell = document.querySelector(".shell");
+      const resultSection = document.getElementById("resultSection");
+      if (shell && resultSection) {
+        shell.appendChild(resultSection);
+      }
       generateSpeakingSet();
       setSpeakingTab(1);
     }
