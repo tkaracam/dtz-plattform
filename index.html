@@ -1234,6 +1234,34 @@
       font-weight: 700;
     }
 
+    .portal-section summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #f1f5fb;
+      border: 1px solid #d8e4f1;
+    }
+
+    .portal-section summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .portal-section summary::after {
+      content: "▾";
+      color: #51657e;
+      font-size: 1rem;
+      transition: transform 0.2s ease;
+    }
+
+    .portal-section[open] summary::after {
+      transform: rotate(180deg);
+    }
+
 
     .portal-block {
       border: 1px solid var(--line);
@@ -1779,9 +1807,9 @@
         </div>
         <div id="portalStatus" class="hidden"></div>
 
-        <div class="portal-section">
-          <h3 class="portal-section-title">A2-B1</h3>
-          <div class="portal-grid">
+        <details class="portal-section" open>
+          <summary class="portal-section-title">A2-B1</summary>
+          <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
               <h3>Korrigierte Briefe</h3>
               <div class="portal-list">
@@ -1841,10 +1869,10 @@
               <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
             </section>
           </div>
-        </div>
-        <div class="portal-section">
-          <h3 class="portal-section-title">BSK</h3>
-          <div class="portal-grid">
+        </details>
+        <details class="portal-section">
+          <summary class="portal-section-title">BSK</summary>
+          <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
               <h3>Lehrkraft-Notizen</h3>
               <div id="portalNotesWrap" class="portal-list">Noch keine Notizen.</div>
@@ -1854,7 +1882,7 @@
               <div id="portalReadinessWrap" class="portal-list">Noch keine Daten.</div>
             </section>
           </div>
-        </div>
+        </details>
       </section>
 
       <section id="bskCard" class="card hidden">
