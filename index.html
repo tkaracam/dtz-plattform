@@ -1659,6 +1659,14 @@
 
         <div class="portal-grid">
           <section class="portal-block">
+            <h3>Korrigierte Briefe</h3>
+            <div class="portal-list">
+              <label for="portalCorrectionSelect">Korrektur auswählen</label>
+              <select id="portalCorrectionSelect"></select>
+              <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
+            </div>
+          </section>
+          <section class="portal-block">
             <h3>Meine Ergebnisse</h3>
             <div id="portalResultsWrap" class="portal-list">Noch keine Ergebnisse.</div>
           </section>
@@ -3906,6 +3914,7 @@
       const homeworks = Array.isArray(payload.homeworks) ? payload.homeworks : [];
       const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
       const readiness = payload.readiness || {};
+      const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];
 
       renderPortalList(
         "portalResultsWrap",
@@ -3965,6 +3974,43 @@
           <div class="tags" style="margin-top:6px;">${missingHtml}</div>
         </div>
       `;
+
+      renderPortalCorrections(corrections);
+    }
+
+    function renderPortalCorrections(rows) {
+      const select = document.getElementById("portalCorrectionSelect");
+      const preview = document.getElementById("portalCorrectionPreview");
+      if (!select || !preview) return;
+      if (!rows.length) {
+        select.innerHTML = '<option value="">Keine Korrekturen</option>';
+        preview.innerHTML = '<p class="muted">Noch keine freigegebenen Briefe.</p>';
+        return;
+      }
+      rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      select.innerHTML = rows.map((row, idx) => {
+        const date = normalizeDateString(row.created_at);
+        const topic = String(row.topic || row.task_prompt || "Ohne Aufgabe").trim();
+        const score = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
+        const label = `${date || "-"} | ${topic} | ${score}`;
+        return `<option value="${idx}">${escapeHtml(label)}</option>`;
+      }).join("");
+
+      const renderByIndex = idx => {
+        const row = rows[idx];
+        if (!row) return;
+        const feedback = String(row.teacher_feedback_de || "").trim();
+        preview.innerHTML = `
+          ${feedback ? `<div class="muted" style="margin-bottom:6px;"><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : ""}
+          ${buildTeacherCorrectionHtml(row)}
+        `;
+      };
+
+      select.addEventListener("change", () => {
+        const idx = Number(select.value || 0);
+        renderByIndex(Number.isFinite(idx) ? idx : 0);
+      });
+      renderByIndex(0);
     }
 
     async function loadStudentPortal() {
