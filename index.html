@@ -1221,6 +1221,19 @@
       max-width: 100%;
     }
 
+    .portal-section {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .portal-section-title {
+      margin: 0;
+      font-size: 1.05rem;
+      color: #2e3f55;
+      font-weight: 700;
+    }
+
 
     .portal-block {
       border: 1px solid var(--line);
@@ -1766,73 +1779,81 @@
         </div>
         <div id="portalStatus" class="hidden"></div>
 
-        <div class="portal-grid">
-          <section class="portal-block">
-            <h3>Korrigierte Briefe</h3>
-            <div class="portal-list">
-              <label for="portalCorrectionSelect">Korrektur auswählen</label>
-              <select id="portalCorrectionSelect"></select>
-              <div id="portalCorrectionSummary" class="kpi" style="margin-top:10px;">
-                <div class="kpi-item">
-                  <div class="kpi-title">Punkte</div>
-                  <div class="kpi-value" id="portalCorrectionScore">-</div>
+        <div class="portal-section">
+          <h3 class="portal-section-title">A2-B1</h3>
+          <div class="portal-grid">
+            <section class="portal-block">
+              <h3>Korrigierte Briefe</h3>
+              <div class="portal-list">
+                <label for="portalCorrectionSelect">Korrektur auswählen</label>
+                <select id="portalCorrectionSelect"></select>
+                <div id="portalCorrectionSummary" class="kpi" style="margin-top:10px;">
+                  <div class="kpi-item">
+                    <div class="kpi-title">Punkte</div>
+                    <div class="kpi-value" id="portalCorrectionScore">-</div>
+                  </div>
+                  <div class="kpi-item">
+                    <div class="kpi-title">Niveau</div>
+                    <div class="kpi-value" id="portalCorrectionLevel">-</div>
+                  </div>
                 </div>
-                <div class="kpi-item">
-                  <div class="kpi-title">Niveau</div>
-                  <div class="kpi-value" id="portalCorrectionLevel">-</div>
-                </div>
-              </div>
-              <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
-              <p id="systemNote" class="muted hidden" style="margin-top: 8px;"></p>
+                <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
+                <p id="systemNote" class="muted hidden" style="margin-top: 8px;"></p>
 
-              <details style="margin-top: 10px;">
-                <summary>Details anzeigen</summary>
-                <div style="margin-top: 8px;">
-                  <h4 style="margin: 0 0 6px;">Rubrik</h4>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Kriterium</th>
-                        <th>Punkte</th>
-                      </tr>
-                    </thead>
-                    <tbody id="rubricBody"></tbody>
-                  </table>
-                </div>
-                <div style="margin-top: 10px;">
-                  <strong>Erfüllte Punkte</strong>
-                  <div id="coveredTags" class="tags"></div>
-                </div>
-                <div style="margin-top: 10px;">
-                  <strong>Fehlende Punkte</strong>
-                  <div id="missingTags" class="tags"></div>
-                </div>
-                <div style="margin-top: 10px;">
-                  <h4 style="margin: 0 0 6px;">Fehlerliste</h4>
-                  <div id="mistakesWrap"></div>
-                </div>
-              </details>
+                <details style="margin-top: 10px;">
+                  <summary>Details anzeigen</summary>
+                  <div style="margin-top: 8px;">
+                    <h4 style="margin: 0 0 6px;">Rubrik</h4>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Kriterium</th>
+                          <th>Punkte</th>
+                        </tr>
+                      </thead>
+                      <tbody id="rubricBody"></tbody>
+                    </table>
+                  </div>
+                  <div style="margin-top: 10px;">
+                    <strong>Erfüllte Punkte</strong>
+                    <div id="coveredTags" class="tags"></div>
+                  </div>
+                  <div style="margin-top: 10px;">
+                    <strong>Fehlende Punkte</strong>
+                    <div id="missingTags" class="tags"></div>
+                  </div>
+                  <div style="margin-top: 10px;">
+                    <h4 style="margin: 0 0 6px;">Fehlerliste</h4>
+                    <div id="mistakesWrap"></div>
+                  </div>
+                </details>
 
-              <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
-              <div>
-                <label for="archiveSelect">Korrektur anzeigen</label>
-                <select id="archiveSelect"></select>
+                <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
+                <div>
+                  <label for="archiveSelect">Korrektur anzeigen</label>
+                  <select id="archiveSelect"></select>
+                </div>
+                <div id="archiveList" class="archive-list" style="margin-top:10px;"></div>
               </div>
-              <div id="archiveList" class="archive-list" style="margin-top:10px;"></div>
-            </div>
-          </section>
-          <section class="portal-block">
-            <h3>Meine Hausaufgaben</h3>
-            <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
-          </section>
-          <section class="portal-block">
-            <h3>Lehrkraft-Notizen</h3>
-            <div id="portalNotesWrap" class="portal-list">Noch keine Notizen.</div>
-          </section>
-          <section class="portal-block">
-            <h3>Zertifikatsvorbereitung</h3>
-            <div id="portalReadinessWrap" class="portal-list">Noch keine Daten.</div>
-          </section>
+            </section>
+            <section class="portal-block">
+              <h3>Meine Hausaufgaben</h3>
+              <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
+            </section>
+          </div>
+        </div>
+        <div class="portal-section">
+          <h3 class="portal-section-title">BSK</h3>
+          <div class="portal-grid">
+            <section class="portal-block">
+              <h3>Lehrkraft-Notizen</h3>
+              <div id="portalNotesWrap" class="portal-list">Noch keine Notizen.</div>
+            </section>
+            <section class="portal-block">
+              <h3>Zertifikatsvorbereitung</h3>
+              <div id="portalReadinessWrap" class="portal-list">Noch keine Daten.</div>
+            </section>
+          </div>
         </div>
       </section>
 
