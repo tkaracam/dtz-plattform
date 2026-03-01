@@ -1527,21 +1527,21 @@
           </div>
         </div>
 
-        <details>
-          <summary>Aufgabenangaben (optional)</summary>
+        <div class="task-picker">
+          <label for="taskSelect">Aufgabe auswählen</label>
+          <select id="taskSelect"></select>
           <div class="grid" style="margin-top: 10px;">
             <div>
               <label for="taskPrompt">Aufgabenstellung</label>
-              <textarea id="taskPrompt" placeholder="z. B. Sie schreiben einen Brief an Ihren Nachbarn..."></textarea>
+              <textarea id="taskPrompt"></textarea>
             </div>
             <div>
               <label for="requiredPoints">Pflichtpunkte (eine Zeile pro Punkt)</label>
-              <textarea id="requiredPoints" placeholder="- Was ist das Problem?
-- Seit wann besteht es?
-- Welchen Lösungsvorschlag haben Sie?"></textarea>
+              <textarea id="requiredPoints"></textarea>
             </div>
           </div>
-        </details>
+          <p class="muted" style="margin-top: 8px;">Aufgaben sind eigenständig erstellt und am DTZ-Format orientiert.</p>
+        </div>
 
         <div class="row-end">
           <div class="btn-wrap">
@@ -2015,6 +2015,109 @@
       durationMinutes: 45,
       taskPrompt: ""
     };
+
+    const DTZ_TASKS = [
+      {
+        title: "Krankmeldung im Kurs",
+        prompt: "Sie schreiben Ihrer Kursleiterin eine E-Mail. Sie können morgen nicht zum Deutschkurs kommen, weil Sie einen Arzttermin haben. Schreiben Sie eine E-Mail.",
+        points: ["Entschuldigen Sie sich und nennen Sie den Grund.", "Nennen Sie den Termin (z. B. morgen) und was passiert.", "Bitten Sie um eine Information oder ein Ersatzmaterial."]
+      },
+      {
+        title: "Lauter Nachbar",
+        prompt: "Sie schreiben Ihrem Nachbarn. Er hört spät abends sehr laut Musik. Schreiben Sie eine Nachricht.",
+        points: ["Beschreiben Sie das Problem.", "Sagen Sie, wann es besonders stört.", "Bitten Sie um eine Lösung oder Änderung."]
+      },
+      {
+        title: "Termin verschieben (Behörde)",
+        prompt: "Sie haben einen Termin im Bürgerbüro, können aber nicht kommen. Schreiben Sie eine E-Mail und bitten Sie um einen neuen Termin.",
+        points: ["Nennen Sie den Grund.", "Schlagen Sie einen neuen Termin vor.", "Bitten Sie um Bestätigung."]
+      },
+      {
+        title: "Kursbescheinigung",
+        prompt: "Sie brauchen eine Teilnahmebescheinigung für Ihren Deutschkurs. Schreiben Sie an die Schule.",
+        points: ["Erklären Sie, wofür Sie die Bescheinigung brauchen.", "Nennen Sie Ihren Kurs.", "Bitten Sie um schnelle Bearbeitung."]
+      },
+      {
+        title: "Wohnung: Heizung defekt",
+        prompt: "In Ihrer Wohnung ist die Heizung kaputt. Schreiben Sie an die Hausverwaltung.",
+        points: ["Beschreiben Sie den Schaden.", "Nennen Sie, seit wann es das Problem gibt.", "Bitten Sie um Reparatur und Rückmeldung."]
+      },
+      {
+        title: "Arbeit: Schicht tauschen",
+        prompt: "Sie möchten Ihre Schicht am Freitag tauschen. Schreiben Sie Ihrer Teamleitung.",
+        points: ["Sagen Sie, warum Sie tauschen möchten.", "Schlagen Sie eine Alternative vor.", "Bitten Sie um eine kurze Antwort."]
+      },
+      {
+        title: "Kind krank (Schule)",
+        prompt: "Ihr Kind ist krank und kann morgen nicht in die Schule. Schreiben Sie eine kurze Nachricht an die Schule.",
+        points: ["Entschuldigen Sie das Fehlen.", "Nennen Sie den Zeitraum.", "Bitten Sie um Hausaufgaben oder Infos."]
+      },
+      {
+        title: "Bibliothek: Ausweis verlängern",
+        prompt: "Ihr Bibliotheksausweis läuft ab. Schreiben Sie an die Bibliothek.",
+        points: ["Nennen Sie Ihren Ausweis.", "Bitten Sie um Verlängerung.", "Fragen Sie nach den Öffnungszeiten."]
+      },
+      {
+        title: "Arzttermin absagen",
+        prompt: "Sie haben einen Arzttermin, können aber nicht kommen. Schreiben Sie an die Praxis.",
+        points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
+      },
+      {
+        title: "Kursmaterial fehlt",
+        prompt: "Sie haben das Kursmaterial verpasst. Schreiben Sie an die Lehrkraft.",
+        points: ["Sagen Sie, was fehlt.", "Nennen Sie den Grund.", "Bitten Sie um das Material."]
+      },
+      {
+        title: "Arbeit: Urlaub beantragen",
+        prompt: "Sie möchten im Juli eine Woche Urlaub. Schreiben Sie an Ihre Vorgesetzte.",
+        points: ["Nennen Sie den Zeitraum.", "Sagen Sie, warum Sie Urlaub brauchen.", "Bitten Sie um Bestätigung."]
+      },
+      {
+        title: "Nachhilfe anfragen",
+        prompt: "Sie suchen Nachhilfe in Deutsch. Schreiben Sie an eine Nachhilfeschule.",
+        points: ["Nennen Sie Ihr Niveau.", "Sagen Sie, wann Sie Zeit haben.", "Fragen Sie nach den Kosten."]
+      },
+      {
+        title: "Sportverein kündigen",
+        prompt: "Sie möchten aus dem Sportverein austreten. Schreiben Sie eine E-Mail.",
+        points: ["Nennen Sie Ihren Namen.", "Sagen Sie, ab wann Sie kündigen möchten.", "Bitten Sie um Bestätigung der Kündigung."]
+      },
+      {
+        title: "Wohnung besichtigen",
+        prompt: "Sie haben eine Wohnungsanzeige gesehen. Schreiben Sie an die Vermieterin und bitten Sie um einen Besichtigungstermin.",
+        points: ["Sagen Sie, welche Wohnung.", "Schlagen Sie Termine vor.", "Stellen Sie sich kurz vor."]
+      },
+      {
+        title: "Kita-Platz",
+        prompt: "Sie suchen einen Kita-Platz für Ihr Kind. Schreiben Sie an eine Kita.",
+        points: ["Nennen Sie das Alter des Kindes.", "Sagen Sie, ab wann Sie den Platz brauchen.", "Bitten Sie um Rückmeldung."]
+      },
+      {
+        title: "Reklamation: Lieferung",
+        prompt: "Sie haben eine Bestellung erhalten, aber ein Teil fehlt. Schreiben Sie an den Kundenservice.",
+        points: ["Beschreiben Sie das Problem.", "Nennen Sie die Bestellnummer.", "Bitten Sie um Nachlieferung."]
+      },
+      {
+        title: "Fehlende Arbeitsbescheinigung",
+        prompt: "Sie brauchen eine Arbeitsbescheinigung von Ihrer Firma. Schreiben Sie an die Personalabteilung.",
+        points: ["Erklären Sie, wofür Sie die Bescheinigung brauchen.", "Nennen Sie Ihren Namen/Abteilung.", "Bitten Sie um schnelle Rückmeldung."]
+      },
+      {
+        title: "Nachbarschaft: Paket",
+        prompt: "Ihr Paket wurde beim Nachbarn abgegeben. Schreiben Sie eine kurze Nachricht.",
+        points: ["Sagen Sie, dass Ihr Paket dort ist.", "Bitten Sie um Abholung.", "Schlagen Sie eine Uhrzeit vor."]
+      },
+      {
+        title: "Jobcenter: Termin",
+        prompt: "Sie können einen Termin beim Jobcenter nicht wahrnehmen. Schreiben Sie eine E-Mail.",
+        points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
+      },
+      {
+        title: "Kurswechsel",
+        prompt: "Sie möchten von einem Abendkurs in einen Vormittagskurs wechseln. Schreiben Sie an die Schule.",
+        points: ["Nennen Sie Ihren aktuellen Kurs.", "Sagen Sie, warum Sie wechseln möchten.", "Bitten Sie um einen Wechseltermin."]
+      }
+    ];
 
     const LID_GENERAL_POOL = [
       { q: "Wozu dient das Grundgesetz?", options: ["Es regelt die wichtigsten Rechte und die staatliche Ordnung.", "Es ist nur ein Gesetz für Schulen.", "Es gilt nur in Bayern.", "Es regelt nur den Straßenverkehr."], correct: 0 },
@@ -4780,6 +4883,30 @@
       applyArchiveFilters();
     }
 
+    function formatTaskPoints(points) {
+      return points.map(point => `- ${point}`).join("\n");
+    }
+
+    function applySelectedTask(index) {
+      const task = DTZ_TASKS[index];
+      if (!task) return;
+      const prompt = document.getElementById("taskPrompt");
+      const points = document.getElementById("requiredPoints");
+      if (prompt) prompt.value = task.prompt;
+      if (points) points.value = formatTaskPoints(task.points);
+    }
+
+    function initTaskSelect() {
+      const select = document.getElementById("taskSelect");
+      if (!select) return;
+      select.innerHTML = DTZ_TASKS.map((task, idx) => `<option value="${idx}">${task.title}</option>`).join("");
+      select.addEventListener("change", () => {
+        const idx = Number(select.value || 0);
+        applySelectedTask(Number.isFinite(idx) ? idx : 0);
+      });
+      applySelectedTask(0);
+    }
+
     async function analyze() {
       clearStatus();
       const button = document.getElementById("analyzeBtn");
@@ -4876,6 +5003,7 @@
     document.getElementById("navAdminBtn").addEventListener("click", () => {
       window.location.href = "./admin.html";
     });
+    initTaskSelect();
     ["archiveFrom", "archiveTo", "archiveTopic"].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener("input", applyArchiveFilters);
