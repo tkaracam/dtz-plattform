@@ -894,10 +894,24 @@
       cursor: pointer;
       font-weight: 700;
       list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .task-status-panel summary::-webkit-details-marker {
       display: none;
+    }
+
+    .task-status-panel summary::after {
+      content: "▾";
+      font-size: 1rem;
+      color: #51657e;
+      transition: transform 0.2s ease;
+    }
+
+    .task-status-panel[open] summary::after {
+      transform: rotate(180deg);
     }
 
     .task-status-row {
