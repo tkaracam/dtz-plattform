@@ -283,6 +283,16 @@
       box-shadow: 0 10px 24px rgba(31, 89, 163, 0.16);
     }
 
+    .danger-btn {
+      background: #ffe7e4;
+      color: #a11b12;
+      border: 1px solid #f2b7b2;
+    }
+
+    .danger-btn:hover {
+      box-shadow: 0 10px 24px rgba(205, 98, 87, 0.2);
+    }
+
     .card {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -1664,6 +1674,7 @@
               <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
               <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
               <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+              <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
             </div>
             <div class="user-actions-mobile">
               <details>
@@ -1672,6 +1683,7 @@
                   <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
                   <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
                   <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+                  <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
                 </div>
               </details>
             </div>
@@ -1694,6 +1706,10 @@
       wrap.querySelectorAll("button[data-action='edit-contact']").forEach(btn => {
         const username = btn.getAttribute("data-username") || "";
         btn.addEventListener("click", () => updateStudentContactPrompt(username));
+      });
+      wrap.querySelectorAll("button[data-action='delete-user']").forEach(btn => {
+        const username = btn.getAttribute("data-username") || "";
+        btn.addEventListener("click", () => deleteStudent(username));
       });
     }
 
@@ -2399,6 +2415,29 @@
         listStudents();
       } catch (err) {
         setBox("userStatus", "error", `Kontaktaktualisierung fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function deleteStudent(username) {
+      clearBox("userStatus");
+      if (!username) return;
+      const confirmed = window.confirm(`Benutzer ${username} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`);
+      if (!confirmed) return;
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "delete",
+            username
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("userStatus", "ok", `Benutzer gelöscht: ${username}`);
+        listStudents();
+      } catch (err) {
+        setBox("userStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
       }
     }
 

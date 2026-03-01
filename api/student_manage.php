@@ -71,6 +71,27 @@ if ($action === 'reset_password') {
     $users[$foundIndex]['email'] = $email;
     $users[$foundIndex]['phone'] = $phone;
     $users[$foundIndex]['updated_at'] = gmdate('c');
+} elseif ($action === 'delete') {
+    $deletedUser = $users[$foundIndex];
+    array_splice($users, $foundIndex, 1);
+    if (!write_student_users($users)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Aenderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    append_audit_log('student_manage', [
+        'username' => $username,
+        'action' => $action,
+    ]);
+    echo json_encode([
+        'ok' => true,
+        'username' => $username,
+        'action' => $action,
+        'active' => false,
+        'email' => (string)($deletedUser['email'] ?? ''),
+        'phone' => (string)($deletedUser['phone'] ?? ''),
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 } else {
     http_response_code(400);
     echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
