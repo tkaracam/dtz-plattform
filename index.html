@@ -880,6 +880,80 @@
       color: #52667f;
     }
 
+    .task-status-panel {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f7f9ff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .task-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+    }
+
+    .task-chip {
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      background: #eef5ff;
+      color: #234267;
+      border: 1px solid #c6d7ef;
+    }
+
+    .task-chip.done {
+      background: #e8f7f1;
+      color: #0d6655;
+      border-color: #b6e4d8;
+    }
+
+    .task-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .task-filter-row button.active {
+      background: #ffe3ea;
+      border-color: #f3b3c2;
+      color: #7a2b3d;
+    }
+
+    .task-status-list {
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .task-status-item {
+      text-align: left;
+      border-radius: 10px;
+      padding: 8px 10px;
+      border: 1px solid #d4e0f1;
+      background: #fff;
+      font-weight: 600;
+      color: #143554;
+      cursor: pointer;
+    }
+
+    .task-status-item.done {
+      background: #f0fbf7;
+      border-color: #c2eadc;
+      color: #0d6655;
+    }
+
+    .task-status-item.active {
+      box-shadow: 0 10px 24px rgba(31, 89, 163, 0.18);
+    }
+
     .corr-item {
       padding: 8px 10px;
       border: 1px dashed #d5e2f0;
@@ -1524,6 +1598,21 @@
             </div>
           </div>
           <p class="muted" style="margin-top: 8px;">Aufgaben sind eigenständig erstellt und am DTZ-Format orientiert.</p>
+          <div class="task-status-panel">
+            <div class="task-status-row">
+              <label>
+                <input id="taskDoneToggle" type="checkbox">
+                Aufgabe als erledigt markieren
+              </label>
+              <span id="taskDoneLabel" class="task-chip">Offen</span>
+            </div>
+            <div class="task-filter-row">
+              <button id="taskFilterAll" type="button" class="ghost-btn active">Alle</button>
+              <button id="taskFilterOpen" type="button" class="ghost-btn">Offen</button>
+              <button id="taskFilterDone" type="button" class="ghost-btn">Erledigt</button>
+            </div>
+            <div id="taskStatusList" class="task-status-list"></div>
+          </div>
         </div>
 
         <div class="letter-panel">
@@ -2008,6 +2097,9 @@
     let currentStudentLabel = "";
     let currentStudentUsername = "";
     let letterArchive = [];
+    let taskStatus = {};
+    let currentTaskIndex = 0;
+    let taskFilter = "all";
     let simulationTimerId = null;
     let roomPollTimerId = null;
     let currentRoom = null;
@@ -3284,6 +3376,10 @@
       currentStudentLabel = identityText || "Angemeldet";
       loadBskHistory();
       loadStudentPortal();
+      taskStatus = loadTaskStatus();
+      updateTaskSelectOptions();
+      updateTaskDoneToggle(currentTaskIndex);
+      renderTaskStatusList();
     }
 
     function openCorrectionView() {
@@ -3352,6 +3448,11 @@
         clearInterval(simulationTimerId);
         simulationTimerId = null;
       }
+      currentStudentUsername = "";
+      taskStatus = loadTaskStatus();
+      updateTaskSelectOptions();
+      updateTaskDoneToggle(currentTaskIndex);
+      renderTaskStatusList();
     }
 
     function closeNavOnMobile() {
@@ -4961,22 +5062,135 @@
       return points.map(point => `- ${point}`).join("\n");
     }
 
-    function applySelectedTask(index) {
+    function taskStatusKey() {
+      return `dtz_task_status_${currentStudentUsername || "guest"}`;
+    }
+
+    function loadTaskStatus() {
+      try {
+        const raw = localStorage.getItem(taskStatusKey());
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function saveTaskStatus() {
+      try {
+        localStorage.setItem(taskStatusKey(), JSON.stringify(taskStatus));
+      } catch (_) {
+        // ignore storage errors (private mode)
+      }
+    }
+
+    function isTaskDone(task) {
+      return !!taskStatus[task.title];
+    }
+
+    function setTaskDone(index, done) {
       const task = DTZ_TASKS[index];
+      if (!task) return;
+      taskStatus[task.title] = !!done;
+      saveTaskStatus();
+      updateTaskSelectOptions();
+      renderTaskStatusList();
+      updateTaskDoneToggle(index);
+    }
+
+    function updateTaskDoneToggle(index) {
+      const toggle = document.getElementById("taskDoneToggle");
+      const label = document.getElementById("taskDoneLabel");
+      const task = DTZ_TASKS[index];
+      if (!toggle || !label || !task) return;
+      const done = isTaskDone(task);
+      toggle.checked = done;
+      label.textContent = done ? "Erledigt" : "Offen";
+      label.className = `task-chip ${done ? "done" : ""}`.trim();
+    }
+
+    function updateTaskSelectOptions() {
+      const select = document.getElementById("taskSelect");
+      if (!select) return;
+      const current = String(currentTaskIndex || 0);
+      select.innerHTML = DTZ_TASKS.map((task, idx) => {
+        const prefix = isTaskDone(task) ? "✓ " : "";
+        return `<option value="${idx}">${prefix}${task.title}</option>`;
+      }).join("");
+      select.value = current;
+    }
+
+    function renderTaskStatusList() {
+      const wrap = document.getElementById("taskStatusList");
+      if (!wrap) return;
+      const rows = DTZ_TASKS.map((task, idx) => ({ task, idx, done: isTaskDone(task) }))
+        .filter(item => {
+          if (taskFilter === "done") return item.done;
+          if (taskFilter === "open") return !item.done;
+          return true;
+        });
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="archive-empty">Keine Aufgaben im Filter.</div>`;
+        return;
+      }
+      wrap.innerHTML = rows.map(item => `
+        <button type="button" class="task-status-item ${item.done ? "done" : ""} ${item.idx === currentTaskIndex ? "active" : ""}" data-index="${item.idx}">
+          ${escapeHtml(item.task.title)}
+        </button>
+      `).join("");
+      wrap.querySelectorAll("button[data-index]").forEach(btn => {
+        const idx = Number(btn.getAttribute("data-index"));
+        btn.addEventListener("click", () => {
+          const select = document.getElementById("taskSelect");
+          if (select) {
+            select.value = String(idx);
+          }
+          applySelectedTask(idx);
+        });
+      });
+    }
+
+    function applySelectedTask(index) {
+      currentTaskIndex = Number.isFinite(index) ? index : 0;
+      const task = DTZ_TASKS[currentTaskIndex];
       if (!task) return;
       const prompt = document.getElementById("taskPrompt");
       const points = document.getElementById("requiredPoints");
       if (prompt) prompt.value = task.prompt;
       if (points) points.value = formatTaskPoints(task.points);
+      updateTaskDoneToggle(currentTaskIndex);
+      renderTaskStatusList();
     }
 
     function initTaskSelect() {
       const select = document.getElementById("taskSelect");
       if (!select) return;
-      select.innerHTML = DTZ_TASKS.map((task, idx) => `<option value="${idx}">${task.title}</option>`).join("");
+      taskStatus = loadTaskStatus();
+      updateTaskSelectOptions();
       select.addEventListener("change", () => {
         const idx = Number(select.value || 0);
         applySelectedTask(Number.isFinite(idx) ? idx : 0);
+      });
+      const toggle = document.getElementById("taskDoneToggle");
+      if (toggle) {
+        toggle.addEventListener("change", () => setTaskDone(currentTaskIndex, toggle.checked));
+      }
+      const filterButtons = [
+        { id: "taskFilterAll", value: "all" },
+        { id: "taskFilterOpen", value: "open" },
+        { id: "taskFilterDone", value: "done" }
+      ];
+      filterButtons.forEach(btn => {
+        const el = document.getElementById(btn.id);
+        if (!el) return;
+        el.addEventListener("click", () => {
+          taskFilter = btn.value;
+          filterButtons.forEach(other => {
+            const otherEl = document.getElementById(other.id);
+            if (otherEl) otherEl.classList.toggle("active", other.value === taskFilter);
+          });
+          renderTaskStatusList();
+        });
       });
       applySelectedTask(0);
     }
