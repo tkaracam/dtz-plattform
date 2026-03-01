@@ -3046,6 +3046,15 @@
 
     function showCards(cardIds) {
       hideMainCards();
+      if (cardIds.length > 1) {
+        const shell = document.querySelector(".shell");
+        if (shell) {
+          cardIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) shell.appendChild(el);
+          });
+        }
+      }
       cardIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove("hidden");
@@ -3123,7 +3132,7 @@
     }
 
     function openB1View() {
-      showCards(["workCard", "speakingCard"]);
+      showCards(["speakingCard", "workCard"]);
       generateSpeakingSet();
       setSpeakingTab(1);
     }
