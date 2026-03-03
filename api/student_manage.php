@@ -77,6 +77,39 @@ if ($action === 'reset_password') {
     $users[$foundIndex]['email'] = $email;
     $users[$foundIndex]['phone'] = $phone;
     $users[$foundIndex]['updated_at'] = gmdate('c');
+} elseif ($action === 'assign_teacher') {
+    require_owner_admin_json();
+    $teacherUsername = mb_strtolower(trim((string)($body['teacher_username'] ?? '')));
+    if (!preg_match('/^[a-z0-9._-]{3,32}$/', $teacherUsername)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültiger Docent-Benutzername.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $teachers = load_teacher_users();
+    $teacherFound = null;
+    foreach ($teachers as $teacher) {
+        if (!is_array($teacher)) {
+            continue;
+        }
+        if (mb_strtolower(trim((string)($teacher['username'] ?? ''))) !== $teacherUsername) {
+            continue;
+        }
+        $teacherFound = $teacher;
+        break;
+    }
+    if (!is_array($teacherFound)) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Docent nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (empty($teacherFound['active'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Docent ist deaktiviert.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $users[$foundIndex]['teacher_username'] = $teacherUsername;
+    $users[$foundIndex]['bamf_code'] = normalize_bamf_code((string)($teacherFound['bamf_code'] ?? ''));
+    $users[$foundIndex]['updated_at'] = gmdate('c');
 } elseif ($action === 'delete') {
     $deletedUser = $users[$foundIndex];
     array_splice($users, $foundIndex, 1);
@@ -110,10 +143,14 @@ if (!write_student_users($users)) {
     exit;
 }
 
-append_audit_log('student_manage', [
+$auditPayload = [
     'username' => $username,
     'action' => $action,
-]);
+];
+if ($action === 'assign_teacher') {
+    $auditPayload['teacher_username'] = (string)($users[$foundIndex]['teacher_username'] ?? '');
+}
+append_audit_log('student_manage', $auditPayload);
 
 echo json_encode([
     'ok' => true,
@@ -122,4 +159,6 @@ echo json_encode([
     'active' => (bool)($users[$foundIndex]['active'] ?? false),
     'email' => (string)($users[$foundIndex]['email'] ?? ''),
     'phone' => (string)($users[$foundIndex]['phone'] ?? ''),
+    'teacher_username' => (string)($users[$foundIndex]['teacher_username'] ?? ''),
+    'bamf_code' => (string)($users[$foundIndex]['bamf_code'] ?? ''),
 ], JSON_UNESCAPED_UNICODE);

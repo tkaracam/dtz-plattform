@@ -526,48 +526,35 @@
     }
 
     #userListWrap td .actions {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 6px;
       margin-top: 0;
     }
 
-    #userListWrap td .actions button {
+    #userListWrap td .student-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      max-width: 360px;
+    }
+
+    #userListWrap td .student-actions-grid button {
       width: 100%;
       min-width: 0;
       white-space: nowrap;
+      font-size: 0.8rem;
+      line-height: 1.1;
+      padding: 7px 8px;
+      box-shadow: none;
+    }
+
+    #userListWrap td .student-actions-grid .action-spacer {
+      display: block;
+      min-height: 32px;
+      border-radius: var(--radius-sm);
+      visibility: hidden;
     }
 
     .user-actions-mobile {
-      display: none;
-    }
-
-    .user-actions-mobile details {
-      border: 1px solid #c8d9eb;
-      border-radius: 10px;
-      background: #f8fbff;
-      padding: 2px;
-    }
-
-    .user-actions-mobile summary {
-      list-style: none;
-      cursor: pointer;
-      font-weight: 700;
-      color: #183f63;
-      padding: 8px 10px;
-      user-select: none;
-    }
-
-    .user-actions-mobile summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .user-actions-mobile .menu-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 0 6px 6px;
+      display: none !important;
     }
 
     .ok {
@@ -855,11 +842,11 @@
       }
 
       #userListWrap .user-actions-desktop {
-        display: none;
+        display: block;
       }
 
       #userListWrap .user-actions-mobile {
-        display: block;
+        display: none !important;
       }
     }
   </style>
@@ -2033,6 +2020,13 @@
       users.forEach(user => {
         const isActive = !!user.active;
         const username = String(user.username || "");
+        const canAssignDocent = isOwnerAdmin();
+        const assignDocentButtons = canAssignDocent
+          ? `
+              <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Docent zuweisen</button>
+              <span class="action-spacer" aria-hidden="true"></span>
+            `
+          : "";
         const rowId = `row-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
         const tr = document.createElement("tr");
         tr.id = rowId;
@@ -2046,22 +2040,12 @@
           <td>${isActive ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
           <td>
-            <div class="actions user-actions-desktop">
+            <div class="actions student-actions-grid user-actions-desktop">
               <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
               <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
               <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
               <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
-            </div>
-            <div class="user-actions-mobile">
-              <details>
-                <summary>Aktionen</summary>
-                <div class="menu-actions">
-                  <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
-                  <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
-                  <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
-                  <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
-                </div>
-              </details>
+              ${assignDocentButtons}
             </div>
           </td>
         `;
@@ -2086,6 +2070,10 @@
       wrap.querySelectorAll("button[data-action='delete-user']").forEach(btn => {
         const username = btn.getAttribute("data-username") || "";
         btn.addEventListener("click", () => deleteStudent(username));
+      });
+      wrap.querySelectorAll("button[data-action='assign-teacher']").forEach(btn => {
+        const username = btn.getAttribute("data-username") || "";
+        btn.addEventListener("click", () => assignDocentToStudentPrompt(username));
       });
     }
 
@@ -2791,6 +2779,78 @@
         listStudents();
       } catch (err) {
         setBox("userStatus", "error", `Kontaktaktualisierung fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function assignDocentToStudentPrompt(username) {
+      clearBox("userStatus");
+      if (!isOwnerAdmin()) {
+        setBox("userStatus", "error", "Nur Haupt-Admin kann Docent-Zuweisungen ändern.");
+        return;
+      }
+      if (!username) return;
+
+      if (!teacherUsers.length) {
+        await listTeachers();
+      }
+
+      const activeTeachers = teacherUsers
+        .filter(t => !!t && !!t.active && String(t.username || "").trim() !== "")
+        .map(t => ({
+          username: String(t.username || "").trim().toLowerCase(),
+          display_name: String(t.display_name || "").trim(),
+          bamf_code: String(t.bamf_code || "").trim().toLowerCase()
+        }));
+
+      if (!activeTeachers.length) {
+        setBox("userStatus", "error", "Keine aktiven Docent-Konten verfügbar.");
+        return;
+      }
+
+      const listText = activeTeachers
+        .map((t, idx) => `${idx + 1}) ${t.username}${t.display_name ? ` (${t.display_name})` : ""}${t.bamf_code ? ` [${t.bamf_code}]` : ""}`)
+        .join("\n");
+      const rawChoice = window.prompt(
+        `Docent für ${username} auswählen:\n${listText}\n\nNummer oder Benutzername eingeben:`,
+        activeTeachers[0].username
+      );
+      if (rawChoice === null) return;
+
+      const choice = String(rawChoice).trim().toLowerCase();
+      if (!choice) {
+        setBox("userStatus", "error", "Bitte Docent auswählen.");
+        return;
+      }
+
+      let selected = activeTeachers.find(t => t.username === choice) || null;
+      if (!selected && /^\d+$/.test(choice)) {
+        const index = Number(choice) - 1;
+        if (index >= 0 && index < activeTeachers.length) {
+          selected = activeTeachers[index];
+        }
+      }
+
+      if (!selected) {
+        setBox("userStatus", "error", "Auswahl nicht gefunden. Bitte Nummer oder Benutzername aus der Liste eingeben.");
+        return;
+      }
+
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "assign_teacher",
+            username,
+            teacher_username: selected.username
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("userStatus", "ok", `${username} wurde ${selected.username} zugewiesen.`);
+        listStudents();
+      } catch (err) {
+        setBox("userStatus", "error", `Docent-Zuweisung fehlgeschlagen: ${err.message}`);
       }
     }
 
