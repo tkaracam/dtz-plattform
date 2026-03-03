@@ -3016,6 +3016,20 @@
       return `${h}h ${m}m`;
     }
 
+    function formatWritingDuration(seconds, label) {
+      const fallback = String(label || "").trim();
+      if (fallback && fallback !== "-") return fallback;
+      const safe = Math.max(0, Number(seconds || 0));
+      if (!safe) return "-";
+      if (safe < 60) return `${safe} Sek`;
+      const mins = Math.floor(safe / 60);
+      const sec = safe % 60;
+      if (mins < 60) return sec > 0 ? `${mins} Min ${sec} Sek` : `${mins} Min`;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    }
+
     function setPendingLiveStatus(type, message) {
       const box = document.getElementById("pendingLiveStatus");
       if (!box) return;
@@ -3115,6 +3129,7 @@
             <th>ID</th>
             <th>Schüler</th>
             <th>Username</th>
+            <th>Schreibzeit</th>
             <th>Status</th>
             <th>Punkte</th>
             <th>Aufgabe</th>
@@ -3127,6 +3142,7 @@
       records.forEach(row => {
         const task = String(row.task_prompt || "").trim();
         const letter = String(row.letter_text || "").trim();
+        const writeDuration = formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label);
         const status = String(row.review_status || "pending");
         const canApprove = status === "pending";
         const tr = document.createElement("tr");
@@ -3135,13 +3151,14 @@
           <td class="mono">${escapeHtml(row.upload_id || "")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td class="mono">${escapeHtml(writeDuration)}</td>
           <td>${escapeHtml(status)}</td>
           <td>${row.score_total == null ? "-" : escapeHtml(String(row.score_total) + "/20")}</td>
           <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
           <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
           <td>
             ${canApprove
-              ? `<div class="actions"><button type="button" data-letter-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Korrektur ansehen</button><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
+              ? `<div class="actions"><button type="button" data-letter-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
               : '<span class="muted">Abgeschlossen</span>'}
           </td>
         `;
@@ -3187,15 +3204,17 @@
         <tr class="${slaLevel === "critical" ? "sla-critical" : (slaLevel === "warn" ? "sla-warn" : "")}">
           <td><input type="checkbox" data-pending-pick="${escapeHtml(row.upload_id || "")}"></td>
           <td class="mono">${escapeHtml(row.created_at || "")}</td>
-          <td class="mono">${escapeHtml(row.upload_id || "")}</td>
-          <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td>${escapeHtml(row.student_name || "-")}</td>
+          <td class="mono">${escapeHtml(formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label))}</td>
+          <td>${escapeHtml(String(row.letter_text || "").trim().slice(0, 180) || "-")}${String(row.letter_text || "").trim().length > 180 ? "..." : ""}</td>
+          <td class="mono">${escapeHtml(row.upload_id || "")}</td>
           <td><span class="sla-chip ${slaLevel === "critical" ? "critical" : (slaLevel === "warn" ? "warn" : "")}">${slaLevel === "critical" ? "Kritisch" : (slaLevel === "warn" ? "Warnung" : "OK")}</span></td>
           <td class="mono">${escapeHtml(formatPendingAge(ageMinutes))}</td>
           <td>
             <div class="actions">
-              <button type="button" data-pending-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Korrektur ansehen</button>
-              <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button>
+              <button type="button" data-pending-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button>
+              <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button>
               <button type="button" data-pending-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button>
             </div>
           </td>
@@ -3203,7 +3222,7 @@
       `).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>ID</th><th>Schüler</th><th>Username</th><th>SLA</th><th>Wartet seit</th><th>Aktion</th></tr></thead>
+          <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>Username</th><th>Schüler</th><th>Schreibzeit</th><th>Mail</th><th>ID</th><th>SLA</th><th>Wartet seit</th><th>Aktion</th></tr></thead>
           <tbody>${rowsHtml}</tbody>
         </table>
       `;
@@ -3292,9 +3311,13 @@
         const niveauText = escapeHtml(String(result.niveau_einschaetzung || "-"));
         const info = document.getElementById("previewInfo");
         if (info) {
+          const createdAtText = escapeHtml(String(payload.created_at || "-"));
+          const writingText = escapeHtml(formatWritingDuration(payload.writing_duration_seconds, payload.writing_duration_label));
           info.innerHTML = `
             <strong>ID:</strong> <span class="mono">${escapeHtml(uploadId)}</span> |
             <strong>Schüler:</strong> ${escapeHtml(payload.student_name || "-")} (${escapeHtml(payload.student_username || "-")}) |
+            <strong>Eingereicht:</strong> ${createdAtText} |
+            <strong>Schreibzeit:</strong> ${writingText} |
             <strong>Punkte:</strong> ${scoreText} |
             <strong>Niveau:</strong> ${niveauText}
           `;

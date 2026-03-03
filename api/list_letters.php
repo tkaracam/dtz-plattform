@@ -21,6 +21,28 @@ require_once __DIR__ . '/auth.php';
 $admin = require_admin_session_json();
 require_once __DIR__ . '/letter_reviews.php';
 
+function format_writing_duration_label(int $seconds): string
+{
+    $safe = max(0, min(14400, $seconds));
+    if ($safe <= 0) {
+        return '-';
+    }
+    if ($safe < 60) {
+        return $safe . ' Sek';
+    }
+    $minutes = (int)floor($safe / 60);
+    $restSeconds = $safe % 60;
+    if ($minutes < 60) {
+        return $restSeconds > 0 ? ($minutes . ' Min ' . $restSeconds . ' Sek') : ($minutes . ' Min');
+    }
+    $hours = (int)floor($minutes / 60);
+    $restMinutes = $minutes % 60;
+    if ($restMinutes > 0) {
+        return $hours . 'h ' . $restMinutes . 'm';
+    }
+    return $hours . 'h';
+}
+
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
@@ -120,6 +142,8 @@ foreach ($files as $file) {
         $recordCode = normalize_bamf_code((string)($record['bamf_code'] ?? ''));
         $taskPrompt = (string)($record['task_prompt'] ?? '');
         $letterText = (string)($record['letter_text'] ?? '');
+        $writingDurationSeconds = (int)($record['writing_duration_seconds'] ?? 0);
+        $writingStartedAt = (string)($record['writing_started_at'] ?? '');
 
         if (($admin['role'] ?? '') === 'docent') {
             $allowed = !empty($allowedUsernames[$studentUsername]);
@@ -157,6 +181,9 @@ foreach ($files as $file) {
             'task_prompt' => $taskPrompt,
             'required_points' => is_array($record['required_points'] ?? null) ? $record['required_points'] : [],
             'letter_text' => $letterText,
+            'writing_duration_seconds' => $writingDurationSeconds,
+            'writing_started_at' => $writingStartedAt,
+            'writing_duration_label' => format_writing_duration_label($writingDurationSeconds),
             'review_status' => 'pending',
             'reviewed_at' => '',
             'review_decision' => '',

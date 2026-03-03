@@ -31,6 +31,8 @@ if (!is_array($body)) {
 $studentName = trim((string)($body['student_name'] ?? ''));
 $taskPrompt = trim((string)($body['task_prompt'] ?? ''));
 $letterText = trim((string)($body['letter_text'] ?? ''));
+$writingDurationSeconds = (int)($body['writing_duration_seconds'] ?? 0);
+$writingStartedAt = trim((string)($body['writing_started_at'] ?? ''));
 $requiredPoints = $body['required_points'] ?? [];
 
 if ($letterText === '') {
@@ -47,6 +49,11 @@ if (mb_strlen($letterText) > 12000) {
 
 if (!is_array($requiredPoints)) {
     $requiredPoints = [];
+}
+
+$writingDurationSeconds = max(0, min(14400, $writingDurationSeconds));
+if ($writingStartedAt !== '' && strtotime($writingStartedAt) === false) {
+    $writingStartedAt = '';
 }
 
 $requiredPoints = array_values(array_filter(array_map(
@@ -82,6 +89,8 @@ $record = [
     'task_prompt' => $taskPrompt,
     'required_points' => $requiredPoints,
     'letter_text' => $letterText,
+    'writing_duration_seconds' => $writingDurationSeconds,
+    'writing_started_at' => $writingStartedAt,
     'meta' => [
         'remote_addr' => (string)($_SERVER['REMOTE_ADDR'] ?? ''),
         'user_agent' => (string)($_SERVER['HTTP_USER_AGENT'] ?? ''),

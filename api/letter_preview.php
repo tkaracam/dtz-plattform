@@ -22,6 +22,28 @@ $admin = require_admin_session_json();
 require_once __DIR__ . '/letter_reviews.php';
 require_once __DIR__ . '/correction_engine.php';
 
+function format_writing_duration_label(int $seconds): string
+{
+    $safe = max(0, min(14400, $seconds));
+    if ($safe <= 0) {
+        return '-';
+    }
+    if ($safe < 60) {
+        return $safe . ' Sek';
+    }
+    $minutes = (int)floor($safe / 60);
+    $restSeconds = $safe % 60;
+    if ($minutes < 60) {
+        return $restSeconds > 0 ? ($minutes . ' Min ' . $restSeconds . ' Sek') : ($minutes . ' Min');
+    }
+    $hours = (int)floor($minutes / 60);
+    $restMinutes = $minutes % 60;
+    if ($restMinutes > 0) {
+        return $hours . 'h ' . $restMinutes . 'm';
+    }
+    return $hours . 'h';
+}
+
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
@@ -55,6 +77,8 @@ if (($admin['role'] ?? '') === 'docent' && !admin_can_access_student_username($l
 $letterText = trim((string)($letter['letter_text'] ?? ''));
 $taskPrompt = trim((string)($letter['task_prompt'] ?? ''));
 $requiredPoints = is_array($letter['required_points'] ?? null) ? $letter['required_points'] : [];
+$writingDurationSeconds = (int)($letter['writing_duration_seconds'] ?? 0);
+$writingStartedAt = (string)($letter['writing_started_at'] ?? '');
 
 if ($letterText === '') {
     http_response_code(400);
@@ -79,5 +103,8 @@ echo json_encode([
     'task_prompt' => $taskPrompt,
     'required_points' => $requiredPoints,
     'letter_text' => $letterText,
+    'writing_duration_seconds' => $writingDurationSeconds,
+    'writing_duration_label' => format_writing_duration_label($writingDurationSeconds),
+    'writing_started_at' => $writingStartedAt,
     'correction_result' => $correction,
 ], JSON_UNESCAPED_UNICODE);
