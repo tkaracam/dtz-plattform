@@ -4064,6 +4064,9 @@
 
     function renderPortalList(nodeId, rows, emptyText, renderer) {
       const wrap = document.getElementById(nodeId);
+      if (!wrap) {
+        return;
+      }
       if (!rows || !rows.length) {
         wrap.textContent = emptyText;
         return;
@@ -4109,20 +4112,23 @@
       const missingHtml = missing.length
         ? missing.map(item => `<span class="tag missing">${escapeHtml(item)}</span>`).join("")
         : '<span class="muted">Keine kritischen Lücken erkannt.</span>';
-      document.getElementById("portalReadinessWrap").innerHTML = `
-        <div class="portal-item">
-          <strong>DTZ-Bereitschaft: ${dtz}%</strong>
-          <div class="progress-bar"><div class="progress-value" style="width:${dtz}%;"></div></div>
-        </div>
-        <div class="portal-item">
-          <strong>DTB-Bereitschaft: ${dtb}%</strong>
-          <div class="progress-bar"><div class="progress-value" style="width:${dtb}%;"></div></div>
-        </div>
-        <div class="portal-item">
-          <strong>Fehlende Schwerpunkte</strong>
-          <div class="tags" style="margin-top:6px;">${missingHtml}</div>
-        </div>
-      `;
+      const readinessWrap = document.getElementById("portalReadinessWrap");
+      if (readinessWrap) {
+        readinessWrap.innerHTML = `
+          <div class="portal-item">
+            <strong>DTZ-Bereitschaft: ${dtz}%</strong>
+            <div class="progress-bar"><div class="progress-value" style="width:${dtz}%;"></div></div>
+          </div>
+          <div class="portal-item">
+            <strong>DTB-Bereitschaft: ${dtb}%</strong>
+            <div class="progress-bar"><div class="progress-value" style="width:${dtb}%;"></div></div>
+          </div>
+          <div class="portal-item">
+            <strong>Fehlende Schwerpunkte</strong>
+            <div class="tags" style="margin-top:6px;">${missingHtml}</div>
+          </div>
+        `;
+      }
 
       renderPortalCorrections(corrections);
     }
