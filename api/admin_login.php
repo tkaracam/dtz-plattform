@@ -38,6 +38,15 @@ if ($adminPassword === '') {
     exit;
 }
 
+$ownerUsername = getenv('ADMIN_PANEL_USERNAME') ?: '';
+if ($ownerUsername === '' && defined('ADMIN_PANEL_USERNAME') && ADMIN_PANEL_USERNAME !== '') {
+    $ownerUsername = (string)ADMIN_PANEL_USERNAME;
+}
+$ownerUsername = mb_strtolower(trim($ownerUsername));
+if ($ownerUsername === '') {
+    $ownerUsername = 'admin';
+}
+
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
@@ -46,19 +55,81 @@ if (!is_array($body)) {
     exit;
 }
 
+$username = mb_strtolower(trim((string)($body['username'] ?? '')));
 $password = trim((string)($body['password'] ?? ''));
-if ($password === '' || !hash_equals($adminPassword, $password)) {
+if ($password === '') {
     register_rate_limit_failure('admin-login');
     http_response_code(401);
-    echo json_encode(['error' => 'Falsches Passwort.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Passwort ist erforderlich.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($username === '') {
+    $username = $ownerUsername;
+}
+
+$loginRole = '';
+$loginDisplayName = '';
+$loginBamfCode = '';
+
+if (hash_equals($adminPassword, $password)) {
+    $loginRole = 'owner';
+    $username = $ownerUsername;
+    $loginDisplayName = 'Haupt-Admin';
+} else {
+    $teachers = load_teacher_users();
+    $foundTeacher = null;
+    foreach ($teachers as $teacher) {
+        if (!is_array($teacher)) {
+            continue;
+        }
+        $teacherUsername = mb_strtolower(trim((string)($teacher['username'] ?? '')));
+        if ($teacherUsername !== $username) {
+            continue;
+        }
+        if (empty($teacher['active'])) {
+            continue;
+        }
+        $hash = (string)($teacher['password_hash'] ?? '');
+        if ($hash === '' || !password_verify($password, $hash)) {
+            break;
+        }
+        $foundTeacher = $teacher;
+        break;
+    }
+    if (is_array($foundTeacher)) {
+        $loginRole = 'docent';
+        $loginDisplayName = trim((string)($foundTeacher['display_name'] ?? ''));
+        $loginBamfCode = normalize_bamf_code((string)($foundTeacher['bamf_code'] ?? ''));
+    }
+}
+
+if ($loginRole === '') {
+    register_rate_limit_failure('admin-login');
+    http_response_code(401);
+    echo json_encode(['error' => 'Ungueltige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 start_secure_session();
 $_SESSION['admin_authenticated'] = true;
+$_SESSION['admin_role'] = $loginRole;
+$_SESSION['admin_username'] = $username;
+$_SESSION['admin_display_name'] = $loginDisplayName;
+$_SESSION['admin_bamf_code'] = $loginBamfCode;
 $_SESSION['admin_login_at'] = gmdate('c');
 $_SESSION['last_activity_at'] = time();
 clear_rate_limit_failures('admin-login');
-append_audit_log('admin_login_success', []);
+append_audit_log('admin_login_success', [
+    'username' => $username,
+    'role' => $loginRole,
+    'bamf_code' => $loginBamfCode,
+]);
 
-echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+echo json_encode([
+    'ok' => true,
+    'role' => $loginRole,
+    'username' => $username,
+    'display_name' => $loginDisplayName,
+    'bamf_code' => $loginBamfCode,
+], JSON_UNESCAPED_UNICODE);

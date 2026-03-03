@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 require_once __DIR__ . '/letter_reviews.php';
 
 $raw = file_get_contents('php://input') ?: '';
@@ -63,6 +63,22 @@ if (!is_dir($storageDir)) {
 
 $reviewsByUpload = load_letter_reviews_index($storageDir);
 
+$allowedUsernames = [];
+if (($admin['role'] ?? '') === 'docent') {
+    foreach (load_student_users() as $student) {
+        if (!is_array($student)) {
+            continue;
+        }
+        if (!admin_can_access_student_record($student, $admin)) {
+            continue;
+        }
+        $uname = mb_strtolower(trim((string)($student['username'] ?? '')));
+        if ($uname !== '') {
+            $allowedUsernames[$uname] = true;
+        }
+    }
+}
+
 $files = glob($storageDir . '/letters-*.jsonl') ?: [];
 rsort($files, SORT_STRING);
 
@@ -99,8 +115,28 @@ foreach ($files as $file) {
         }
 
         $studentName = (string)($record['student_name'] ?? '');
+        $studentUsername = mb_strtolower(trim((string)($record['student_username'] ?? '')));
+        $recordTeacher = mb_strtolower(trim((string)($record['teacher_username'] ?? '')));
+        $recordCode = normalize_bamf_code((string)($record['bamf_code'] ?? ''));
         $taskPrompt = (string)($record['task_prompt'] ?? '');
         $letterText = (string)($record['letter_text'] ?? '');
+
+        if (($admin['role'] ?? '') === 'docent') {
+            $allowed = !empty($allowedUsernames[$studentUsername]);
+            if (!$allowed) {
+                $adminUsername = mb_strtolower(trim((string)($admin['username'] ?? '')));
+                $adminCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
+                if ($adminUsername !== '' && $recordTeacher !== '' && hash_equals($adminUsername, $recordTeacher)) {
+                    $allowed = true;
+                }
+                if ($adminCode !== '' && $recordCode !== '' && hash_equals($adminCode, $recordCode)) {
+                    $allowed = true;
+                }
+            }
+            if (!$allowed) {
+                continue;
+            }
+        }
 
         if ($studentQuery !== '' && !str_contains(mb_strtolower($studentName), $studentQuery)) {
             continue;

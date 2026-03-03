@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -44,12 +44,28 @@ if ($action === 'create') {
     } catch (Throwable $e) {
         $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 6);
     }
-    $id = 'kurs-' . $suffix;
+    $docentCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
+    if (($admin['role'] ?? '') === 'docent') {
+        if ($docentCode === '') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Ihr Lehrerzugang hat keinen gueltigen BAMF-Code.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if (!str_starts_with(mb_strtolower($name), $docentCode)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Kursname muss mit Ihrem BAMF-Code beginnen.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+    $idPrefix = ($admin['role'] ?? '') === 'docent' ? $docentCode : 'kurs';
+    $id = $idPrefix . '-' . $suffix;
     $courses[] = [
         'course_id' => $id,
         'name' => $name,
         'level' => $level,
         'schedule' => $schedule,
+        'teacher_username' => (string)($admin['username'] ?? ''),
+        'bamf_code' => $docentCode,
         'active' => true,
         'members' => [],
         'created_at' => gmdate('c'),
@@ -67,10 +83,20 @@ if ($action === 'create') {
         static fn($v) => mb_strtolower(trim((string)$v)),
         $members
     ), static fn($v) => (bool)preg_match('/^[a-z0-9._-]{3,32}$/', $v))));
+    if (($admin['role'] ?? '') === 'docent') {
+        $members = array_values(array_filter($members, function ($u) use ($admin): bool {
+            return admin_can_access_student_username((string)$u, $admin);
+        }));
+    }
     $found = false;
     foreach ($courses as &$c) {
         if (!is_array($c)) continue;
         if ((string)($c['course_id'] ?? '') !== $courseId) continue;
+        if (!admin_can_access_course_record($c, $admin)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Keine Berechtigung fuer diesen Kurs.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
         $c['members'] = $members;
         $c['updated_at'] = gmdate('c');
         $found = true;
@@ -89,6 +115,11 @@ if ($action === 'create') {
     foreach ($courses as &$c) {
         if (!is_array($c)) continue;
         if ((string)($c['course_id'] ?? '') !== $courseId) continue;
+        if (!admin_can_access_course_record($c, $admin)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Keine Berechtigung fuer diesen Kurs.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
         $c['active'] = $active;
         $c['updated_at'] = gmdate('c');
         $found = true;

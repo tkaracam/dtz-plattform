@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 require_once __DIR__ . '/letter_reviews.php';
 require_once __DIR__ . '/correction_engine.php';
 
@@ -44,7 +44,7 @@ function write_json_array_file(string $file, array $rows): bool
     return @file_put_contents($file, $json . PHP_EOL, LOCK_EX) !== false;
 }
 
-function append_teacher_note(string $storageDir, string $studentUsername, string $noteText): void
+function append_teacher_note(string $storageDir, string $studentUsername, string $noteText, string $teacherName = 'Lehrkraft'): void
 {
     $file = $storageDir . '/teacher_notes.json';
     $rows = read_json_array_file($file);
@@ -58,7 +58,7 @@ function append_teacher_note(string $storageDir, string $studentUsername, string
         'student_username' => $studentUsername,
         'created_at' => gmdate('c'),
         'note' => $noteText,
-        'teacher' => 'Lehrkraft',
+        'teacher' => $teacherName !== '' ? $teacherName : 'Lehrkraft',
     ];
     @write_json_array_file($file, $rows);
 }
@@ -95,6 +95,13 @@ if (!is_array($letter)) {
     exit;
 }
 
+$letterStudent = mb_strtolower(trim((string)($letter['student_username'] ?? '')));
+if (($admin['role'] ?? '') === 'docent' && !admin_can_access_student_username($letterStudent, $admin)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Keine Berechtigung fuer diesen Briefeintrag.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 $reviews = load_letter_reviews_index($storageDir);
 $existing = is_array($reviews[$uploadId] ?? null) ? $reviews[$uploadId] : null;
 if ($existing && strtolower((string)($existing['decision'] ?? '')) === 'approve' && $decision === 'approve') {
@@ -114,7 +121,7 @@ $reviewRecord = [
     'decision' => $decision,
     'note' => $note,
     'reviewed_at' => $now,
-    'reviewed_by' => 'admin',
+    'reviewed_by' => (string)($admin['username'] ?? 'admin'),
     'correction_result' => null,
 ];
 
@@ -144,6 +151,10 @@ if (!append_letter_review($storageDir, $reviewRecord)) {
 }
 
 $studentUsername = (string)($letter['student_username'] ?? '');
+$teacherName = trim((string)($admin['display_name'] ?? ''));
+if ($teacherName === '') {
+    $teacherName = trim((string)($admin['username'] ?? 'Lehrkraft'));
+}
 if ($studentUsername !== '') {
     if ($decision === 'approve') {
         $score = (int)($reviewRecord['correction_result']['score_total'] ?? 0);
@@ -152,13 +163,13 @@ if ($studentUsername !== '') {
         if ($note !== '') {
             $msg .= " Notiz: " . $note;
         }
-        append_teacher_note($storageDir, $studentUsername, $msg);
+        append_teacher_note($storageDir, $studentUsername, $msg, $teacherName);
     } else {
         $msg = "Ihr Brief wurde abgelehnt. Bitte überarbeiten und erneut senden.";
         if ($note !== '') {
             $msg .= " Hinweis: " . $note;
         }
-        append_teacher_note($storageDir, $studentUsername, $msg);
+        append_teacher_note($storageDir, $studentUsername, $msg, $teacherName);
     }
 }
 

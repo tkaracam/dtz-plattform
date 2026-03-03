@@ -17,6 +17,7 @@ Die App nutzt Umgebungsvariablen:
 
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL` (Default: `gpt-4.1-mini`)
+- `ADMIN_PANEL_USERNAME` (Default: `admin`)
 - `ADMIN_PANEL_PASSWORD`
 
 Optional lokal:
@@ -53,8 +54,15 @@ Dieses Repo enthält bereits:
 3. Render liest `render.yaml` automatisch.
 4. In Render Service Settings die Secrets setzen:
    - `OPENAI_API_KEY`
+   - `ADMIN_PANEL_USERNAME`
    - `ADMIN_PANEL_PASSWORD`
 5. Deploy starten.
+
+## Rollen im Lehrerbereich
+
+- **Haupt-Admin (owner):** Login mit `ADMIN_PANEL_USERNAME` + `ADMIN_PANEL_PASSWORD`, volle Rechte.
+- **Docent:** Wird im Bereich **Lehrkräfte** angelegt (inkl. `bamf###`-Code) und bekommt einen eigenen Lehrerzugang.
+- Docent-Zugriffe werden auf eigene BAMF-Kurse/Benutzer eingeschraenkt.
 
 ### Persistent Storage
 

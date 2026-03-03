@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -60,6 +60,22 @@ if (!is_dir($storageDir)) {
     exit;
 }
 
+$allowedUsernames = [];
+if (($admin['role'] ?? '') === 'docent') {
+    foreach (load_student_users() as $student) {
+        if (!is_array($student)) {
+            continue;
+        }
+        if (!admin_can_access_student_record($student, $admin)) {
+            continue;
+        }
+        $uname = mb_strtolower(trim((string)($student['username'] ?? '')));
+        if ($uname !== '') {
+            $allowedUsernames[$uname] = true;
+        }
+    }
+}
+
 $files = glob($storageDir . '/bsk-*.jsonl') ?: [];
 rsort($files, SORT_STRING);
 
@@ -96,7 +112,27 @@ foreach ($files as $file) {
 
         $studentName = (string)($record['student_name'] ?? '');
         $studentUsername = (string)($record['student_username'] ?? '');
+        $studentUsernameLower = mb_strtolower(trim($studentUsername));
+        $recordTeacher = mb_strtolower(trim((string)($record['teacher_username'] ?? '')));
+        $recordCode = normalize_bamf_code((string)($record['bamf_code'] ?? ''));
         $recommendation = (string)($record['recommendation'] ?? '');
+
+        if (($admin['role'] ?? '') === 'docent') {
+            $allowed = !empty($allowedUsernames[$studentUsernameLower]);
+            if (!$allowed) {
+                $adminUsername = mb_strtolower(trim((string)($admin['username'] ?? '')));
+                $adminCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
+                if ($adminUsername !== '' && $recordTeacher !== '' && hash_equals($adminUsername, $recordTeacher)) {
+                    $allowed = true;
+                }
+                if ($adminCode !== '' && $recordCode !== '' && hash_equals($adminCode, $recordCode)) {
+                    $allowed = true;
+                }
+            }
+            if (!$allowed) {
+                continue;
+            }
+        }
 
         if ($studentQuery !== '') {
             $studentHay = mb_strtolower($studentName . ' ' . $studentUsername);

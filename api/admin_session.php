@@ -23,6 +23,28 @@ if (!empty($_SESSION['admin_authenticated'])) {
     enforce_session_timeout_json();
 }
 
+$role = (string)($_SESSION['admin_role'] ?? '');
+if ($role !== 'owner' && $role !== 'docent') {
+    $role = '';
+}
+$username = mb_strtolower(trim((string)($_SESSION['admin_username'] ?? '')));
+$displayName = trim((string)($_SESSION['admin_display_name'] ?? ''));
+$bamfCode = normalize_bamf_code((string)($_SESSION['admin_bamf_code'] ?? ''));
+$authenticated = !empty($_SESSION['admin_authenticated']);
+if ($authenticated && $role === '') {
+    $role = 'owner';
+}
+if ($authenticated && $role === 'owner' && $username === '') {
+    $username = 'admin';
+}
+
 echo json_encode([
-    'authenticated' => !empty($_SESSION['admin_authenticated'])
+    'authenticated' => $authenticated,
+    'role' => $authenticated ? $role : '',
+    'username' => $authenticated ? $username : '',
+    'display_name' => $authenticated ? $displayName : '',
+    'bamf_code' => $authenticated ? $bamfCode : '',
+    'permissions' => [
+        'manage_teachers' => $authenticated && $role === 'owner',
+    ],
 ], JSON_UNESCAPED_UNICODE);

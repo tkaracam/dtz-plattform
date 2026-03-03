@@ -88,7 +88,7 @@
     .hero-brand img {
       display: block;
       width: auto;
-      height: 38px;
+      height: 27px;
     }
 
     .eyebrow {
@@ -218,6 +218,14 @@
       font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: 0.01em;
+      display: grid;
+      gap: 2px;
+    }
+
+    .admin-identity-line {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #c8deff;
     }
 
     .admin-topbar-right {
@@ -786,7 +794,7 @@
       }
 
       .hero-brand img {
-        height: 38px;
+        height: 27px;
       }
 
       .hero {
@@ -841,8 +849,8 @@
         min-width: 720px;
       }
 
-      #userListWrap th:nth-child(6),
-      #userListWrap td:nth-child(6) {
+      #userListWrap th:nth-child(8),
+      #userListWrap td:nth-child(8) {
         display: none;
       }
 
@@ -868,17 +876,21 @@
     </section>
 
     <nav class="admin-topbar">
-      <div class="admin-topbar-left">Bereich: <span id="activePaneLabel">Anmeldung</span></div>
+      <div class="admin-topbar-left">
+        <div>Bereich: <span id="activePaneLabel">Anmeldung</span></div>
+        <div id="adminIdentityLine" class="admin-identity-line">Nicht angemeldet</div>
+      </div>
       <div class="admin-topbar-right">
         <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger">Menü</button>
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
           <button id="goHomeBtn" class="admin-menu-item" type="button">Startseite</button>
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
+          <button id="jumpTeachersBtn" class="admin-menu-item owner-only hidden" type="button">Lehrkräfte</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
           <button id="jumpAttendanceBtn" class="admin-menu-item" type="button">Anwesenheit</button>
           <button id="jumpNotifyBtn" class="admin-menu-item" type="button">Benachrichtigungen</button>
           <button id="jumpRoomSectionBtn" class="admin-menu-item" type="button">Virtueller Saal</button>
-          <button id="jumpAuditBtn" class="admin-menu-item" type="button">Audit</button>
+          <button id="jumpAuditBtn" class="admin-menu-item owner-only hidden" type="button">Audit</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Archiv</button>
           <button id="openOpsChecklistBtn" class="admin-menu-item" type="button">Betrieb-Checkliste</button>
           <button id="openTeacherGuideBtn" class="admin-menu-item" type="button">Lehrkraft-Anleitung</button>
@@ -895,6 +907,10 @@
         <p class="section-subtitle">Nur für autorisierte Lehrkraft.</p>
         <div class="grid">
           <div>
+            <label for="adminUsername">Benutzername</label>
+            <input id="adminUsername" type="text" placeholder="z. B. admin oder docent01">
+          </div>
+          <div>
             <label for="adminPassword">Passwort</label>
             <input id="adminPassword" type="password" placeholder="Lehrer-Passwort">
           </div>
@@ -908,11 +924,12 @@
       <section id="panelCard" class="card hidden">
         <div class="admin-quick-nav">
           <button type="button" class="admin-quick-btn" data-pane="accounts">Schülerzugänge</button>
+          <button type="button" class="admin-quick-btn owner-only hidden" data-pane="teachers">Lehrkräfte</button>
           <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
           <button type="button" class="admin-quick-btn" data-pane="attendance">Anwesenheit</button>
           <button type="button" class="admin-quick-btn" data-pane="notify">Benachrichtigungen</button>
           <button type="button" class="admin-quick-btn" data-pane="room">Virtueller Saal</button>
-          <button type="button" class="admin-quick-btn" data-pane="audit">Audit</button>
+          <button type="button" class="admin-quick-btn owner-only hidden" data-pane="audit">Audit</button>
           <button type="button" class="admin-quick-btn" data-pane="archive">Archiv</button>
         </div>
 
@@ -1019,6 +1036,39 @@
               <div id="userListWrap" style="margin-top: 10px;"></div>
             </div>
           </details>
+        </div>
+
+        <div id="paneTeachers" class="admin-pane owner-only hidden">
+          <div class="bulk-wrap">
+            <h2 class="section-title" style="font-size: 1.35rem;">Lehrkräfte verwalten</h2>
+            <p class="section-subtitle">Nur Haupt-Admin: Docent-Konten mit BAMF-Code verwalten.</p>
+            <div class="grid">
+              <div>
+                <label for="newTeacherUsername">Benutzername</label>
+                <input id="newTeacherUsername" type="text" placeholder="z. B. docent01">
+              </div>
+              <div>
+                <label for="newTeacherDisplayName">Anzeigename</label>
+                <input id="newTeacherDisplayName" type="text" placeholder="z. B. Frau Yilmaz">
+              </div>
+            </div>
+            <div class="grid">
+              <div>
+                <label for="newTeacherBamfCode">BAMF-Code</label>
+                <input id="newTeacherBamfCode" type="text" placeholder="z. B. bamf233">
+              </div>
+              <div>
+                <label for="newTeacherPassword">Passwort</label>
+                <input id="newTeacherPassword" type="text" placeholder="Einfaches Passwort">
+              </div>
+            </div>
+            <div class="actions">
+              <button id="createTeacherBtn" type="button">Lehrkraft erstellen</button>
+              <button id="refreshTeachersBtn" class="ghost-btn" type="button">Lehrkräfte aktualisieren</button>
+            </div>
+            <div id="teacherStatus" class="hidden"></div>
+            <div id="teacherListWrap" style="margin-top: 10px;"></div>
+          </div>
         </div>
 
         <div id="paneCourses" class="admin-pane">
@@ -1218,7 +1268,7 @@
         </div>
         </div>
 
-        <div id="paneAudit" class="admin-pane">
+        <div id="paneAudit" class="admin-pane owner-only hidden">
         <div id="auditSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Audit Log</h2>
           <p class="section-subtitle">Wer hat wann welche Aktion ausgeführt (IP + Meta).</p>
@@ -1329,6 +1379,7 @@
   <script>
     let teacherRecords = [];
     let teacherBskRecords = [];
+    let teacherUsers = [];
     let currentStudents = [];
     let currentCourses = [];
     let currentAttendanceSessionId = "";
@@ -1347,10 +1398,18 @@
     let pendingLastCritical = 0;
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "accounts";
+    let adminContext = {
+      role: "",
+      username: "",
+      display_name: "",
+      bamf_code: "",
+      permissions: {}
+    };
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
 
     const adminPaneMap = {
       accounts: "paneAccounts",
+      teachers: "paneTeachers",
       courses: "paneCourses",
       attendance: "paneAttendance",
       notify: "paneNotify",
@@ -1361,6 +1420,7 @@
 
     const adminPaneLabels = {
       accounts: "Schülerzugänge",
+      teachers: "Lehrkräfte",
       courses: "Kurse",
       attendance: "Anwesenheit",
       notify: "Benachrichtigungen",
@@ -1475,8 +1535,36 @@
         .replace(/>/g, "&gt;");
     }
 
+    function isOwnerAdmin() {
+      return String(adminContext.role || "") === "owner";
+    }
+
+    function applyAdminRoleUi() {
+      const owner = isOwnerAdmin();
+      document.querySelectorAll(".owner-only").forEach(node => {
+        node.classList.toggle("hidden", !owner);
+      });
+      if (!owner && (activeAdminPane === "teachers" || activeAdminPane === "audit")) {
+        activeAdminPane = "accounts";
+      }
+    }
+
+    function updateAdminIdentityLine() {
+      const node = document.getElementById("adminIdentityLine");
+      if (!node) return;
+      if (!adminContext.role) {
+        node.textContent = "Nicht angemeldet";
+        return;
+      }
+      const roleLabel = isOwnerAdmin() ? "Haupt-Admin" : "Docent";
+      const name = String(adminContext.display_name || adminContext.username || "-");
+      const bamf = String(adminContext.bamf_code || "").trim();
+      node.textContent = bamf ? `${roleLabel}: ${name} (${bamf})` : `${roleLabel}: ${name}`;
+    }
+
     function setAdminPane(paneName) {
       if (!adminPaneMap[paneName]) return;
+      if ((paneName === "teachers" || paneName === "audit") && !isOwnerAdmin()) return;
       activeAdminPane = paneName;
       Object.values(adminPaneMap).forEach(id => {
         const node = document.getElementById(id);
@@ -1534,7 +1622,7 @@
         const response = await fetch("./api/admin_session.php", { method: "GET" });
         const payload = await parseJsonResponse(response);
         if (response.ok && payload.authenticated) {
-          showPanel();
+          showPanel(payload);
         } else {
           showLogin();
         }
@@ -1543,7 +1631,28 @@
       }
     }
 
-    function showPanel() {
+    function showPanel(sessionPayload = null) {
+      if (sessionPayload && typeof sessionPayload === "object") {
+        adminContext = {
+          role: String(sessionPayload.role || ""),
+          username: String(sessionPayload.username || ""),
+          display_name: String(sessionPayload.display_name || ""),
+          bamf_code: String(sessionPayload.bamf_code || "").toLowerCase(),
+          permissions: (sessionPayload.permissions && typeof sessionPayload.permissions === "object") ? sessionPayload.permissions : {}
+        };
+      }
+      applyAdminRoleUi();
+      updateAdminIdentityLine();
+      const bulkPrefixInput = document.getElementById("bulkPrefix");
+      if (bulkPrefixInput) {
+        if (!isOwnerAdmin() && adminContext.bamf_code) {
+          bulkPrefixInput.value = adminContext.bamf_code;
+          bulkPrefixInput.readOnly = true;
+        } else {
+          bulkPrefixInput.readOnly = false;
+          if (!bulkPrefixInput.value.trim()) bulkPrefixInput.value = "bamf";
+        }
+      }
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       setAdminPane(activeAdminPane || "accounts");
@@ -1559,12 +1668,24 @@
       listAttendanceSessions();
       loadAttendanceRequests();
       listRooms();
-      loadAuditLogs();
+      if (isOwnerAdmin()) {
+        loadAuditLogs();
+        listTeachers();
+      }
     }
 
     function showLogin() {
+      adminContext = { role: "", username: "", display_name: "", bamf_code: "", permissions: {} };
+      applyAdminRoleUi();
+      updateAdminIdentityLine();
+      const bulkPrefixInput = document.getElementById("bulkPrefix");
+      if (bulkPrefixInput) {
+        bulkPrefixInput.readOnly = false;
+      }
       document.getElementById("panelCard").classList.add("hidden");
       document.getElementById("loginCard").classList.remove("hidden");
+      const pwdInput = document.getElementById("adminPassword");
+      if (pwdInput) pwdInput.value = "";
       setAdminPane("accounts");
       const labelNode = document.getElementById("activePaneLabel");
       if (labelNode) labelNode.textContent = "Anmeldung";
@@ -1596,6 +1717,7 @@
       btn.disabled = true;
       btn.textContent = "Wird angemeldet...";
       try {
+        const username = document.getElementById("adminUsername").value.trim().toLowerCase();
         const password = document.getElementById("adminPassword").value;
         if (!password.trim()) {
           setBox("loginStatus", "error", "Bitte Passwort eingeben.");
@@ -1604,12 +1726,12 @@
         const response = await fetch("./api/admin_login.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password })
+          body: JSON.stringify({ username, password })
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("loginStatus", "ok", "Anmeldung erfolgreich.");
-        showPanel();
+        showPanel(payload);
       } catch (err) {
         setBox("loginStatus", "error", `Anmeldung fehlgeschlagen: ${err.message}`);
       } finally {
@@ -1872,6 +1994,8 @@
             <th>Anzeigename</th>
             <th>E-Mail</th>
             <th>WhatsApp</th>
+            <th>Lehrkraft</th>
+            <th>BAMF</th>
             <th>Aktiv</th>
             <th>Erstellt</th>
             <th>Aktionen</th>
@@ -1890,6 +2014,8 @@
           <td>${escapeHtml(user.display_name || "-")}</td>
           <td class="mono">${escapeHtml(user.email || "-")}</td>
           <td class="mono">${escapeHtml(user.phone || "-")}</td>
+          <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
+          <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
           <td>${isActive ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(user.created_at || "")}</td>
           <td>
@@ -2661,6 +2787,199 @@
         listStudents();
       } catch (err) {
         setBox("userStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    function renderTeachers(users) {
+      teacherUsers = Array.isArray(users) ? users.slice() : [];
+      const wrap = document.getElementById("teacherListWrap");
+      if (!wrap) return;
+      if (!teacherUsers.length) {
+        wrap.innerHTML = "<p>Noch keine Docent-Konten vorhanden.</p>";
+        return;
+      }
+      const rows = teacherUsers.map(user => {
+        const username = String(user.username || "");
+        const active = !!user.active;
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(username)}</td>
+            <td>${escapeHtml(user.display_name || "-")}</td>
+            <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
+            <td>${active ? "Ja" : "Nein"}</td>
+            <td class="mono">${escapeHtml(user.created_at || "")}</td>
+            <td>
+              <div class="actions">
+                <button type="button" data-teacher-action="reset" data-username="${escapeHtml(username)}">Passwort</button>
+                <button type="button" data-teacher-action="toggle" data-username="${escapeHtml(username)}" data-active="${active ? "1" : "0"}">${active ? "Deaktivieren" : "Aktivieren"}</button>
+                <button type="button" data-teacher-action="edit" data-username="${escapeHtml(username)}">Profil</button>
+                <button type="button" class="danger-btn" data-teacher-action="delete" data-username="${escapeHtml(username)}">Löschen</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>Benutzername</th><th>Name</th><th>BAMF-Code</th><th>Aktiv</th><th>Erstellt</th><th>Aktionen</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      wrap.querySelectorAll("button[data-teacher-action]").forEach(btn => {
+        const action = String(btn.getAttribute("data-teacher-action") || "");
+        const username = String(btn.getAttribute("data-username") || "");
+        if (!username) return;
+        if (action === "reset") {
+          btn.addEventListener("click", () => resetTeacherPassword(username));
+        } else if (action === "toggle") {
+          const activeNow = btn.getAttribute("data-active") === "1";
+          btn.addEventListener("click", () => setTeacherActive(username, !activeNow));
+        } else if (action === "edit") {
+          btn.addEventListener("click", () => editTeacherProfile(username));
+        } else if (action === "delete") {
+          btn.addEventListener("click", () => deleteTeacher(username));
+        }
+      });
+    }
+
+    async function listTeachers() {
+      if (!isOwnerAdmin()) return;
+      try {
+        const response = await fetch("./api/teacher_list.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderTeachers(Array.isArray(payload.teachers) ? payload.teachers : []);
+      } catch (err) {
+        const wrap = document.getElementById("teacherListWrap");
+        if (wrap) wrap.innerHTML = `<p>Lehrkräfte konnten nicht geladen werden: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    async function createTeacher() {
+      clearBox("teacherStatus");
+      if (!isOwnerAdmin()) return;
+      const username = document.getElementById("newTeacherUsername").value.trim().toLowerCase();
+      const displayName = document.getElementById("newTeacherDisplayName").value.trim();
+      const bamfCode = document.getElementById("newTeacherBamfCode").value.trim().toLowerCase();
+      const password = document.getElementById("newTeacherPassword").value;
+      if (!username || !bamfCode || !password) {
+        setBox("teacherStatus", "error", "Benutzername, BAMF-Code und Passwort sind erforderlich.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/teacher_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create",
+            username,
+            display_name: displayName,
+            bamf_code: bamfCode,
+            password
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("teacherStatus", "ok", `Lehrkraft erstellt: ${username}`);
+        document.getElementById("newTeacherUsername").value = "";
+        document.getElementById("newTeacherDisplayName").value = "";
+        document.getElementById("newTeacherBamfCode").value = "";
+        document.getElementById("newTeacherPassword").value = "";
+        listTeachers();
+      } catch (err) {
+        setBox("teacherStatus", "error", `Erstellen fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function resetTeacherPassword(username) {
+      clearBox("teacherStatus");
+      if (!isOwnerAdmin()) return;
+      const suggestion = easyPassword(8);
+      const newPassword = window.prompt(`Neues Passwort für ${username}:`, suggestion);
+      if (newPassword === null) return;
+      if (!newPassword.trim()) {
+        setBox("teacherStatus", "error", "Passwort darf nicht leer sein.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/teacher_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "reset_password", username, new_password: newPassword })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("teacherStatus", "ok", `Passwort aktualisiert: ${username}`);
+      } catch (err) {
+        setBox("teacherStatus", "error", `Passwort-Reset fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function setTeacherActive(username, active) {
+      clearBox("teacherStatus");
+      if (!isOwnerAdmin()) return;
+      try {
+        const response = await fetch("./api/teacher_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "set_active", username, active })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("teacherStatus", "ok", `${username} wurde ${active ? "aktiviert" : "deaktiviert"}.`);
+        listTeachers();
+      } catch (err) {
+        setBox("teacherStatus", "error", `Statuswechsel fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function editTeacherProfile(username) {
+      clearBox("teacherStatus");
+      if (!isOwnerAdmin()) return;
+      const teacher = teacherUsers.find(t => String(t.username || "") === username);
+      if (!teacher) return;
+      const displayName = window.prompt(`Anzeigename für ${username}:`, String(teacher.display_name || ""));
+      if (displayName === null) return;
+      const bamfCode = window.prompt(`BAMF-Code für ${username}:`, String(teacher.bamf_code || ""));
+      if (bamfCode === null) return;
+      try {
+        const response = await fetch("./api/teacher_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update_profile",
+            username,
+            display_name: String(displayName).trim(),
+            bamf_code: String(bamfCode).trim().toLowerCase()
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("teacherStatus", "ok", `Profil aktualisiert: ${username}`);
+        listTeachers();
+      } catch (err) {
+        setBox("teacherStatus", "error", `Profil-Update fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function deleteTeacher(username) {
+      clearBox("teacherStatus");
+      if (!isOwnerAdmin()) return;
+      const ok = window.confirm(`Lehrkraft ${username} wirklich löschen?`);
+      if (!ok) return;
+      try {
+        const response = await fetch("./api/teacher_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "delete", username })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("teacherStatus", "ok", `Lehrkraft gelöscht: ${username}`);
+        listTeachers();
+      } catch (err) {
+        setBox("teacherStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -3799,6 +4118,8 @@
       logout();
     });
     document.getElementById("createStudentBtn").addEventListener("click", createStudent);
+    document.getElementById("createTeacherBtn").addEventListener("click", createTeacher);
+    document.getElementById("refreshTeachersBtn").addEventListener("click", listTeachers);
     document.getElementById("generatePwdBtn").addEventListener("click", () => {
       document.getElementById("newStudentPassword").value = randomPassword();
     });
@@ -3862,6 +4183,10 @@
       closeAdminMenu();
       openAdminPane("accounts");
     });
+    document.getElementById("jumpTeachersBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      openAdminPane("teachers");
+    });
     document.getElementById("jumpCoursesBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("courses");
@@ -3913,6 +4238,9 @@
       closeAdminMenu();
     });
     document.getElementById("adminPassword").addEventListener("keydown", event => {
+      if (event.key === "Enter") login();
+    });
+    document.getElementById("adminUsername").addEventListener("keydown", event => {
       if (event.key === "Enter") login();
     });
     checkSession();

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 require_once __DIR__ . '/letter_reviews.php';
 require_once __DIR__ . '/correction_engine.php';
 
@@ -42,6 +42,13 @@ $letter = find_letter_record_by_upload_id($storageDir, $uploadId);
 if (!is_array($letter)) {
     http_response_code(404);
     echo json_encode(['error' => 'Briefeintrag wurde nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$letterStudent = mb_strtolower(trim((string)($letter['student_username'] ?? '')));
+if (($admin['role'] ?? '') === 'docent' && !admin_can_access_student_username($letterStudent, $admin)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Keine Berechtigung fuer diesen Briefeintrag.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -49,6 +49,12 @@ foreach ($users as $i => $user) {
 if ($foundIndex < 0) {
     http_response_code(404);
     echo json_encode(['error' => 'Benutzer nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (!admin_can_access_student_record((array)$users[$foundIndex], $admin)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Keine Berechtigung fuer diesen Benutzer.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

@@ -77,6 +77,8 @@ $record = [
     'review_status' => 'pending',
     'student_name' => $studentName !== '' ? $studentName : ($studentSession['display_name'] !== '' ? $studentSession['display_name'] : $studentSession['username']),
     'student_username' => $studentSession['username'],
+    'teacher_username' => (string)($studentSession['teacher_username'] ?? ''),
+    'bamf_code' => normalize_bamf_code((string)($studentSession['bamf_code'] ?? '')),
     'task_prompt' => $taskPrompt,
     'required_points' => $requiredPoints,
     'letter_text' => $letterText,

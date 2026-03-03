@@ -14,5 +14,7 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4.1-mini
+      - key: ADMIN_PANEL_USERNAME
+        value: admin
       - key: ADMIN_PANEL_PASSWORD
         sync: false

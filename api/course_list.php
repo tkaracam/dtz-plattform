@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 
 $courses = load_courses();
 $users = load_student_users();
@@ -24,6 +24,7 @@ $users = load_student_users();
 $students = [];
 foreach ($users as $u) {
     if (!is_array($u)) continue;
+    if (!admin_can_access_student_record($u, $admin)) continue;
     $students[] = [
         'username' => (string)($u['username'] ?? ''),
         'display_name' => (string)($u['display_name'] ?? ''),
@@ -34,6 +35,8 @@ foreach ($users as $u) {
 }
 
 echo json_encode([
-    'courses' => array_values(array_filter($courses, static fn($c) => is_array($c))),
+    'courses' => array_values(array_filter($courses, function ($c) use ($admin): bool {
+        return is_array($c) && admin_can_access_course_record($c, $admin);
+    })),
     'students' => $students,
 ], JSON_UNESCAPED_UNICODE);

@@ -29,7 +29,16 @@ function start_secure_session(): void
     }
 }
 
-function require_admin_session_json(): void
+function normalize_bamf_code(string $code): string
+{
+    $normalized = mb_strtolower(trim($code));
+    if (!preg_match('/^bamf\d{3}$/', $normalized)) {
+        return '';
+    }
+    return $normalized;
+}
+
+function require_admin_session_json(): array
 {
     start_secure_session();
     enforce_session_timeout_json();
@@ -38,6 +47,36 @@ function require_admin_session_json(): void
         echo json_encode(['error' => 'Nicht autorisiert. Bitte zuerst als Lehrkraft anmelden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    $role = (string)($_SESSION['admin_role'] ?? '');
+    if ($role !== 'owner' && $role !== 'docent') {
+        $role = 'owner';
+    }
+    $username = mb_strtolower(trim((string)($_SESSION['admin_username'] ?? '')));
+    if ($username === '' && $role === 'owner') {
+        $username = 'admin';
+    }
+    $displayName = trim((string)($_SESSION['admin_display_name'] ?? ''));
+    $bamfCode = normalize_bamf_code((string)($_SESSION['admin_bamf_code'] ?? ''));
+
+    return [
+        'role' => $role,
+        'username' => $username,
+        'display_name' => $displayName,
+        'bamf_code' => $bamfCode,
+        'is_owner' => $role === 'owner',
+    ];
+}
+
+function require_owner_session_json(): array
+{
+    $ctx = require_admin_session_json();
+    if (($ctx['role'] ?? '') !== 'owner') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Nur der Haupt-Admin darf diese Aktion ausfuehren.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    return $ctx;
 }
 
 function require_student_session_json(): array
@@ -53,6 +92,8 @@ function require_student_session_json(): array
     return [
         'username' => (string)$_SESSION['student_username'],
         'display_name' => (string)($_SESSION['student_display_name'] ?? ''),
+        'teacher_username' => mb_strtolower(trim((string)($_SESSION['student_teacher_username'] ?? ''))),
+        'bamf_code' => normalize_bamf_code((string)($_SESSION['student_bamf_code'] ?? '')),
     ];
 }
 
@@ -90,6 +131,126 @@ function write_student_users(array $users): bool
     }
 
     return file_put_contents(student_users_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function teacher_users_file(): string
+{
+    return __DIR__ . '/storage/teacher_users.json';
+}
+
+function load_teacher_users(): array
+{
+    $file = teacher_users_file();
+    if (!is_file($file)) {
+        return [];
+    }
+    $raw = file_get_contents($file);
+    if ($raw === false || trim($raw) === '') {
+        return [];
+    }
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
+}
+
+function write_teacher_users(array $users): bool
+{
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+
+    $json = json_encode(array_values($users), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if ($json === false) {
+        return false;
+    }
+
+    return file_put_contents(teacher_users_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function find_student_user_by_username(string $username): ?array
+{
+    $needle = mb_strtolower(trim($username));
+    if ($needle === '') {
+        return null;
+    }
+    foreach (load_student_users() as $user) {
+        if (!is_array($user)) {
+            continue;
+        }
+        $uname = mb_strtolower(trim((string)($user['username'] ?? '')));
+        if ($uname === $needle) {
+            return $user;
+        }
+    }
+    return null;
+}
+
+function admin_can_access_student_record(array $student, array $adminCtx): bool
+{
+    if (($adminCtx['role'] ?? '') === 'owner') {
+        return true;
+    }
+    $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));
+    $adminBamf = normalize_bamf_code((string)($adminCtx['bamf_code'] ?? ''));
+
+    $studentTeacher = mb_strtolower(trim((string)($student['teacher_username'] ?? '')));
+    if ($adminUsername !== '' && $studentTeacher !== '' && hash_equals($studentTeacher, $adminUsername)) {
+        return true;
+    }
+
+    $studentCode = normalize_bamf_code((string)($student['bamf_code'] ?? ''));
+    if ($adminBamf !== '' && $studentCode !== '' && hash_equals($studentCode, $adminBamf)) {
+        return true;
+    }
+
+    $studentUsername = mb_strtolower(trim((string)($student['username'] ?? '')));
+    if ($adminBamf !== '' && $studentUsername !== '' && str_starts_with($studentUsername, $adminBamf)) {
+        return true;
+    }
+
+    return false;
+}
+
+function admin_can_access_student_username(string $username, array $adminCtx): bool
+{
+    if (($adminCtx['role'] ?? '') === 'owner') {
+        return true;
+    }
+    $student = find_student_user_by_username($username);
+    if (is_array($student)) {
+        return admin_can_access_student_record($student, $adminCtx);
+    }
+    $adminBamf = normalize_bamf_code((string)($adminCtx['bamf_code'] ?? ''));
+    $uname = mb_strtolower(trim($username));
+    if ($adminBamf !== '' && $uname !== '' && str_starts_with($uname, $adminBamf)) {
+        return true;
+    }
+    return false;
+}
+
+function admin_can_access_course_record(array $course, array $adminCtx): bool
+{
+    if (($adminCtx['role'] ?? '') === 'owner') {
+        return true;
+    }
+    $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));
+    $adminBamf = normalize_bamf_code((string)($adminCtx['bamf_code'] ?? ''));
+    $courseTeacher = mb_strtolower(trim((string)($course['teacher_username'] ?? '')));
+    if ($adminUsername !== '' && $courseTeacher !== '' && hash_equals($courseTeacher, $adminUsername)) {
+        return true;
+    }
+    $courseCode = normalize_bamf_code((string)($course['bamf_code'] ?? ''));
+    if ($adminBamf !== '' && $courseCode !== '' && hash_equals($courseCode, $adminBamf)) {
+        return true;
+    }
+    $courseId = mb_strtolower(trim((string)($course['course_id'] ?? '')));
+    $courseName = mb_strtolower(trim((string)($course['name'] ?? '')));
+    if ($adminBamf !== '' && ($courseId !== '' || $courseName !== '')) {
+        if (($courseId !== '' && str_starts_with($courseId, $adminBamf)) || ($courseName !== '' && str_starts_with($courseName, $adminBamf))) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function enforce_session_timeout_json(): void
@@ -264,7 +425,7 @@ function append_audit_log(string $action, array $meta = []): void
     $actorId = '';
     if (!empty($_SESSION['admin_authenticated'])) {
         $actorType = 'admin';
-        $actorId = 'admin';
+        $actorId = (string)($_SESSION['admin_username'] ?? 'admin');
     } elseif (!empty($_SESSION['student_authenticated']) && !empty($_SESSION['student_username'])) {
         $actorType = 'student';
         $actorId = (string)($_SESSION['student_username'] ?? '');

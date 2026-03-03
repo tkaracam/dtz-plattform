@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+require_owner_session_json();
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);

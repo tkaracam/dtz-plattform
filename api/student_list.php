@@ -17,17 +17,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_admin_session_json();
+$admin = require_admin_session_json();
 
 $users = load_student_users();
 $out = [];
 foreach ($users as $user) {
     if (!is_array($user)) continue;
+    if (!admin_can_access_student_record($user, $admin)) continue;
     $out[] = [
         'username' => (string)($user['username'] ?? ''),
         'display_name' => (string)($user['display_name'] ?? ''),
         'email' => (string)($user['email'] ?? ''),
         'phone' => (string)($user['phone'] ?? ''),
+        'teacher_username' => (string)($user['teacher_username'] ?? ''),
+        'bamf_code' => normalize_bamf_code((string)($user['bamf_code'] ?? '')),
         'active' => (bool)($user['active'] ?? false),
         'created_at' => (string)($user['created_at'] ?? ''),
     ];
