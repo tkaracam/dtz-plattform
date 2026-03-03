@@ -272,6 +272,80 @@
       background: #fff3f0;
     }
 
+    .admin-quick-nav {
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid #d4e1ef;
+      border-radius: 14px;
+      background: #f7fbff;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .admin-quick-btn {
+      width: auto;
+      min-width: 0;
+      border: 1px solid #c8d9eb;
+      background: #ffffff;
+      color: #163a5d;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-weight: 700;
+      box-shadow: none;
+    }
+
+    .admin-quick-btn:hover {
+      box-shadow: 0 10px 24px rgba(31, 89, 163, 0.16);
+    }
+
+    .admin-quick-btn.is-active {
+      border-color: #7ab4ff;
+      background: #eaf3ff;
+      color: #0c4b8d;
+    }
+
+    .fold-section {
+      margin-top: 12px;
+      border: 1px solid #d3e1ef;
+      border-radius: 14px;
+      background: #fbfdff;
+      overflow: hidden;
+    }
+
+    .fold-section > summary {
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      font-weight: 700;
+      color: #163a5d;
+      background: #f2f8ff;
+      border-bottom: 1px solid #dbe7f4;
+    }
+
+    .fold-section > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .fold-section > summary::after {
+      content: "▾";
+      font-size: 0.9rem;
+      color: #3c5a78;
+    }
+
+    .fold-section[open] > summary::after {
+      content: "▴";
+    }
+
+    .fold-section-content {
+      padding: 10px 12px 12px;
+    }
+
     .ghost-btn {
       color: #143554;
       border: 1px solid #b9cde4;
@@ -739,6 +813,16 @@
         font-size: 0.9rem;
       }
 
+      .admin-quick-nav {
+        gap: 6px;
+        padding: 8px;
+      }
+
+      .admin-quick-btn {
+        flex: 1 1 calc(50% - 6px);
+        text-align: center;
+      }
+
       .card {
         padding: 14px;
       }
@@ -822,6 +906,16 @@
       </section>
 
       <section id="panelCard" class="card hidden">
+        <div class="admin-quick-nav">
+          <button type="button" class="admin-quick-btn" data-pane="accounts">Schülerzugänge</button>
+          <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
+          <button type="button" class="admin-quick-btn" data-pane="attendance">Anwesenheit</button>
+          <button type="button" class="admin-quick-btn" data-pane="notify">Benachrichtigungen</button>
+          <button type="button" class="admin-quick-btn" data-pane="room">Virtueller Saal</button>
+          <button type="button" class="admin-quick-btn" data-pane="audit">Audit</button>
+          <button type="button" class="admin-quick-btn" data-pane="archive">Archiv</button>
+        </div>
+
         <div class="start-checklist">
           <h3>Start-Checkliste</h3>
           <ol>
@@ -833,83 +927,98 @@
         </div>
 
         <div id="paneAccounts" class="admin-pane active">
-        <div id="accountsSection">
-          <h2 class="section-title">Schülerzugänge</h2>
-          <p class="section-subtitle">Neue Konten erstellen, Passwörter zurücksetzen und Nutzerstatus ändern.</p>
-        </div>
+          <div id="accountsSection">
+            <h2 class="section-title">Schülerzugänge</h2>
+            <p class="section-subtitle">Neue Konten erstellen, Passwörter zurücksetzen und Nutzerstatus ändern.</p>
+          </div>
 
-        <div class="grid">
-          <div>
-            <label for="newStudentUsername">Neuer Benutzername</label>
-            <input id="newStudentUsername" type="text" placeholder="z. B. kursa-01">
-          </div>
-          <div>
-            <label for="newStudentDisplayName">Anzeigename (optional)</label>
-            <input id="newStudentDisplayName" type="text" placeholder="z. B. Ayse Yilmaz">
-          </div>
-        </div>
+          <details class="fold-section" open>
+            <summary>Einzelkonto erstellen</summary>
+            <div class="fold-section-content">
+              <div class="grid">
+                <div>
+                  <label for="newStudentUsername">Neuer Benutzername</label>
+                  <input id="newStudentUsername" type="text" placeholder="z. B. kursa-01">
+                </div>
+                <div>
+                  <label for="newStudentDisplayName">Anzeigename (optional)</label>
+                  <input id="newStudentDisplayName" type="text" placeholder="z. B. Ayse Yilmaz">
+                </div>
+              </div>
 
-        <div class="grid">
-          <div>
-            <label for="newStudentPassword">Passwort</label>
-            <input id="newStudentPassword" type="text" placeholder="Passwort eingeben oder generieren">
-          </div>
-          <div>
-            <label for="newStudentEmail">E-Mail (optional)</label>
-            <input id="newStudentEmail" type="text" placeholder="z. B. teilnehmer@mail.com">
-          </div>
-          <div>
-            <label for="newStudentPhone">WhatsApp Telefon (optional)</label>
-            <input id="newStudentPhone" type="text" placeholder="z. B. 905551112233">
-          </div>
-          <div class="actions">
-            <button id="generatePwdBtn" type="button">Passwort generieren</button>
-            <button id="createStudentBtn" type="button">Zugang erstellen</button>
-          </div>
-        </div>
+              <div class="grid">
+                <div>
+                  <label for="newStudentPassword">Passwort</label>
+                  <input id="newStudentPassword" type="text" placeholder="Passwort eingeben oder generieren">
+                </div>
+                <div>
+                  <label for="newStudentEmail">E-Mail (optional)</label>
+                  <input id="newStudentEmail" type="text" placeholder="z. B. teilnehmer@mail.com">
+                </div>
+                <div>
+                  <label for="newStudentPhone">WhatsApp Telefon (optional)</label>
+                  <input id="newStudentPhone" type="text" placeholder="z. B. 905551112233">
+                </div>
+                <div class="actions">
+                  <button id="generatePwdBtn" type="button">Passwort generieren</button>
+                  <button id="createStudentBtn" type="button">Zugang erstellen</button>
+                </div>
+              </div>
 
-        <div id="userStatus" class="hidden"></div>
-
-        <div class="bulk-wrap">
-          <h3 class="section-title" style="font-size: 1.25rem;">Schnellgenerator (mehrere Schüler)</h3>
-          <p class="section-subtitle">Erzeugt sofort Benutzername+Passwort und legt die Konten in Serie an.</p>
-
-          <div class="grid">
-            <div>
-              <label for="bulkPrefix">Präfix</label>
-              <input id="bulkPrefix" type="text" value="bamf" placeholder="z. B. bamf">
+              <div id="userStatus" class="hidden"></div>
             </div>
-            <div>
-              <label for="bulkCount">Anzahl</label>
-              <input id="bulkCount" type="number" min="1" max="100" value="20">
+          </details>
+
+          <details class="fold-section">
+            <summary>Schnellgenerator (mehrere Schüler)</summary>
+            <div class="fold-section-content">
+              <p class="section-subtitle">Erzeugt sofort Benutzername+Passwort und legt die Konten in Serie an.</p>
+
+              <div class="grid">
+                <div>
+                  <label for="bulkPrefix">Präfix</label>
+                  <input id="bulkPrefix" type="text" value="bamf" placeholder="z. B. bamf">
+                </div>
+                <div>
+                  <label for="bulkCount">Anzahl</label>
+                  <input id="bulkCount" type="number" min="1" max="100" value="20">
+                </div>
+              </div>
+
+              <div class="grid">
+                <div>
+                  <label for="bulkStart">Startnummer</label>
+                  <input id="bulkStart" type="number" min="1" max="9999" value="1">
+                </div>
+                <div>
+                  <label for="bulkPwdLength">Passwortlänge</label>
+                  <input id="bulkPwdLength" type="number" min="6" max="10" value="6">
+                </div>
+              </div>
+
+              <div class="actions">
+                <button id="bulkGenerateBtn" type="button">Liste generieren</button>
+                <button id="bulkCreateBtn" type="button">Konten anlegen</button>
+                <button id="quickCreate20Btn" type="button">20 Konten sofort</button>
+                <button id="bulkCopyBtn" class="ghost-btn" type="button">Liste kopieren</button>
+                <button id="bulkCsvBtn" class="ghost-btn" type="button">CSV downloaden</button>
+                <button id="bulkPdfBtn" class="ghost-btn" type="button">PDF drucken</button>
+              </div>
+
+              <textarea id="bulkPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
+              <div id="bulkStatus" class="hidden"></div>
             </div>
-          </div>
+          </details>
 
-          <div class="grid">
-            <div>
-              <label for="bulkStart">Startnummer</label>
-              <input id="bulkStart" type="number" min="1" max="9999" value="1">
+          <details class="fold-section" open>
+            <summary>Bestehende Konten</summary>
+            <div class="fold-section-content">
+              <div class="actions" style="margin-top: 0;">
+                <button id="refreshStudentsInlineBtn" type="button" class="ghost-btn">Schülerliste aktualisieren</button>
+              </div>
+              <div id="userListWrap" style="margin-top: 10px;"></div>
             </div>
-            <div>
-              <label for="bulkPwdLength">Passwortlänge</label>
-              <input id="bulkPwdLength" type="number" min="6" max="10" value="6">
-            </div>
-          </div>
-
-          <div class="actions">
-            <button id="bulkGenerateBtn" type="button">Liste generieren</button>
-            <button id="bulkCreateBtn" type="button">Konten anlegen</button>
-            <button id="quickCreate20Btn" type="button">20 Konten sofort</button>
-            <button id="bulkCopyBtn" class="ghost-btn" type="button">Liste kopieren</button>
-            <button id="bulkCsvBtn" class="ghost-btn" type="button">CSV downloaden</button>
-            <button id="bulkPdfBtn" class="ghost-btn" type="button">PDF drucken</button>
-          </div>
-
-          <textarea id="bulkPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
-          <div id="bulkStatus" class="hidden"></div>
-        </div>
-
-        <div id="userListWrap" style="margin-top: 10px;"></div>
+          </details>
         </div>
 
         <div id="paneCourses" class="admin-pane">
@@ -1380,6 +1489,15 @@
       const labelNode = document.getElementById("activePaneLabel");
       if (labelNode) {
         labelNode.textContent = adminPaneLabels[paneName] || "Bereich";
+      }
+
+      document.querySelectorAll(".admin-quick-btn").forEach(btn => {
+        btn.classList.toggle("is-active", btn.dataset.pane === paneName);
+      });
+
+      const checklist = document.querySelector("#panelCard .start-checklist");
+      if (checklist) {
+        checklist.classList.toggle("hidden", paneName !== "accounts");
       }
     }
 
@@ -3724,6 +3842,12 @@
     document.getElementById("bulkCopyBtn").addEventListener("click", copyBulkList);
     document.getElementById("bulkCsvBtn").addEventListener("click", downloadBulkCsv);
     document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
+    document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
+    document.querySelectorAll(".admin-quick-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        openAdminPane(btn.dataset.pane);
+      });
+    });
     document.getElementById("goHomeBtn").addEventListener("click", () => {
       closeAdminMenu();
       window.location.href = "./index.html";
