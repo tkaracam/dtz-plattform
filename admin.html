@@ -1079,7 +1079,7 @@
           <div class="grid">
             <div>
               <label for="newCourseName">Kursname</label>
-              <input id="newCourseName" type="text" placeholder="z. B. BSK B1 Abendkurs">
+              <input id="newCourseName" type="text" placeholder="z. B. BAMF233 B1 Abendkurs">
             </div>
             <div>
               <label for="newCourseLevel">Niveau</label>
@@ -1114,7 +1114,7 @@
             </div>
             <div>
               <label for="attendanceCourse">Kursname</label>
-              <input id="attendanceCourse" type="text" placeholder="z. B. BSK-B1-Abendkurs" readonly>
+              <input id="attendanceCourse" type="text" placeholder="z. B. BAMF233-B1-Abendkurs" readonly>
             </div>
             <div>
               <label for="attendanceDate">Unterrichtsdatum</label>
@@ -1330,8 +1330,6 @@
             <button id="listBtn" type="button">Einträge laden</button>
             <button id="loadPendingBtn" type="button" class="ghost-btn">Nur Warteschlange (0)</button>
             <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
-            <button id="listBskBtn" type="button">BSK laden</button>
-            <button id="downloadBskCsvBtn" type="button">BSK-CSV herunterladen</button>
           </div>
         </div>
 
@@ -1368,8 +1366,6 @@
         <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
         <h3 class="section-title" style="margin-top: 16px;">Alle Einträge</h3>
         <div id="archiveWrap" style="margin-top: 10px;"></div>
-        <h3 class="section-title" style="margin-top: 16px;">BSK-Archiv</h3>
-        <div id="bskArchiveWrap" style="margin-top: 10px;"></div>
         </div>
       </section>
     </div>
@@ -1664,7 +1660,6 @@
       listStudents();
       listCourses();
       listLetters();
-      listBskRecords();
       listAttendanceSessions();
       loadAttendanceRequests();
       listRooms();
@@ -4111,8 +4106,6 @@
     document.getElementById("pendingLiveToggleBtn").addEventListener("click", togglePendingLive);
     document.getElementById("closePreviewBtn").addEventListener("click", hidePreview);
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
-    document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
-    document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
     document.getElementById("navLogoutBtn").addEventListener("click", () => {
       closeAdminMenu();
       logout();

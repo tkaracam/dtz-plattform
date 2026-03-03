@@ -71,7 +71,6 @@ function read_jsonl_records(string $pattern): array
     return $out;
 }
 
-$bskRecords = [];
 $simRecords = [];
 $letterRecords = [];
 $approvedLetterResults = [];
@@ -80,21 +79,6 @@ $latestLetterCorrection = null;
 $latestLetterCorrectionTs = 0;
 
 $reviewsByUpload = load_letter_reviews_index($storageDir);
-
-foreach (read_jsonl_records($storageDir . '/bsk-*.jsonl') as $row) {
-    $u = mb_strtolower(trim((string)($row['student_username'] ?? '')));
-    if ($u !== $username) {
-        continue;
-    }
-    $bskRecords[] = [
-        'type' => 'BSK',
-        'created_at' => (string)($row['created_at'] ?? ''),
-        'score_label' => (int)($row['score_correct'] ?? 0) . '/' . max(1, (int)($row['score_total'] ?? 1)),
-        'percent' => (int)round(((int)($row['score_correct'] ?? 0) / max(1, (int)($row['score_total'] ?? 1))) * 100),
-        'detail' => trim((string)($row['level'] ?? '') . ' ' . (string)($row['field'] ?? '')),
-        'field' => (string)($row['field'] ?? ''),
-    ];
-}
 
 foreach (read_jsonl_records($storageDir . '/simulations-*.jsonl') as $row) {
     $u = mb_strtolower(trim((string)($row['student_username'] ?? '')));
@@ -165,7 +149,7 @@ foreach (read_jsonl_records($storageDir . '/letters-*.jsonl') as $row) {
     ];
 }
 
-$allResults = array_merge($simRecords, $bskRecords, $approvedLetterResults, $letterRecords);
+$allResults = array_merge($simRecords, $approvedLetterResults, $letterRecords);
 usort($allResults, static function (array $a, array $b): int {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
 });
@@ -215,13 +199,11 @@ usort($teacherNotes, static function (array $a, array $b): int {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
 });
 
-$bskPercents = array_map(static fn($r) => (int)($r['percent'] ?? 0), $bskRecords);
 $simPercents = array_map(static fn($r) => (int)($r['percent'] ?? 0), $simRecords);
-$avgBsk = count($bskPercents) ? (int)round(array_sum($bskPercents) / count($bskPercents)) : 0;
 $avgSim = count($simPercents) ? (int)round(array_sum($simPercents) / count($simPercents)) : 0;
 
-$dtzReadiness = (int)round(($avgSim * 0.7) + ($avgBsk * 0.3));
-$dtbReadiness = (int)round(($avgBsk * 0.75) + ($avgSim * 0.25));
+$dtzReadiness = $avgSim;
+$dtbReadiness = $avgSim;
 
 $missingMap = [];
 foreach ($simRecords as $r) {
@@ -238,10 +220,6 @@ if ($avgSim < 65) {
     $missingMap['Textaufbau und Struktur'] = ($missingMap['Textaufbau und Struktur'] ?? 0) + 2;
     $missingMap['Grammatik im Satzbau'] = ($missingMap['Grammatik im Satzbau'] ?? 0) + 2;
 }
-if ($avgBsk < 65) {
-    $missingMap['Berufsbezogener Wortschatz'] = ($missingMap['Berufsbezogener Wortschatz'] ?? 0) + 2;
-}
-
 $rankedMissing = [];
 arsort($missingMap, SORT_NUMERIC);
 foreach ($missingMap as $k => $v) {

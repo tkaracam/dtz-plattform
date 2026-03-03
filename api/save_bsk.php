@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
+require_bsk_module_enabled_json();
 $studentSession = require_student_session_json();
 
 $raw = file_get_contents('php://input') ?: '';

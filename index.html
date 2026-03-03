@@ -106,7 +106,7 @@
 
     .nav-brand img {
       width: auto;
-      height: 38px;
+      height: 27px;
       max-width: 46vw;
       display: block;
     }
@@ -1522,7 +1522,7 @@
       }
 
       .nav-brand img {
-        height: 48px;
+        height: 34px;
         max-width: 44vw;
       }
 
@@ -1592,7 +1592,7 @@
       }
 
       .nav-brand img {
-        height: 39px;
+        height: 27px;
         max-width: 40vw;
       }
 
@@ -1621,7 +1621,6 @@
           <button id="navRoomBtn" class="nav-link" type="button">Saal</button>
           <button id="navSimulationBtn" class="nav-link" type="button">Simulation</button>
           <button id="navWriteBtn" class="nav-link" type="button">Schreiben</button>
-          <button id="navBskBtn" class="nav-link" type="button">BSK</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
           <button id="navSpeakingBtn" class="nav-link" type="button">Sprechen</button>
           <button id="navAdminBtn" class="nav-link" type="button">Lehrer-Panel</button>
@@ -1641,7 +1640,6 @@
           <div class="level-bar">
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
             <button type="button" class="level-tile b1" id="levelB1Btn">A2-B1<small>DTZ Fokus</small></button>
-            <button type="button" class="level-tile bsk" id="levelBskBtn">BSK<small>DTB-Training</small></button>
             <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
           </div>
           <div class="hero-cta" aria-hidden="true"></div>
@@ -1888,7 +1886,7 @@
             </section>
           </div>
         </details>
-        <details class="portal-section">
+        <details id="portalBskSection" class="portal-section hidden">
           <summary class="portal-section-title">BSK</summary>
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
@@ -1903,7 +1901,7 @@
         </details>
       </section>
 
-      <section id="bskCard" class="card hidden">
+      <section id="bskCard" class="card hidden" style="display:none;">
         <h2 class="section-title">BSK Navigator & DTB-Training</h2>
         <p class="section-subtitle">Originale Prüfungsfragen werden nicht kopiert. Aufgaben sind eigenständig und nur formatähnlich.</p>
 
@@ -3392,7 +3390,7 @@
       return arr;
     }
 
-    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "bskCard", "speakingCard", "lidClassicCard"];
+    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "lidClassicCard"];
 
     function hideMainCards() {
       MAIN_CARDS.forEach(id => {
@@ -3427,7 +3425,6 @@
         portal: "portalCard",
         room: "roomCard",
         simulation: "simulationCard",
-        bsk: "bskCard",
         lid: "lidClassicCard",
         speaking: "speakingCard"
       };
@@ -3445,7 +3442,6 @@
       memberPanel.classList.remove("hidden");
       document.getElementById("studentIdentity").textContent = identityText || "Angemeldet";
       currentStudentLabel = identityText || "Angemeldet";
-      loadBskHistory();
       loadStudentPortal();
       taskStatus = loadTaskStatus();
       updateTaskSelectOptions();
@@ -3478,8 +3474,7 @@
     }
 
     function openBskView() {
-      setMainView("bsk");
-      loadBskHistory();
+      openPortalView();
     }
 
     function openLidView() {
@@ -3500,8 +3495,7 @@
     }
 
     function openBskSuiteView() {
-      showCards(["bskCard", "simulationCard", "roomCard"]);
-      loadBskHistory();
+      showCards(["simulationCard", "roomCard"]);
     }
 
     function showStudentLogin() {
@@ -3520,6 +3514,15 @@
       updateTaskSelectOptions();
       updateTaskDoneToggle(currentTaskIndex);
       renderTaskStatusList();
+    }
+
+    function removeArchivedBskFrontend() {
+      ["bskCard", "portalBskSection"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      });
     }
 
     function closeNavOnMobile() {
@@ -3546,10 +3549,8 @@
         openRoomView();
       } else if (target === "write") {
         openCorrectionView();
-      } else if (target === "bsk") {
-        openBskView();
-      } else if (target === "bsk-suite") {
-        openBskSuiteView();
+      } else if (target === "bsk" || target === "bsk-suite") {
+        openPortalView();
       } else if (target === "lid") {
         openLidView();
       } else if (target === "speaking") {
@@ -5288,10 +5289,14 @@
     document.getElementById("newClassicLidExamBtn").addEventListener("click", generateClassicLidExam);
     document.getElementById("submitClassicLidExamBtn").addEventListener("click", evaluateClassicLidExam);
     document.getElementById("newSpeakingSetBtn").addEventListener("click", generateSpeakingSet);
-    document.getElementById("buildBskPlanBtn").addEventListener("click", generateBskPack);
-    document.getElementById("evaluateBskBtn").addEventListener("click", evaluateBskPack);
-    document.getElementById("saveBskBtn").addEventListener("click", saveBskResult);
-    document.getElementById("refreshBskHistoryBtn").addEventListener("click", loadBskHistory);
+    const buildBskPlanBtn = document.getElementById("buildBskPlanBtn");
+    if (buildBskPlanBtn) buildBskPlanBtn.addEventListener("click", generateBskPack);
+    const evaluateBskBtn = document.getElementById("evaluateBskBtn");
+    if (evaluateBskBtn) evaluateBskBtn.addEventListener("click", evaluateBskPack);
+    const saveBskBtn = document.getElementById("saveBskBtn");
+    if (saveBskBtn) saveBskBtn.addEventListener("click", saveBskResult);
+    const refreshBskHistoryBtn = document.getElementById("refreshBskHistoryBtn");
+    if (refreshBskHistoryBtn) refreshBskHistoryBtn.addEventListener("click", loadBskHistory);
     document.getElementById("buildPart1DraftBtn").addEventListener("click", generatePart1Draft);
     document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
     document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
@@ -5306,7 +5311,8 @@
     document.getElementById("backToMenuFromPortalBtn").addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromSimulationBtn").addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromRoomBtn").addEventListener("click", () => setMainView("portal"));
-    document.getElementById("backToMenuFromBskBtn").addEventListener("click", () => setMainView("portal"));
+    const backToMenuFromBskBtn = document.getElementById("backToMenuFromBskBtn");
+    if (backToMenuFromBskBtn) backToMenuFromBskBtn.addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromClassicLidBtn").addEventListener("click", () => setMainView("portal"));
     document.getElementById("newClassicLidExamBtnBottom").addEventListener("click", generateClassicLidExam);
     document.getElementById("submitClassicLidExamBtnBottom").addEventListener("click", evaluateClassicLidExam);
@@ -5327,7 +5333,6 @@
     document.getElementById("navRoomBtn").addEventListener("click", () => navigateToSection("room"));
     document.getElementById("navSimulationBtn").addEventListener("click", () => navigateToSection("simulation"));
     document.getElementById("navWriteBtn").addEventListener("click", () => navigateToSection("write"));
-    document.getElementById("navBskBtn").addEventListener("click", () => navigateToSection("bsk"));
     document.getElementById("navLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("navSpeakingBtn").addEventListener("click", () => navigateToSection("speaking"));
     document.getElementById("navAdminBtn").addEventListener("click", () => {
@@ -5343,8 +5348,8 @@
     }
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
-    document.getElementById("levelBskBtn").addEventListener("click", () => navigateToSection("bsk-suite"));
     document.getElementById("levelPortalBtn").addEventListener("click", () => navigateToSection("portal"));
+    removeArchivedBskFrontend();
     checkStudentSession();
   </script>
 </body>

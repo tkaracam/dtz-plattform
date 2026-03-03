@@ -18,3 +18,5 @@ services:
         value: admin
       - key: ADMIN_PANEL_PASSWORD
         sync: false
+      - key: BSK_MODULE_ENABLED
+        value: "0"

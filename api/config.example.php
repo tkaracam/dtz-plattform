@@ -7,3 +7,4 @@ define('OPENAI_API_KEY', '');
 define('OPENAI_MODEL', 'gpt-4.1-mini');
 define('ADMIN_PANEL_USERNAME', 'admin');
 define('ADMIN_PANEL_PASSWORD', '');
+define('BSK_MODULE_ENABLED', '0');

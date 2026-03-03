@@ -38,6 +38,29 @@ function normalize_bamf_code(string $code): string
     return $normalized;
 }
 
+function bsk_module_enabled(): bool
+{
+    $value = getenv('BSK_MODULE_ENABLED');
+    if (($value === false || trim((string)$value) === '') && defined('BSK_MODULE_ENABLED')) {
+        $value = (string)BSK_MODULE_ENABLED;
+    }
+    $normalized = mb_strtolower(trim((string)$value));
+    if ($normalized === '') {
+        return false;
+    }
+    return in_array($normalized, ['1', 'true', 'yes', 'on'], true);
+}
+
+function require_bsk_module_enabled_json(): void
+{
+    if (bsk_module_enabled()) {
+        return;
+    }
+    http_response_code(503);
+    echo json_encode(['error' => 'BSK-Modul ist derzeit deaktiviert (archiviert).'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 function require_admin_session_json(): array
 {
     start_secure_session();

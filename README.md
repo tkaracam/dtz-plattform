@@ -1,13 +1,13 @@
 # DTZ Plattform
 
-DTZ-LIB Webanwendung mit Schüler-Login, Schreiben-Korrektur, LiD/BSK-Übungen, Sprechen-Training, Simulation und virtuellem Saal.
+DTZ-LIB Webanwendung mit Schüler-Login, Schreiben-Korrektur, LiD-Übungen, Sprechen-Training, Simulation und virtuellem Saal.
 
 ## Projektstruktur
 
 - `index.html` – Schüleroberfläche
 - `admin.html` – Lehrerbereich
 - `api/` – PHP-Endpunkte
-- `api/storage/` – Laufzeitdaten (Briefe, BSK, Simulation, virtuelle Räume)
+- `api/storage/` – Laufzeitdaten (Briefe, BSK-Archiv, Simulation, virtuelle Räume)
 - `assets/` – Fonts/Logos/Bilder
 - `tools/` – Wartungsskripte
 
@@ -19,6 +19,7 @@ Die App nutzt Umgebungsvariablen:
 - `OPENAI_MODEL` (Default: `gpt-4.1-mini`)
 - `ADMIN_PANEL_USERNAME` (Default: `admin`)
 - `ADMIN_PANEL_PASSWORD`
+- `BSK_MODULE_ENABLED` (Default: `0`, BSK bleibt archiviert/passiv)
 
 Optional lokal:
 
