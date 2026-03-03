@@ -1531,6 +1531,38 @@
         .replace(/>/g, "&gt;");
     }
 
+    function formatDisplayDate(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = String(d.getFullYear());
+        return `${day}.${month}.${year}`;
+      }
+      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+      return raw;
+    }
+
+    function formatDisplayDateTime(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = String(d.getFullYear());
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `${day}.${month}.${year} ${hh}:${mm}`;
+      }
+      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+      if (m) return `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}`;
+      return formatDisplayDate(raw);
+    }
+
     function isOwnerAdmin() {
       return String(adminContext.role || "") === "owner";
     }
@@ -1943,7 +1975,7 @@
         setBox("bulkStatus", "error", "Popup blockiert. Bitte Popups erlauben.");
         return;
       }
-      const today = new Date().toISOString().slice(0, 10);
+      const today = formatDisplayDate(new Date().toISOString());
       const tableRows = rows.map(r => `<tr><td>${escapeHtml(r.username)}</td><td>${escapeHtml(r.password)}</td></tr>`).join("");
       w.document.write(`
         <!doctype html>
@@ -2012,7 +2044,7 @@
           <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
           <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
           <td>${isActive ? "Ja" : "Nein"}</td>
-          <td class="mono">${escapeHtml(user.created_at || "")}</td>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
           <td>
             <div class="actions user-actions-desktop">
               <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
@@ -2368,7 +2400,7 @@
           <td>${escapeHtml(r.reason || "")}</td>
           <td>${escapeHtml(r.changes || "-")}</td>
           <td>${escapeHtml(r.status || "")}</td>
-          <td class="mono">${escapeHtml(r.created_at || "")}</td>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(r.created_at || ""))}</td>
           <td>
             <button type="button" data-req-approve="${escapeHtml(r.request_id || "")}">Freigeben</button>
             <button type="button" data-req-reject="${escapeHtml(r.request_id || "")}" class="ghost-btn">Ablehnen</button>
@@ -2434,7 +2466,7 @@
       }
       const rows = records.map(r => `
         <tr>
-          <td class="mono">${escapeHtml(r.created_at || "")}</td>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(r.created_at || ""))}</td>
           <td>${escapeHtml(r.action || "")}</td>
           <td>${escapeHtml(r.actor_type || "")}</td>
           <td class="mono">${escapeHtml(r.actor_id || "-")}</td>
@@ -2492,7 +2524,7 @@
         const risk = Number(r.absence_rate || 0) > 30 ? `<span class="source-alert">Risk >30%</span>` : "";
         return `
           <tr>
-            <td class="mono">${escapeHtml(r.lesson_date || "")}</td>
+            <td class="mono">${escapeHtml(formatDisplayDate(r.lesson_date || ""))}</td>
             <td>${escapeHtml(r.course_name || "-")}</td>
             <td class="mono">${escapeHtml(`${r.present || 0}/${r.total || 0}`)}</td>
             <td class="mono">${escapeHtml(`${r.absence_rate || 0}%`)}</td>
@@ -2802,7 +2834,7 @@
             <td>${escapeHtml(user.display_name || "-")}</td>
             <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
             <td>${active ? "Ja" : "Nein"}</td>
-            <td class="mono">${escapeHtml(user.created_at || "")}</td>
+            <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
             <td>
               <div class="actions">
                 <button type="button" data-teacher-action="reset" data-username="${escapeHtml(username)}">Passwort</button>
@@ -3147,7 +3179,7 @@
         const canApprove = status === "pending";
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="mono">${escapeHtml(row.created_at || "")}</td>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
           <td class="mono">${escapeHtml(row.upload_id || "")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
@@ -3203,7 +3235,7 @@
       const rowsHtml = visible.map(({ row, ageMinutes, slaLevel }) => `
         <tr class="${slaLevel === "critical" ? "sla-critical" : (slaLevel === "warn" ? "sla-warn" : "")}">
           <td><input type="checkbox" data-pending-pick="${escapeHtml(row.upload_id || "")}"></td>
-          <td class="mono">${escapeHtml(row.created_at || "")}</td>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label))}</td>
@@ -3311,7 +3343,7 @@
         const niveauText = escapeHtml(String(result.niveau_einschaetzung || "-"));
         const info = document.getElementById("previewInfo");
         if (info) {
-          const createdAtText = escapeHtml(String(payload.created_at || "-"));
+          const createdAtText = escapeHtml(formatDisplayDateTime(String(payload.created_at || "")) || "-");
           const writingText = escapeHtml(formatWritingDuration(payload.writing_duration_seconds, payload.writing_duration_label));
           info.innerHTML = `
             <strong>ID:</strong> <span class="mono">${escapeHtml(uploadId)}</span> |
@@ -3484,7 +3516,7 @@
           tr.classList.add("source-risk");
         }
         tr.innerHTML = `
-          <td class="mono">${escapeHtml(row.created_at || "")}</td>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
           <td class="mono">${escapeHtml(row.record_id || "")}</td>
           <td>${escapeHtml(row.student_name || "-")}</td>
           <td class="mono">${escapeHtml(row.student_username || "-")}</td>
@@ -3596,8 +3628,8 @@
             <td class="mono">${escapeHtml(row.room_id || "")}</td>
             <td class="mono">${escapeHtml(row.code || "")}</td>
             <td>${escapeHtml(row.title || "-")}</td>
-            <td>${escapeHtml((row.created_at || "").slice(0, 16))}</td>
-            <td>${escapeHtml((row.end_at || "").slice(0, 16))}</td>
+            <td>${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
+            <td>${escapeHtml(formatDisplayDateTime(row.end_at || ""))}</td>
             <td>${escapeHtml(status)}</td>
             <td>${participants}</td>
             <td>
@@ -3807,8 +3839,8 @@
           <tr>
             <td class="mono">${escapeHtml(username)}</td>
             <td>${escapeHtml(p.display_name || "-")}</td>
-            <td class="mono">${escapeHtml((p.joined_at || "").slice(0, 16))}</td>
-            <td class="mono">${escapeHtml((p.submitted_at || "").slice(0, 16)) || "-"}</td>
+            <td class="mono">${escapeHtml(formatDisplayDateTime(String(p.joined_at || "")) || "-")}</td>
+            <td class="mono">${escapeHtml(formatDisplayDateTime(String(p.submitted_at || "")) || "-")}</td>
             <td>${submitted ? "Ja" : "Nein"}</td>
             <td>${Number(p.word_count || 0)}</td>
             <td>${escapeHtml(preview)}${preview.length >= 180 ? "..." : ""}</td>

@@ -887,6 +887,57 @@
       color: #52667f;
     }
 
+    .card-accordion {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fbff;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .card-accordion + .card-accordion {
+      margin-top: 12px;
+    }
+
+    .card-accordion-summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #eef5ff;
+      border-bottom: 1px solid #d9e6f5;
+    }
+
+    .card-accordion-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-accordion-summary .title-wrap {
+      min-width: 0;
+    }
+
+    .card-accordion-summary .section-title {
+      font-size: 1.45rem;
+      margin: 0;
+    }
+
+    .card-accordion-icon {
+      font-size: 1rem;
+      color: #4f637e;
+      transition: transform 0.2s ease;
+    }
+
+    .card-accordion[open] .card-accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    .card-accordion-body {
+      padding: 14px 16px 2px;
+    }
+
     .task-status-panel {
       margin-top: 12px;
       padding: 12px;
@@ -1670,10 +1721,17 @@
       </section>
 
       <section id="workCard" class="card hidden">
-        <h2 class="section-title">Mail schreiben und prüfen</h2>
-        <p class="section-subtitle">Bitte im DTZ-Stil schreiben: Anrede, Anlass, Bitte/Wunsch, Schluss.</p>
+        <details id="workAccordion" class="card-accordion">
+          <summary class="card-accordion-summary">
+            <div class="title-wrap">
+              <h2 class="section-title">Mail schreiben und prüfen</h2>
+              <p class="section-subtitle">Bitte im DTZ-Stil schreiben: Anrede, Anlass, Bitte/Wunsch, Schluss.</p>
+            </div>
+            <span class="card-accordion-icon">▾</span>
+          </summary>
+          <div class="card-accordion-body">
 
-        <div class="task-picker">
+            <div class="task-picker">
           <label for="taskSelect">Aufgabe auswählen</label>
           <select id="taskSelect"></select>
           <div class="grid" style="margin-top: 10px; grid-template-columns: 1fr;">
@@ -1703,9 +1761,9 @@
             </div>
             <div id="taskStatusList" class="task-status-list"></div>
           </details>
-        </div>
+            </div>
 
-        <div class="letter-panel">
+            <div class="letter-panel">
           <label for="letterText">Ihre Mail</label>
           <textarea id="letterText" required placeholder="Sehr geehrte Damen und Herren, ..."
             autocomplete="on" autocorrect="on" autocapitalize="sentences" spellcheck="true"></textarea>
@@ -1713,14 +1771,16 @@
             <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind erlaubt.</div>
             <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
           </div>
-        </div>
+            </div>
 
-        <div class="row-end">
+            <div class="row-end">
           <div class="btn-wrap">
             <button id="uploadBtn" type="button">Brief hochladen</button>
           </div>
-        </div>
-        <div id="statusBox" class="hidden"></div>
+            </div>
+            <div id="statusBox" class="hidden"></div>
+          </div>
+        </details>
       </section>
 
       <section id="simulationCard" class="card hidden">
@@ -1872,12 +1932,6 @@
                   </div>
                 </details>
 
-                <h3 style="margin: 16px 0 8px;">Archivierte Korrekturen</h3>
-                <div>
-                  <label for="archiveSelect">Korrektur anzeigen</label>
-                  <select id="archiveSelect"></select>
-                </div>
-                <div id="archiveList" class="archive-list" style="margin-top:10px;"></div>
               </div>
             </section>
             <section class="portal-block">
@@ -1973,19 +2027,26 @@
       </section>
 
       <section id="speakingCard" class="card hidden">
-        <h2 class="section-title">DTZ Sprechen Trainer (Teil 1-3)</h2>
-        <p class="section-subtitle">Üben Sie alle drei Teile mit wechselnden Aufgaben.</p>
+        <details id="speakingAccordion" class="card-accordion">
+          <summary class="card-accordion-summary">
+            <div class="title-wrap">
+              <h2 class="section-title">DTZ Sprechen Trainer (Teil 1-3)</h2>
+              <p class="section-subtitle">Üben Sie alle drei Teile mit wechselnden Aufgaben.</p>
+            </div>
+            <span class="card-accordion-icon">▾</span>
+          </summary>
+          <div class="card-accordion-body">
 
-        <div class="row-end">
+            <div class="row-end">
           <div class="btn-wrap">
             <button id="newSpeakingSetBtn" type="button">Neue Sprechaufgaben</button>
           </div>
           <div class="btn-wrap">
             <button id="backToMenuFromSpeakingBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
           </div>
-        </div>
+            </div>
 
-        <div class="speak-wrap">
+            <div class="speak-wrap">
           <div class="speak-tabs">
             <button id="speakTab1" type="button" class="speak-tab active">Teil 1</button>
             <button id="speakTab2" type="button" class="speak-tab">Teil 2</button>
@@ -2055,6 +2116,8 @@
             <div class="speak-note">Tipp: Reagieren, Vorschläge machen und am Ende eine Einigung formulieren.</div>
           </section>
         </div>
+          </div>
+        </details>
       </section>
 
       <section id="lidClassicCard" class="card hidden">
@@ -2163,7 +2226,6 @@
     let currentBskResult = null;
     let currentStudentLabel = "";
     let currentStudentUsername = "";
-    let letterArchive = [];
     let taskStatus = {};
     let currentTaskIndex = 0;
     let taskFilter = "all";
@@ -3232,7 +3294,7 @@
         const total = Math.max(1, Number(row.score_total || 0));
         const ok = Math.max(0, Number(row.score_correct || 0));
         const pct = Math.max(0, Math.min(100, Math.round((ok / total) * 100)));
-        const date = String(row.created_at || "").slice(0, 10);
+        const date = formatDisplayDate(String(row.created_at || ""));
         return `
           <div style="margin-bottom:8px;">
             <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;">
@@ -3477,6 +3539,7 @@
 
     function openCorrectionView() {
       setMainView("correction");
+      setAccordionOpen("workAccordion", true);
     }
 
     function openPortalView() {
@@ -3510,14 +3573,23 @@
 
     function openSpeakingView() {
       setMainView("speaking");
+      setAccordionOpen("speakingAccordion", true);
       generateSpeakingSet();
       setSpeakingTab(1);
     }
 
     function openB1View() {
       showCards(["workCard", "speakingCard"]);
+      setAccordionOpen("workAccordion", false);
+      setAccordionOpen("speakingAccordion", false);
       generateSpeakingSet();
       setSpeakingTab(1);
+    }
+
+    function setAccordionOpen(id, isOpen) {
+      const node = document.getElementById(id);
+      if (!node) return;
+      node.open = !!isOpen;
     }
 
     function openBskSuiteView() {
@@ -4116,7 +4188,7 @@
           <div class="portal-item">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>${escapeHtml(row.description || "-")}</div>
-            <div>Fällig: ${escapeHtml(row.due_date || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
+            <div>Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
           </div>
         `
       );
@@ -4127,7 +4199,7 @@
         "Noch keine Notizen.",
         row => `
           <div class="portal-item">
-            <strong>${escapeHtml((row.created_at || "").slice(0, 10))} | ${escapeHtml(row.teacher || "Lehrkraft")}</strong>
+            <strong>${escapeHtml(formatDisplayDate(String(row.created_at || "")) || "-")} | ${escapeHtml(row.teacher || "Lehrkraft")}</strong>
             <div>${escapeHtml(row.note || "-")}</div>
           </div>
         `
@@ -4203,7 +4275,6 @@
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderPortalData(payload);
-        setLetterArchive(payload.letter_corrections || []);
         const latest = payload.latest_letter_correction;
         if (latest && typeof latest === "object" && latest.corrected_letter) {
           renderResult(latest);
@@ -5064,78 +5135,23 @@
       if (feedback) feedback.textContent = result.teacher_feedback_de || "";
     }
 
+    function formatDisplayDate(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = String(d.getFullYear());
+        return `${day}.${month}.${year}`;
+      }
+      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+      return raw;
+    }
+
     function normalizeDateString(value) {
-      return String(value || "").slice(0, 10);
-    }
-
-    function renderLetterArchiveRows(rows) {
-      const wrap = document.getElementById("archiveList");
-      if (!rows.length) {
-        wrap.innerHTML = `<div class="archive-empty">Noch keine freigegebenen Briefe vorhanden.</div>`;
-        return;
-      }
-      wrap.innerHTML = rows.map(row => {
-        const date = normalizeDateString(row.created_at);
-        const topic = String(row.topic || row.task_prompt || "Ohne Aufgabenangabe").trim();
-        const score = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
-        const niveau = String(row.niveau_einschaetzung || "-");
-        const feedback = String(row.teacher_feedback_de || "").trim();
-        const correctionHtml = buildTeacherCorrectionHtml(row);
-        return `
-          <details class="archive-item">
-            <summary>
-              <div class="archive-meta">
-                <span>${escapeHtml(date || "-")}</span>
-                <span class="archive-score">${escapeHtml(score)}</span>
-                <span>${escapeHtml(niveau)}</span>
-              </div>
-              <span class="archive-topic">${escapeHtml(topic || "Ohne Thema")}</span>
-            </summary>
-            <div class="archive-body">
-              ${feedback ? `<div><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : ""}
-              <div class="teacher-correction">${correctionHtml}</div>
-            </div>
-          </details>
-        `;
-      }).join("");
-    }
-
-    function applyArchiveFilters() {
-      let rows = Array.isArray(letterArchive) ? letterArchive.slice() : [];
-      rows.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-
-      renderLetterArchiveRows(rows);
-    }
-
-    function setLetterArchive(rows) {
-      letterArchive = Array.isArray(rows) ? rows.slice() : [];
-      letterArchive.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
-      renderArchiveSelect(letterArchive);
-      applyArchiveFilters();
-    }
-
-    function archiveKey(row, idx) {
-      return String(row.upload_id || `${row.created_at || ""}#${idx}`);
-    }
-
-    function renderArchiveSelect(rows) {
-      const select = document.getElementById("archiveSelect");
-      if (!select) return;
-      if (!rows.length) {
-        select.innerHTML = '<option value="">Keine Korrekturen</option>';
-        return;
-      }
-      select.innerHTML = rows.map((row, idx) => {
-        const date = normalizeDateString(row.created_at);
-        const topic = String(row.topic || row.task_prompt || "Ohne Aufgabe").trim();
-        const score = typeof row.score_total === "number" ? `${row.score_total}/20` : "-";
-        const label = `${date || "-"} | ${topic} | ${score}`;
-        return `<option value="${archiveKey(row, idx)}">${escapeHtml(label)}</option>`;
-      }).join("");
-    }
-
-    function findArchiveByKey(key) {
-      return letterArchive.find((row, idx) => archiveKey(row, idx) === key) || null;
+      return formatDisplayDate(value);
     }
 
     function formatTaskPoints(points) {
@@ -5392,13 +5408,6 @@
       window.location.href = "./admin.html";
     });
     initTaskSelect();
-    const archiveSelect = document.getElementById("archiveSelect");
-    if (archiveSelect) {
-      archiveSelect.addEventListener("change", () => {
-        const row = findArchiveByKey(archiveSelect.value);
-        if (row) renderResult(row);
-      });
-    }
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
     document.getElementById("levelPortalBtn").addEventListener("click", () => navigateToSection("portal"));
