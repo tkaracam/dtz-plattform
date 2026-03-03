@@ -20,51 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 require_admin_session_json();
 require_once __DIR__ . '/letter_reviews.php';
-require_once __DIR__ . '/correction_engine.php';
-
-function read_json_array_file(string $file): array
-{
-    if (!is_file($file)) {
-        return [];
-    }
-    $raw = file_get_contents($file);
-    if (!is_string($raw) || trim($raw) === '') {
-        return [];
-    }
-    $decoded = json_decode($raw, true);
-    return is_array($decoded) ? $decoded : [];
-}
-
-function write_json_array_file(string $file, array $rows): bool
-{
-    $json = json_encode(array_values($rows), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    if (!is_string($json)) {
-        return false;
-    }
-    return @file_put_contents($file, $json . PHP_EOL, LOCK_EX) !== false;
-}
-
-function append_teacher_note(string $storageDir, string $studentUsername, string $noteText): void
-{
-    if ($studentUsername === '') {
-        return;
-    }
-    $file = $storageDir . '/teacher_notes.json';
-    $rows = read_json_array_file($file);
-    try {
-        $suffix = substr(bin2hex(random_bytes(4)), 0, 8);
-    } catch (Throwable $e) {
-        $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 8);
-    }
-    $rows[] = [
-        'id' => 'note-' . gmdate('YmdHis') . '-' . $suffix,
-        'student_username' => $studentUsername,
-        'created_at' => gmdate('c'),
-        'note' => $noteText,
-        'teacher' => 'Lehrkraft',
-    ];
-    @write_json_array_file($file, $rows);
-}
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -112,9 +67,6 @@ $files = glob($storageDir . '/letters-*.jsonl') ?: [];
 rsort($files, SORT_STRING);
 
 $records = [];
-$autoCandidates = [];
-$autoApproved = 0;
-$autoCutoff = time() - (31 * 60);
 
 foreach ($files as $file) {
     $handle = @fopen($file, 'rb');
@@ -175,60 +127,9 @@ foreach ($files as $file) {
             'score_total' => null,
         ];
 
-        $uploadId = (string)($record['upload_id'] ?? '');
-        if ($uploadId !== '' && $ts > 0 && $ts <= $autoCutoff && !isset($reviewsByUpload[$uploadId])) {
-            $autoCandidates[] = $record;
-        }
     }
 
     fclose($handle);
-}
-
-if ($autoCandidates) {
-    foreach ($autoCandidates as $candidate) {
-        if ($autoApproved >= 50) {
-            break;
-        }
-        $uploadId = trim((string)($candidate['upload_id'] ?? ''));
-        if ($uploadId === '' || isset($reviewsByUpload[$uploadId])) {
-            continue;
-        }
-        $letterText = trim((string)($candidate['letter_text'] ?? ''));
-        if ($letterText === '') {
-            continue;
-        }
-        $taskPrompt = trim((string)($candidate['task_prompt'] ?? ''));
-        $requiredPoints = is_array($candidate['required_points'] ?? null) ? $candidate['required_points'] : [];
-        try {
-            $correction = dtz_run_correction($letterText, $taskPrompt, $requiredPoints);
-        } catch (Throwable $e) {
-            continue;
-        }
-        $reviewRecord = [
-            'upload_id' => $uploadId,
-            'student_username' => (string)($candidate['student_username'] ?? ''),
-            'student_name' => (string)($candidate['student_name'] ?? ''),
-            'decision' => 'approve',
-            'note' => 'Automatische Freigabe nach 31 Minuten.',
-            'reviewed_at' => gmdate('c'),
-            'reviewed_by' => 'auto',
-            'correction_result' => $correction,
-        ];
-        if (!append_letter_review($storageDir, $reviewRecord)) {
-            continue;
-        }
-        $reviewsByUpload[$uploadId] = $reviewRecord;
-        $autoApproved += 1;
-
-        $score = (int)($correction['score_total'] ?? 0);
-        $niveau = (string)($correction['niveau_einschaetzung'] ?? '-');
-        append_teacher_note($storageDir, (string)($candidate['student_username'] ?? ''), "Ihr Brief wurde automatisch freigegeben. Ergebnis: {$score}/20 ({$niveau}).");
-
-        append_audit_log('letter_review_auto', [
-            'upload_id' => $uploadId,
-            'student_username' => (string)($candidate['student_username'] ?? ''),
-        ]);
-    }
 }
 
 foreach ($records as &$row) {

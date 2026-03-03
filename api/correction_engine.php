@@ -294,7 +294,7 @@ function dtz_run_correction(string $letterText, string $taskPrompt, array $requi
 
     $taskText = $taskPrompt !== '' ? $taskPrompt : 'Keine Aufgabenstellung angegeben.';
     $systemPrompt = <<<SYS
-Du bist eine erfahrene Deutschlehrkraft fuer DTZ Schreiben (g.a.s.t.-orientiert).
+Du bist eine erfahrene Deutschlehrkraft für DTZ Schreiben (g.a.s.t.-orientiert).
 Antworte ausschliesslich mit gueltigem JSON.
 Bewerte konstruktiv, klar und auf DTZ-Niveau.
 Nutze bei der Bewertung die Perspektive der DTZ-Kriterien:

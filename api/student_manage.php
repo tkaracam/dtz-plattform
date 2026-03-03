@@ -76,7 +76,7 @@ if ($action === 'reset_password') {
     array_splice($users, $foundIndex, 1);
     if (!write_student_users($users)) {
         http_response_code(500);
-        echo json_encode(['error' => 'Aenderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Änderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     append_audit_log('student_manage', [
@@ -100,7 +100,7 @@ if ($action === 'reset_password') {
 
 if (!write_student_users($users)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Aenderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Änderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

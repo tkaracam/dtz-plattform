@@ -46,7 +46,7 @@ function require_student_session_json(): array
     enforce_session_timeout_json();
     if (empty($_SESSION['student_authenticated']) || empty($_SESSION['student_username'])) {
         http_response_code(401);
-        echo json_encode(['error' => 'Nicht autorisiert. Bitte zuerst als Schueler anmelden.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Nicht autorisiert. Bitte zuerst als Schüler anmelden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
