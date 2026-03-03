@@ -88,7 +88,7 @@
     .hero-brand img {
       display: block;
       width: auto;
-      height: 54px;
+      height: 38px;
     }
 
     .eyebrow {
@@ -610,6 +610,70 @@
     .hidden { display: none; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
+    .preview-wrap {
+      margin-top: 12px;
+      border: 1px solid #c8d9eb;
+      border-radius: 14px;
+      background: #f8fbff;
+      padding: 12px;
+    }
+
+    .preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .preview-head h4 {
+      margin: 0;
+      color: #143554;
+      font-size: 1rem;
+    }
+
+    .preview-columns {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .preview-panel {
+      border: 1px solid #d5e2ef;
+      border-radius: 12px;
+      background: #fff;
+      padding: 9px;
+    }
+
+    .preview-panel-title {
+      margin: 0 0 6px;
+      font-size: 0.92rem;
+      color: #22415f;
+      font-weight: 700;
+    }
+
+    .preview-text {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      font-size: 0.9rem;
+      color: #17324f;
+    }
+
+    .preview-meta {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: #294560;
+    }
+
+    .preview-meta ul {
+      margin: 6px 0 0;
+      padding-left: 18px;
+    }
+
     @keyframes rise {
       from {
         opacity: 0;
@@ -648,7 +712,7 @@
       }
 
       .hero-brand img {
-        height: 54px;
+        height: 38px;
       }
 
       .hero {
@@ -677,6 +741,10 @@
 
       .card {
         padding: 14px;
+      }
+
+      .preview-columns {
+        grid-template-columns: 1fr;
       }
 
       table {
@@ -803,13 +871,13 @@
         <div id="userStatus" class="hidden"></div>
 
         <div class="bulk-wrap">
-          <h3 class="section-title" style="font-size: 1.25rem;">Schnellgenerator (mehrere Schueler)</h3>
+          <h3 class="section-title" style="font-size: 1.25rem;">Schnellgenerator (mehrere Schüler)</h3>
           <p class="section-subtitle">Erzeugt sofort Benutzername+Passwort und legt die Konten in Serie an.</p>
 
           <div class="grid">
             <div>
-              <label for="bulkPrefix">Praefix</label>
-              <input id="bulkPrefix" type="text" value="kursa" placeholder="z. B. kursa">
+              <label for="bulkPrefix">Präfix</label>
+              <input id="bulkPrefix" type="text" value="bamf" placeholder="z. B. bamf">
             </div>
             <div>
               <label for="bulkCount">Anzahl</label>
@@ -823,7 +891,7 @@
               <input id="bulkStart" type="number" min="1" max="9999" value="1">
             </div>
             <div>
-              <label for="bulkPwdLength">Passwortlaenge</label>
+              <label for="bulkPwdLength">Passwortlänge</label>
               <input id="bulkPwdLength" type="number" min="6" max="10" value="6">
             </div>
           </div>
@@ -875,7 +943,7 @@
 
         <div id="paneAttendance" class="admin-pane">
         <div id="attendanceSection" class="bulk-wrap">
-          <h2 class="section-title" style="font-size: 1.35rem;">Anwesenheit (Kilitlemeli)</h2>
+          <h2 class="section-title" style="font-size: 1.35rem;">Anwesenheit (sperrbar)</h2>
           <p class="section-subtitle">Sitzung speichern und dann sperren. Gesperrte Sitzungen können nicht bearbeitet werden.</p>
 
           <div class="grid">
@@ -890,13 +958,13 @@
               <input id="attendanceCourse" type="text" placeholder="z. B. BSK-B1-Abendkurs" readonly>
             </div>
             <div>
-              <label for="attendanceDate">Ders tarihi</label>
+              <label for="attendanceDate">Unterrichtsdatum</label>
               <input id="attendanceDate" type="date">
             </div>
           </div>
           <div class="grid">
             <div>
-              <label for="attendanceEvidence">Nachweis (online/praesenz)</label>
+              <label for="attendanceEvidence">Nachweis (online/präsenz)</label>
               <input id="attendanceEvidence" type="text" placeholder="z. B. Zoom Log + Screenshot 18:00-20:15">
             </div>
             <div>
@@ -908,7 +976,7 @@
             <button id="loadAttendanceStudentsBtn" type="button">Teilnehmer laden</button>
             <button id="saveAttendanceBtn" type="button">Anwesenheit speichern</button>
             <button id="lockAttendanceBtn" type="button">Sitzung sperren</button>
-            <button id="listAttendanceBtn" class="ghost-btn" type="button">Anwesenheit listesi</button>
+            <button id="listAttendanceBtn" class="ghost-btn" type="button">Anwesenheitsliste</button>
           </div>
           <div id="attendanceStatus" class="hidden"></div>
           <div id="attendanceRiskWrap" style="margin-top:10px;"></div>
@@ -1047,7 +1115,7 @@
           <p class="section-subtitle">Wer hat wann welche Aktion ausgeführt (IP + Meta).</p>
           <div class="grid">
             <div>
-              <label for="auditActionQuery">Action filtre</label>
+              <label for="auditActionQuery">Aktionsfilter</label>
               <input id="auditActionQuery" type="text" placeholder="z. B. attendance_">
             </div>
             <div>
@@ -1109,6 +1177,24 @@
         </div>
 
         <div id="panelStatus" class="hidden"></div>
+        <div id="previewWrap" class="preview-wrap hidden">
+          <div class="preview-head">
+            <h4>Korrektur-Vorschau (vor Freigabe)</h4>
+            <button id="closePreviewBtn" type="button" class="ghost-btn">Vorschau schließen</button>
+          </div>
+          <div id="previewInfo" class="preview-meta"></div>
+          <div class="preview-columns">
+            <div class="preview-panel">
+              <p class="preview-panel-title">Originaler Brief</p>
+              <pre id="previewOriginalText" class="preview-text"></pre>
+            </div>
+            <div class="preview-panel">
+              <p class="preview-panel-title">Korrigierte Version</p>
+              <pre id="previewCorrectedText" class="preview-text"></pre>
+            </div>
+          </div>
+          <div id="previewMistakes" class="preview-meta"></div>
+        </div>
         <h3 id="pendingQueueTitle" class="section-title" style="margin-top: 16px;">Warteschlange (ausstehend: 0)</h3>
         <div id="pendingBulkActions" class="actions" style="margin-top: 8px; display: none;">
           <button id="pendingSelectAllBtn" type="button" class="ghost-btn">Alle markieren</button>
@@ -1475,6 +1561,22 @@
       box.value = rows.map(item => `${item.username};${item.password}`).join("\n");
     }
 
+    function parseBulkPreviewRows() {
+      const box = document.getElementById("bulkPreview");
+      const lines = String(box.value || "")
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean);
+      return lines
+        .map(line => {
+          const parts = line.split(";");
+          const username = normalizePrefix(parts[0] || "").slice(0, 32);
+          const password = String(parts[1] || "").trim();
+          return { username, password };
+        })
+        .filter(row => row.username && row.password.length >= 6);
+    }
+
     async function createStudentViaApi(username, password, displayName = "", email = "", phone = "") {
       const response = await fetch("./api/student_create.php", {
         method: "POST",
@@ -1494,7 +1596,10 @@
 
     async function createBulkStudents() {
       clearBox("bulkStatus");
-      const rows = buildBulkCredentials();
+      let rows = parseBulkPreviewRows();
+      if (!rows.length) {
+        rows = buildBulkCredentials();
+      }
       renderBulkPreview(rows);
       const btn = document.getElementById("bulkCreateBtn");
       btn.disabled = true;
@@ -1541,7 +1646,7 @@
         await navigator.clipboard.writeText(box.value);
         setBox("bulkStatus", "ok", "Liste wurde kopiert.");
       } catch (_) {
-        setBox("bulkStatus", "error", "Kopieren nicht moeglich. Bitte manuell markieren.");
+        setBox("bulkStatus", "error", "Kopieren nicht möglich. Bitte manuell markieren.");
       }
     }
 
@@ -1560,7 +1665,7 @@
           return { username: username || "", password: password || "" };
         });
       if (!rows.length) {
-        setBox("bulkStatus", "error", "Keine Daten fuer CSV.");
+        setBox("bulkStatus", "error", "Keine Daten für CSV.");
         return;
       }
       const lines = ["username,password"];
@@ -2604,7 +2709,7 @@
           <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
           <td>
             ${canApprove
-              ? `<div class="actions"><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
+              ? `<div class="actions"><button type="button" data-letter-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Korrektur ansehen</button><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
               : '<span class="muted">Abgeschlossen</span>'}
           </td>
         `;
@@ -2613,6 +2718,9 @@
       table.appendChild(tbody);
       wrap.innerHTML = "";
       wrap.appendChild(table);
+      wrap.querySelectorAll("[data-letter-preview]").forEach(btn => {
+        btn.addEventListener("click", () => previewLetter(btn.getAttribute("data-letter-preview") || ""));
+      });
       wrap.querySelectorAll("[data-letter-approve]").forEach(btn => {
         btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-letter-approve") || "", "approve"));
       });
@@ -2654,6 +2762,7 @@
           <td class="mono">${escapeHtml(formatPendingAge(ageMinutes))}</td>
           <td>
             <div class="actions">
+              <button type="button" data-pending-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Korrektur ansehen</button>
               <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Freigeben</button>
               <button type="button" data-pending-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button>
             </div>
@@ -2674,6 +2783,9 @@
           });
         });
       }
+      wrap.querySelectorAll("[data-pending-preview]").forEach(btn => {
+        btn.addEventListener("click", () => previewLetter(btn.getAttribute("data-pending-preview") || ""));
+      });
       wrap.querySelectorAll("[data-pending-approve]").forEach(btn => {
         btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-pending-approve") || "", "approve"));
       });
@@ -2718,6 +2830,69 @@
       return payload;
     }
 
+    function hidePreview() {
+      const wrap = document.getElementById("previewWrap");
+      if (!wrap) return;
+      wrap.classList.add("hidden");
+      const info = document.getElementById("previewInfo");
+      const original = document.getElementById("previewOriginalText");
+      const corrected = document.getElementById("previewCorrectedText");
+      const mistakes = document.getElementById("previewMistakes");
+      if (info) info.innerHTML = "";
+      if (original) original.textContent = "";
+      if (corrected) corrected.textContent = "";
+      if (mistakes) mistakes.innerHTML = "";
+    }
+
+    async function previewLetter(uploadId) {
+      clearBox("panelStatus");
+      if (!uploadId) return;
+      try {
+        const response = await fetch("./api/letter_preview.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ upload_id: uploadId })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const result = payload && typeof payload === "object" ? (payload.correction_result || {}) : {};
+        const scoreText = result.score_total == null ? "-" : `${escapeHtml(String(result.score_total))}/20`;
+        const niveauText = escapeHtml(String(result.niveau_einschaetzung || "-"));
+        const info = document.getElementById("previewInfo");
+        if (info) {
+          info.innerHTML = `
+            <strong>ID:</strong> <span class="mono">${escapeHtml(uploadId)}</span> |
+            <strong>Schüler:</strong> ${escapeHtml(payload.student_name || "-")} (${escapeHtml(payload.student_username || "-")}) |
+            <strong>Punkte:</strong> ${scoreText} |
+            <strong>Niveau:</strong> ${niveauText}
+          `;
+        }
+        const original = document.getElementById("previewOriginalText");
+        if (original) original.textContent = String(payload.letter_text || "");
+        const corrected = document.getElementById("previewCorrectedText");
+        if (corrected) corrected.textContent = String(result.corrected_letter || payload.letter_text || "");
+        const mistakes = Array.isArray(result.mistakes) ? result.mistakes : [];
+        const mistakeHtml = mistakes.length
+          ? `<strong>Markierte Korrekturen:</strong><ul>${mistakes.slice(0, 80).map(item => {
+            const category = escapeHtml(String(item && item.category ? item.category : "Fehler"));
+            const fromText = escapeHtml(String(item && item.original ? item.original : ""));
+            const toText = escapeHtml(String(item && item.corrected ? item.corrected : ""));
+            const line = item && item.line ? ` (Zeile ${escapeHtml(String(item.line))})` : "";
+            return `<li><strong>${category}</strong>: ${fromText} → ${toText}${line}</li>`;
+          }).join("")}</ul>`
+          : "<strong>Markierte Korrekturen:</strong> Keine Einzelmarkierung vorhanden.";
+        const mistakesNode = document.getElementById("previewMistakes");
+        if (mistakesNode) mistakesNode.innerHTML = mistakeHtml;
+        const wrap = document.getElementById("previewWrap");
+        if (wrap) {
+          wrap.classList.remove("hidden");
+          wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      } catch (err) {
+        setBox("panelStatus", "error", `Vorschau fehlgeschlagen: ${err.message}`);
+      }
+    }
+
     async function reviewLetter(uploadId, decision) {
       clearBox("panelStatus");
       if (!uploadId) return;
@@ -2725,6 +2900,7 @@
       if (note === null) return;
       try {
         await sendLetterReview(uploadId, decision, note);
+        hidePreview();
         setBox("panelStatus", "ok", `${decision === "approve" ? "Freigabe" : "Ablehnung"} gespeichert: ${uploadId}`);
         listLetters();
       } catch (err) {
@@ -2767,6 +2943,7 @@
 
       approveBtn.disabled = false;
       rejectBtn.disabled = false;
+      hidePreview();
       await listLetters();
       setBox(
         "panelStatus",
@@ -3495,6 +3672,7 @@
     document.getElementById("pendingBulkRejectBtn").addEventListener("click", () => bulkReviewPending("reject"));
     document.getElementById("pendingCriticalFilterBtn").addEventListener("click", togglePendingCriticalFilter);
     document.getElementById("pendingLiveToggleBtn").addEventListener("click", togglePendingLive);
+    document.getElementById("closePreviewBtn").addEventListener("click", hidePreview);
     document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
     document.getElementById("listBskBtn").addEventListener("click", listBskRecords);
     document.getElementById("downloadBskCsvBtn").addEventListener("click", downloadBskCsv);
