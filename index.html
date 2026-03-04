@@ -5722,7 +5722,7 @@
     }
 
     function enforceExamInputRules() {
-      const blockedIds = ["letterText", "simulationText", "roomAnswerText"];
+      const blockedIds = ["letterText", "portalLetterText", "simulationText", "roomAnswerText"];
       const blockedNodes = blockedIds
         .map(id => document.getElementById(id))
         .filter(Boolean);
@@ -5765,11 +5765,30 @@
         }
       });
     }
+    const portalLetterTextArea = document.getElementById("portalLetterText");
+    if (portalLetterTextArea) {
+      portalLetterTextArea.addEventListener("input", () => markLetterWritingStarted());
+      portalLetterTextArea.addEventListener("focus", () => {
+        if (String(portalLetterTextArea.value || "").trim()) {
+          markLetterWritingStarted();
+        }
+      });
+    }
     const analyzeBtn = document.getElementById("analyzeBtn");
     if (analyzeBtn) analyzeBtn.addEventListener("click", analyze);
-    document.getElementById("uploadBtn").addEventListener("click", uploadLetter);
+    document.getElementById("uploadBtn").addEventListener("click", () => uploadLetter("letterText", "uploadBtn", "statusBox"));
+    const portalUploadBtn = document.getElementById("portalUploadBtn");
+    if (portalUploadBtn) {
+      portalUploadBtn.addEventListener("click", () => uploadLetter("portalLetterText", "portalUploadBtn", "portalWriteStatus"));
+    }
     const startAssignmentBtn = document.getElementById("startAssignmentBtn");
-    if (startAssignmentBtn) startAssignmentBtn.addEventListener("click", startCurrentAssignment);
+    if (startAssignmentBtn) {
+      startAssignmentBtn.addEventListener("click", () => startCurrentAssignment("startAssignmentBtn", "statusBox"));
+    }
+    const portalStartAssignmentBtn = document.getElementById("portalStartAssignmentBtn");
+    if (portalStartAssignmentBtn) {
+      portalStartAssignmentBtn.addEventListener("click", () => startCurrentAssignment("portalStartAssignmentBtn", "portalWriteStatus"));
+    }
     document.getElementById("studentLoginBtn").addEventListener("click", loginStudent);
     document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);
     document.getElementById("newClassicLidExamBtn").addEventListener("click", generateClassicLidExam);
