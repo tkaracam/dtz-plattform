@@ -1033,7 +1033,7 @@
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
           <button id="jumpTeachersBtn" class="admin-menu-item owner-only hidden" type="button">Lehrkräfte</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
-          <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Ödevler</button>
+          <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
           <button id="jumpAttendanceBtn" class="admin-menu-item archived-module hidden" type="button">Anwesenheit</button>
           <button id="jumpNotifyBtn" class="admin-menu-item archived-module hidden" type="button">Benachrichtigungen</button>
           <button id="jumpRoomSectionBtn" class="admin-menu-item archived-module hidden" type="button">Virtueller Saal</button>
@@ -1085,7 +1085,7 @@
           <h3>Start-Checkliste</h3>
           <ol>
             <li>Schülerzugänge öffnen und Konten erstellen.</li>
-            <li>Ödevler öffnen und Aufgaben an Kurs/Gruppen zuweisen.</li>
+            <li>Hausaufgaben öffnen und Aufgaben an Kurse/Gruppen zuweisen.</li>
             <li>Nach der Übung Archiv öffnen und Einträge/CSV prüfen.</li>
             <li>Einmal pro Woche Backup von api/storage erstellen.</li>
           </ol>
@@ -2763,12 +2763,52 @@
       });
     }
 
+    async function fetchHomeworkAssignments() {
+      const candidates = [
+        {
+          url: "./api/homework_assign.php",
+          options: {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "list" })
+          }
+        },
+        {
+          url: "/api/homework_assign.php",
+          options: {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "list" })
+          }
+        },
+        { url: "./api/homework_list.php", options: { method: "GET" } },
+        { url: "/api/homework_list.php", options: { method: "GET" } }
+      ];
+
+      const errors = [];
+      for (const candidate of candidates) {
+        try {
+          const response = await fetch(candidate.url, candidate.options);
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) {
+            throw new Error(payload.error || `Fehler: ${response.status}`);
+          }
+          if (!Array.isArray(payload.assignments)) {
+            throw new Error("Antwort enthält keine Aufgabenliste.");
+          }
+          return payload.assignments;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${candidate.url}: ${msg}`);
+        }
+      }
+      throw new Error(errors.join(" | "));
+    }
+
     async function listHomeworkAssignments() {
       try {
-        const response = await fetch("./api/homework_list.php", { method: "GET" });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        renderHomeworkAssignments(Array.isArray(payload.assignments) ? payload.assignments : []);
+        const assignments = await fetchHomeworkAssignments();
+        renderHomeworkAssignments(assignments);
       } catch (err) {
         const wrap = document.getElementById("homeworkListWrap");
         if (wrap) wrap.innerHTML = `<p>Aufgaben konnten nicht geladen werden: ${escapeHtml(err.message)}</p>`;
