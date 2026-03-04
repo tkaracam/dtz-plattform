@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/letter_reviews.php';
+require_once __DIR__ . '/homework_lib.php';
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 
@@ -159,24 +160,47 @@ usort($approvedLetterCorrections, static function (array $a, array $b): int {
     return strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? ''));
 });
 
-$homeworkRaw = read_json_file_array($storageDir . '/student_homeworks.json');
 $homeworks = [];
-foreach ($homeworkRaw as $row) {
-    if (!is_array($row)) {
+$nowTs = time();
+foreach (load_homework_assignments() as $assignment) {
+    if (!is_array($assignment)) {
         continue;
     }
-    $target = mb_strtolower(trim((string)($row['student_username'] ?? '')));
-    if ($target !== '' && $target !== $username && $target !== '*') {
+    if (!assignment_targets_student($assignment, $username)) {
         continue;
     }
+
+    $state = assignment_user_state($assignment, $username);
+    $submittedAt = trim((string)($state['submitted_at'] ?? ''));
+    $startedAt = trim((string)($state['started_at'] ?? ''));
+    $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+    $deadlineTs = (int)($state['deadline_ts'] ?? 0);
+    $expired = ($submittedAt === '' && $deadlineTs > 0 && $nowTs >= $deadlineTs);
+
+    $status = 'offen';
+    if ($submittedAt !== '') {
+        $status = 'abgegeben';
+    } elseif ($expired) {
+        $status = 'abgelaufen';
+    } elseif ($startedAt !== '') {
+        $status = 'läuft';
+    } elseif (!assignment_is_active_now($assignment, $nowTs)) {
+        $status = 'geplant';
+    }
+
     $homeworks[] = [
-        'id' => (string)($row['id'] ?? ''),
-        'title' => (string)($row['title'] ?? 'Aufgabe'),
-        'description' => (string)($row['description'] ?? ''),
-        'due_date' => (string)($row['due_date'] ?? ''),
-        'status' => (string)($row['status'] ?? 'offen'),
+        'id' => (string)($assignment['id'] ?? ''),
+        'title' => (string)($assignment['title'] ?? 'Aufgabe'),
+        'description' => (string)($assignment['description'] ?? ''),
+        'duration_minutes' => (int)($assignment['duration_minutes'] ?? 0),
+        'due_date' => $deadlineAt !== '' ? $deadlineAt : (string)($assignment['starts_at'] ?? ''),
+        'status' => $status,
     ];
 }
+usort($homeworks, static function (array $a, array $b): int {
+    return strcmp((string)($b['due_date'] ?? ''), (string)($a['due_date'] ?? ''));
+});
+$homeworks = array_slice($homeworks, 0, 30);
 
 $notesRaw = read_json_file_array($storageDir . '/teacher_notes.json');
 $teacherNotes = [];

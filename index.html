@@ -4219,6 +4219,18 @@
       return `${hours} Std. ${rest} Min.`;
     }
 
+    function resolveSafeHttpUrl(rawUrl) {
+      const value = String(rawUrl || "").trim();
+      if (!value) return "";
+      try {
+        const parsed = new URL(value, window.location.href);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+        return parsed.href;
+      } catch (_) {
+        return "";
+      }
+    }
+
     function parseRequiredPointsFromText(text) {
       const rows = String(text || "")
         .split(/\r?\n/)
@@ -4355,9 +4367,10 @@
 
       const attachment = String(currentAssignedHomework.attachment || "").trim();
       if (attachWrap && attachLink) {
-        if (attachment) {
+        const safeAttachmentUrl = resolveSafeHttpUrl(attachment);
+        if (safeAttachmentUrl) {
           attachWrap.classList.remove("hidden");
-          attachLink.href = attachment;
+          attachLink.href = safeAttachmentUrl;
         } else {
           attachWrap.classList.add("hidden");
           attachLink.href = "#";
@@ -4427,11 +4440,18 @@
       if (!wrap) {
         return;
       }
-      if (!rows || !rows.length) {
+      const safeRows = Array.isArray(rows)
+        ? rows.filter(item => item && typeof item === "object")
+        : [];
+      if (!safeRows.length) {
         wrap.textContent = emptyText;
         return;
       }
-      wrap.innerHTML = rows.map(renderer).join("");
+      try {
+        wrap.innerHTML = safeRows.map(renderer).join("");
+      } catch (_) {
+        wrap.textContent = emptyText;
+      }
     }
 
     function renderPortalData(payload) {
@@ -4449,7 +4469,7 @@
           <div class="portal-item">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>${escapeHtml(row.description || "-")}</div>
-            <div>Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
+            <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
           </div>
         `
       );

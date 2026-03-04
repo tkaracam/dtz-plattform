@@ -1073,7 +1073,7 @@
           <button type="button" class="admin-quick-btn" data-pane="accounts">Schülerzugänge</button>
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="teachers">Lehrkräfte</button>
           <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
-          <button type="button" class="admin-quick-btn" data-pane="homeworks">Ödevler</button>
+          <button type="button" class="admin-quick-btn" data-pane="homeworks">Hausaufgaben</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="attendance">Anwesenheit</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="notify">Benachrichtigungen</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="room">Virtueller Saal</button>
@@ -1250,76 +1250,72 @@
 
         <div id="paneHomeworks" class="admin-pane">
         <div id="homeworksSection" class="bulk-wrap">
-          <h2 class="section-title" style="font-size: 1.35rem;">Ödevler</h2>
-          <p class="section-subtitle">Ödev erstellen, Kurs/Gruppe veya seçili öğrencilere ata ve durumu izle.</p>
+          <h2 class="section-title" style="font-size: 1.35rem;">Hausaufgaben</h2>
+          <p class="section-subtitle">Mail-Aufgabe auswählen, Kurs/Gruppe oder ausgewählten Teilnehmenden zuweisen und Fortschritt verfolgen.</p>
 
           <details class="fold-section" open>
-            <summary>+ Ödev Ata</summary>
+            <summary>+ Aufgabe zuweisen</summary>
             <div class="fold-section-content">
-              <div class="grid">
-                <div>
-                  <label for="hwTitle">Ödev başlığı</label>
-                  <input id="hwTitle" type="text" placeholder="z. B. DTZ Schreiben - Entschuldigungsmail">
-                </div>
-                <div>
-                  <label for="hwAttachment">Dosya / link (opsiyonel)</label>
-                  <input id="hwAttachment" type="text" placeholder="https://... veya dosya bağlantısı">
-                </div>
+              <div>
+                <label for="hwTaskTemplate">Mail-Aufgabe auswählen</label>
+                <select id="hwTaskTemplate">
+                  <option value="">Bitte Aufgabe wählen</option>
+                </select>
               </div>
               <div>
-                <label for="hwDescription">Açıklama / yönerge</label>
-                <textarea id="hwDescription" rows="4" placeholder="Ödev açıklaması ve yazım yönergesi"></textarea>
+                <label for="hwTaskPreview">Aufgabenstellung</label>
+                <textarea id="hwTaskPreview" rows="6" readonly></textarea>
               </div>
               <div class="grid">
                 <div>
-                  <label for="hwTargetType">Atama türü</label>
+                  <label for="hwTargetType">Zuweisungstyp</label>
                   <select id="hwTargetType">
-                    <option value="course" selected>Sınıf / grup</option>
-                    <option value="users">Seçili kullanıcılar</option>
+                    <option value="course" selected>Kurs / Gruppe</option>
+                    <option value="users">Ausgewählte Teilnehmende</option>
                   </select>
                 </div>
                 <div id="hwCourseWrap">
-                  <label for="hwCourseId">Sınıf / grup seçimi</label>
+                  <label for="hwCourseId">Kurs / Gruppe auswählen</label>
                   <select id="hwCourseId">
-                    <option value="">Önce kurs seçin</option>
+                    <option value="">Bitte zuerst Kurs auswählen</option>
                   </select>
                 </div>
               </div>
               <div id="hwUsersWrap" class="fold-section" style="margin-top:10px; display:none;">
-                <summary>Kullanıcı seçimi</summary>
+                <summary>Teilnehmende auswählen</summary>
                 <div class="fold-section-content">
-                  <div id="hwUsersList" class="portal-list">Henüz kullanıcı yok.</div>
+                  <div id="hwUsersList" class="portal-list">Noch keine Teilnehmenden vorhanden.</div>
                 </div>
               </div>
               <div class="grid">
                 <div>
-                  <label for="hwDurationValue">Süre</label>
+                  <label for="hwDurationValue">Dauer</label>
                   <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
                 </div>
                 <div>
-                  <label for="hwDurationUnit">Birim</label>
+                  <label for="hwDurationUnit">Einheit</label>
                   <select id="hwDurationUnit">
-                    <option value="minutes" selected>Dakika</option>
-                    <option value="hours">Saat</option>
+                    <option value="minutes" selected>Minuten</option>
+                    <option value="hours">Stunden</option>
                   </select>
                 </div>
                 <div>
-                  <label for="hwStartsAt">Başlangıç zamanı (opsiyonel)</label>
+                  <label for="hwStartsAt">Startzeit (optional)</label>
                   <input id="hwStartsAt" type="datetime-local">
                 </div>
               </div>
               <div class="actions">
-                <button id="createHomeworkBtn" type="button">Yayınla / Kaydet</button>
+                <button id="createHomeworkBtn" type="button">Veröffentlichen / Speichern</button>
               </div>
               <div id="homeworkStatus" class="hidden"></div>
             </div>
           </details>
 
           <details class="fold-section" open>
-            <summary>Atanan ödevler</summary>
+            <summary>Zugewiesene Aufgaben</summary>
             <div class="fold-section-content">
               <div class="actions" style="margin-top: 0;">
-                <button id="refreshHomeworkBtn" type="button" class="ghost-btn">Ödevleri güncelle</button>
+                <button id="refreshHomeworkBtn" type="button" class="ghost-btn">Aufgaben aktualisieren</button>
               </div>
               <div id="homeworkListWrap" style="margin-top:10px;"></div>
             </div>
@@ -1662,10 +1658,133 @@
       accounts: "Schülerzugänge",
       teachers: "Lehrkräfte",
       courses: "Kurse",
-      homeworks: "Ödevler",
+      homeworks: "Hausaufgaben",
       audit: "Audit",
       archive: "Archiv"
     };
+
+    const HOMEWORK_MAIL_TEMPLATES = [
+      {
+        id: "krankmeldung-im-kurs",
+        title: "Krankmeldung im Kurs",
+        prompt: "Sie schreiben Ihrer Kursleiterin eine E-Mail. Sie können morgen nicht zum Deutschkurs kommen, weil Sie einen Arzttermin haben. Schreiben Sie eine E-Mail.",
+        points: ["Entschuldigen Sie sich und nennen Sie den Grund.", "Nennen Sie den Termin (z. B. morgen) und was passiert.", "Bitten Sie um eine Information oder ein Ersatzmaterial."]
+      },
+      {
+        id: "lauter-nachbar",
+        title: "Lauter Nachbar",
+        prompt: "Sie schreiben Ihrem Nachbarn. Er hört spät abends sehr laut Musik. Schreiben Sie eine Nachricht.",
+        points: ["Beschreiben Sie das Problem.", "Sagen Sie, wann es besonders stört.", "Bitten Sie um eine Lösung oder Änderung."]
+      },
+      {
+        id: "termin-verschieben-behoerde",
+        title: "Termin verschieben (Behörde)",
+        prompt: "Sie haben einen Termin im Bürgerbüro, können aber nicht kommen. Schreiben Sie eine E-Mail und bitten Sie um einen neuen Termin.",
+        points: ["Nennen Sie den Grund.", "Schlagen Sie einen neuen Termin vor.", "Bitten Sie um Bestätigung."]
+      },
+      {
+        id: "kursbescheinigung",
+        title: "Kursbescheinigung",
+        prompt: "Sie brauchen eine Teilnahmebescheinigung für Ihren Deutschkurs. Schreiben Sie an die Schule.",
+        points: ["Erklären Sie, wofür Sie die Bescheinigung brauchen.", "Nennen Sie Ihren Kurs.", "Bitten Sie um schnelle Bearbeitung."]
+      },
+      {
+        id: "wohnung-heizung-defekt",
+        title: "Wohnung: Heizung defekt",
+        prompt: "In Ihrer Wohnung ist die Heizung kaputt. Schreiben Sie an die Hausverwaltung.",
+        points: ["Beschreiben Sie den Schaden.", "Nennen Sie, seit wann es das Problem gibt.", "Bitten Sie um Reparatur und Rückmeldung."]
+      },
+      {
+        id: "arbeit-schicht-tauschen",
+        title: "Arbeit: Schicht tauschen",
+        prompt: "Sie möchten Ihre Schicht am Freitag tauschen. Schreiben Sie Ihrer Teamleitung.",
+        points: ["Sagen Sie, warum Sie tauschen möchten.", "Schlagen Sie eine Alternative vor.", "Bitten Sie um eine kurze Antwort."]
+      },
+      {
+        id: "kind-krank-schule",
+        title: "Kind krank (Schule)",
+        prompt: "Ihr Kind ist krank und kann morgen nicht in die Schule. Schreiben Sie eine kurze Nachricht an die Schule.",
+        points: ["Entschuldigen Sie das Fehlen.", "Nennen Sie den Zeitraum.", "Bitten Sie um Hausaufgaben oder Infos."]
+      },
+      {
+        id: "bibliothek-ausweis-verlaengern",
+        title: "Bibliothek: Ausweis verlängern",
+        prompt: "Ihr Bibliotheksausweis läuft ab. Schreiben Sie an die Bibliothek.",
+        points: ["Nennen Sie Ihren Ausweis.", "Bitten Sie um Verlängerung.", "Fragen Sie nach den Öffnungszeiten."]
+      },
+      {
+        id: "arzttermin-absagen",
+        title: "Arzttermin absagen",
+        prompt: "Sie haben einen Arzttermin, können aber nicht kommen. Schreiben Sie an die Praxis.",
+        points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
+      },
+      {
+        id: "kursmaterial-fehlt",
+        title: "Kursmaterial fehlt",
+        prompt: "Sie haben das Kursmaterial verpasst. Schreiben Sie an die Lehrkraft.",
+        points: ["Sagen Sie, was fehlt.", "Nennen Sie den Grund.", "Bitten Sie um das Material."]
+      },
+      {
+        id: "arbeit-urlaub-beantragen",
+        title: "Arbeit: Urlaub beantragen",
+        prompt: "Sie möchten im Juli eine Woche Urlaub. Schreiben Sie an Ihre Vorgesetzte.",
+        points: ["Nennen Sie den Zeitraum.", "Sagen Sie, warum Sie Urlaub brauchen.", "Bitten Sie um Bestätigung."]
+      },
+      {
+        id: "nachhilfe-anfragen",
+        title: "Nachhilfe anfragen",
+        prompt: "Sie suchen Nachhilfe in Deutsch. Schreiben Sie an eine Nachhilfeschule.",
+        points: ["Nennen Sie Ihr Niveau.", "Sagen Sie, wann Sie Zeit haben.", "Fragen Sie nach den Kosten."]
+      },
+      {
+        id: "sportverein-kuendigen",
+        title: "Sportverein kündigen",
+        prompt: "Sie möchten aus dem Sportverein austreten. Schreiben Sie eine E-Mail.",
+        points: ["Nennen Sie Ihren Namen.", "Sagen Sie, ab wann Sie kündigen möchten.", "Bitten Sie um Bestätigung der Kündigung."]
+      },
+      {
+        id: "wohnung-besichtigen",
+        title: "Wohnung besichtigen",
+        prompt: "Sie haben eine Wohnungsanzeige gesehen. Schreiben Sie an die Vermieterin und bitten Sie um einen Besichtigungstermin.",
+        points: ["Sagen Sie, welche Wohnung.", "Schlagen Sie Termine vor.", "Stellen Sie sich kurz vor."]
+      },
+      {
+        id: "kita-platz",
+        title: "Kita-Platz",
+        prompt: "Sie suchen einen Kita-Platz für Ihr Kind. Schreiben Sie an eine Kita.",
+        points: ["Nennen Sie das Alter des Kindes.", "Sagen Sie, ab wann Sie den Platz brauchen.", "Bitten Sie um Rückmeldung."]
+      },
+      {
+        id: "reklamation-lieferung",
+        title: "Reklamation: Lieferung",
+        prompt: "Sie haben eine Bestellung erhalten, aber ein Teil fehlt. Schreiben Sie an den Kundenservice.",
+        points: ["Beschreiben Sie das Problem.", "Nennen Sie die Bestellnummer.", "Bitten Sie um Nachlieferung."]
+      },
+      {
+        id: "fehlende-arbeitsbescheinigung",
+        title: "Fehlende Arbeitsbescheinigung",
+        prompt: "Sie brauchen eine Arbeitsbescheinigung von Ihrer Firma. Schreiben Sie an die Personalabteilung.",
+        points: ["Erklären Sie, wofür Sie die Bescheinigung brauchen.", "Nennen Sie Ihren Namen/Abteilung.", "Bitten Sie um schnelle Rückmeldung."]
+      },
+      {
+        id: "nachbarschaft-paket",
+        title: "Nachbarschaft: Paket",
+        prompt: "Ihr Paket wurde beim Nachbarn abgegeben. Schreiben Sie eine kurze Nachricht.",
+        points: ["Sagen Sie, dass Ihr Paket dort ist.", "Bitten Sie um Abholung.", "Schlagen Sie eine Uhrzeit vor."]
+      },
+      {
+        id: "jobcenter-termin",
+        title: "Jobcenter: Termin",
+        prompt: "Sie können einen Termin beim Jobcenter nicht wahrnehmen. Schreiben Sie eine E-Mail.",
+        points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
+      },
+      {
+        id: "kurswechsel",
+        title: "Kurswechsel",
+        prompt: "Sie möchten von einem Abendkurs in einen Vormittagskurs wechseln. Schreiben Sie an die Schule.",
+        points: ["Nennen Sie Ihren aktuellen Kurs.", "Sagen Sie, warum Sie wechseln möchten.", "Bitten Sie um einen Wechseltermin."]
+      }
+    ];
 
     const roomTemplates = {
       A2: [
@@ -2542,6 +2661,48 @@
       }
     }
 
+    function buildHomeworkTemplateDescription(template) {
+      if (!template || typeof template !== "object") return "";
+      const prompt = String(template.prompt || "").trim();
+      const points = Array.isArray(template.points) ? template.points : [];
+      const pointLines = points
+        .map(item => String(item || "").trim())
+        .filter(Boolean)
+        .map(item => `- ${item}`);
+      return [prompt, ...pointLines].filter(Boolean).join("\n");
+    }
+
+    function getSelectedHomeworkTemplate() {
+      const select = document.getElementById("hwTaskTemplate");
+      const templateId = String(select?.value || "").trim();
+      if (!templateId) return null;
+      return HOMEWORK_MAIL_TEMPLATES.find(item => String(item.id || "") === templateId) || null;
+    }
+
+    function updateHomeworkTemplatePreview() {
+      const preview = document.getElementById("hwTaskPreview");
+      if (!preview) return;
+      const selected = getSelectedHomeworkTemplate();
+      preview.value = selected ? buildHomeworkTemplateDescription(selected) : "";
+    }
+
+    function renderHomeworkTemplateOptions() {
+      const select = document.getElementById("hwTaskTemplate");
+      if (!select) return;
+      const currentValue = String(select.value || "");
+      const options = ['<option value="">Bitte Aufgabe wählen</option>'];
+      HOMEWORK_MAIL_TEMPLATES.forEach((template, idx) => {
+        const id = String(template.id || `task-${idx + 1}`);
+        const title = String(template.title || `Aufgabe ${idx + 1}`);
+        options.push(`<option value="${escapeHtml(id)}">${escapeHtml(`${idx + 1}. ${title}`)}</option>`);
+      });
+      select.innerHTML = options.join("");
+      if (currentValue && HOMEWORK_MAIL_TEMPLATES.some(item => String(item.id || "") === currentValue)) {
+        select.value = currentValue;
+      }
+      updateHomeworkTemplatePreview();
+    }
+
     function renderHomeworkAssignments(rows) {
       currentHomeworkAssignments = Array.isArray(rows) ? rows.slice() : [];
       const wrap = document.getElementById("homeworkListWrap");
@@ -2638,17 +2799,18 @@
 
     async function createHomeworkAssignment() {
       clearBox("homeworkStatus");
-      const title = String(document.getElementById("hwTitle")?.value || "").trim();
-      const description = String(document.getElementById("hwDescription")?.value || "").trim();
-      const attachment = String(document.getElementById("hwAttachment")?.value || "").trim();
+      const selectedTemplate = getSelectedHomeworkTemplate();
+      const title = String(selectedTemplate?.title || "").trim();
+      const description = selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "";
+      const attachment = "";
       const targetType = String(document.getElementById("hwTargetType")?.value || "course");
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
       const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
       const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
 
-      if (!title || !description) {
-        setBox("homeworkStatus", "error", "Titel und Beschreibung sind erforderlich.");
+      if (!selectedTemplate || !title || !description) {
+        setBox("homeworkStatus", "error", "Bitte zuerst eine Mail-Aufgabe auswählen.");
         return;
       }
 
@@ -2671,11 +2833,11 @@
         .filter(Boolean);
 
       if (targetType === "course" && !courseId) {
-        setBox("homeworkStatus", "error", "Bitte Kurs auswählen.");
+        setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
         return;
       }
       if (targetType === "users" && !usernames.length) {
-        setBox("homeworkStatus", "error", "Bitte mindestens einen Benutzer auswählen.");
+        setBox("homeworkStatus", "error", "Bitte mindestens eine teilnehmende Person auswählen.");
         return;
       }
 
@@ -2698,9 +2860,9 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("homeworkStatus", "ok", `Aufgabe gespeichert. Zugewiesen: ${payload.target_count || 0}`);
-        document.getElementById("hwTitle").value = "";
-        document.getElementById("hwDescription").value = "";
-        document.getElementById("hwAttachment").value = "";
+        const templateSelect = document.getElementById("hwTaskTemplate");
+        if (templateSelect) templateSelect.value = "";
+        updateHomeworkTemplatePreview();
         document.getElementById("hwStartsAt").value = "";
         Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
         listHomeworkAssignments();
@@ -4825,6 +4987,7 @@
     document.getElementById("createHomeworkBtn").addEventListener("click", createHomeworkAssignment);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
+    document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
       updateAttendanceCourseBySelect();
       renderAttendanceEditor();
@@ -4962,6 +5125,7 @@
     document.getElementById("adminUsername").addEventListener("keydown", event => {
       if (event.key === "Enter") login();
     });
+    renderHomeworkTemplateOptions();
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
     checkSession();
