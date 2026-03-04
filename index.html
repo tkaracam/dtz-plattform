@@ -178,15 +178,6 @@
       color: #5a4954;
     }
 
-    .nav-member #studentIdentity {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 220px;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
     .nav-member .ghost-btn {
       color: #6b4d5c;
       border: 1px solid #e2c3cf;
@@ -1509,13 +1500,26 @@
     }
 
     .footer-link {
-      color: #2554c7;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid #e6cfda;
+      background: #fff7fa;
+      color: #6f4f5f;
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
+      box-shadow: 0 8px 16px rgba(167, 94, 121, 0.1);
+      transition: transform 0.14s ease, box-shadow 0.14s ease, color 0.14s ease, border-color 0.14s ease;
     }
 
     .footer-link:hover {
-      text-decoration: underline;
+      transform: translateY(-1px);
+      color: #f2849e;
+      border-color: #f2b7c9;
+      box-shadow: 0 10px 20px rgba(167, 94, 121, 0.18);
     }
 
     .footer-socials {
@@ -1662,15 +1666,11 @@
       <div class="nav-right">
         <div id="memberPanel" class="nav-member hidden">
           <div class="pill">
-            <span id="studentIdentity">Angemeldet</span>
-            <button id="studentLogoutBtn" type="button" class="ghost-btn">Abmelden</button>
+            <button id="studentLogoutBtn" type="button" class="ghost-btn">Abmeldung</button>
           </div>
         </div>
         <div class="nav-links">
           <button id="navHomeBtn" class="nav-link" type="button">Start</button>
-          <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
-          <button id="navRoomBtn" class="nav-link" type="button">Saal</button>
-          <button id="navSimulationBtn" class="nav-link" type="button">Simulation</button>
           <button id="navWriteBtn" class="nav-link" type="button">Schreiben</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
           <button id="navSpeakingBtn" class="nav-link" type="button">Sprechen</button>
@@ -1691,7 +1691,6 @@
           <div class="level-bar">
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
             <button type="button" class="level-tile b1" id="levelB1Btn">A2-B1<small>DTZ Fokus</small></button>
-            <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
           </div>
           <div class="hero-cta" aria-hidden="true"></div>
         </div>
@@ -1768,7 +1767,7 @@
           <textarea id="letterText" required placeholder="Sehr geehrte Damen und Herren, ..."
             autocomplete="on" autocorrect="on" autocapitalize="sentences" spellcheck="true"></textarea>
           <div class="meta-strip">
-            <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind erlaubt.</div>
+            <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind gesperrt.</div>
             <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
           </div>
             </div>
@@ -1887,6 +1886,10 @@
           <summary class="portal-section-title">A2-B1</summary>
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
+              <h3>Meine Hausaufgaben</h3>
+              <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
+            </section>
+            <section class="portal-block">
               <h3>Korrigierte Briefe</h3>
               <div class="portal-list">
                 <label for="portalCorrectionSelect">Korrektur auswählen</label>
@@ -1926,17 +1929,9 @@
                     <strong>Fehlende Punkte</strong>
                     <div id="missingTags" class="tags"></div>
                   </div>
-                  <div style="margin-top: 10px;">
-                    <h4 style="margin: 0 0 6px;">Fehlerliste</h4>
-                    <div id="mistakesWrap"></div>
-                  </div>
                 </details>
 
               </div>
-            </section>
-            <section class="portal-block">
-              <h3>Meine Hausaufgaben</h3>
-              <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
             </section>
           </div>
         </details>
@@ -2163,7 +2158,7 @@
 
     <footer class="site-footer">
       <div class="footer-links">
-        <a class="footer-link" href="agb.html">Allgemeine Geschäftsbedingungen</a>
+        <a class="footer-link" href="agb.html">AGB</a>
       </div>
       <div class="footer-socials">
         <a class="social-link" href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
@@ -3528,7 +3523,6 @@
       setMainView("portal");
       const memberPanel = document.getElementById("memberPanel");
       memberPanel.classList.remove("hidden");
-      document.getElementById("studentIdentity").textContent = identityText || "Angemeldet";
       currentStudentLabel = identityText || "Angemeldet";
       loadStudentPortal();
       taskStatus = loadTaskStatus();
@@ -5028,6 +5022,7 @@
 
     function renderMistakes(mistakes) {
       const wrap = document.getElementById("mistakesWrap");
+      if (!wrap) return;
       if (!mistakes.length) {
         wrap.innerHTML = "<p>Keine Fehler gefunden.</p>";
         return;
@@ -5337,7 +5332,37 @@
     }
 
     function enforceExamInputRules() {
-      // Clipboard restrictions disabled by request.
+      const blockedIds = ["letterText", "simulationText", "roomAnswerText"];
+      const blockedNodes = blockedIds
+        .map(id => document.getElementById(id))
+        .filter(Boolean);
+      if (!blockedNodes.length) return;
+
+      const isBlockedTarget = target => {
+        if (!target) return false;
+        return blockedNodes.some(node => target === node || (typeof node.contains === "function" && node.contains(target)));
+      };
+
+      const blockEvent = event => {
+        if (!isBlockedTarget(event.target)) return;
+        event.preventDefault();
+      };
+
+      blockedNodes.forEach(node => {
+        node.addEventListener("copy", blockEvent);
+        node.addEventListener("cut", blockEvent);
+        node.addEventListener("paste", blockEvent);
+      });
+
+      document.addEventListener("keydown", event => {
+        if (!isBlockedTarget(event.target)) return;
+        const key = String(event.key || "").toLowerCase();
+        const mod = !!(event.ctrlKey || event.metaKey);
+        if (!mod) return;
+        if (key === "c" || key === "v" || key === "x") {
+          event.preventDefault();
+        }
+      });
     }
 
     enforceExamInputRules();
@@ -5397,20 +5422,23 @@
         navigateToSection("home");
       }
     });
-    document.getElementById("navHomeBtn").addEventListener("click", () => navigateToSection("home"));
-    document.getElementById("navPortalBtn").addEventListener("click", () => navigateToSection("portal"));
-    document.getElementById("navRoomBtn").addEventListener("click", () => navigateToSection("room"));
-    document.getElementById("navSimulationBtn").addEventListener("click", () => navigateToSection("simulation"));
-    document.getElementById("navWriteBtn").addEventListener("click", () => navigateToSection("write"));
-    document.getElementById("navLidBtn").addEventListener("click", () => navigateToSection("lid"));
-    document.getElementById("navSpeakingBtn").addEventListener("click", () => navigateToSection("speaking"));
-    document.getElementById("navAdminBtn").addEventListener("click", () => {
+    const navHomeBtn = document.getElementById("navHomeBtn");
+    if (navHomeBtn) navHomeBtn.addEventListener("click", () => navigateToSection("home"));
+    const navWriteBtn = document.getElementById("navWriteBtn");
+    if (navWriteBtn) navWriteBtn.addEventListener("click", () => navigateToSection("write"));
+    const navLidBtn = document.getElementById("navLidBtn");
+    if (navLidBtn) navLidBtn.addEventListener("click", () => navigateToSection("lid"));
+    const navSpeakingBtn = document.getElementById("navSpeakingBtn");
+    if (navSpeakingBtn) navSpeakingBtn.addEventListener("click", () => navigateToSection("speaking"));
+    const navAdminBtn = document.getElementById("navAdminBtn");
+    if (navAdminBtn) navAdminBtn.addEventListener("click", () => {
       window.location.href = "./admin.html";
     });
     initTaskSelect();
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
-    document.getElementById("levelPortalBtn").addEventListener("click", () => navigateToSection("portal"));
+    const levelPortalBtn = document.getElementById("levelPortalBtn");
+    if (levelPortalBtn) levelPortalBtn.addEventListener("click", () => navigateToSection("portal"));
     removeArchivedBskFrontend();
     checkStudentSession();
   </script>
