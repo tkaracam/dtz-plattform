@@ -520,6 +520,61 @@
       color: #27476a;
     }
 
+    .archive-card-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .archive-card {
+      border: 1px solid #d4e1ef;
+      border-radius: 12px;
+      background: #f8fbff;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .archive-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .archive-card-title {
+      font-weight: 700;
+      color: #163a5d;
+    }
+
+    .archive-card-meta {
+      display: grid;
+      gap: 4px;
+      font-size: 0.9rem;
+      color: #22415f;
+    }
+
+    .archive-card-meta .mono {
+      font-size: 0.86rem;
+      color: #204564;
+    }
+
+    .archive-card-snippet {
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #d8e4f1;
+      background: #ffffff;
+      color: #17324f;
+      font-size: 0.88rem;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .archive-card .actions {
+      margin-top: 0;
+    }
+
     #userListWrap {
       width: 100%;
       overflow-x: auto;
@@ -924,6 +979,33 @@
 
       #userListWrap .user-actions-mobile {
         display: none !important;
+      }
+
+      #paneArchive .grid {
+        grid-template-columns: 1fr;
+      }
+
+      #paneArchive .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #paneArchive .row > div {
+        min-width: 0;
+      }
+
+      #paneArchive .actions {
+        width: 100%;
+      }
+
+      #paneArchive .actions button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      #pendingBulkActions {
+        display: grid !important;
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -3532,6 +3614,10 @@
       return `${h}h ${m}m`;
     }
 
+    function isArchiveMobileLayout() {
+      return window.matchMedia("(max-width: 800px)").matches;
+    }
+
     function formatWritingDuration(seconds, label) {
       const fallback = String(label || "").trim();
       if (fallback && fallback !== "-") return fallback;
@@ -3637,52 +3723,90 @@
         return;
       }
 
-      const table = document.createElement("table");
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th>Zeit</th>
-            <th>ID</th>
-            <th>Schüler</th>
-            <th>Username</th>
-            <th>Schreibzeit</th>
-            <th>Status</th>
-            <th>Punkte</th>
-            <th>Aufgabe</th>
-            <th>Brief</th>
-            <th>Aktion</th>
-          </tr>
-        </thead>
-      `;
-      const tbody = document.createElement("tbody");
-      records.forEach(row => {
-        const task = String(row.task_prompt || "").trim();
-        const letter = String(row.letter_text || "").trim();
-        const writeDuration = formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label);
-        const status = String(row.review_status || "pending");
-        const canApprove = status === "pending";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
-          <td class="mono">${escapeHtml(row.upload_id || "")}</td>
-          <td>${escapeHtml(row.student_name || "-")}</td>
-          <td class="mono">${escapeHtml(row.student_username || "-")}</td>
-          <td class="mono">${escapeHtml(writeDuration)}</td>
-          <td>${escapeHtml(status)}</td>
-          <td>${row.score_total == null ? "-" : escapeHtml(String(row.score_total) + "/20")}</td>
-          <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
-          <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
-          <td>
-            ${canApprove
-              ? `<div class="actions"><button type="button" data-letter-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
-              : '<span class="muted">Abgeschlossen</span>'}
-          </td>
+      if (isArchiveMobileLayout()) {
+        wrap.innerHTML = `
+          <div class="archive-card-list">
+            ${records.map(row => {
+              const task = String(row.task_prompt || "").trim();
+              const letter = String(row.letter_text || "").trim();
+              const writeDuration = formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label);
+              const status = String(row.review_status || "pending");
+              const canApprove = status === "pending";
+              const scoreText = row.score_total == null ? "-" : `${escapeHtml(String(row.score_total))}/20`;
+              const taskShort = escapeHtml(task.length > 160 ? `${task.slice(0, 160)}...` : (task || "-"));
+              const letterShort = escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : (letter || "-"));
+              const uploadId = escapeHtml(row.upload_id || "");
+              return `
+                <article class="archive-card">
+                  <div class="archive-card-head">
+                    <span class="archive-card-title">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</span>
+                    <span class="sla-chip">${escapeHtml(status)}</span>
+                  </div>
+                  <div class="archive-card-meta">
+                    <div><strong>Schüler:</strong> ${escapeHtml(row.student_name || "-")}</div>
+                    <div><strong>Username:</strong> <span class="mono">${escapeHtml(row.student_username || "-")}</span></div>
+                    <div><strong>Schreibzeit:</strong> <span class="mono">${escapeHtml(writeDuration)}</span></div>
+                    <div><strong>Punkte:</strong> ${scoreText}</div>
+                    <div><strong>ID:</strong> <span class="mono">${uploadId}</span></div>
+                    <div><strong>Aufgabe:</strong> ${taskShort}</div>
+                  </div>
+                  <div class="archive-card-snippet"><strong>Brief:</strong><br>${letterShort}</div>
+                  ${canApprove
+                    ? `<div class="actions"><button type="button" data-letter-preview="${uploadId}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${uploadId}">Korrektur freigeben</button><button type="button" data-letter-reject="${uploadId}" class="ghost-btn">Ablehnen</button></div>`
+                    : '<span class="muted">Abgeschlossen</span>'}
+                </article>
+              `;
+            }).join("")}
+          </div>
         `;
-        tbody.appendChild(tr);
-      });
-      table.appendChild(tbody);
-      wrap.innerHTML = "";
-      wrap.appendChild(table);
+      } else {
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Zeit</th>
+              <th>ID</th>
+              <th>Schüler</th>
+              <th>Username</th>
+              <th>Schreibzeit</th>
+              <th>Status</th>
+              <th>Punkte</th>
+              <th>Aufgabe</th>
+              <th>Brief</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+        `;
+        const tbody = document.createElement("tbody");
+        records.forEach(row => {
+          const task = String(row.task_prompt || "").trim();
+          const letter = String(row.letter_text || "").trim();
+          const writeDuration = formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label);
+          const status = String(row.review_status || "pending");
+          const canApprove = status === "pending";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
+            <td class="mono">${escapeHtml(row.upload_id || "")}</td>
+            <td>${escapeHtml(row.student_name || "-")}</td>
+            <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+            <td class="mono">${escapeHtml(writeDuration)}</td>
+            <td>${escapeHtml(status)}</td>
+            <td>${row.score_total == null ? "-" : escapeHtml(String(row.score_total) + "/20")}</td>
+            <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
+            <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
+            <td>
+              ${canApprove
+                ? `<div class="actions"><button type="button" data-letter-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
+                : '<span class="muted">Abgeschlossen</span>'}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        wrap.innerHTML = "";
+        wrap.appendChild(table);
+      }
       wrap.querySelectorAll("[data-letter-preview]").forEach(btn => {
         btn.addEventListener("click", () => previewLetter(btn.getAttribute("data-letter-preview") || ""));
       });
@@ -3716,32 +3840,69 @@
         wrap.innerHTML = "<p>Keine Einträge für den aktuellen Filter.</p>";
         return;
       }
-      const rowsHtml = visible.map(({ row, ageMinutes, slaLevel }) => `
-        <tr class="${slaLevel === "critical" ? "sla-critical" : (slaLevel === "warn" ? "sla-warn" : "")}">
-          <td><input type="checkbox" data-pending-pick="${escapeHtml(row.upload_id || "")}"></td>
-          <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
-          <td class="mono">${escapeHtml(row.student_username || "-")}</td>
-          <td>${escapeHtml(row.student_name || "-")}</td>
-          <td class="mono">${escapeHtml(formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label))}</td>
-          <td>${escapeHtml(String(row.letter_text || "").trim().slice(0, 180) || "-")}${String(row.letter_text || "").trim().length > 180 ? "..." : ""}</td>
-          <td class="mono">${escapeHtml(row.upload_id || "")}</td>
-          <td><span class="sla-chip ${slaLevel === "critical" ? "critical" : (slaLevel === "warn" ? "warn" : "")}">${slaLevel === "critical" ? "Kritisch" : (slaLevel === "warn" ? "Warnung" : "OK")}</span></td>
-          <td class="mono">${escapeHtml(formatPendingAge(ageMinutes))}</td>
-          <td>
-            <div class="actions">
-              <button type="button" data-pending-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button>
-              <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button>
-              <button type="button" data-pending-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
-      wrap.innerHTML = `
-        <table>
-          <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>Username</th><th>Schüler</th><th>Schreibzeit</th><th>Mail</th><th>ID</th><th>SLA</th><th>Wartet seit</th><th>Aktion</th></tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      `;
+
+      if (isArchiveMobileLayout()) {
+        wrap.innerHTML = `
+          <div class="archive-card-list">
+            ${visible.map(({ row, ageMinutes, slaLevel }) => {
+              const uploadId = escapeHtml(row.upload_id || "");
+              const letter = String(row.letter_text || "").trim();
+              const letterShort = escapeHtml(letter.slice(0, 220) || "-");
+              return `
+                <article class="archive-card ${slaLevel === "critical" ? "sla-critical" : (slaLevel === "warn" ? "sla-warn" : "")}">
+                  <div class="archive-card-head">
+                    <label style="display:flex;align-items:center;gap:8px;margin:0;">
+                      <input type="checkbox" data-pending-pick="${uploadId}" style="width:auto;">
+                      <span class="archive-card-title">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</span>
+                    </label>
+                    <span class="sla-chip ${slaLevel === "critical" ? "critical" : (slaLevel === "warn" ? "warn" : "")}">${slaLevel === "critical" ? "Kritisch" : (slaLevel === "warn" ? "Warnung" : "OK")}</span>
+                  </div>
+                  <div class="archive-card-meta">
+                    <div><strong>Username:</strong> <span class="mono">${escapeHtml(row.student_username || "-")}</span></div>
+                    <div><strong>Schüler:</strong> ${escapeHtml(row.student_name || "-")}</div>
+                    <div><strong>Schreibzeit:</strong> <span class="mono">${escapeHtml(formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label))}</span></div>
+                    <div><strong>Wartet seit:</strong> <span class="mono">${escapeHtml(formatPendingAge(ageMinutes))}</span></div>
+                    <div><strong>ID:</strong> <span class="mono">${uploadId}</span></div>
+                  </div>
+                  <div class="archive-card-snippet">${letterShort}${letter.length > 220 ? "..." : ""}</div>
+                  <div class="actions">
+                    <button type="button" data-pending-preview="${uploadId}" class="ghost-btn">Mail-Korrektur öffnen</button>
+                    <button type="button" data-pending-approve="${uploadId}">Korrektur freigeben</button>
+                    <button type="button" data-pending-reject="${uploadId}" class="ghost-btn">Ablehnen</button>
+                  </div>
+                </article>
+              `;
+            }).join("")}
+          </div>
+        `;
+      } else {
+        const rowsHtml = visible.map(({ row, ageMinutes, slaLevel }) => `
+          <tr class="${slaLevel === "critical" ? "sla-critical" : (slaLevel === "warn" ? "sla-warn" : "")}">
+            <td><input type="checkbox" data-pending-pick="${escapeHtml(row.upload_id || "")}"></td>
+            <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
+            <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+            <td>${escapeHtml(row.student_name || "-")}</td>
+            <td class="mono">${escapeHtml(formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label))}</td>
+            <td>${escapeHtml(String(row.letter_text || "").trim().slice(0, 180) || "-")}${String(row.letter_text || "").trim().length > 180 ? "..." : ""}</td>
+            <td class="mono">${escapeHtml(row.upload_id || "")}</td>
+            <td><span class="sla-chip ${slaLevel === "critical" ? "critical" : (slaLevel === "warn" ? "warn" : "")}">${slaLevel === "critical" ? "Kritisch" : (slaLevel === "warn" ? "Warnung" : "OK")}</span></td>
+            <td class="mono">${escapeHtml(formatPendingAge(ageMinutes))}</td>
+            <td>
+              <div class="actions">
+                <button type="button" data-pending-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button>
+                <button type="button" data-pending-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button>
+                <button type="button" data-pending-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button>
+              </div>
+            </td>
+          </tr>
+        `).join("");
+        wrap.innerHTML = `
+          <table>
+            <thead><tr><th><input id="pendingPickAll" type="checkbox"></th><th>Zeit</th><th>Username</th><th>Schüler</th><th>Schreibzeit</th><th>Mail</th><th>ID</th><th>SLA</th><th>Wartet seit</th><th>Aktion</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
+      }
       const pickAll = document.getElementById("pendingPickAll");
       if (pickAll) {
         pickAll.addEventListener("change", () => {
