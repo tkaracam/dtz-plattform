@@ -1937,8 +1937,8 @@
         </div>
         <div id="portalStatus" class="hidden"></div>
 
-        <details class="portal-section" open>
-          <summary class="portal-section-title">A2-B1</summary>
+        <section class="portal-section">
+          <h3 class="portal-section-title">A2-B1</h3>
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
               <details id="portalHomeworkAccordion" class="card-accordion" open>
@@ -2001,51 +2001,61 @@
               </details>
             </section>
             <section class="portal-block">
-              <h3>Korrigierte Briefe</h3>
-              <div class="portal-list">
-                <label for="portalCorrectionSelect">Korrektur auswählen</label>
-                <select id="portalCorrectionSelect"></select>
-                <div id="portalCorrectionSummary" class="kpi" style="margin-top:10px;">
-                  <div class="kpi-item">
-                    <div class="kpi-title">Punkte</div>
-                    <div class="kpi-value" id="portalCorrectionScore">-</div>
+              <details class="card-accordion" open>
+                <summary class="card-accordion-summary">
+                  <div class="title-wrap">
+                    <h3 style="margin:0;">Korrigierte Briefe</h3>
+                    <p class="section-subtitle">Auswahl und Detailansicht Ihrer freigegebenen Korrekturen.</p>
                   </div>
-                  <div class="kpi-item">
-                    <div class="kpi-title">Niveau</div>
-                    <div class="kpi-value" id="portalCorrectionLevel">-</div>
+                  <span class="card-accordion-icon">▾</span>
+                </summary>
+                <div class="card-accordion-body">
+                  <div class="portal-list">
+                    <label for="portalCorrectionSelect">Korrektur auswählen</label>
+                    <select id="portalCorrectionSelect"></select>
+                    <div id="portalCorrectionSummary" class="kpi" style="margin-top:10px;">
+                      <div class="kpi-item">
+                        <div class="kpi-title">Punkte</div>
+                        <div class="kpi-value" id="portalCorrectionScore">-</div>
+                      </div>
+                      <div class="kpi-item">
+                        <div class="kpi-title">Niveau</div>
+                        <div class="kpi-value" id="portalCorrectionLevel">-</div>
+                      </div>
+                    </div>
+                    <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
+                    <p id="systemNote" class="muted hidden" style="margin-top: 8px;"></p>
+
+                    <details style="margin-top: 10px;">
+                      <summary>Details anzeigen</summary>
+                      <div style="margin-top: 8px;">
+                        <h4 style="margin: 0 0 6px;">Rubrik</h4>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Kriterium</th>
+                              <th>Punkte</th>
+                            </tr>
+                          </thead>
+                          <tbody id="rubricBody"></tbody>
+                        </table>
+                      </div>
+                      <div style="margin-top: 10px;">
+                        <strong>Erfüllte Punkte</strong>
+                        <div id="coveredTags" class="tags"></div>
+                      </div>
+                      <div style="margin-top: 10px;">
+                        <strong>Fehlende Punkte</strong>
+                        <div id="missingTags" class="tags"></div>
+                      </div>
+                    </details>
+
                   </div>
                 </div>
-                <div id="portalCorrectionPreview" class="teacher-correction" style="margin-top:10px;"></div>
-                <p id="systemNote" class="muted hidden" style="margin-top: 8px;"></p>
-
-                <details style="margin-top: 10px;">
-                  <summary>Details anzeigen</summary>
-                  <div style="margin-top: 8px;">
-                    <h4 style="margin: 0 0 6px;">Rubrik</h4>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Kriterium</th>
-                          <th>Punkte</th>
-                        </tr>
-                      </thead>
-                      <tbody id="rubricBody"></tbody>
-                    </table>
-                  </div>
-                  <div style="margin-top: 10px;">
-                    <strong>Erfüllte Punkte</strong>
-                    <div id="coveredTags" class="tags"></div>
-                  </div>
-                  <div style="margin-top: 10px;">
-                    <strong>Fehlende Punkte</strong>
-                    <div id="missingTags" class="tags"></div>
-                  </div>
-                </details>
-
-              </div>
+              </details>
             </section>
           </div>
-        </details>
+        </section>
         <details id="portalBskSection" class="portal-section hidden">
           <summary class="portal-section-title">BSK</summary>
           <div class="portal-grid" style="margin-top:10px;">
