@@ -1934,6 +1934,52 @@
             <section class="portal-block">
               <h3>Meine Hausaufgaben</h3>
               <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
+              <details class="card-accordion" style="margin-top:12px;">
+                <summary class="card-accordion-summary">
+                  <div class="title-wrap">
+                    <h3 style="margin:0;">Mail schreiben und prüfen</h3>
+                    <p class="section-subtitle">Zugewiesene Aufgabe bearbeiten und direkt hochladen.</p>
+                  </div>
+                  <span class="card-accordion-icon">▾</span>
+                </summary>
+                <div class="card-accordion-body">
+                  <div class="task-picker">
+                    <div class="assignment-box">
+                      <div class="assignment-head">
+                        <h3 id="portalCurrentAssignmentTitle">Zugewiesene Aufgabe</h3>
+                        <span id="portalCurrentAssignmentState" class="task-chip">Wird geladen...</span>
+                      </div>
+                      <p id="portalCurrentAssignmentDescription" class="muted">Ihre Lehrkraft weist Ihnen eine Aufgabe zu. Bitte warten Sie einen Moment.</p>
+                      <div class="assignment-meta">
+                        <div><strong>Dauer:</strong> <span id="portalCurrentAssignmentDuration">-</span></div>
+                        <div><strong>Abgabetimer:</strong> <span id="portalCurrentAssignmentCountdown">--:--</span></div>
+                      </div>
+                      <div id="portalCurrentAssignmentAttachmentWrap" class="assignment-attachment hidden">
+                        <strong>Material:</strong>
+                        <a id="portalCurrentAssignmentAttachment" href="#" target="_blank" rel="noopener noreferrer">Öffnen</a>
+                      </div>
+                      <div class="assignment-actions">
+                        <button id="portalStartAssignmentBtn" type="button" class="ghost-btn">Bearbeitung starten</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="letter-panel">
+                    <label for="portalLetterText">Ihre Mail</label>
+                    <textarea id="portalLetterText" required placeholder="Sehr geehrte Damen und Herren, ..."
+                      autocomplete="on" autocorrect="on" autocapitalize="sentences" spellcheck="true"></textarea>
+                    <div class="meta-strip">
+                      <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind gesperrt.</div>
+                      <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
+                    </div>
+                  </div>
+                  <div class="row-end">
+                    <div class="btn-wrap">
+                      <button id="portalUploadBtn" type="button">Brief hochladen</button>
+                    </div>
+                  </div>
+                  <div id="portalWriteStatus" class="hidden"></div>
+                </div>
+              </details>
             </section>
             <section class="portal-block">
               <h3>Korrigierte Briefe</h3>
@@ -4256,45 +4302,78 @@
       return parseRequiredPointsFromText(String(currentAssignedHomework.description || ""));
     }
 
+    function getAssignmentUiSets() {
+      return [
+        {
+          titleId: "currentAssignmentTitle",
+          descId: "currentAssignmentDescription",
+          stateId: "currentAssignmentState",
+          durationId: "currentAssignmentDuration",
+          countdownId: "currentAssignmentCountdown",
+          startBtnId: "startAssignmentBtn",
+          attachWrapId: "currentAssignmentAttachmentWrap",
+          attachLinkId: "currentAssignmentAttachment"
+        },
+        {
+          titleId: "portalCurrentAssignmentTitle",
+          descId: "portalCurrentAssignmentDescription",
+          stateId: "portalCurrentAssignmentState",
+          durationId: "portalCurrentAssignmentDuration",
+          countdownId: "portalCurrentAssignmentCountdown",
+          startBtnId: "portalStartAssignmentBtn",
+          attachWrapId: "portalCurrentAssignmentAttachmentWrap",
+          attachLinkId: "portalCurrentAssignmentAttachment"
+        }
+      ];
+    }
+
+    function getWriteEditors() {
+      return [
+        { textareaId: "letterText", uploadBtnId: "uploadBtn" },
+        { textareaId: "portalLetterText", uploadBtnId: "portalUploadBtn" }
+      ];
+    }
+
     function setAssignmentEditorLocked(locked) {
-      const textarea = document.getElementById("letterText");
-      const uploadBtn = document.getElementById("uploadBtn");
-      if (textarea) textarea.readOnly = !!locked;
-      if (uploadBtn) uploadBtn.disabled = !!locked;
+      getWriteEditors().forEach(editor => {
+        const textarea = document.getElementById(editor.textareaId);
+        const uploadBtn = document.getElementById(editor.uploadBtnId);
+        if (textarea) textarea.readOnly = !!locked;
+        if (uploadBtn) uploadBtn.disabled = !!locked;
+      });
     }
 
     function renderAssignmentPlaceholder(message, stateText) {
       currentAssignedHomework = null;
       currentAssignedHomeworkState = null;
       stopAssignmentCountdown();
-      const titleNode = document.getElementById("currentAssignmentTitle");
-      const descNode = document.getElementById("currentAssignmentDescription");
-      const stateNode = document.getElementById("currentAssignmentState");
-      const durationNode = document.getElementById("currentAssignmentDuration");
-      const countdownNode = document.getElementById("currentAssignmentCountdown");
-      const startBtn = document.getElementById("startAssignmentBtn");
-      const attachWrap = document.getElementById("currentAssignmentAttachmentWrap");
-      if (titleNode) titleNode.textContent = "Zugewiesene Aufgabe";
-      if (descNode) descNode.textContent = message;
-      if (stateNode) {
-        stateNode.textContent = stateText;
-        stateNode.className = "task-chip";
-      }
-      if (durationNode) durationNode.textContent = "-";
-      if (countdownNode) countdownNode.textContent = "--:--";
-      if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.textContent = "Bearbeitung starten";
-      }
-      if (attachWrap) attachWrap.classList.add("hidden");
+      getAssignmentUiSets().forEach(set => {
+        const titleNode = document.getElementById(set.titleId);
+        const descNode = document.getElementById(set.descId);
+        const stateNode = document.getElementById(set.stateId);
+        const durationNode = document.getElementById(set.durationId);
+        const countdownNode = document.getElementById(set.countdownId);
+        const startBtn = document.getElementById(set.startBtnId);
+        const attachWrap = document.getElementById(set.attachWrapId);
+        if (titleNode) titleNode.textContent = "Zugewiesene Aufgabe";
+        if (descNode) descNode.textContent = message;
+        if (stateNode) {
+          stateNode.textContent = stateText;
+          stateNode.className = "task-chip";
+        }
+        if (durationNode) durationNode.textContent = "-";
+        if (countdownNode) countdownNode.textContent = "--:--";
+        if (startBtn) {
+          startBtn.disabled = true;
+          startBtn.textContent = "Bearbeitung starten";
+        }
+        if (attachWrap) attachWrap.classList.add("hidden");
+      });
       setAssignmentEditorLocked(true);
     }
 
     function updateAssignmentCountdown() {
       if (!currentAssignedHomework || !currentAssignedHomeworkState) return;
-      const countdownNode = document.getElementById("currentAssignmentCountdown");
-      const stateNode = document.getElementById("currentAssignmentState");
-      const uploadBtn = document.getElementById("uploadBtn");
       const now = Math.floor(Date.now() / 1000);
       const deadlineRaw = String(currentAssignedHomeworkState.deadline_at || "").trim();
       const deadlineTs = deadlineRaw ? Math.floor(new Date(deadlineRaw).getTime() / 1000) : 0;
@@ -4307,26 +4386,29 @@
         currentAssignedHomeworkState.locked = true;
         currentAssignedHomeworkState.can_submit = false;
       }
-      if (countdownNode) countdownNode.textContent = formatSeconds(remaining);
-      if (currentAssignedHomeworkState.submitted_at) {
-        if (stateNode) {
-          stateNode.textContent = "Abgegeben";
-          stateNode.className = "task-chip done";
+      getAssignmentUiSets().forEach(set => {
+        const countdownNode = document.getElementById(set.countdownId);
+        const stateNode = document.getElementById(set.stateId);
+        if (countdownNode) countdownNode.textContent = formatSeconds(remaining);
+        if (currentAssignedHomeworkState.submitted_at) {
+          if (stateNode) {
+            stateNode.textContent = "Abgegeben";
+            stateNode.className = "task-chip done";
+          }
+        } else if (currentAssignedHomeworkState.locked) {
+          if (stateNode) {
+            stateNode.textContent = currentAssignedHomeworkState.expired ? "Zeit abgelaufen" : "Gesperrt";
+            stateNode.className = "task-chip";
+          }
+        } else if (currentAssignedHomeworkState.started_at) {
+          if (stateNode) {
+            stateNode.textContent = "Läuft";
+            stateNode.className = "task-chip done";
+          }
         }
-      } else if (currentAssignedHomeworkState.locked) {
-        if (stateNode) {
-          stateNode.textContent = currentAssignedHomeworkState.expired ? "Zeit abgelaufen" : "Gesperrt";
-          stateNode.className = "task-chip";
-        }
-      } else if (currentAssignedHomeworkState.started_at) {
-        if (stateNode) {
-          stateNode.textContent = "Läuft";
-          stateNode.className = "task-chip done";
-        }
-      }
+      });
       const locked = !currentAssignedHomeworkState.can_submit;
       setAssignmentEditorLocked(locked);
-      if (uploadBtn) uploadBtn.disabled = locked;
     }
 
     function renderCurrentAssignment(payload) {
@@ -4338,50 +4420,52 @@
       currentAssignedHomework = payload.assignment;
       currentAssignedHomeworkState = payload.state || {};
 
-      const titleNode = document.getElementById("currentAssignmentTitle");
-      const descNode = document.getElementById("currentAssignmentDescription");
-      const stateNode = document.getElementById("currentAssignmentState");
-      const durationNode = document.getElementById("currentAssignmentDuration");
-      const startBtn = document.getElementById("startAssignmentBtn");
-      const attachWrap = document.getElementById("currentAssignmentAttachmentWrap");
-      const attachLink = document.getElementById("currentAssignmentAttachment");
-
-      if (titleNode) titleNode.textContent = String(currentAssignedHomework.title || "Zugewiesene Aufgabe");
-      if (descNode) descNode.textContent = String(currentAssignedHomework.description || "").trim() || "Keine Beschreibung vorhanden.";
-      if (durationNode) durationNode.textContent = formatDurationMinutes(currentAssignedHomework.duration_minutes);
-
-      if (stateNode) {
-        stateNode.className = "task-chip";
-        if (currentAssignedHomeworkState.submitted_at) {
-          stateNode.textContent = "Abgegeben";
-          stateNode.classList.add("done");
-        } else if (currentAssignedHomeworkState.locked) {
-          stateNode.textContent = currentAssignedHomeworkState.expired ? "Zeit abgelaufen" : "Gesperrt";
-        } else if (currentAssignedHomeworkState.started_at) {
-          stateNode.textContent = "Läuft";
-          stateNode.classList.add("done");
-        } else {
-          stateNode.textContent = "Nicht gestartet";
-        }
-      }
-
       const attachment = String(currentAssignedHomework.attachment || "").trim();
-      if (attachWrap && attachLink) {
-        const safeAttachmentUrl = resolveSafeHttpUrl(attachment);
-        if (safeAttachmentUrl) {
-          attachWrap.classList.remove("hidden");
-          attachLink.href = safeAttachmentUrl;
-        } else {
-          attachWrap.classList.add("hidden");
-          attachLink.href = "#";
-        }
-      }
+      const safeAttachmentUrl = resolveSafeHttpUrl(attachment);
+      getAssignmentUiSets().forEach(set => {
+        const titleNode = document.getElementById(set.titleId);
+        const descNode = document.getElementById(set.descId);
+        const stateNode = document.getElementById(set.stateId);
+        const durationNode = document.getElementById(set.durationId);
+        const startBtn = document.getElementById(set.startBtnId);
+        const attachWrap = document.getElementById(set.attachWrapId);
+        const attachLink = document.getElementById(set.attachLinkId);
 
-      if (startBtn) {
-        const canStart = !!currentAssignedHomeworkState.can_start;
-        startBtn.disabled = !canStart;
-        startBtn.textContent = canStart ? "Bearbeitung starten" : "Bereits gestartet";
-      }
+        if (titleNode) titleNode.textContent = String(currentAssignedHomework.title || "Zugewiesene Aufgabe");
+        if (descNode) descNode.textContent = String(currentAssignedHomework.description || "").trim() || "Keine Beschreibung vorhanden.";
+        if (durationNode) durationNode.textContent = formatDurationMinutes(currentAssignedHomework.duration_minutes);
+
+        if (stateNode) {
+          stateNode.className = "task-chip";
+          if (currentAssignedHomeworkState.submitted_at) {
+            stateNode.textContent = "Abgegeben";
+            stateNode.classList.add("done");
+          } else if (currentAssignedHomeworkState.locked) {
+            stateNode.textContent = currentAssignedHomeworkState.expired ? "Zeit abgelaufen" : "Gesperrt";
+          } else if (currentAssignedHomeworkState.started_at) {
+            stateNode.textContent = "Läuft";
+            stateNode.classList.add("done");
+          } else {
+            stateNode.textContent = "Nicht gestartet";
+          }
+        }
+
+        if (attachWrap && attachLink) {
+          if (safeAttachmentUrl) {
+            attachWrap.classList.remove("hidden");
+            attachLink.href = safeAttachmentUrl;
+          } else {
+            attachWrap.classList.add("hidden");
+            attachLink.href = "#";
+          }
+        }
+
+        if (startBtn) {
+          const canStart = !!currentAssignedHomeworkState.can_start;
+          startBtn.disabled = !canStart;
+          startBtn.textContent = canStart ? "Bearbeitung starten" : "Bereits gestartet";
+        }
+      });
 
       stopAssignmentCountdown();
       updateAssignmentCountdown();
@@ -4401,13 +4485,13 @@
       }
     }
 
-    async function startCurrentAssignment() {
-      clearStatus();
+    async function startCurrentAssignment(buttonId = "startAssignmentBtn", statusBoxId = "statusBox") {
+      clearStatus(statusBoxId);
       if (!currentAssignedHomework || !currentAssignedHomework.id) {
-        setStatus("error", "Es ist keine aktive Aufgabe zugewiesen.");
+        setStatus("error", "Es ist keine aktive Aufgabe zugewiesen.", statusBoxId);
         return;
       }
-      const btn = document.getElementById("startAssignmentBtn");
+      const btn = document.getElementById(buttonId);
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Startet...";
@@ -4420,11 +4504,11 @@
         });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setStatus("ok", "Bearbeitung gestartet. Die Zeit läuft.");
+        setStatus("ok", "Bearbeitung gestartet. Die Zeit läuft.", statusBoxId);
         await loadCurrentAssignedHomework();
         resetLetterWritingTimer();
       } catch (err) {
-        setStatus("error", `Start fehlgeschlagen: ${err.message}`);
+        setStatus("error", `Start fehlgeschlagen: ${err.message}`, statusBoxId);
         await loadCurrentAssignedHomework();
       } finally {
         if (btn) {
@@ -5190,11 +5274,12 @@
       );
     }
 
-    function collectFormData() {
+    function collectFormData(textareaId = "letterText") {
       const nameField = document.getElementById("studentName");
       const fallbackName = currentStudentLabel || currentStudentUsername || "";
       const studentName = nameField ? nameField.value.trim() : fallbackName;
-      const letterText = document.getElementById("letterText").value.trim();
+      const textarea = document.getElementById(textareaId);
+      const letterText = textarea ? String(textarea.value || "").trim() : "";
       const writingMeta = collectWritingMeta(letterText);
       const assignmentId = currentAssignedHomework ? String(currentAssignedHomework.id || "") : "";
       return {
@@ -5218,24 +5303,25 @@
       return apiUrl.replace(/correct\.php(?:\?.*)?$/i, "save_letter.php");
     }
 
-    async function uploadLetter() {
-      clearStatus();
-      const button = document.getElementById("uploadBtn");
+    async function uploadLetter(textareaId = "letterText", buttonId = "uploadBtn", statusBoxId = "statusBox") {
+      clearStatus(statusBoxId);
+      const button = document.getElementById(buttonId);
+      if (!button) return;
       button.disabled = true;
       button.textContent = "Wird hochgeladen...";
 
       try {
-        const data = collectFormData();
+        const data = collectFormData(textareaId);
         if (!data.assignmentId) {
-          setStatus("error", "Es ist keine aktive Aufgabe zugewiesen.");
+          setStatus("error", "Es ist keine aktive Aufgabe zugewiesen.", statusBoxId);
           return;
         }
         if (!currentAssignedHomeworkState || !currentAssignedHomeworkState.can_submit) {
-          setStatus("error", "Abgabe ist derzeit nicht möglich. Bitte Aufgabe starten oder Zeitstatus prüfen.");
+          setStatus("error", "Abgabe ist derzeit nicht möglich. Bitte Aufgabe starten oder Zeitstatus prüfen.", statusBoxId);
           return;
         }
         if (!data.letterText) {
-          setStatus("error", "Bitte geben Sie den Schülerbrief ein.");
+          setStatus("error", "Bitte geben Sie den Schülerbrief ein.", statusBoxId);
           return;
         }
 
@@ -5258,12 +5344,12 @@
           throw new Error(payload.error || `Upload-Fehler: ${response.status}`);
         }
 
-        setStatus("ok", "Brief hochgeladen. Der Brief wird in Kürze korrigiert.");
+        setStatus("ok", "Brief hochgeladen. Der Brief wird in Kürze korrigiert.", statusBoxId);
         resetLetterWritingTimer();
         await loadCurrentAssignedHomework();
         loadStudentPortal();
       } catch (err) {
-        setStatus("error", `Upload fehlgeschlagen: ${err.message}`);
+        setStatus("error", `Upload fehlgeschlagen: ${err.message}`, statusBoxId);
       } finally {
         const canSubmit = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.can_submit);
         button.disabled = !canSubmit;
@@ -5293,14 +5379,16 @@
       return payload;
     }
 
-    function setStatus(type, message) {
-      const box = document.getElementById("statusBox");
+    function setStatus(type, message, boxId = "statusBox") {
+      const box = document.getElementById(boxId);
+      if (!box) return;
       box.className = type === "error" ? "error" : "ok";
       box.textContent = message;
     }
 
-    function clearStatus() {
-      const box = document.getElementById("statusBox");
+    function clearStatus(boxId = "statusBox") {
+      const box = document.getElementById(boxId);
+      if (!box) return;
       box.className = "hidden";
       box.textContent = "";
     }
