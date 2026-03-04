@@ -148,4 +148,8 @@ append_audit_log('course_manage', [
     'course_id' => isset($courseId) ? (string)$courseId : (isset($id) ? (string)$id : ''),
 ]);
 
-echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+$out = ['ok' => true];
+if (isset($id) && is_string($id) && $id !== '') {
+    $out['course_id'] = $id;
+}
+echo json_encode($out, JSON_UNESCAPED_UNICODE);

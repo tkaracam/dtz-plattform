@@ -485,6 +485,46 @@
       border-top: 1px dashed #cfe0f2;
     }
 
+    .course-switch-panel {
+      margin-top: 12px;
+      border: 1px solid #d6e3f0;
+      border-radius: 12px;
+      background: #f8fbff;
+      padding: 12px;
+    }
+
+    .course-switch-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+    }
+
+    .course-switch-actions button {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .course-switch-hint {
+      margin: 8px 0 0;
+      font-size: 0.9rem;
+      color: #284766;
+    }
+
+    .course-row-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(112px, 1fr));
+      gap: 6px;
+      min-width: 250px;
+    }
+
+    .course-row-actions button {
+      width: 100%;
+      min-width: 0;
+      padding: 8px 9px;
+      font-size: 0.86rem;
+    }
+
     .bulk-preview {
       margin-top: 10px;
       width: 100%;
@@ -660,14 +700,14 @@
 
     .hw-user-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 8px;
+      grid-template-columns: 1fr;
+      gap: 6px;
     }
 
     .hw-user-item {
       border: 1px solid #d8e4f1;
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 6px 9px;
       background: #f8fbff;
       display: flex;
       gap: 8px;
@@ -683,10 +723,26 @@
     }
 
     .hw-user-item span {
-      font-size: 0.86rem;
+      font-size: 0.83rem;
       line-height: 1.2;
       color: #173652;
       word-break: break-word;
+    }
+
+    .hw-user-actions {
+      margin: 8px 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hw-user-actions button {
+      width: auto;
+      min-width: 0;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      line-height: 1.1;
+      box-shadow: none;
     }
 
     .ok {
@@ -964,6 +1020,15 @@
         white-space: nowrap;
       }
 
+      .course-switch-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .course-row-actions {
+        min-width: 0;
+        grid-template-columns: 1fr;
+      }
+
       #userListWrap table {
         min-width: 720px;
       }
@@ -1222,12 +1287,33 @@
         <div id="paneCourses" class="admin-pane">
         <div id="coursesSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Kursverwaltung</h2>
-          <p class="section-subtitle">Kurse erstellen und Teilnehmende zuweisen. Die Anwesenheit basiert auf den Kursmitgliedern.</p>
+          <p class="section-subtitle">Kurse öffnen/schließen, Teilnehmende zuweisen und zwischen mehreren Kursen wechseln.</p>
+
+          <div class="course-switch-panel">
+            <div class="grid" style="margin-top:0;">
+              <div>
+                <label for="courseSwitchSelect">Kurs wechseln</label>
+                <select id="courseSwitchSelect">
+                  <option value="">Bitte Kurs auswählen</option>
+                </select>
+              </div>
+              <div>
+                <label>Kursaktionen</label>
+                <div class="course-switch-actions">
+                  <button id="openSelectedMembersBtn" type="button" class="ghost-btn">Teilnehmende bearbeiten</button>
+                  <button id="useSelectedCourseBtn" type="button" class="ghost-btn">Als Arbeitskurs verwenden</button>
+                  <button id="openSelectedCourseBtn" type="button">Kurs öffnen</button>
+                  <button id="closeSelectedCourseBtn" type="button" class="danger-btn">Kurs schließen</button>
+                </div>
+              </div>
+            </div>
+            <p id="courseSwitchHint" class="course-switch-hint">Bitte zuerst einen Kurs auswählen.</p>
+          </div>
 
           <div class="grid">
             <div>
               <label for="newCourseName">Kursname</label>
-              <input id="newCourseName" type="text" placeholder="z. B. BAMF233 B1 Abendkurs">
+              <input id="newCourseName" type="text" placeholder="z. B. bamf233-b1-abendkurs">
             </div>
             <div>
               <label for="newCourseLevel">Niveau</label>
@@ -1284,6 +1370,10 @@
               <div id="hwUsersWrap" class="fold-section" style="margin-top:10px; display:none;">
                 <summary>Teilnehmende auswählen</summary>
                 <div class="fold-section-content">
+                  <div class="hw-user-actions">
+                    <button id="hwSelectAllUsersBtn" type="button" class="ghost-btn">Alle auswählen</button>
+                    <button id="hwClearUsersBtn" type="button" class="ghost-btn">Auswahl löschen</button>
+                  </div>
                   <div id="hwUsersList" class="portal-list">Noch keine Teilnehmenden vorhanden.</div>
                 </div>
               </div>
@@ -1617,6 +1707,7 @@
     let teacherUsers = [];
     let currentStudents = [];
     let currentCourses = [];
+    let selectedCourseId = "";
     let currentAttendanceSessionId = "";
     let currentAlertTargets = [];
     let currentAttendanceRequests = [];
@@ -2465,19 +2556,34 @@
       });
     }
 
+    function getCourseById(courseId) {
+      const id = String(courseId || "").trim();
+      if (!id) return null;
+      return currentCourses.find(c => String(c.course_id || "") === id) || null;
+    }
+
+    function getCourseLabel(course, withStatus = false) {
+      if (!course || typeof course !== "object") return "-";
+      const base = `${course.name || course.course_id || "-"} (${course.level || "-"})`;
+      if (!withStatus) return base;
+      return `${base} • ${course.active ? "offen" : "geschlossen"}`;
+    }
+
     function renderCourseSelect() {
       const options = ['<option value="">Bitte Kurs auswählen</option>'];
       currentCourses
         .filter(c => !!c.active)
         .forEach(c => {
-          options.push(`<option value="${escapeHtml(c.course_id || "")}">${escapeHtml(`${c.name || c.course_id} (${c.level || "-"})`)}</option>`);
+          options.push(`<option value="${escapeHtml(c.course_id || "")}">${escapeHtml(getCourseLabel(c, false))}</option>`);
         });
 
       const attendanceSelect = document.getElementById("attendanceCourseId");
       if (attendanceSelect) {
         const prev = attendanceSelect.value;
         attendanceSelect.innerHTML = options.join("");
-        if (prev) attendanceSelect.value = prev;
+        if (prev && Array.from(attendanceSelect.options).some(o => o.value === prev)) {
+          attendanceSelect.value = prev;
+        }
         updateAttendanceCourseBySelect();
       }
 
@@ -2485,17 +2591,91 @@
       if (homeworkCourse) {
         const prevHw = homeworkCourse.value;
         homeworkCourse.innerHTML = options.join("");
-        if (prevHw) homeworkCourse.value = prevHw;
+        if (prevHw && Array.from(homeworkCourse.options).some(o => o.value === prevHw)) {
+          homeworkCourse.value = prevHw;
+        }
       }
+    }
+
+    function updateCourseSwitchHint() {
+      const hint = document.getElementById("courseSwitchHint");
+      const course = getCourseById(selectedCourseId);
+      const openBtn = document.getElementById("openSelectedCourseBtn");
+      const closeBtn = document.getElementById("closeSelectedCourseBtn");
+      const editBtn = document.getElementById("openSelectedMembersBtn");
+      const useBtn = document.getElementById("useSelectedCourseBtn");
+      const hasCourse = !!course;
+
+      if (openBtn) openBtn.disabled = !hasCourse || !!course.active;
+      if (closeBtn) closeBtn.disabled = !hasCourse || !course.active;
+      if (editBtn) editBtn.disabled = !hasCourse;
+      if (useBtn) useBtn.disabled = !hasCourse;
+
+      if (!hint) return;
+      if (!course) {
+        hint.textContent = "Bitte zuerst einen Kurs auswählen.";
+        return;
+      }
+      hint.textContent = `Aktueller Kurs: ${getCourseLabel(course, true)} | Mitglieder: ${Array.isArray(course.members) ? course.members.length : 0}`;
+    }
+
+    function renderCourseSwitcher() {
+      const select = document.getElementById("courseSwitchSelect");
+      if (!select) return;
+
+      const previous = selectedCourseId || String(select.value || "");
+      const options = ['<option value="">Bitte Kurs auswählen</option>'];
+      currentCourses.forEach(c => {
+        options.push(`<option value="${escapeHtml(c.course_id || "")}">${escapeHtml(getCourseLabel(c, true))}</option>`);
+      });
+      select.innerHTML = options.join("");
+
+      const validPrevious = previous && currentCourses.some(c => String(c.course_id || "") === previous);
+      if (validPrevious) {
+        select.value = previous;
+      } else if (currentCourses.length) {
+        const active = currentCourses.find(c => !!c.active) || currentCourses[0];
+        select.value = String(active?.course_id || "");
+      }
+      selectedCourseId = String(select.value || "");
+      updateCourseSwitchHint();
+    }
+
+    function setSelectedCourse(courseId, openEditor = false) {
+      const id = String(courseId || "").trim();
+      selectedCourseId = id;
+      const select = document.getElementById("courseSwitchSelect");
+      if (select) select.value = id;
+      updateCourseSwitchHint();
+      if (openEditor) {
+        renderCourseAssignEditor(id);
+      }
+    }
+
+    function useSelectedCourseInHomework() {
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      const courseId = String(course.course_id || "");
+      const hwCourse = document.getElementById("hwCourseId");
+      if (hwCourse && Array.from(hwCourse.options).some(o => o.value === courseId)) {
+        hwCourse.value = courseId;
+      }
+      setBox("courseStatus", "ok", `Arbeitskurs gesetzt: ${getCourseLabel(course, false)}.`);
+      openAdminPane("homeworks");
     }
 
     function renderCourses(courses) {
       currentCourses = courses.slice();
       renderCourseSelect();
+      renderCourseSwitcher();
       const wrap = document.getElementById("courseListWrap");
       if (!courses.length) {
         wrap.innerHTML = "<p>Noch keine Kurse vorhanden.</p>";
         document.getElementById("courseAssignWrap").innerHTML = "";
+        updateCourseSwitchHint();
         return;
       }
       const rows = courses.map(c => `
@@ -2506,21 +2686,45 @@
           <td>${escapeHtml(c.schedule || "-")}</td>
           <td>${c.active ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(String((c.members || []).length))}</td>
-          <td><button type="button" data-course-assign="${escapeHtml(c.course_id || "")}">Mitglieder bearbeiten</button></td>
+          <td>
+            <div class="course-row-actions">
+              <button type="button" data-course-switch="${escapeHtml(c.course_id || "")}" class="ghost-btn">Wechseln</button>
+              <button type="button" data-course-assign="${escapeHtml(c.course_id || "")}">Mitglieder</button>
+              <button type="button" data-course-toggle="${escapeHtml(c.course_id || "")}" data-course-active="${c.active ? "1" : "0"}" class="${c.active ? "danger-btn" : "ghost-btn"}">${c.active ? "Kurs schließen" : "Kurs öffnen"}</button>
+            </div>
+          </td>
         </tr>
       `).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th>ID</th><th>Kurs</th><th>Level</th><th>Schedule</th><th>Aktiv</th><th>Mitglieder</th><th>Aktion</th></tr></thead>
+          <thead><tr><th>ID</th><th>Kurs</th><th>Level</th><th>Kurszeiten</th><th>Aktiv</th><th>Mitglieder</th><th>Aktion</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       `;
+      wrap.querySelectorAll("button[data-course-switch]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-course-switch") || "";
+          setSelectedCourse(id, false);
+          setBox("courseStatus", "ok", "Kurswechsel übernommen.");
+        });
+      });
       wrap.querySelectorAll("button[data-course-assign]").forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.getAttribute("data-course-assign") || "";
-          renderCourseAssignEditor(id);
+          setSelectedCourse(id, true);
         });
       });
+      wrap.querySelectorAll("button[data-course-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-course-toggle") || "";
+          const activeNow = btn.getAttribute("data-course-active") === "1";
+          setCourseActive(id, !activeNow);
+        });
+      });
+
+      if (selectedCourseId) {
+        renderCourseAssignEditor(selectedCourseId);
+      }
     }
 
     function renderCourseAssignEditor(courseId) {
@@ -2580,6 +2784,10 @@
         setBox("courseStatus", "error", "Kursname ist erforderlich.");
         return;
       }
+      if (!/^bamf\d{3}/i.test(name)) {
+        setBox("courseStatus", "error", "Kursname muss mit bamf + 3 Ziffern beginnen (z. B. bamf233-b1).");
+        return;
+      }
       try {
         const response = await fetch("./api/course_manage.php", {
           method: "POST",
@@ -2589,12 +2797,41 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("courseStatus", "ok", "Kurs wurde erstellt.");
+        const createdCourseId = String(payload.course_id || "");
         document.getElementById("newCourseName").value = "";
         document.getElementById("newCourseLevel").value = "";
         document.getElementById("newCourseSchedule").value = "";
-        listCourses();
+        await listCourses();
+        if (createdCourseId) {
+          setSelectedCourse(createdCourseId, true);
+        }
       } catch (err) {
         setBox("courseStatus", "error", `Kurs konnte nicht erstellt werden: ${err.message}`);
+      }
+    }
+
+    async function setCourseActive(courseId, active) {
+      clearBox("courseStatus");
+      if (!courseId) return;
+      try {
+        const response = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_active",
+            course_id: courseId,
+            active
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("courseStatus", "ok", `Kurs wurde ${active ? "geöffnet" : "geschlossen"}.`);
+        await listCourses();
+        if (selectedCourseId === courseId) {
+          setSelectedCourse(courseId, true);
+        }
+      } catch (err) {
+        setBox("courseStatus", "error", `Kursstatus konnte nicht geändert werden: ${err.message}`);
       }
     }
 
@@ -2645,6 +2882,12 @@
           }).join("")}
         </div>
       `;
+    }
+
+    function setHomeworkUserSelection(checked) {
+      document.querySelectorAll("[data-hw-user]").forEach(el => {
+        el.checked = !!checked;
+      });
     }
 
     function syncHomeworkTargetVisibility() {
@@ -2805,6 +3048,36 @@
       throw new Error(errors.join(" | "));
     }
 
+    async function callHomeworkAssignApi(body) {
+      const candidates = [
+        "./api/homework_assign.php",
+        "/api/homework_assign.php",
+        `${window.location.origin}/api/homework_assign.php`
+      ];
+      const errors = [];
+      const payloadBody = JSON.stringify(body || {});
+
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payloadBody
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) {
+            throw new Error(payload.error || `Fehler: ${response.status}`);
+          }
+          return payload;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${url}: ${msg}`);
+        }
+      }
+
+      throw new Error(errors.join(" | "));
+    }
+
     async function listHomeworkAssignments() {
       try {
         const assignments = await fetchHomeworkAssignments();
@@ -2819,17 +3092,11 @@
       clearBox("homeworkStatus");
       if (!assignmentId) return;
       try {
-        const response = await fetch("./api/homework_assign.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "set_active",
-            assignment_id: assignmentId,
-            active
-          })
+        await callHomeworkAssignApi({
+          action: "set_active",
+          assignment_id: assignmentId,
+          active
         });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("homeworkStatus", "ok", `Aufgabe wurde ${active ? "aktiviert" : "archiviert"}.`);
         listHomeworkAssignments();
       } catch (err) {
@@ -2882,23 +3149,17 @@
       }
 
       try {
-        const response = await fetch("./api/homework_assign.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "create",
-            title,
-            description,
-            attachment,
-            target_type: targetType,
-            course_id: targetType === "course" ? courseId : "",
-            usernames: targetType === "users" ? usernames : [],
-            duration_minutes: durationMinutes,
-            starts_at: startsAt
-          })
+        const payload = await callHomeworkAssignApi({
+          action: "create",
+          title,
+          description,
+          attachment,
+          target_type: targetType,
+          course_id: targetType === "course" ? courseId : "",
+          usernames: targetType === "users" ? usernames : [],
+          duration_minutes: durationMinutes,
+          starts_at: startsAt
         });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("homeworkStatus", "ok", `Aufgabe gespeichert. Zugewiesen: ${payload.target_count || 0}`);
         const templateSelect = document.getElementById("hwTaskTemplate");
         if (templateSelect) templateSelect.value = "";
@@ -5024,8 +5285,37 @@
     });
     document.getElementById("createCourseBtn").addEventListener("click", createCourse);
     document.getElementById("refreshCoursesBtn").addEventListener("click", listCourses);
+    document.getElementById("courseSwitchSelect").addEventListener("change", event => {
+      const id = String(event.target?.value || "");
+      setSelectedCourse(id, true);
+    });
+    document.getElementById("openSelectedMembersBtn").addEventListener("click", () => {
+      if (!selectedCourseId) {
+        setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      renderCourseAssignEditor(selectedCourseId);
+      setBox("courseStatus", "ok", "Mitgliedereditor geöffnet.");
+    });
+    document.getElementById("useSelectedCourseBtn").addEventListener("click", useSelectedCourseInHomework);
+    document.getElementById("openSelectedCourseBtn").addEventListener("click", () => {
+      if (!selectedCourseId) {
+        setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      setCourseActive(selectedCourseId, true);
+    });
+    document.getElementById("closeSelectedCourseBtn").addEventListener("click", () => {
+      if (!selectedCourseId) {
+        setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      setCourseActive(selectedCourseId, false);
+    });
     document.getElementById("createHomeworkBtn").addEventListener("click", createHomeworkAssignment);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
+    document.getElementById("hwSelectAllUsersBtn").addEventListener("click", () => setHomeworkUserSelection(true));
+    document.getElementById("hwClearUsersBtn").addEventListener("click", () => setHomeworkUserSelection(false));
     document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
     document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
