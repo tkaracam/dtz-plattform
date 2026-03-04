@@ -59,7 +59,32 @@ function assignment_targets_student(array $assignment, string $username): bool
         return false;
     }
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
-    return is_array($assignees[$uname] ?? null);
+    if (is_array($assignees[$uname] ?? null)) {
+        return true;
+    }
+
+    // Backward compatibility for older assignment records without assignees map.
+    $usernames = is_array($assignment['usernames'] ?? null) ? $assignment['usernames'] : [];
+    foreach ($usernames as $row) {
+        if (mb_strtolower(trim((string)$row)) === $uname) {
+            return true;
+        }
+    }
+
+    $courseId = trim((string)($assignment['course_id'] ?? ''));
+    if ($courseId !== '') {
+        $course = find_course_by_id($courseId);
+        if (is_array($course)) {
+            $members = is_array($course['members'] ?? null) ? $course['members'] : [];
+            foreach ($members as $member) {
+                if (mb_strtolower(trim((string)$member)) === $uname) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 function assignment_duration_minutes(array $assignment): int

@@ -21,8 +21,47 @@ require_once __DIR__ . '/homework_lib.php';
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 $now = time();
+$assignments = load_homework_assignments();
 
-$current = pick_current_assignment_for_student(load_homework_assignments(), $username, $now);
+$current = pick_current_assignment_for_student($assignments, $username, $now);
+if (!is_array($current)) {
+    $nextPlanned = null;
+    foreach ($assignments as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        if (!assignment_targets_student($row, $username)) {
+            continue;
+        }
+        $status = mb_strtolower(trim((string)($row['status'] ?? 'active')));
+        if ($status !== 'active') {
+            continue;
+        }
+        $state = assignment_user_state($row, $username);
+        if (trim((string)($state['submitted_at'] ?? '')) !== '') {
+            continue;
+        }
+        $startTs = assignment_availability_ts($row);
+        if ($startTs <= 0 || $startTs <= $now) {
+            continue;
+        }
+        if (!is_array($nextPlanned) || $startTs < (int)($nextPlanned['start_ts'] ?? PHP_INT_MAX)) {
+            $nextPlanned = [
+                'assignment' => $row,
+                'state' => $state,
+                'start_ts' => $startTs,
+            ];
+        }
+    }
+    if (is_array($nextPlanned)) {
+        $current = [
+            'assignment' => (array)$nextPlanned['assignment'],
+            'state' => (array)$nextPlanned['state'],
+            'planned_only' => true,
+        ];
+    }
+}
+
 if (!is_array($current)) {
     echo json_encode([
         'has_assignment' => false,
@@ -33,16 +72,20 @@ if (!is_array($current)) {
 
 $assignment = (array)$current['assignment'];
 $state = (array)$current['state'];
+$plannedOnly = !empty($current['planned_only']);
 $deadlineTs = (int)($state['deadline_ts'] ?? 0);
 $submittedAt = (string)($state['submitted_at'] ?? '');
 $startedAt = (string)($state['started_at'] ?? '');
+$startsAt = (string)($assignment['starts_at'] ?? '');
+$startsAtTs = $startsAt !== '' ? strtotime($startsAt) : false;
+$notActiveYet = (!$startedAt && $startsAtTs !== false && (int)$startsAtTs > $now);
 
 $remaining = 0;
 if ($deadlineTs > 0) {
     $remaining = max(0, $deadlineTs - $now);
 }
 $expired = ($submittedAt === '' && $deadlineTs > 0 && $now >= $deadlineTs);
-$locked = ($submittedAt !== '') || $expired;
+$locked = ($submittedAt !== '') || $expired || $notActiveYet;
 
 $response = [
     'has_assignment' => true,
@@ -64,7 +107,9 @@ $response = [
         'remaining_seconds' => $remaining,
         'expired' => $expired,
         'locked' => $locked,
-        'can_start' => ($startedAt === '' && $submittedAt === ''),
+        'not_active_yet' => $notActiveYet,
+        'planned_only' => $plannedOnly,
+        'can_start' => (!$notActiveYet && $startedAt === '' && $submittedAt === ''),
         'can_submit' => (!$locked && $startedAt !== ''),
     ],
 ];
