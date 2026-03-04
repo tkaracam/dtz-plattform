@@ -1671,6 +1671,7 @@
         </div>
         <div class="nav-links">
           <button id="navHomeBtn" class="nav-link" type="button">Start</button>
+          <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
           <button id="navWriteBtn" class="nav-link" type="button">Schreiben</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
           <button id="navSpeakingBtn" class="nav-link" type="button">Sprechen</button>
@@ -5424,6 +5425,8 @@
     });
     const navHomeBtn = document.getElementById("navHomeBtn");
     if (navHomeBtn) navHomeBtn.addEventListener("click", () => navigateToSection("home"));
+    const navPortalBtn = document.getElementById("navPortalBtn");
+    if (navPortalBtn) navPortalBtn.addEventListener("click", () => navigateToSection("portal"));
     const navWriteBtn = document.getElementById("navWriteBtn");
     if (navWriteBtn) navWriteBtn.addEventListener("click", () => navigateToSection("write"));
     const navLidBtn = document.getElementById("navLidBtn");
