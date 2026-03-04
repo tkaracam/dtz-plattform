@@ -117,7 +117,12 @@ if ($action === 'create') {
     }
 
     $durationMinutes = max(5, min(24 * 60, $durationMinutes));
-    if ($startsAt !== '' && strtotime($startsAt) === false) {
+    if ($startsAt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'Startzeit ist erforderlich.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (strtotime($startsAt) === false) {
         http_response_code(400);
         echo json_encode(['error' => 'Ungueltige Startzeit.'], JSON_UNESCAPED_UNICODE);
         exit;

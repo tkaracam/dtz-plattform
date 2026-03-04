@@ -36,6 +36,7 @@ $writingDurationSeconds = (int)($body['writing_duration_seconds'] ?? 0);
 $writingStartedAt = trim((string)($body['writing_started_at'] ?? ''));
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 $requiredPoints = $body['required_points'] ?? [];
+$autoSubmitOnExpiry = !empty($body['auto_submit_on_expiry']);
 
 if ($letterText === '') {
     http_response_code(400);
@@ -120,11 +121,16 @@ if ($deadlineAtState === '') {
     $state['deadline_at'] = $deadlineAtState;
 }
 
+$nowTs = time();
 $deadlineTs = strtotime($deadlineAtState);
-if ($deadlineTs !== false && time() >= (int)$deadlineTs) {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Bearbeitungszeit ist abgelaufen. Eine Abgabe ist nicht mehr möglich.'], JSON_UNESCAPED_UNICODE);
-    exit;
+if ($deadlineTs !== false && $nowTs >= (int)$deadlineTs) {
+    $autoSubmitGraceSeconds = 120;
+    $withinGrace = $nowTs <= ((int)$deadlineTs + $autoSubmitGraceSeconds);
+    if (!$autoSubmitOnExpiry || !$withinGrace) {
+        http_response_code(409);
+        echo json_encode(['error' => 'Die Bearbeitungszeit ist abgelaufen. Eine Abgabe ist nicht mehr möglich.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 
 $alreadySubmittedAt = trim((string)($state['submitted_at'] ?? ''));
@@ -165,6 +171,7 @@ $record = [
     'letter_text' => $letterText,
     'writing_duration_seconds' => $writingDurationSeconds,
     'writing_started_at' => $writingStartedAt,
+    'auto_submitted_on_expiry' => $autoSubmitOnExpiry,
     'meta' => [
         'remote_addr' => (string)($_SERVER['REMOTE_ADDR'] ?? ''),
         'user_agent' => (string)($_SERVER['HTTP_USER_AGENT'] ?? ''),

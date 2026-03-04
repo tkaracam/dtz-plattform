@@ -1390,8 +1390,8 @@
                   </select>
                 </div>
                 <div>
-                  <label for="hwStartsAt">Startzeit (optional)</label>
-                  <input id="hwStartsAt" type="datetime-local">
+                  <label for="hwStartsAt">Startzeit</label>
+                  <input id="hwStartsAt" type="datetime-local" required>
                 </div>
               </div>
               <div class="actions">
@@ -3126,14 +3126,16 @@
       durationMinutes = Math.max(5, Math.min(24 * 60, durationMinutes));
 
       let startsAt = "";
-      if (startsAtRaw) {
-        const ts = Date.parse(startsAtRaw);
-        if (!Number.isFinite(ts)) {
-          setBox("homeworkStatus", "error", "Ungueltige Startzeit.");
-          return;
-        }
-        startsAt = new Date(ts).toISOString();
+      if (!startsAtRaw) {
+        setBox("homeworkStatus", "error", "Bitte eine Startzeit festlegen.");
+        return;
       }
+      const ts = Date.parse(startsAtRaw);
+      if (!Number.isFinite(ts)) {
+        setBox("homeworkStatus", "error", "Ungueltige Startzeit.");
+        return;
+      }
+      startsAt = new Date(ts).toISOString();
 
       const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
         .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())

@@ -680,6 +680,15 @@
       font-size: 0.83rem;
     }
 
+    .assignment-actions .ghost-btn.started-btn,
+    .assignment-actions .ghost-btn.started-btn:disabled {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #ffffff;
+      border-color: #eaa0b6;
+      opacity: 1;
+      box-shadow: 0 8px 20px rgba(189, 91, 120, 0.24);
+    }
+
     .pill {
       display: inline-flex;
       align-items: center;
@@ -2316,6 +2325,8 @@
     let currentAssignedHomework = null;
     let currentAssignedHomeworkState = null;
     let assignmentCountdownTimerId = null;
+    let assignmentAutoSubmitInFlight = false;
+    let assignmentAutoSubmittedFor = "";
     let taskStatus = {};
     let currentTaskIndex = 0;
     let taskFilter = "all";
@@ -4346,6 +4357,8 @@
     function renderAssignmentPlaceholder(message, stateText) {
       currentAssignedHomework = null;
       currentAssignedHomeworkState = null;
+      assignmentAutoSubmitInFlight = false;
+      assignmentAutoSubmittedFor = "";
       stopAssignmentCountdown();
       getAssignmentUiSets().forEach(set => {
         const titleNode = document.getElementById(set.titleId);
@@ -4366,10 +4379,66 @@
         if (startBtn) {
           startBtn.disabled = true;
           startBtn.textContent = "Bearbeitung starten";
+          startBtn.classList.remove("started-btn");
         }
         if (attachWrap) attachWrap.classList.add("hidden");
       });
       setAssignmentEditorLocked(true);
+    }
+
+    function pickAssignmentAutoSubmitContext() {
+      const candidates = [
+        { textareaId: "letterText", buttonId: "uploadBtn", statusBoxId: "statusBox" },
+        { textareaId: "portalLetterText", buttonId: "portalUploadBtn", statusBoxId: "portalWriteStatus" }
+      ];
+      let best = candidates[0];
+      let bestScore = -1;
+      candidates.forEach(candidate => {
+        const textarea = document.getElementById(candidate.textareaId);
+        if (!textarea) return;
+        const textLen = String(textarea.value || "").trim().length;
+        const visibleBoost = textarea.offsetParent ? 100000 : 0;
+        const score = visibleBoost + textLen;
+        if (score > bestScore) {
+          bestScore = score;
+          best = candidate;
+        }
+      });
+      return best;
+    }
+
+    async function autoSubmitExpiredAssignment() {
+      if (!currentAssignedHomework || !currentAssignedHomeworkState) return;
+      const assignmentId = String(currentAssignedHomework.id || "").trim();
+      if (!assignmentId) return;
+      if (assignmentAutoSubmitInFlight || assignmentAutoSubmittedFor === assignmentId) return;
+      if (currentAssignedHomeworkState.submitted_at) return;
+      assignmentAutoSubmitInFlight = true;
+      assignmentAutoSubmittedFor = assignmentId;
+
+      const context = pickAssignmentAutoSubmitContext();
+      const textarea = document.getElementById(context.textareaId);
+      const hasText = !!String(textarea ? textarea.value : "").trim();
+      if (!hasText) {
+        setStatus("error", "Zeit abgelaufen. Automatische Abgabe nicht möglich, weil der Brief leer ist.", context.statusBoxId);
+        assignmentAutoSubmitInFlight = false;
+        return;
+      }
+
+      const ok = await uploadLetter(
+        context.textareaId,
+        context.buttonId,
+        context.statusBoxId,
+        {
+          forceSubmit: true,
+          autoSubmitOnExpiry: true,
+          successMessage: "Zeit abgelaufen. Brief wurde automatisch hochgeladen."
+        }
+      );
+      if (!ok) {
+        setStatus("error", "Automatische Abgabe fehlgeschlagen. Bitte Lehrkraft informieren.", context.statusBoxId);
+      }
+      assignmentAutoSubmitInFlight = false;
     }
 
     function updateAssignmentCountdown() {
@@ -4385,6 +4454,8 @@
         currentAssignedHomeworkState.expired = true;
         currentAssignedHomeworkState.locked = true;
         currentAssignedHomeworkState.can_submit = false;
+        stopAssignmentCountdown();
+        void autoSubmitExpiredAssignment();
       }
       getAssignmentUiSets().forEach(set => {
         const countdownNode = document.getElementById(set.countdownId);
@@ -4417,8 +4488,14 @@
         return;
       }
 
+      const prevAssignmentId = currentAssignedHomework ? String(currentAssignedHomework.id || "").trim() : "";
       currentAssignedHomework = payload.assignment;
       currentAssignedHomeworkState = payload.state || {};
+      const nextAssignmentId = String(currentAssignedHomework.id || "").trim();
+      if (prevAssignmentId !== nextAssignmentId) {
+        assignmentAutoSubmittedFor = "";
+        assignmentAutoSubmitInFlight = false;
+      }
 
       const attachment = String(currentAssignedHomework.attachment || "").trim();
       const safeAttachmentUrl = resolveSafeHttpUrl(attachment);
@@ -4464,6 +4541,7 @@
           const canStart = !!currentAssignedHomeworkState.can_start;
           startBtn.disabled = !canStart;
           startBtn.textContent = canStart ? "Bearbeitung starten" : "Bereits gestartet";
+          startBtn.classList.toggle("started-btn", !canStart);
         }
       });
 
@@ -4515,6 +4593,7 @@
           const canStart = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.can_start);
           btn.disabled = !canStart;
           btn.textContent = canStart ? "Bearbeitung starten" : "Bereits gestartet";
+          btn.classList.toggle("started-btn", !canStart);
         }
       }
     }
@@ -5303,10 +5382,13 @@
       return apiUrl.replace(/correct\.php(?:\?.*)?$/i, "save_letter.php");
     }
 
-    async function uploadLetter(textareaId = "letterText", buttonId = "uploadBtn", statusBoxId = "statusBox") {
+    async function uploadLetter(textareaId = "letterText", buttonId = "uploadBtn", statusBoxId = "statusBox", options = {}) {
+      const forceSubmit = !!options.forceSubmit;
+      const autoSubmitOnExpiry = !!options.autoSubmitOnExpiry;
+      const successMessage = String(options.successMessage || "Brief hochgeladen. Der Brief wird in Kürze korrigiert.");
       clearStatus(statusBoxId);
       const button = document.getElementById(buttonId);
-      if (!button) return;
+      if (!button) return false;
       button.disabled = true;
       button.textContent = "Wird hochgeladen...";
 
@@ -5314,15 +5396,15 @@
         const data = collectFormData(textareaId);
         if (!data.assignmentId) {
           setStatus("error", "Es ist keine aktive Aufgabe zugewiesen.", statusBoxId);
-          return;
+          return false;
         }
-        if (!currentAssignedHomeworkState || !currentAssignedHomeworkState.can_submit) {
+        if (!forceSubmit && (!currentAssignedHomeworkState || !currentAssignedHomeworkState.can_submit)) {
           setStatus("error", "Abgabe ist derzeit nicht möglich. Bitte Aufgabe starten oder Zeitstatus prüfen.", statusBoxId);
-          return;
+          return false;
         }
         if (!data.letterText) {
           setStatus("error", "Bitte geben Sie den Schülerbrief ein.", statusBoxId);
-          return;
+          return false;
         }
 
         const response = await fetch(resolveSaveUrl(), {
@@ -5335,7 +5417,8 @@
             required_points: data.requiredPoints,
             assignment_id: data.assignmentId,
             writing_duration_seconds: data.writingDurationSeconds,
-            writing_started_at: data.writingStartedAt
+            writing_started_at: data.writingStartedAt,
+            auto_submit_on_expiry: autoSubmitOnExpiry
           })
         });
 
@@ -5344,15 +5427,17 @@
           throw new Error(payload.error || `Upload-Fehler: ${response.status}`);
         }
 
-        setStatus("ok", "Brief hochgeladen. Der Brief wird in Kürze korrigiert.", statusBoxId);
+        setStatus("ok", successMessage, statusBoxId);
         resetLetterWritingTimer();
         await loadCurrentAssignedHomework();
         loadStudentPortal();
+        return true;
       } catch (err) {
         setStatus("error", `Upload fehlgeschlagen: ${err.message}`, statusBoxId);
+        return false;
       } finally {
         const canSubmit = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.can_submit);
-        button.disabled = !canSubmit;
+        button.disabled = forceSubmit ? true : !canSubmit;
         button.textContent = "Brief hochladen";
       }
     }
