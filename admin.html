@@ -424,7 +424,7 @@
       color: #22415f;
     }
 
-    input, select, button {
+    input, select, button, textarea {
       width: 100%;
       font: inherit;
       color: inherit;
@@ -434,10 +434,15 @@
       padding: 10px 11px;
     }
 
-    input:focus {
+    input:focus, textarea:focus, select:focus {
       outline: none;
       border-color: #72a8ff;
       box-shadow: 0 0 0 4px rgba(63, 126, 255, 0.12);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 88px;
     }
 
     button {
@@ -522,39 +527,111 @@
     }
 
     #userListWrap table {
-      min-width: 920px;
+      min-width: 860px;
     }
 
     #userListWrap td .actions {
       margin-top: 0;
     }
 
-    #userListWrap td .student-actions-grid {
+    #userListWrap td.actions-col {
+      min-width: 260px;
+    }
+
+    #userListWrap td .student-actions-stack {
+      display: grid;
+      gap: 6px;
+      max-width: 320px;
+    }
+
+    #userListWrap td .student-action-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
-      max-width: 360px;
     }
 
-    #userListWrap td .student-actions-grid button {
+    #userListWrap td .student-action-row button {
       width: 100%;
       min-width: 0;
-      white-space: nowrap;
-      font-size: 0.8rem;
-      line-height: 1.1;
-      padding: 7px 8px;
+      white-space: normal;
+      font-size: 0.76rem;
+      line-height: 1.15;
+      padding: 6px 7px;
       box-shadow: none;
     }
 
-    #userListWrap td .student-actions-grid .action-spacer {
+    #userListWrap td .student-action-row .action-spacer {
       display: block;
-      min-height: 32px;
+      min-height: 30px;
       border-radius: var(--radius-sm);
       visibility: hidden;
     }
 
+    .assign-docent-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      background: rgba(7, 18, 33, 0.46);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .assign-docent-card {
+      width: min(520px, 100%);
+      border-radius: 14px;
+      border: 1px solid #c8d9eb;
+      background: #fff;
+      box-shadow: 0 24px 56px rgba(9, 24, 42, 0.3);
+      padding: 14px;
+    }
+
+    .assign-docent-card h3 {
+      margin: 0;
+      color: #143554;
+      font-size: 1.1rem;
+    }
+
+    .assign-docent-card p {
+      margin: 6px 0 0;
+      color: #355575;
+      font-size: 0.92rem;
+    }
+
     .user-actions-mobile {
       display: none !important;
+    }
+
+    .hw-user-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .hw-user-item {
+      border: 1px solid #d8e4f1;
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #f8fbff;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .hw-user-item input[type=\"checkbox\"] {
+      width: auto;
+      min-width: 0;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .hw-user-item span {
+      font-size: 0.86rem;
+      line-height: 1.2;
+      color: #173652;
+      word-break: break-word;
     }
 
     .ok {
@@ -874,9 +951,10 @@
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
           <button id="jumpTeachersBtn" class="admin-menu-item owner-only hidden" type="button">Lehrkräfte</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
-          <button id="jumpAttendanceBtn" class="admin-menu-item" type="button">Anwesenheit</button>
-          <button id="jumpNotifyBtn" class="admin-menu-item" type="button">Benachrichtigungen</button>
-          <button id="jumpRoomSectionBtn" class="admin-menu-item" type="button">Virtueller Saal</button>
+          <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Ödevler</button>
+          <button id="jumpAttendanceBtn" class="admin-menu-item archived-module hidden" type="button">Anwesenheit</button>
+          <button id="jumpNotifyBtn" class="admin-menu-item archived-module hidden" type="button">Benachrichtigungen</button>
+          <button id="jumpRoomSectionBtn" class="admin-menu-item archived-module hidden" type="button">Virtueller Saal</button>
           <button id="jumpAuditBtn" class="admin-menu-item owner-only hidden" type="button">Audit</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Archiv</button>
           <button id="openOpsChecklistBtn" class="admin-menu-item" type="button">Betrieb-Checkliste</button>
@@ -913,9 +991,10 @@
           <button type="button" class="admin-quick-btn" data-pane="accounts">Schülerzugänge</button>
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="teachers">Lehrkräfte</button>
           <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
-          <button type="button" class="admin-quick-btn" data-pane="attendance">Anwesenheit</button>
-          <button type="button" class="admin-quick-btn" data-pane="notify">Benachrichtigungen</button>
-          <button type="button" class="admin-quick-btn" data-pane="room">Virtueller Saal</button>
+          <button type="button" class="admin-quick-btn" data-pane="homeworks">Ödevler</button>
+          <button type="button" class="admin-quick-btn archived-module hidden" data-pane="attendance">Anwesenheit</button>
+          <button type="button" class="admin-quick-btn archived-module hidden" data-pane="notify">Benachrichtigungen</button>
+          <button type="button" class="admin-quick-btn archived-module hidden" data-pane="room">Virtueller Saal</button>
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="audit">Audit</button>
           <button type="button" class="admin-quick-btn" data-pane="archive">Archiv</button>
         </div>
@@ -924,7 +1003,7 @@
           <h3>Start-Checkliste</h3>
           <ol>
             <li>Schülerzugänge öffnen und Konten erstellen.</li>
-            <li>Virtueller Saal öffnen und Aufgabe plus Raumcode erzeugen.</li>
+            <li>Ödevler öffnen und Aufgaben an Kurs/Gruppen zuweisen.</li>
             <li>Nach der Übung Archiv öffnen und Einträge/CSV prüfen.</li>
             <li>Einmal pro Woche Backup von api/storage erstellen.</li>
           </ol>
@@ -1084,6 +1163,85 @@
           <div id="courseStatus" class="hidden"></div>
           <div id="courseListWrap" style="margin-top: 10px;"></div>
           <div id="courseAssignWrap" style="margin-top: 10px;"></div>
+        </div>
+        </div>
+
+        <div id="paneHomeworks" class="admin-pane">
+        <div id="homeworksSection" class="bulk-wrap">
+          <h2 class="section-title" style="font-size: 1.35rem;">Ödevler</h2>
+          <p class="section-subtitle">Ödev erstellen, Kurs/Gruppe veya seçili öğrencilere ata ve durumu izle.</p>
+
+          <details class="fold-section" open>
+            <summary>+ Ödev Ata</summary>
+            <div class="fold-section-content">
+              <div class="grid">
+                <div>
+                  <label for="hwTitle">Ödev başlığı</label>
+                  <input id="hwTitle" type="text" placeholder="z. B. DTZ Schreiben - Entschuldigungsmail">
+                </div>
+                <div>
+                  <label for="hwAttachment">Dosya / link (opsiyonel)</label>
+                  <input id="hwAttachment" type="text" placeholder="https://... veya dosya bağlantısı">
+                </div>
+              </div>
+              <div>
+                <label for="hwDescription">Açıklama / yönerge</label>
+                <textarea id="hwDescription" rows="4" placeholder="Ödev açıklaması ve yazım yönergesi"></textarea>
+              </div>
+              <div class="grid">
+                <div>
+                  <label for="hwTargetType">Atama türü</label>
+                  <select id="hwTargetType">
+                    <option value="course" selected>Sınıf / grup</option>
+                    <option value="users">Seçili kullanıcılar</option>
+                  </select>
+                </div>
+                <div id="hwCourseWrap">
+                  <label for="hwCourseId">Sınıf / grup seçimi</label>
+                  <select id="hwCourseId">
+                    <option value="">Önce kurs seçin</option>
+                  </select>
+                </div>
+              </div>
+              <div id="hwUsersWrap" class="fold-section" style="margin-top:10px; display:none;">
+                <summary>Kullanıcı seçimi</summary>
+                <div class="fold-section-content">
+                  <div id="hwUsersList" class="portal-list">Henüz kullanıcı yok.</div>
+                </div>
+              </div>
+              <div class="grid">
+                <div>
+                  <label for="hwDurationValue">Süre</label>
+                  <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
+                </div>
+                <div>
+                  <label for="hwDurationUnit">Birim</label>
+                  <select id="hwDurationUnit">
+                    <option value="minutes" selected>Dakika</option>
+                    <option value="hours">Saat</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="hwStartsAt">Başlangıç zamanı (opsiyonel)</label>
+                  <input id="hwStartsAt" type="datetime-local">
+                </div>
+              </div>
+              <div class="actions">
+                <button id="createHomeworkBtn" type="button">Yayınla / Kaydet</button>
+              </div>
+              <div id="homeworkStatus" class="hidden"></div>
+            </div>
+          </details>
+
+          <details class="fold-section" open>
+            <summary>Atanan ödevler</summary>
+            <div class="fold-section-content">
+              <div class="actions" style="margin-top: 0;">
+                <button id="refreshHomeworkBtn" type="button" class="ghost-btn">Ödevleri güncelle</button>
+              </div>
+              <div id="homeworkListWrap" style="margin-top:10px;"></div>
+            </div>
+          </details>
         </div>
         </div>
 
@@ -1358,6 +1516,22 @@
     </div>
   </div>
   <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
+  <div id="assignDocentModal" class="assign-docent-modal hidden" aria-hidden="true">
+    <div class="assign-docent-card" role="dialog" aria-modal="true" aria-labelledby="assignDocentTitle">
+      <h3 id="assignDocentTitle">Docent zuweisen</h3>
+      <p id="assignDocentHint">Bitte Docent auswählen und speichern.</p>
+      <div style="margin-top:10px;">
+        <label for="assignDocentSelect">Docent</label>
+        <select id="assignDocentSelect">
+          <option value="">Bitte wählen</option>
+        </select>
+      </div>
+      <div class="actions" style="margin-top:10px;">
+        <button id="assignDocentSaveBtn" type="button">Speichern</button>
+        <button id="assignDocentCancelBtn" type="button" class="ghost-btn">Abbrechen</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     let teacherRecords = [];
@@ -1369,6 +1543,7 @@
     let currentAlertTargets = [];
     let currentAttendanceRequests = [];
     let currentRooms = [];
+    let currentHomeworkAssignments = [];
     let roomLiveTimerId = null;
     let roomLiveEnabled = false;
     let roomPendingOnly = false;
@@ -1379,6 +1554,7 @@
     let pendingSeenInitialized = false;
     let pendingSeenIds = new Set();
     let pendingLastCritical = 0;
+    let assignTeacherTargetUsername = "";
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "accounts";
     let adminContext = {
@@ -1389,14 +1565,13 @@
       permissions: {}
     };
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
+    const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
 
     const adminPaneMap = {
       accounts: "paneAccounts",
       teachers: "paneTeachers",
       courses: "paneCourses",
-      attendance: "paneAttendance",
-      notify: "paneNotify",
-      room: "paneRoom",
+      homeworks: "paneHomeworks",
       audit: "paneAudit",
       archive: "paneArchive"
     };
@@ -1405,9 +1580,7 @@
       accounts: "Schülerzugänge",
       teachers: "Lehrkräfte",
       courses: "Kurse",
-      attendance: "Anwesenheit",
-      notify: "Benachrichtigungen",
-      room: "Virtueller Saal",
+      homeworks: "Ödevler",
       audit: "Audit",
       archive: "Archiv"
     };
@@ -1559,6 +1732,12 @@
       document.querySelectorAll(".owner-only").forEach(node => {
         node.classList.toggle("hidden", !owner);
       });
+      document.querySelectorAll(".archived-module").forEach(node => {
+        node.classList.add("hidden");
+      });
+      if (ARCHIVED_ADMIN_PANES.has(activeAdminPane)) {
+        activeAdminPane = "accounts";
+      }
       if (!owner && (activeAdminPane === "teachers" || activeAdminPane === "audit")) {
         activeAdminPane = "accounts";
       }
@@ -1579,6 +1758,10 @@
 
     function setAdminPane(paneName) {
       if (!adminPaneMap[paneName]) return;
+      if (ARCHIVED_ADMIN_PANES.has(paneName)) {
+        setBox("panelStatus", "error", "Dieses Modul ist archiviert und nicht mehr verfügbar.");
+        return;
+      }
       if ((paneName === "teachers" || paneName === "audit") && !isOwnerAdmin()) return;
       activeAdminPane = paneName;
       Object.values(adminPaneMap).forEach(id => {
@@ -1678,10 +1861,8 @@
       }
       listStudents();
       listCourses();
+      listHomeworkAssignments();
       listLetters();
-      listAttendanceSessions();
-      loadAttendanceRequests();
-      listRooms();
       if (isOwnerAdmin()) {
         loadAuditLogs();
         listTeachers();
@@ -2021,10 +2202,12 @@
         const isActive = !!user.active;
         const username = String(user.username || "");
         const canAssignDocent = isOwnerAdmin();
-        const assignDocentButtons = canAssignDocent
+        const assignDocentRow = canAssignDocent
           ? `
-              <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Docent zuweisen</button>
-              <span class="action-spacer" aria-hidden="true"></span>
+              <div class="student-action-row">
+                <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Docent zuweisen</button>
+                <span class="action-spacer" aria-hidden="true"></span>
+              </div>
             `
           : "";
         const rowId = `row-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
@@ -2039,13 +2222,17 @@
           <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
           <td>${isActive ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
-          <td>
-            <div class="actions student-actions-grid user-actions-desktop">
-              <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
-              <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
-              <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
-              <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
-              ${assignDocentButtons}
+          <td class="actions-col">
+            <div class="student-actions-stack user-actions-desktop">
+              <div class="student-action-row">
+                <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
+                <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
+              </div>
+              <div class="student-action-row">
+                <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+                <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
+              </div>
+              ${assignDocentRow}
             </div>
           </td>
         `;
@@ -2078,19 +2265,27 @@
     }
 
     function renderCourseSelect() {
-      const sel = document.getElementById("attendanceCourseId");
-      const prev = sel.value;
-      const options = ['<option value="">Bitte zuerst einen Kurs wählen</option>'];
+      const options = ['<option value="">Bitte Kurs auswählen</option>'];
       currentCourses
         .filter(c => !!c.active)
         .forEach(c => {
           options.push(`<option value="${escapeHtml(c.course_id || "")}">${escapeHtml(`${c.name || c.course_id} (${c.level || "-"})`)}</option>`);
         });
-      sel.innerHTML = options.join("");
-      if (prev) {
-        sel.value = prev;
+
+      const attendanceSelect = document.getElementById("attendanceCourseId");
+      if (attendanceSelect) {
+        const prev = attendanceSelect.value;
+        attendanceSelect.innerHTML = options.join("");
+        if (prev) attendanceSelect.value = prev;
+        updateAttendanceCourseBySelect();
       }
-      updateAttendanceCourseBySelect();
+
+      const homeworkCourse = document.getElementById("hwCourseId");
+      if (homeworkCourse) {
+        const prevHw = homeworkCourse.value;
+        homeworkCourse.innerHTML = options.join("");
+        if (prevHw) homeworkCourse.value = prevHw;
+      }
     }
 
     function renderCourses(courses) {
@@ -2219,6 +2414,216 @@
         listCourses();
       } catch (err) {
         setBox("courseStatus", "error", `Speichern der Kursmitglieder fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    function renderHomeworkUserPicker() {
+      const usersWrap = document.getElementById("hwUsersList");
+      if (!usersWrap) return;
+      const activeUsers = currentStudents
+        .filter(u => !!u && !!u.active)
+        .map(u => ({
+          username: String(u.username || "").trim().toLowerCase(),
+          display_name: String(u.display_name || "").trim()
+        }))
+        .filter(u => u.username !== "");
+      if (!activeUsers.length) {
+        usersWrap.innerHTML = "Noch keine aktiven Benutzer vorhanden.";
+        return;
+      }
+      usersWrap.innerHTML = `
+        <div class="hw-user-grid">
+          ${activeUsers.map(u => {
+            const label = u.display_name ? `${u.display_name} (${u.username})` : u.username;
+            return `
+              <label class="hw-user-item">
+                <input type="checkbox" data-hw-user="${escapeHtml(u.username)}">
+                <span>${escapeHtml(label)}</span>
+              </label>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function syncHomeworkTargetVisibility() {
+      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
+      const courseWrap = document.getElementById("hwCourseWrap");
+      const usersWrap = document.getElementById("hwUsersWrap");
+      if (targetType === "users") {
+        if (courseWrap) courseWrap.style.display = "none";
+        if (usersWrap) usersWrap.style.display = "block";
+        renderHomeworkUserPicker();
+      } else {
+        if (courseWrap) courseWrap.style.display = "block";
+        if (usersWrap) usersWrap.style.display = "none";
+      }
+    }
+
+    function renderHomeworkAssignments(rows) {
+      currentHomeworkAssignments = Array.isArray(rows) ? rows.slice() : [];
+      const wrap = document.getElementById("homeworkListWrap");
+      if (!wrap) return;
+      if (!currentHomeworkAssignments.length) {
+        wrap.innerHTML = "<p>Noch keine Aufgaben vorhanden.</p>";
+        return;
+      }
+      const tableRows = currentHomeworkAssignments.map(item => {
+        const assignmentId = String(item.id || "");
+        const active = String(item.status || "active") === "active";
+        const toggleText = active ? "Archivieren" : "Aktivieren";
+        const startsAt = formatDisplayDateTime(String(item.starts_at || ""));
+        const createdAt = formatDisplayDateTime(String(item.created_at || ""));
+        const targetLabel = String(item.target_label || item.course_id || "-");
+        return `
+          <tr>
+            <td>${escapeHtml(String(item.title || "-"))}</td>
+            <td class="mono">${escapeHtml(targetLabel)}</td>
+            <td class="mono">${escapeHtml(String(item.duration_minutes || 0))} Min</td>
+            <td class="mono">${escapeHtml(startsAt || "-")}</td>
+            <td class="mono">${escapeHtml(createdAt || "-")}</td>
+            <td>${active ? "Aktiv" : "Archiv"}</td>
+            <td class="mono">${escapeHtml(`${item.assigned_total || 0}`)}</td>
+            <td class="mono">${escapeHtml(`${item.started_total || 0}`)}</td>
+            <td class="mono">${escapeHtml(`${item.submitted_total || 0}`)}</td>
+            <td>
+              <button type="button" data-hw-toggle="${escapeHtml(assignmentId)}" data-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
+                ${toggleText}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Ziel</th>
+              <th>Dauer</th>
+              <th>Start</th>
+              <th>Erstellt</th>
+              <th>Status</th>
+              <th>Zugewiesen</th>
+              <th>Gestartet</th>
+              <th>Abgegeben</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("button[data-hw-toggle]").forEach(btn => {
+        const id = String(btn.getAttribute("data-hw-toggle") || "");
+        const activeNow = btn.getAttribute("data-hw-active") === "1";
+        btn.addEventListener("click", () => setHomeworkActive(id, !activeNow));
+      });
+    }
+
+    async function listHomeworkAssignments() {
+      try {
+        const response = await fetch("./api/homework_list.php", { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        renderHomeworkAssignments(Array.isArray(payload.assignments) ? payload.assignments : []);
+      } catch (err) {
+        const wrap = document.getElementById("homeworkListWrap");
+        if (wrap) wrap.innerHTML = `<p>Aufgaben konnten nicht geladen werden: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    async function setHomeworkActive(assignmentId, active) {
+      clearBox("homeworkStatus");
+      if (!assignmentId) return;
+      try {
+        const response = await fetch("./api/homework_assign.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_active",
+            assignment_id: assignmentId,
+            active
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("homeworkStatus", "ok", `Aufgabe wurde ${active ? "aktiviert" : "archiviert"}.`);
+        listHomeworkAssignments();
+      } catch (err) {
+        setBox("homeworkStatus", "error", `Statuswechsel fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function createHomeworkAssignment() {
+      clearBox("homeworkStatus");
+      const title = String(document.getElementById("hwTitle")?.value || "").trim();
+      const description = String(document.getElementById("hwDescription")?.value || "").trim();
+      const attachment = String(document.getElementById("hwAttachment")?.value || "").trim();
+      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
+      const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
+      const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
+      const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
+      const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
+
+      if (!title || !description) {
+        setBox("homeworkStatus", "error", "Titel und Beschreibung sind erforderlich.");
+        return;
+      }
+
+      let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
+      if (durationUnit === "hours") durationMinutes *= 60;
+      durationMinutes = Math.max(5, Math.min(24 * 60, durationMinutes));
+
+      let startsAt = "";
+      if (startsAtRaw) {
+        const ts = Date.parse(startsAtRaw);
+        if (!Number.isFinite(ts)) {
+          setBox("homeworkStatus", "error", "Ungueltige Startzeit.");
+          return;
+        }
+        startsAt = new Date(ts).toISOString();
+      }
+
+      const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
+        .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
+        .filter(Boolean);
+
+      if (targetType === "course" && !courseId) {
+        setBox("homeworkStatus", "error", "Bitte Kurs auswählen.");
+        return;
+      }
+      if (targetType === "users" && !usernames.length) {
+        setBox("homeworkStatus", "error", "Bitte mindestens einen Benutzer auswählen.");
+        return;
+      }
+
+      try {
+        const response = await fetch("./api/homework_assign.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "create",
+            title,
+            description,
+            attachment,
+            target_type: targetType,
+            course_id: targetType === "course" ? courseId : "",
+            usernames: targetType === "users" ? usernames : [],
+            duration_minutes: durationMinutes,
+            starts_at: startsAt
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("homeworkStatus", "ok", `Aufgabe gespeichert. Zugewiesen: ${payload.target_count || 0}`);
+        document.getElementById("hwTitle").value = "";
+        document.getElementById("hwDescription").value = "";
+        document.getElementById("hwAttachment").value = "";
+        document.getElementById("hwStartsAt").value = "";
+        Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
+        listHomeworkAssignments();
+      } catch (err) {
+        setBox("homeworkStatus", "error", `Aufgabe konnte nicht gespeichert werden: ${err.message}`);
       }
     }
 
@@ -2674,8 +3079,10 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderStudents(Array.isArray(payload.users) ? payload.users : []);
+        renderHomeworkUserPicker();
       } catch (_) {
         renderStudents([]);
+        renderHomeworkUserPicker();
       }
     }
 
@@ -2782,6 +3189,16 @@
       }
     }
 
+    function closeAssignDocentDialog() {
+      const modal = document.getElementById("assignDocentModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.setAttribute("aria-hidden", "true");
+      const select = document.getElementById("assignDocentSelect");
+      if (select) select.innerHTML = '<option value="">Bitte wählen</option>';
+      assignTeacherTargetUsername = "";
+    }
+
     async function assignDocentToStudentPrompt(username) {
       clearBox("userStatus");
       if (!isOwnerAdmin()) {
@@ -2807,34 +3224,40 @@
         return;
       }
 
-      const listText = activeTeachers
-        .map((t, idx) => `${idx + 1}) ${t.username}${t.display_name ? ` (${t.display_name})` : ""}${t.bamf_code ? ` [${t.bamf_code}]` : ""}`)
-        .join("\n");
-      const rawChoice = window.prompt(
-        `Docent für ${username} auswählen:\n${listText}\n\nNummer oder Benutzername eingeben:`,
-        activeTeachers[0].username
-      );
-      if (rawChoice === null) return;
+      const modal = document.getElementById("assignDocentModal");
+      const title = document.getElementById("assignDocentTitle");
+      const hint = document.getElementById("assignDocentHint");
+      const select = document.getElementById("assignDocentSelect");
+      if (!modal || !title || !hint || !select) {
+        setBox("userStatus", "error", "Dialog konnte nicht geöffnet werden.");
+        return;
+      }
 
-      const choice = String(rawChoice).trim().toLowerCase();
-      if (!choice) {
+      assignTeacherTargetUsername = username;
+      title.textContent = `Docent zuweisen: ${username}`;
+      hint.textContent = "Docent auswählen und mit Speichern bestätigen.";
+      select.innerHTML = activeTeachers.map(t => {
+        const label = `${t.username}${t.display_name ? ` (${t.display_name})` : ""}${t.bamf_code ? ` [${t.bamf_code}]` : ""}`;
+        return `<option value="${escapeHtml(t.username)}">${escapeHtml(label)}</option>`;
+      }).join("");
+      modal.classList.remove("hidden");
+      modal.setAttribute("aria-hidden", "false");
+      select.focus();
+    }
+
+    async function submitAssignDocentSelection() {
+      clearBox("userStatus");
+      if (!isOwnerAdmin()) {
+        setBox("userStatus", "error", "Nur Haupt-Admin kann Docent-Zuweisungen ändern.");
+        return;
+      }
+      const username = assignTeacherTargetUsername;
+      const select = document.getElementById("assignDocentSelect");
+      const teacherUsername = select ? String(select.value || "").trim().toLowerCase() : "";
+      if (!username || !teacherUsername) {
         setBox("userStatus", "error", "Bitte Docent auswählen.");
         return;
       }
-
-      let selected = activeTeachers.find(t => t.username === choice) || null;
-      if (!selected && /^\d+$/.test(choice)) {
-        const index = Number(choice) - 1;
-        if (index >= 0 && index < activeTeachers.length) {
-          selected = activeTeachers[index];
-        }
-      }
-
-      if (!selected) {
-        setBox("userStatus", "error", "Auswahl nicht gefunden. Bitte Nummer oder Benutzername aus der Liste eingeben.");
-        return;
-      }
-
       try {
         const response = await fetch("./api/student_manage.php", {
           method: "POST",
@@ -2842,12 +3265,13 @@
           body: JSON.stringify({
             action: "assign_teacher",
             username,
-            teacher_username: selected.username
+            teacher_username: teacherUsername
           })
         });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("userStatus", "ok", `${username} wurde ${selected.username} zugewiesen.`);
+        closeAssignDocentDialog();
+        setBox("userStatus", "ok", `${username} wurde ${teacherUsername} zugewiesen.`);
         listStudents();
       } catch (err) {
         setBox("userStatus", "error", `Docent-Zuweisung fehlgeschlagen: ${err.message}`);
@@ -4237,6 +4661,9 @@
     });
     document.getElementById("createCourseBtn").addEventListener("click", createCourse);
     document.getElementById("refreshCoursesBtn").addEventListener("click", listCourses);
+    document.getElementById("createHomeworkBtn").addEventListener("click", createHomeworkAssignment);
+    document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
+    document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
       updateAttendanceCourseBySelect();
       renderAttendanceEditor();
@@ -4299,6 +4726,10 @@
       closeAdminMenu();
       openAdminPane("courses");
     });
+    document.getElementById("jumpHomeworkBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      openAdminPane("homeworks");
+    });
     document.getElementById("jumpAttendanceBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("attendance");
@@ -4342,8 +4773,27 @@
     document.getElementById("adminMenuDropdown").addEventListener("click", event => {
       event.stopPropagation();
     });
+    document.getElementById("assignDocentSaveBtn").addEventListener("click", submitAssignDocentSelection);
+    document.getElementById("assignDocentCancelBtn").addEventListener("click", closeAssignDocentDialog);
+    document.getElementById("assignDocentModal").addEventListener("click", event => {
+      if (event.target && event.target.id === "assignDocentModal") {
+        closeAssignDocentDialog();
+      }
+    });
+    document.getElementById("assignDocentSelect").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submitAssignDocentSelection();
+      }
+    });
     document.addEventListener("click", () => {
       closeAdminMenu();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeAdminMenu();
+        closeAssignDocentDialog();
+      }
     });
     document.getElementById("adminPassword").addEventListener("keydown", event => {
       if (event.key === "Enter") login();
@@ -4351,6 +4801,8 @@
     document.getElementById("adminUsername").addEventListener("keydown", event => {
       if (event.key === "Enter") login();
     });
+    syncHomeworkTargetVisibility();
+    renderHomeworkUserPicker();
     checkSession();
   </script>
 </body>
