@@ -669,6 +669,17 @@
       min-width: 150px;
     }
 
+    .portal-card-actions {
+      align-items: stretch;
+      flex-wrap: nowrap;
+    }
+
+    .portal-card-actions .btn-wrap {
+      max-width: none;
+      min-width: 0;
+      flex: 1 1 0;
+    }
+
     .ghost-btn {
       width: auto;
       background: transparent;
@@ -1697,6 +1708,11 @@
         max-width: none;
         min-width: 0;
       }
+
+      .portal-card-actions {
+        flex-direction: row;
+        align-items: stretch;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1927,7 +1943,7 @@
       <section id="portalCard" class="card hidden">
         <h2 class="section-title">Schüler-Portal</h2>
         <p class="section-subtitle">Hausaufgaben, Lehrkraft-Notizen und Zertifikatsfortschritt.</p>
-        <div class="row-end">
+        <div class="row-end portal-card-actions">
           <div class="btn-wrap">
             <button id="refreshPortalBtn" type="button">Portal aktualisieren</button>
           </div>
@@ -1938,7 +1954,6 @@
         <div id="portalStatus" class="hidden"></div>
 
         <section class="portal-section">
-          <h3 class="portal-section-title">A2-B1</h3>
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
               <details id="portalHomeworkAccordion" class="card-accordion" open>
