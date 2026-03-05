@@ -1607,14 +1607,6 @@
       font-size: 0.92rem;
     }
 
-    .speak-example-wrap {
-      margin-top: 10px;
-    }
-
-    .speak-example-box {
-      margin-top: 8px;
-    }
-
     .speak-form-grid {
       margin-top: 10px;
       display: grid;
@@ -2360,12 +2352,6 @@
             <p class="speak-muted" id="speakPart3Lead"></p>
             <ul id="speakPart3Points" class="speak-list"></ul>
             <div class="speak-note">Tipp: Reagieren, Vorschläge machen und am Ende eine Einigung formulieren.</div>
-            <div class="speak-example-wrap">
-              <div class="btn-wrap">
-                <button id="speakPart3ExampleBtn" type="button" class="secondary-btn">Beispiel</button>
-              </div>
-              <div id="speakPart3Example" class="speak-draft speak-example-box hidden"></div>
-            </div>
           </section>
         </div>
           </div>
@@ -4283,89 +4269,6 @@
         `Planen Sie gemeinsam ${currentSpeakingSet.part3.plan}. Planen Sie, was Sie tun möchten. ` +
         `Hier haben Sie einige Notizen.`;
       setList("speakPart3Points", currentSpeakingSet.part3.points);
-      const exampleBox = document.getElementById("speakPart3Example");
-      if (exampleBox) {
-        exampleBox.textContent = buildPart3Example(currentSpeakingSet.part3);
-        exampleBox.classList.add("hidden");
-      }
-      const exampleBtn = document.getElementById("speakPart3ExampleBtn");
-      if (exampleBtn) {
-        exampleBtn.textContent = "Beispiel";
-      }
-    }
-
-    function buildPart3Example(part3Topic) {
-      const task = String(part3Topic?.task || "etwas zusammen planen").trim();
-      const plan = String(part3Topic?.plan || "den Plan").trim();
-      const points = Array.isArray(part3Topic?.points)
-        ? part3Topic.points.map(p => String(p || "").trim()).filter(Boolean)
-        : [];
-      const effectivePoints = points.length ? points : ["Termin", "Ort", "Kosten", "Aufgabenverteilung"];
-
-      const buildPointExchange = (point, idx) => {
-        const p = point.toLowerCase();
-        if (/(termin|datum|uhrzeit|zeit|abfahrt|beginn|rückfahrt|treff)/.test(p)) {
-          return [
-            `A: Dann klären wir ${point}. Ich schlage Samstag um 10:00 Uhr vor.`,
-            "B: Das passt mir. Wenn etwas dazwischenkommt, nehmen wir als Alternative Sonntagvormittag."
-          ];
-        }
-        if (/(ort|raum|unterkunft|route|strecke|ziel)/.test(p)) {
-          return [
-            `A: Wie machen wir ${point}? Ich würde einen zentralen Ort wählen.`,
-            "B: Gute Idee. Dann finden es alle leichter und wir verlieren keine Zeit."
-          ];
-        }
-        if (/(kosten|budget|eintritt|tickets?)/.test(p)) {
-          return [
-            `A: Wir müssen auch ${point} besprechen. Wie viel wollen wir maximal ausgeben?`,
-            "B: Ich finde ein klares Budget gut. Dann teilen wir die Kosten fair auf."
-          ];
-        }
-        if (/(essen|getränke|verpflegung|snacks?|menü|einkauf)/.test(p)) {
-          return [
-            `A: Sprechen wir über ${point}. Ich kann den Einkauf übernehmen.`,
-            "B: Super, ich bringe Getränke mit. Dann ist alles gut verteilt."
-          ];
-        }
-        if (/(material|unterlagen|technik|werkzeug|ausrüstung)/.test(p)) {
-          return [
-            `A: Was brauchen wir für ${point}? Wir sollten eine kurze Liste machen.`,
-            "B: Ja, ich prüfe heute Abend, was schon da ist, und ergänze den Rest."
-          ];
-        }
-        if (/(aufgaben|rollen|verteilung|moderation|organisation)/.test(p)) {
-          return [
-            `A: Dann noch ${point}: Wer übernimmt welche Aufgabe?`,
-            "B: Du koordinierst den Ablauf, ich kümmere mich um Kommunikation und Bestätigung."
-          ];
-        }
-        return [
-          `A: Wir sollten auch ${point} klären. Was meinst du dazu?`,
-          "B: Einverstanden. Wir entscheiden das jetzt konkret, damit unser Plan realistisch bleibt."
-        ];
-      };
-
-      const dialog = [
-        "Beispiel-Dialog (Teil 3)",
-        "",
-        `A: Wollen wir ${task}?`,
-        `B: Ja, gern. Planen wir ${plan} Schritt für Schritt.`
-      ];
-
-      effectivePoints.slice(0, 5).forEach((point, idx) => {
-        const lines = buildPointExchange(point, idx);
-        dialog.push(...lines);
-      });
-
-      dialog.push(
-        "A: Gut, dann haben wir alles Wichtige besprochen.",
-        `B: Genau. Ich fasse zusammen: Wir haben ${plan} konkret geplant und die Aufgaben verteilt.`,
-        "A: Perfekt, dann machen wir es so.",
-        "B: Abgemacht. Ich schicke dir gleich eine kurze Bestätigung."
-      );
-
-      return dialog.join("\n");
     }
 
     function setSpeakingTab(tabNo) {
@@ -6460,16 +6363,6 @@
     const refreshBskHistoryBtn = document.getElementById("refreshBskHistoryBtn");
     if (refreshBskHistoryBtn) refreshBskHistoryBtn.addEventListener("click", loadBskHistory);
     document.getElementById("buildPart1DraftBtn").addEventListener("click", generatePart1Draft);
-    const speakPart3ExampleBtn = document.getElementById("speakPart3ExampleBtn");
-    if (speakPart3ExampleBtn) {
-      speakPart3ExampleBtn.addEventListener("click", () => {
-        const exampleBox = document.getElementById("speakPart3Example");
-        if (!exampleBox) return;
-        const willOpen = exampleBox.classList.contains("hidden");
-        exampleBox.classList.toggle("hidden");
-        speakPart3ExampleBtn.textContent = willOpen ? "Beispiel schließen" : "Beispiel";
-      });
-    }
     document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
     document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
     document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
