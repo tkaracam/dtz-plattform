@@ -2011,9 +2011,6 @@
           <div class="btn-wrap">
             <button id="refreshPortalBtn" type="button">Portal aktualisieren</button>
           </div>
-          <div class="btn-wrap">
-            <button id="backToMenuFromPortalBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
-          </div>
         </div>
         <div id="portalStatus" class="hidden"></div>
 
@@ -6086,7 +6083,10 @@
     document.getElementById("submitRoomBtn").addEventListener("click", submitRoomAnswer);
     const backToWrite = document.getElementById("backToMenuFromWriteBtn");
     if (backToWrite) backToWrite.addEventListener("click", () => setMainView("portal"));
-    document.getElementById("backToMenuFromPortalBtn").addEventListener("click", () => setMainView("portal"));
+    const backToMenuFromPortalBtn = document.getElementById("backToMenuFromPortalBtn");
+    if (backToMenuFromPortalBtn) {
+      backToMenuFromPortalBtn.addEventListener("click", () => setMainView("portal"));
+    }
     document.getElementById("backToMenuFromSimulationBtn").addEventListener("click", () => setMainView("portal"));
     document.getElementById("backToMenuFromRoomBtn").addEventListener("click", () => setMainView("portal"));
     const backToMenuFromBskBtn = document.getElementById("backToMenuFromBskBtn");
