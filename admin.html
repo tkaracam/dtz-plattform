@@ -2085,45 +2085,6 @@
           <h2 class="section-title" style="margin-top: 18px;">Archiv</h2>
           <p class="section-subtitle">Einträge filtern und bei Bedarf als CSV herunterladen.</p>
         </div>
-        <div class="error" style="margin-top:10px;">
-          Copyright-Hinweis: Keine offiziellen BAMF/g.a.s.t./Goethe-Prüfungsfragen 1:1 übernehmen. Nur eigene oder lizenzierte Inhalte verwenden.
-        </div>
-
-        <div class="grid">
-          <div>
-            <label for="filterDateFrom">Datum von</label>
-            <input id="filterDateFrom" type="date">
-          </div>
-          <div>
-            <label for="filterDateTo">Datum bis</label>
-            <input id="filterDateTo" type="date">
-          </div>
-        </div>
-
-        <div class="grid">
-          <div>
-            <label for="studentQuery">Schüler suchen</label>
-            <input id="studentQuery" type="text" placeholder="Vor- oder Nachname">
-          </div>
-          <div>
-            <label for="textQuery">Textsuche</label>
-            <input id="textQuery" type="text" placeholder="Suchwort im Brief">
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label for="listLimit">Eintragslimit</label>
-            <input id="listLimit" type="number" min="1" max="200" value="100">
-          </div>
-          <div class="actions">
-            <button id="listBtn" type="button">Einträge laden</button>
-            <button id="loadPendingBtn" type="button" class="ghost-btn">Nur Warteschlange (0)</button>
-            <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
-          </div>
-        </div>
-
-        <div id="panelStatus" class="hidden"></div>
         <div id="previewWrap" class="preview-wrap hidden">
           <div class="preview-head">
             <h4>Korrektur-Vorschau (vor Freigabe)</h4>
@@ -2161,6 +2122,45 @@
         <details class="fold-section" style="margin-top: 12px;">
           <summary>Archiv (Alle Einträge)</summary>
           <div class="fold-section-content">
+            <div class="error" style="margin-top:0;">
+              Copyright-Hinweis: Keine offiziellen BAMF/g.a.s.t./Goethe-Prüfungsfragen 1:1 übernehmen. Nur eigene oder lizenzierte Inhalte verwenden.
+            </div>
+
+            <div class="grid">
+              <div>
+                <label for="filterDateFrom">Datum von</label>
+                <input id="filterDateFrom" type="date">
+              </div>
+              <div>
+                <label for="filterDateTo">Datum bis</label>
+                <input id="filterDateTo" type="date">
+              </div>
+            </div>
+
+            <div class="grid">
+              <div>
+                <label for="studentQuery">Schüler suchen</label>
+                <input id="studentQuery" type="text" placeholder="Vor- oder Nachname">
+              </div>
+              <div>
+                <label for="textQuery">Textsuche</label>
+                <input id="textQuery" type="text" placeholder="Suchwort im Brief">
+              </div>
+            </div>
+
+            <div class="row">
+              <div>
+                <label for="listLimit">Eintragslimit</label>
+                <input id="listLimit" type="number" min="1" max="200" value="100">
+              </div>
+              <div class="actions">
+                <button id="listBtn" type="button">Einträge laden</button>
+                <button id="loadPendingBtn" type="button" class="ghost-btn">Nur Warteschlange (0)</button>
+                <button id="downloadCsvBtn" type="button">CSV herunterladen</button>
+              </div>
+            </div>
+
+            <div id="panelStatus" class="hidden"></div>
             <div id="archiveWrap" style="margin-top: 0;"></div>
           </div>
         </details>
@@ -3499,9 +3499,12 @@
             <td class="mono">${escapeHtml(`${item.started_total || 0}`)}</td>
             <td class="mono">${escapeHtml(`${item.submitted_total || 0}`)}</td>
             <td>
-              <button type="button" data-hw-toggle="${escapeHtml(assignmentId)}" data-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
-                ${toggleText}
-              </button>
+              <div class="course-row-actions">
+                <button type="button" data-hw-toggle="${escapeHtml(assignmentId)}" data-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
+                  ${toggleText}
+                </button>
+                <button type="button" data-hw-delete="${escapeHtml(assignmentId)}" class="danger-btn">Löschen</button>
+              </div>
             </td>
           </tr>
         `;
@@ -3529,6 +3532,10 @@
         const id = String(btn.getAttribute("data-hw-toggle") || "");
         const activeNow = btn.getAttribute("data-hw-active") === "1";
         btn.addEventListener("click", () => setHomeworkActive(id, !activeNow));
+      });
+      wrap.querySelectorAll("button[data-hw-delete]").forEach(btn => {
+        const id = String(btn.getAttribute("data-hw-delete") || "");
+        btn.addEventListener("click", () => deleteHomeworkAssignment(id));
       });
     }
 
@@ -3627,6 +3634,23 @@
         listHomeworkAssignments();
       } catch (err) {
         setBox("homeworkStatus", "error", `Statuswechsel fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function deleteHomeworkAssignment(assignmentId) {
+      clearBox("homeworkStatus");
+      if (!assignmentId) return;
+      const confirmed = window.confirm("Aufgabe wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.");
+      if (!confirmed) return;
+      try {
+        await callHomeworkAssignApi({
+          action: "delete",
+          assignment_id: assignmentId
+        });
+        setBox("homeworkStatus", "ok", "Aufgabe wurde gelöscht.");
+        listHomeworkAssignments();
+      } catch (err) {
+        setBox("homeworkStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
       }
     }
 

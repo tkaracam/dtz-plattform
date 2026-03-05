@@ -299,5 +299,52 @@ if ($action === 'set_active') {
     exit;
 }
 
+if ($action === 'delete') {
+    $assignmentId = trim((string)($body['assignment_id'] ?? ''));
+    if ($assignmentId === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'assignment_id fehlt.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $found = false;
+    foreach ($items as $i => $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        if ((string)($item['id'] ?? '') !== $assignmentId) {
+            continue;
+        }
+        if (!assignment_visibility_for_admin($item, $admin)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Keine Berechtigung für diese Aufgabe.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        unset($items[$i]);
+        $found = true;
+        break;
+    }
+
+    if (!$found) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $items = array_values($items);
+    if (!write_homework_assignments($items)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Aufgabe konnte nicht gelöscht werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    append_audit_log('homework_assign_delete', [
+        'assignment_id' => $assignmentId,
+    ]);
+
+    echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 http_response_code(400);
 echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
