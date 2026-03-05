@@ -712,8 +712,60 @@
       -webkit-overflow-scrolling: touch;
     }
 
+    .student-multi-select-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .student-multi-select-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #355575;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      padding: 6px 8px;
+      border: 1px solid #d6e3f0;
+      border-radius: 10px;
+      background: #f7fbff;
+    }
+
+    .student-multi-select-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .student-selection-count {
+      color: #5a6172;
+      font-size: 0.88rem;
+      line-height: 1.2;
+    }
+
     #userListWrap table {
       min-width: 860px;
+    }
+
+    #userListWrap th.select-col,
+    #userListWrap td.select-col {
+      width: 52px;
+      min-width: 52px;
+      text-align: center;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    #userListWrap .student-row-select {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      margin: 0;
+      padding: 0;
     }
 
     #userListWrap td .actions {
@@ -1807,6 +1859,14 @@
               <div class="actions" style="margin-top: 0;">
                 <button id="refreshStudentsInlineBtn" type="button" class="ghost-btn">Schülerliste aktualisieren</button>
               </div>
+              <div class="student-multi-select-bar">
+                <label class="student-multi-select-label" for="studentSelectAllChk">
+                  <input id="studentSelectAllChk" type="checkbox">
+                  Alle auswählen
+                </label>
+                <button id="clearStudentSelectionBtn" type="button" class="ghost-btn">Auswahl löschen</button>
+                <span id="studentSelectionCount" class="student-selection-count">0 ausgewählt</span>
+              </div>
               <div id="userListWrap" style="margin-top: 10px;"></div>
             </div>
           </details>
@@ -2277,6 +2337,7 @@
     let teacherBskRecords = [];
     let teacherUsers = [];
     let currentStudents = [];
+    let selectedStudentUsernames = new Set();
     let currentCourses = [];
     let selectedCourseId = "";
     let currentAttendanceSessionId = "";
@@ -3080,15 +3141,21 @@
 
     function renderStudents(users) {
       currentStudents = users.slice();
+      const validUsernames = new Set(users.map(u => String(u.username || "").trim()).filter(Boolean));
+      selectedStudentUsernames.forEach(username => {
+        if (!validUsernames.has(username)) selectedStudentUsernames.delete(username);
+      });
       const wrap = document.getElementById("userListWrap");
       if (!users.length) {
         wrap.innerHTML = "<p>Noch keine Schülerzugänge.</p>";
+        updateStudentSelectionUi();
         return;
       }
       const table = document.createElement("table");
       table.innerHTML = `
         <thead>
           <tr>
+            <th class="select-col">Auswahl</th>
             <th>Benutzername</th>
             <th>Lehrkraft</th>
             <th>BAMF</th>
@@ -3113,9 +3180,11 @@
           : "";
         const contactPanelId = `contact-panel-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
         const rowId = `row-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
+        const selected = selectedStudentUsernames.has(username) ? "checked" : "";
         const tr = document.createElement("tr");
         tr.id = rowId;
         tr.innerHTML = `
+          <td class="select-col"><input type="checkbox" class="student-row-select" data-student-select="${escapeHtml(username)}" ${selected}></td>
           <td class="mono">${escapeHtml(username)}</td>
           <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
           <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
@@ -3179,6 +3248,41 @@
           panel.classList.toggle("hidden");
         });
       });
+      wrap.querySelectorAll("input[data-student-select]").forEach(input => {
+        input.addEventListener("change", () => {
+          const username = String(input.getAttribute("data-student-select") || "").trim();
+          if (!username) return;
+          if (input.checked) selectedStudentUsernames.add(username);
+          else selectedStudentUsernames.delete(username);
+          updateStudentSelectionUi();
+        });
+      });
+      updateStudentSelectionUi();
+    }
+
+    function updateStudentSelectionUi() {
+      const total = currentStudents.length;
+      const selectedCount = selectedStudentUsernames.size;
+      const countNode = document.getElementById("studentSelectionCount");
+      if (countNode) {
+        countNode.textContent = `${selectedCount} ausgewählt`;
+      }
+      const selectAll = document.getElementById("studentSelectAllChk");
+      if (selectAll) {
+        selectAll.checked = total > 0 && selectedCount === total;
+        selectAll.indeterminate = selectedCount > 0 && selectedCount < total;
+      }
+    }
+
+    function setAllStudentsSelected(checked) {
+      selectedStudentUsernames.clear();
+      if (checked) {
+        currentStudents.forEach(user => {
+          const username = String(user.username || "").trim();
+          if (username) selectedStudentUsernames.add(username);
+        });
+      }
+      renderStudents(currentStudents);
     }
 
     function getCourseById(courseId) {
@@ -6090,6 +6194,12 @@
     document.getElementById("bulkCsvBtn").addEventListener("click", downloadBulkCsv);
     document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
     document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
+    document.getElementById("studentSelectAllChk").addEventListener("change", event => {
+      setAllStudentsSelected(!!event.target.checked);
+    });
+    document.getElementById("clearStudentSelectionBtn").addEventListener("click", () => {
+      setAllStudentsSelected(false);
+    });
     document.querySelectorAll(".admin-quick-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         openAdminPane(btn.dataset.pane);
