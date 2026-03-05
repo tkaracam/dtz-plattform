@@ -51,11 +51,6 @@ if ($action === 'create') {
             echo json_encode(['error' => 'Ihr Lehrerzugang hat keinen gueltigen BAMF-Code.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
-        if (!str_starts_with(mb_strtolower($name), $docentCode)) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Kursname muss mit Ihrem BAMF-Code beginnen.'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
     }
     $idPrefix = ($admin['role'] ?? '') === 'docent' ? $docentCode : 'kurs';
     $id = $idPrefix . '-' . $suffix;

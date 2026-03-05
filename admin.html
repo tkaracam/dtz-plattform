@@ -3668,10 +3668,6 @@
         setBox("courseStatus", "error", "Kursname ist erforderlich.");
         return;
       }
-      if (!/^bamf\d{3}/i.test(name)) {
-        setBox("courseStatus", "error", "Kursname muss mit bamf + 3 Ziffern beginnen (z. B. bamf233-b1).");
-        return;
-      }
       try {
         const response = await fetch("./api/course_manage.php", {
           method: "POST",
