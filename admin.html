@@ -601,37 +601,6 @@
       line-height: 1.2;
     }
 
-    .course-members-multi {
-      margin-top: 8px;
-      border: 1px solid #d6e3f0;
-      border-radius: 10px;
-      padding: 8px;
-      background: #fbfdff;
-    }
-
-    .course-members-multi label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 700;
-      color: #30425b;
-    }
-
-    #courseMembersMultiSelect {
-      min-height: 140px;
-    }
-
-    .course-members-multi-actions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .course-members-multi-actions button {
-      width: 100%;
-      min-width: 0;
-    }
-
     #pendingBulkActions button {
       padding: 7px 9px;
       font-size: 0.82rem;
@@ -3537,21 +3506,6 @@
             <button type="button" id="courseMembersClearBtn" class="ghost-btn">Auswahl löschen</button>
             <span id="courseMembersSelectionCount" class="course-member-selection-count">0 ausgewählt</span>
           </div>
-          <div class="course-members-multi">
-            <label for="courseMembersMultiSelect">Mehrfachauswahl</label>
-            <select id="courseMembersMultiSelect" multiple>
-              ${users.map(u => {
-                const uname = String(u.username || "");
-                const label = u.display_name ? `${u.display_name} (${uname})` : uname;
-                const selected = members.has(uname) ? "selected" : "";
-                return `<option value="${escapeHtml(uname)}" ${selected}>${escapeHtml(label)}</option>`;
-              }).join("")}
-            </select>
-            <div class="course-members-multi-actions">
-              <button type="button" id="courseMembersApplySelectedBtn" class="ghost-btn">Auswahl markieren</button>
-              <button type="button" id="courseMembersRemoveSelectedBtn" class="ghost-btn">Auswahl entfernen</button>
-            </div>
-          </div>
           <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">
             <div class="course-members-grid">${rows}</div>
           </div>
@@ -3562,23 +3516,11 @@
       `;
       const selectAllBtn = document.getElementById("courseMembersSelectAllBtn");
       const clearBtn = document.getElementById("courseMembersClearBtn");
-      const multiSelect = document.getElementById("courseMembersMultiSelect");
-      const applySelectedBtn = document.getElementById("courseMembersApplySelectedBtn");
-      const removeSelectedBtn = document.getElementById("courseMembersRemoveSelectedBtn");
       if (selectAllBtn) {
         selectAllBtn.addEventListener("click", () => setCourseMembersChecked(true));
       }
       if (clearBtn) {
         clearBtn.addEventListener("click", () => setCourseMembersChecked(false));
-      }
-      if (applySelectedBtn) {
-        applySelectedBtn.addEventListener("click", () => setCourseMembersFromMultiSelect(true));
-      }
-      if (removeSelectedBtn) {
-        removeSelectedBtn.addEventListener("click", () => setCourseMembersFromMultiSelect(false));
-      }
-      if (multiSelect) {
-        multiSelect.addEventListener("change", updateCourseMemberSelectionUi);
       }
       wrap.querySelectorAll("[data-course-member]").forEach(el => {
         el.addEventListener("change", updateCourseMemberSelectionUi);
@@ -3596,37 +3538,7 @@
       wrap.querySelectorAll("[data-course-member]").forEach(el => {
         el.checked = !!checked;
       });
-      syncCourseMembersMultiSelect();
       updateCourseMemberSelectionUi();
-    }
-
-    function setCourseMembersFromMultiSelect(markChecked) {
-      const wrap = document.getElementById("courseAssignWrap");
-      const multiSelect = document.getElementById("courseMembersMultiSelect");
-      if (!wrap || !multiSelect) return;
-      const selected = new Set(Array.from(multiSelect.selectedOptions).map(opt => String(opt.value || "").trim()).filter(Boolean));
-      if (!selected.size) {
-        updateCourseMemberSelectionUi();
-        return;
-      }
-      wrap.querySelectorAll("[data-course-member]").forEach(el => {
-        const uname = String(el.getAttribute("data-course-member") || "").trim();
-        if (selected.has(uname)) {
-          el.checked = !!markChecked;
-        }
-      });
-      syncCourseMembersMultiSelect();
-      updateCourseMemberSelectionUi();
-    }
-
-    function syncCourseMembersMultiSelect() {
-      const wrap = document.getElementById("courseAssignWrap");
-      const multiSelect = document.getElementById("courseMembersMultiSelect");
-      if (!wrap || !multiSelect) return;
-      const checked = new Set(Array.from(wrap.querySelectorAll("[data-course-member]:checked")).map(el => String(el.getAttribute("data-course-member") || "").trim()).filter(Boolean));
-      Array.from(multiSelect.options || []).forEach(opt => {
-        opt.selected = checked.has(String(opt.value || "").trim());
-      });
     }
 
     function updateCourseMemberSelectionUi() {
@@ -3638,7 +3550,6 @@
       if (countNode) {
         countNode.textContent = `${checked} ausgewählt`;
       }
-      syncCourseMembersMultiSelect();
       const selectAllBtn = document.getElementById("courseMembersSelectAllBtn");
       const clearBtn = document.getElementById("courseMembersClearBtn");
       if (selectAllBtn) selectAllBtn.disabled = all.length === 0 || checked === all.length;
