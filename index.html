@@ -4790,7 +4790,6 @@
           return `
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
-            <div>${escapeHtml(row.description || "-")}</div>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
           </div>
         `;
