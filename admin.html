@@ -280,6 +280,19 @@
       background: #fff3f0;
     }
 
+    .admin-menu-subgroup {
+      display: grid;
+      gap: 6px;
+      padding-top: 2px;
+      border-top: 1px dashed #d8e4f1;
+    }
+
+    .admin-menu-item.is-toggle {
+      background: #eef5ff;
+      border-color: #c8d9eb;
+      font-weight: 700;
+    }
+
     .admin-quick-nav {
       margin-top: 12px;
       padding: 10px;
@@ -1618,18 +1631,21 @@
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
           <button id="goHomeBtn" class="admin-menu-item" type="button">Startseite</button>
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
-          <button id="jumpTeachersBtn" class="admin-menu-item owner-only hidden" type="button">Lehrkräfte</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
-          <button id="jumpAttendanceBtn" class="admin-menu-item archived-module hidden" type="button">Anwesenheit</button>
-          <button id="jumpNotifyBtn" class="admin-menu-item archived-module hidden" type="button">Benachrichtigungen</button>
-          <button id="jumpRoomSectionBtn" class="admin-menu-item archived-module hidden" type="button">Virtueller Saal</button>
-          <button id="jumpAuditBtn" class="admin-menu-item owner-only hidden" type="button">Audit</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
-          <button id="openOpsChecklistBtn" class="admin-menu-item" type="button">Betrieb-Checkliste</button>
-          <button id="openTeacherGuideBtn" class="admin-menu-item" type="button">Lehrkraft-Anleitung</button>
-          <button id="openStudentGuideBtn" class="admin-menu-item" type="button">Schüler-Anleitung</button>
-          <button id="refreshStudentsBtn" class="admin-menu-item" type="button">Schülerliste aktualisieren</button>
+          <button id="toggleAndereBtn" class="admin-menu-item is-toggle" type="button" aria-expanded="false">ANDERE</button>
+          <div id="adminAndereGroup" class="admin-menu-subgroup hidden">
+            <button id="jumpTeachersBtn" class="admin-menu-item owner-only hidden" type="button">Lehrkräfte</button>
+            <button id="jumpAttendanceBtn" class="admin-menu-item archived-module hidden" type="button">Anwesenheit</button>
+            <button id="jumpNotifyBtn" class="admin-menu-item archived-module hidden" type="button">Benachrichtigungen</button>
+            <button id="jumpRoomSectionBtn" class="admin-menu-item archived-module hidden" type="button">Virtueller Saal</button>
+            <button id="jumpAuditBtn" class="admin-menu-item owner-only hidden" type="button">Audit</button>
+            <button id="openOpsChecklistBtn" class="admin-menu-item" type="button">Betrieb-Checkliste</button>
+            <button id="openTeacherGuideBtn" class="admin-menu-item" type="button">Lehrkraft-Anleitung</button>
+            <button id="openStudentGuideBtn" class="admin-menu-item" type="button">Schüler-Anleitung</button>
+            <button id="refreshStudentsBtn" class="admin-menu-item" type="button">Schülerliste aktualisieren</button>
+          </div>
           <button id="navLogoutBtn" class="admin-menu-item critical" type="button">Abmelden</button>
         </div>
       </div>
@@ -2614,12 +2630,25 @@
     function closeAdminMenu() {
       const menu = document.getElementById("adminMenuDropdown");
       if (menu) menu.classList.add("hidden");
+      const andere = document.getElementById("adminAndereGroup");
+      if (andere) andere.classList.add("hidden");
+      const toggleBtn = document.getElementById("toggleAndereBtn");
+      if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
     }
 
     function toggleAdminMenu() {
       const menu = document.getElementById("adminMenuDropdown");
       if (!menu) return;
       menu.classList.toggle("hidden");
+    }
+
+    function toggleAndereMenu() {
+      const gruppe = document.getElementById("adminAndereGroup");
+      const toggleBtn = document.getElementById("toggleAndereBtn");
+      if (!gruppe || !toggleBtn) return;
+      const willOpen = gruppe.classList.contains("hidden");
+      gruppe.classList.toggle("hidden", !willOpen);
+      toggleBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
     }
 
     async function parseJsonResponse(response) {
@@ -6102,6 +6131,10 @@
     document.getElementById("adminMenuToggleBtn").addEventListener("click", event => {
       event.stopPropagation();
       toggleAdminMenu();
+    });
+    document.getElementById("toggleAndereBtn").addEventListener("click", event => {
+      event.preventDefault();
+      toggleAndereMenu();
     });
     document.getElementById("adminMenuDropdown").addEventListener("click", event => {
       event.stopPropagation();
