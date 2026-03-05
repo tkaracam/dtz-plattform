@@ -4283,24 +4283,77 @@
     }
 
     function buildPart3Example(part3Topic) {
-      const points = Array.isArray(part3Topic?.points) ? part3Topic.points : [];
-      const p1 = points[0] || "Termin";
-      const p2 = points[1] || "Ort";
-      const p3 = points[2] || "Kosten";
-      return [
+      const task = String(part3Topic?.task || "etwas zusammen planen").trim();
+      const plan = String(part3Topic?.plan || "den Plan").trim();
+      const points = Array.isArray(part3Topic?.points)
+        ? part3Topic.points.map(p => String(p || "").trim()).filter(Boolean)
+        : [];
+      const effectivePoints = points.length ? points : ["Termin", "Ort", "Kosten", "Aufgabenverteilung"];
+
+      const buildPointExchange = (point, idx) => {
+        const p = point.toLowerCase();
+        if (/(termin|datum|uhrzeit|zeit|abfahrt|beginn|rückfahrt|treff)/.test(p)) {
+          return [
+            `A: Dann klären wir ${point}. Ich schlage Samstag um 10:00 Uhr vor.`,
+            "B: Das passt mir. Wenn etwas dazwischenkommt, nehmen wir als Alternative Sonntagvormittag."
+          ];
+        }
+        if (/(ort|raum|unterkunft|route|strecke|ziel)/.test(p)) {
+          return [
+            `A: Wie machen wir ${point}? Ich würde einen zentralen Ort wählen.`,
+            "B: Gute Idee. Dann finden es alle leichter und wir verlieren keine Zeit."
+          ];
+        }
+        if (/(kosten|budget|eintritt|tickets?)/.test(p)) {
+          return [
+            `A: Wir müssen auch ${point} besprechen. Wie viel wollen wir maximal ausgeben?`,
+            "B: Ich finde ein klares Budget gut. Dann teilen wir die Kosten fair auf."
+          ];
+        }
+        if (/(essen|getränke|verpflegung|snacks?|menü|einkauf)/.test(p)) {
+          return [
+            `A: Sprechen wir über ${point}. Ich kann den Einkauf übernehmen.`,
+            "B: Super, ich bringe Getränke mit. Dann ist alles gut verteilt."
+          ];
+        }
+        if (/(material|unterlagen|technik|werkzeug|ausrüstung)/.test(p)) {
+          return [
+            `A: Was brauchen wir für ${point}? Wir sollten eine kurze Liste machen.`,
+            "B: Ja, ich prüfe heute Abend, was schon da ist, und ergänze den Rest."
+          ];
+        }
+        if (/(aufgaben|rollen|verteilung|moderation|organisation)/.test(p)) {
+          return [
+            `A: Dann noch ${point}: Wer übernimmt welche Aufgabe?`,
+            "B: Du koordinierst den Ablauf, ich kümmere mich um Kommunikation und Bestätigung."
+          ];
+        }
+        return [
+          `A: Wir sollten auch ${point} klären. Was meinst du dazu?`,
+          "B: Einverstanden. Wir entscheiden das jetzt konkret, damit unser Plan realistisch bleibt."
+        ];
+      };
+
+      const dialog = [
         "Beispiel-Dialog (Teil 3)",
         "",
-        `A: Wollen wir ${part3Topic?.task || "etwas zusammen planen"}?`,
-        "B: Ja, gern. Das ist eine gute Idee.",
-        `A: Sprechen wir zuerst über ${p1}. Was passt dir?`,
-        "B: Am Samstag wäre für mich gut.",
-        `A: Gut, dann planen wir auch ${p2}.`,
-        "B: Ein zentraler Treffpunkt ist besser für alle.",
-        `A: Und wie machen wir es mit ${p3}?`,
-        "B: Wir teilen die Kosten und Aufgaben gerecht auf.",
-        "A: Super, dann sind wir einverstanden.",
-        "B: Perfekt, ich bestätige alles kurz in einer Nachricht."
-      ].join("\n");
+        `A: Wollen wir ${task}?`,
+        `B: Ja, gern. Planen wir ${plan} Schritt für Schritt.`
+      ];
+
+      effectivePoints.slice(0, 5).forEach((point, idx) => {
+        const lines = buildPointExchange(point, idx);
+        dialog.push(...lines);
+      });
+
+      dialog.push(
+        "A: Gut, dann haben wir alles Wichtige besprochen.",
+        `B: Genau. Ich fasse zusammen: Wir haben ${plan} konkret geplant und die Aufgaben verteilt.`,
+        "A: Perfekt, dann machen wir es so.",
+        "B: Abgemacht. Ich schicke dir gleich eine kurze Bestätigung."
+      );
+
+      return dialog.join("\n");
     }
 
     function setSpeakingTab(tabNo) {
