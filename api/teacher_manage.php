@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-$owner = require_owner_session_json();
+$admin = require_admin_session_json();
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -31,6 +31,57 @@ if (!is_array($body)) {
 $action = trim((string)($body['action'] ?? ''));
 $teachers = load_teacher_users();
 
+if ($action === 'set_bamf_self') {
+    if (($admin['role'] ?? '') !== 'docent') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Nur Lehrkraft kann den eigenen BAMF-Code setzen.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $username = mb_strtolower(trim((string)($admin['username'] ?? '')));
+    if ($username === '') {
+        http_response_code(401);
+        echo json_encode(['error' => 'Session ist ungueltig.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $bamfCode = normalize_bamf_code((string)($body['bamf_code'] ?? ''));
+    if ($bamfCode === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'bamf_code muss im Format bamf233 sein.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $foundIndex = -1;
+    foreach ($teachers as $i => $teacher) {
+        if (!is_array($teacher)) {
+            continue;
+        }
+        $takenUser = mb_strtolower(trim((string)($teacher['username'] ?? '')));
+        if ($takenUser === $username) {
+            $foundIndex = $i;
+            continue;
+        }
+        $takenCode = normalize_bamf_code((string)($teacher['bamf_code'] ?? ''));
+        if ($takenCode !== '' && hash_equals($takenCode, $bamfCode)) {
+            http_response_code(409);
+            echo json_encode(['error' => 'Dieser BAMF-Code ist bereits einer anderen Lehrkraft zugeordnet.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+    if ($foundIndex < 0) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Lehrkraftprofil nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $teachers[$foundIndex]['bamf_code'] = $bamfCode;
+    $teachers[$foundIndex]['updated_at'] = gmdate('c');
+} else {
+    if (($admin['role'] ?? '') !== 'owner') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Nur Haupt-Admin darf diese Aktion ausfuehren.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+if ($action !== 'set_bamf_self') {
 if ($action === 'create') {
     $username = mb_strtolower(trim((string)($body['username'] ?? '')));
     $displayName = trim((string)($body['display_name'] ?? ''));
@@ -42,19 +93,19 @@ if ($action === 'create') {
         echo json_encode(['error' => 'Benutzername muss 3-32 Zeichen haben (a-z, 0-9, ., _, -).'], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    if ($username === (string)($owner['username'] ?? '')) {
+    if ($username === (string)($admin['username'] ?? '')) {
         http_response_code(409);
         echo json_encode(['error' => 'Dieser Benutzername ist fuer den Haupt-Admin reserviert.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-    if ($bamfCode === '') {
-        http_response_code(400);
-        echo json_encode(['error' => 'bamf_code muss im Format bamf233 sein.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     if (mb_strlen($password) < 6 || mb_strlen($password) > 128) {
         http_response_code(400);
         echo json_encode(['error' => 'Passwort muss 6-128 Zeichen haben.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (trim((string)($body['bamf_code'] ?? '')) !== '' && $bamfCode === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'bamf_code muss im Format bamf233 sein.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     foreach ($teachers as $teacher) {
@@ -68,7 +119,7 @@ if ($action === 'create') {
             exit;
         }
         $takenCode = normalize_bamf_code((string)($teacher['bamf_code'] ?? ''));
-        if ($takenCode !== '' && hash_equals($takenCode, $bamfCode)) {
+        if ($bamfCode !== '' && $takenCode !== '' && hash_equals($takenCode, $bamfCode)) {
             http_response_code(409);
             echo json_encode(['error' => 'Dieser BAMF-Code ist bereits einer anderen Lehrkraft zugeordnet.'], JSON_UNESCAPED_UNICODE);
             exit;
@@ -120,25 +171,27 @@ if ($action === 'create') {
         $teachers[$foundIndex]['updated_at'] = gmdate('c');
     } elseif ($action === 'update_profile') {
         $displayName = trim((string)($body['display_name'] ?? ''));
-        $bamfCode = normalize_bamf_code((string)($body['bamf_code'] ?? ''));
-        if ($bamfCode === '') {
-            http_response_code(400);
-            echo json_encode(['error' => 'bamf_code muss im Format bamf233 sein.'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        foreach ($teachers as $i => $teacher) {
-            if ($i === $foundIndex || !is_array($teacher)) {
-                continue;
-            }
-            $takenCode = normalize_bamf_code((string)($teacher['bamf_code'] ?? ''));
-            if ($takenCode !== '' && hash_equals($takenCode, $bamfCode)) {
-                http_response_code(409);
-                echo json_encode(['error' => 'Dieser BAMF-Code ist bereits einer anderen Lehrkraft zugeordnet.'], JSON_UNESCAPED_UNICODE);
+        $teachers[$foundIndex]['display_name'] = $displayName;
+        if (array_key_exists('bamf_code', $body) && trim((string)$body['bamf_code']) !== '') {
+            $bamfCode = normalize_bamf_code((string)($body['bamf_code'] ?? ''));
+            if ($bamfCode === '') {
+                http_response_code(400);
+                echo json_encode(['error' => 'bamf_code muss im Format bamf233 sein.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
+            foreach ($teachers as $i => $teacher) {
+                if ($i === $foundIndex || !is_array($teacher)) {
+                    continue;
+                }
+                $takenCode = normalize_bamf_code((string)($teacher['bamf_code'] ?? ''));
+                if ($takenCode !== '' && hash_equals($takenCode, $bamfCode)) {
+                    http_response_code(409);
+                    echo json_encode(['error' => 'Dieser BAMF-Code ist bereits einer anderen Lehrkraft zugeordnet.'], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+            }
+            $teachers[$foundIndex]['bamf_code'] = $bamfCode;
         }
-        $teachers[$foundIndex]['display_name'] = $displayName;
-        $teachers[$foundIndex]['bamf_code'] = $bamfCode;
         $teachers[$foundIndex]['updated_at'] = gmdate('c');
     } elseif ($action === 'delete') {
         array_splice($teachers, $foundIndex, 1);
@@ -147,6 +200,7 @@ if ($action === 'create') {
         echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+}
 }
 
 if (!write_teacher_users($teachers)) {
@@ -159,5 +213,11 @@ append_audit_log('teacher_manage', [
     'action' => $action,
     'username' => (string)($username ?? ''),
 ]);
+
+if ($action === 'set_bamf_self') {
+    $_SESSION['admin_bamf_code'] = (string)($bamfCode ?? '');
+    echo json_encode(['ok' => true, 'bamf_code' => (string)($bamfCode ?? '')], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);

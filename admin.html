@@ -1921,7 +1921,7 @@
         <div id="paneTeachers" class="admin-pane owner-only hidden">
           <div class="bulk-wrap">
             <h2 class="section-title" style="font-size: 1.35rem;">Lehrkräfte verwalten</h2>
-            <p class="section-subtitle">Nur Haupt-Admin: Docent-Konten mit BAMF-Code verwalten.</p>
+            <p class="section-subtitle">Nur Haupt-Admin: Docent-Konten verwalten.</p>
             <div class="grid">
               <div>
                 <label for="newTeacherUsername">Benutzername</label>
@@ -1933,10 +1933,6 @@
               </div>
             </div>
             <div class="grid">
-              <div>
-                <label for="newTeacherBamfCode">BAMF-Code</label>
-                <input id="newTeacherBamfCode" type="text" placeholder="z. B. bamf233">
-              </div>
               <div>
                 <label for="newTeacherPassword">Passwort</label>
                 <input id="newTeacherPassword" type="text" placeholder="Einfaches Passwort">
@@ -1955,6 +1951,19 @@
         <div id="coursesSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Kursverwaltung</h2>
           <p class="section-subtitle">Kurse öffnen/schließen, Teilnehmende zuweisen und zwischen mehreren Kursen wechseln.</p>
+          <div id="docentBamfWrap" class="card hidden" style="margin: 10px 0; padding: 12px;">
+            <strong>Mein BAMF-Code</strong>
+            <div class="grid" style="margin-top: 8px;">
+              <div>
+                <label for="docentBamfCode">BAMF-Code</label>
+                <input id="docentBamfCode" type="text" placeholder="z. B. bamf233">
+              </div>
+              <div class="actions" style="align-items:flex-end;">
+                <button id="saveDocentBamfBtn" type="button">BAMF-Code speichern</button>
+              </div>
+            </div>
+            <div id="docentBamfStatus" class="hidden"></div>
+          </div>
 
           <div class="course-switch-panel">
             <div class="grid" style="margin-top:0;">
@@ -2865,6 +2874,7 @@
           if (!bulkPrefixInput.value.trim()) bulkPrefixInput.value = "bamf";
         }
       }
+      updateDocentBamfUi();
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       ensureResponsiveTableObserver();
@@ -2888,6 +2898,7 @@
       adminContext = { role: "", username: "", display_name: "", bamf_code: "", permissions: {} };
       applyAdminRoleUi();
       updateAdminIdentityLine();
+      updateDocentBamfUi();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
@@ -4807,7 +4818,6 @@
           <tr>
             <td class="mono">${escapeHtml(username)}</td>
             <td>${escapeHtml(user.display_name || "-")}</td>
-            <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
             <td>${active ? "Ja" : "Nein"}</td>
             <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
             <td>
@@ -4823,7 +4833,7 @@
       }).join("");
       wrap.innerHTML = `
         <table>
-          <thead><tr><th>Benutzername</th><th>Name</th><th>BAMF-Code</th><th>Aktiv</th><th>Erstellt</th><th>Aktionen</th></tr></thead>
+          <thead><tr><th>Benutzername</th><th>Name</th><th>Aktiv</th><th>Erstellt</th><th>Aktionen</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       `;
@@ -4863,10 +4873,9 @@
       if (!isOwnerAdmin()) return;
       const username = document.getElementById("newTeacherUsername").value.trim().toLowerCase();
       const displayName = document.getElementById("newTeacherDisplayName").value.trim();
-      const bamfCode = document.getElementById("newTeacherBamfCode").value.trim().toLowerCase();
       const password = document.getElementById("newTeacherPassword").value;
-      if (!username || !bamfCode || !password) {
-        setBox("teacherStatus", "error", "Benutzername, BAMF-Code und Passwort sind erforderlich.");
+      if (!username || !password) {
+        setBox("teacherStatus", "error", "Benutzername und Passwort sind erforderlich.");
         return;
       }
       try {
@@ -4877,7 +4886,6 @@
             action: "create",
             username,
             display_name: displayName,
-            bamf_code: bamfCode,
             password
           })
         });
@@ -4886,7 +4894,6 @@
         setBox("teacherStatus", "ok", `Lehrkraft erstellt: ${username}`);
         document.getElementById("newTeacherUsername").value = "";
         document.getElementById("newTeacherDisplayName").value = "";
-        document.getElementById("newTeacherBamfCode").value = "";
         document.getElementById("newTeacherPassword").value = "";
         listTeachers();
       } catch (err) {
@@ -4943,8 +4950,6 @@
       if (!teacher) return;
       const displayName = window.prompt(`Anzeigename für ${username}:`, String(teacher.display_name || ""));
       if (displayName === null) return;
-      const bamfCode = window.prompt(`BAMF-Code für ${username}:`, String(teacher.bamf_code || ""));
-      if (bamfCode === null) return;
       try {
         const response = await fetch("./api/teacher_manage.php", {
           method: "POST",
@@ -4952,8 +4957,7 @@
           body: JSON.stringify({
             action: "update_profile",
             username,
-            display_name: String(displayName).trim(),
-            bamf_code: String(bamfCode).trim().toLowerCase()
+            display_name: String(displayName).trim()
           })
         });
         const payload = await parseJsonResponse(response);
@@ -4962,6 +4966,54 @@
         listTeachers();
       } catch (err) {
         setBox("teacherStatus", "error", `Profil-Update fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    function updateDocentBamfUi() {
+      const wrap = document.getElementById("docentBamfWrap");
+      const input = document.getElementById("docentBamfCode");
+      if (!wrap || !input) return;
+      if (isOwnerAdmin()) {
+        wrap.classList.add("hidden");
+        input.value = "";
+        return;
+      }
+      wrap.classList.remove("hidden");
+      input.value = String(adminContext.bamf_code || "").trim().toLowerCase();
+    }
+
+    async function saveDocentBamfCode() {
+      if (isOwnerAdmin()) return;
+      clearBox("docentBamfStatus");
+      const input = document.getElementById("docentBamfCode");
+      if (!input) return;
+      const bamfCode = String(input.value || "").trim().toLowerCase();
+      if (!bamfCode) {
+        setBox("docentBamfStatus", "error", "Bitte BAMF-Code eingeben.");
+        return;
+      }
+      try {
+        const response = await fetch("./api/teacher_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_bamf_self",
+            bamf_code: bamfCode
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        adminContext.bamf_code = String(payload.bamf_code || bamfCode).toLowerCase();
+        updateAdminIdentityLine();
+        updateDocentBamfUi();
+        const bulkPrefixInput = document.getElementById("bulkPrefix");
+        if (bulkPrefixInput) {
+          bulkPrefixInput.value = adminContext.bamf_code || "bamf";
+          bulkPrefixInput.readOnly = true;
+        }
+        setBox("docentBamfStatus", "ok", "BAMF-Code wurde gespeichert.");
+      } catch (err) {
+        setBox("docentBamfStatus", "error", `Speichern fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -6266,6 +6318,10 @@
     document.getElementById("createStudentBtn").addEventListener("click", createStudent);
     document.getElementById("createTeacherBtn").addEventListener("click", createTeacher);
     document.getElementById("refreshTeachersBtn").addEventListener("click", listTeachers);
+    const saveDocentBamfBtn = document.getElementById("saveDocentBamfBtn");
+    if (saveDocentBamfBtn) {
+      saveDocentBamfBtn.addEventListener("click", saveDocentBamfCode);
+    }
     document.getElementById("generatePwdBtn").addEventListener("click", () => {
       document.getElementById("newStudentPassword").value = randomPassword();
     });
