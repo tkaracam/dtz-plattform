@@ -698,13 +698,21 @@
       font-size: 0.83rem;
     }
 
-    .assignment-actions .ghost-btn.started-btn,
-    .assignment-actions .ghost-btn.started-btn:disabled {
+    .assignment-actions .ghost-btn.ready-btn {
       background: linear-gradient(120deg, var(--accent), var(--accent-2));
       color: #ffffff;
       border-color: #eaa0b6;
       opacity: 1;
       box-shadow: 0 8px 20px rgba(189, 91, 120, 0.24);
+    }
+
+    .assignment-actions .ghost-btn.running-btn,
+    .assignment-actions .ghost-btn.running-btn:disabled {
+      background: #e8f7f1;
+      color: #0d6655;
+      border-color: #b6e4d8;
+      opacity: 1;
+      box-shadow: none;
     }
 
     .pill {
@@ -4476,7 +4484,7 @@
         if (startBtn) {
           startBtn.disabled = true;
           startBtn.textContent = "Bearbeitung starten";
-          startBtn.classList.remove("started-btn");
+          startBtn.classList.remove("ready-btn", "running-btn");
         }
         if (attachWrap) attachWrap.classList.add("hidden");
       });
@@ -4601,7 +4609,8 @@
           const notActiveYetLocal = !!currentAssignedHomeworkState.not_active_yet;
           startBtn.disabled = !canStart;
           startBtn.textContent = canStart ? "Bearbeitung starten" : (notActiveYetLocal ? "Startet später" : "Bereits gestartet");
-          startBtn.classList.toggle("started-btn", !canStart && !notActiveYetLocal);
+          startBtn.classList.toggle("ready-btn", canStart);
+          startBtn.classList.toggle("running-btn", !canStart && !notActiveYetLocal);
         }
       });
       const locked = !currentAssignedHomeworkState.can_submit;
@@ -4672,7 +4681,8 @@
           startBtn.disabled = !canStart;
           const notActiveYet = !!currentAssignedHomeworkState.not_active_yet;
           startBtn.textContent = canStart ? "Bearbeitung starten" : (notActiveYet ? "Startet später" : "Bereits gestartet");
-          startBtn.classList.toggle("started-btn", !canStart && !notActiveYet);
+          startBtn.classList.toggle("ready-btn", canStart);
+          startBtn.classList.toggle("running-btn", !canStart && !notActiveYet);
         }
       });
 
@@ -4731,7 +4741,8 @@
           const notActiveYet = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.not_active_yet);
           btn.disabled = !canStart;
           btn.textContent = canStart ? "Bearbeitung starten" : (notActiveYet ? "Startet später" : "Bereits gestartet");
-          btn.classList.toggle("started-btn", !canStart && !notActiveYet);
+          btn.classList.toggle("ready-btn", canStart);
+          btn.classList.toggle("running-btn", !canStart && !notActiveYet);
         }
       }
     }
