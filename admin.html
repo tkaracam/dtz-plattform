@@ -137,6 +137,10 @@
       display: block !important;
     }
 
+    body.jess-mode .admin-quick-nav {
+      display: none !important;
+    }
+
     .start-checklist {
       border: 1px solid #d4e1ef;
       border-radius: 14px;
@@ -2394,6 +2398,7 @@
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "homeworks", "archive"];
+    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCoursesBtn", "jumpHomeworkBtn", "jumpArchiveBtn", "jumpJessBtn"];
 
     const adminPaneMap = {
       accounts: "paneAccounts",
@@ -2755,6 +2760,11 @@
     function applyJessModeLayout() {
       const enabled = IS_JESS_MODE && !!adminContext.role;
       document.body.classList.toggle("jess-mode", enabled);
+      JESS_HIDE_MENU_IDS.forEach(id => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.classList.toggle("hidden", enabled);
+      });
       if (!enabled) return;
       Object.entries(adminPaneMap).forEach(([key, paneId]) => {
         const pane = document.getElementById(paneId);
