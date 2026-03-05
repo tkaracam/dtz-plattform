@@ -1178,15 +1178,31 @@
         width: 100%;
       }
 
-      #paneArchive .actions button {
-        width: 100%;
-        min-width: 0;
-      }
+    #paneArchive .actions button {
+      width: 100%;
+      min-width: 0;
+    }
 
-      #pendingBulkActions {
-        display: grid !important;
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        gap: 8px;
+    #paneArchive .fold-section-content {
+      overflow-x: hidden;
+    }
+
+    #paneArchive .grid > div {
+      min-width: 0;
+    }
+
+    #paneArchive input[type="date"] {
+      width: 100% !important;
+      max-width: 100%;
+      min-width: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    #pendingBulkActions {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 8px;
       }
 
       #pendingBulkActions button {
