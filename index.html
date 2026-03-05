@@ -2071,7 +2071,7 @@
               </details>
             </section>
             <section class="portal-block">
-              <details class="card-accordion">
+              <details id="portalCorrectionsAccordion" class="card-accordion">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
                     <h3 style="margin:0;">Korrigierte Briefe</h3>
@@ -3729,6 +3729,7 @@
 
     function openPortalView() {
       setMainView("portal");
+      setAccordionOpen("portalCorrectionsAccordion", false);
       refreshPortalData();
     }
 
