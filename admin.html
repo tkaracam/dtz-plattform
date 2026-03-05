@@ -1951,19 +1951,6 @@
         <div id="coursesSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Kursverwaltung</h2>
           <p class="section-subtitle">Kurse öffnen/schließen, Teilnehmende zuweisen und zwischen mehreren Kursen wechseln.</p>
-          <div id="docentBamfWrap" class="card hidden" style="margin: 10px 0; padding: 12px;">
-            <strong>Mein BAMF-Code</strong>
-            <div class="grid" style="margin-top: 8px;">
-              <div>
-                <label for="docentBamfCode">BAMF-Code</label>
-                <input id="docentBamfCode" type="text" placeholder="z. B. bamf233">
-              </div>
-              <div class="actions" style="align-items:flex-end;">
-                <button id="saveDocentBamfBtn" type="button">BAMF-Code speichern</button>
-              </div>
-            </div>
-            <div id="docentBamfStatus" class="hidden"></div>
-          </div>
 
           <div class="course-switch-panel">
             <div class="grid" style="margin-top:0;">
@@ -2874,7 +2861,6 @@
           if (!bulkPrefixInput.value.trim()) bulkPrefixInput.value = "bamf";
         }
       }
-      updateDocentBamfUi();
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       ensureResponsiveTableObserver();
@@ -2898,7 +2884,6 @@
       adminContext = { role: "", username: "", display_name: "", bamf_code: "", permissions: {} };
       applyAdminRoleUi();
       updateAdminIdentityLine();
-      updateDocentBamfUi();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
@@ -4969,54 +4954,6 @@
       }
     }
 
-    function updateDocentBamfUi() {
-      const wrap = document.getElementById("docentBamfWrap");
-      const input = document.getElementById("docentBamfCode");
-      if (!wrap || !input) return;
-      if (isOwnerAdmin()) {
-        wrap.classList.add("hidden");
-        input.value = "";
-        return;
-      }
-      wrap.classList.remove("hidden");
-      input.value = String(adminContext.bamf_code || "").trim().toLowerCase();
-    }
-
-    async function saveDocentBamfCode() {
-      if (isOwnerAdmin()) return;
-      clearBox("docentBamfStatus");
-      const input = document.getElementById("docentBamfCode");
-      if (!input) return;
-      const bamfCode = String(input.value || "").trim().toLowerCase();
-      if (!bamfCode) {
-        setBox("docentBamfStatus", "error", "Bitte BAMF-Code eingeben.");
-        return;
-      }
-      try {
-        const response = await fetch("./api/teacher_manage.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "set_bamf_self",
-            bamf_code: bamfCode
-          })
-        });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        adminContext.bamf_code = String(payload.bamf_code || bamfCode).toLowerCase();
-        updateAdminIdentityLine();
-        updateDocentBamfUi();
-        const bulkPrefixInput = document.getElementById("bulkPrefix");
-        if (bulkPrefixInput) {
-          bulkPrefixInput.value = adminContext.bamf_code || "bamf";
-          bulkPrefixInput.readOnly = true;
-        }
-        setBox("docentBamfStatus", "ok", "BAMF-Code wurde gespeichert.");
-      } catch (err) {
-        setBox("docentBamfStatus", "error", `Speichern fehlgeschlagen: ${err.message}`);
-      }
-    }
-
     async function deleteTeacher(username) {
       clearBox("teacherStatus");
       if (!isOwnerAdmin()) return;
@@ -6318,10 +6255,6 @@
     document.getElementById("createStudentBtn").addEventListener("click", createStudent);
     document.getElementById("createTeacherBtn").addEventListener("click", createTeacher);
     document.getElementById("refreshTeachersBtn").addEventListener("click", listTeachers);
-    const saveDocentBamfBtn = document.getElementById("saveDocentBamfBtn");
-    if (saveDocentBamfBtn) {
-      saveDocentBamfBtn.addEventListener("click", saveDocentBamfCode);
-    }
     document.getElementById("generatePwdBtn").addEventListener("click", () => {
       document.getElementById("newStudentPassword").value = randomPassword();
     });
