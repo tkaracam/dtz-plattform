@@ -662,6 +662,30 @@
       visibility: hidden;
     }
 
+    #userListWrap td .student-contact-panel {
+      margin-top: 6px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #eddde5;
+      background: #fff;
+      display: grid;
+      gap: 4px;
+      font-size: 0.8rem;
+      line-height: 1.25;
+      color: #5b5565;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    #userListWrap td .student-contact-panel.hidden {
+      display: none;
+    }
+
+    #userListWrap td .student-contact-panel b {
+      color: #3f3b47;
+      margin-right: 4px;
+    }
+
     .assign-docent-modal {
       position: fixed;
       inset: 0;
@@ -1394,6 +1418,107 @@
 
       .admin-menu-trigger {
         min-width: 110px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .row > div {
+        min-width: 0;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .actions button {
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+
+      .admin-quick-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .admin-quick-btn {
+        width: 100%;
+      }
+
+      .course-switch-actions {
+        grid-template-columns: 1fr;
+      }
+
+      #panelCard table {
+        width: 100%;
+        min-width: 0 !important;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+      }
+
+      #panelCard table thead {
+        display: none;
+      }
+
+      #panelCard table tbody {
+        display: grid;
+        gap: 8px;
+      }
+
+      #panelCard table tr {
+        display: block;
+        border: 1px solid #eadbe2;
+        border-radius: 12px;
+        background: #fff;
+        padding: 8px;
+      }
+
+      #panelCard table td {
+        display: grid;
+        grid-template-columns: minmax(92px, 38%) minmax(0, 1fr);
+        gap: 8px;
+        border: 0;
+        padding: 6px 2px;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+      }
+
+      #panelCard table td::before {
+        content: attr(data-label);
+        font-size: 0.73rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #857b8f;
+        text-transform: uppercase;
+      }
+
+      #panelCard table td:last-child {
+        display: block;
+        padding-top: 8px;
+      }
+
+      #panelCard table td:last-child::before {
+        display: none;
+      }
+
+      #panelCard table td .student-actions-stack,
+      #panelCard table td .actions {
+        width: 100%;
+        max-width: none;
+      }
+
+      #panelCard table td .student-action-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   </style>
@@ -2430,6 +2555,33 @@
       return payload;
     }
 
+    function applyResponsiveTableLabels(scope = document) {
+      const root = scope && typeof scope.querySelectorAll === "function" ? scope : document;
+      root.querySelectorAll("table").forEach(table => {
+        const headers = Array.from(table.querySelectorAll("thead th"))
+          .map(th => String(th.textContent || "").trim());
+        if (!headers.length) return;
+        table.querySelectorAll("tbody tr").forEach(tr => {
+          const cells = Array.from(tr.children).filter(cell => cell.tagName === "TD");
+          cells.forEach((td, index) => {
+            td.setAttribute("data-label", headers[index] || "");
+          });
+        });
+      });
+    }
+
+    let responsiveTableObserver = null;
+    function ensureResponsiveTableObserver() {
+      if (responsiveTableObserver) return;
+      const panel = document.getElementById("panelCard");
+      if (!panel) return;
+      responsiveTableObserver = new MutationObserver(() => {
+        applyResponsiveTableLabels(panel);
+      });
+      responsiveTableObserver.observe(panel, { childList: true, subtree: true });
+      applyResponsiveTableLabels(panel);
+    }
+
     async function checkSession() {
       try {
         const response = await fetch("./api/admin_session.php", { method: "GET" });
@@ -2468,6 +2620,7 @@
       }
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
+      ensureResponsiveTableObserver();
       setAdminPane(activeAdminPane || "accounts");
       renderRecentRoomTasks();
       renderBulkPreview(buildBulkCredentials());
@@ -2801,9 +2954,6 @@
         <thead>
           <tr>
             <th>Benutzername</th>
-            <th>Anzeigename</th>
-            <th>E-Mail</th>
-            <th>WhatsApp</th>
             <th>Lehrkraft</th>
             <th>BAMF</th>
             <th>Aktiv</th>
@@ -2825,14 +2975,12 @@
               </div>
             `
           : "";
+        const contactPanelId = `contact-panel-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
         const rowId = `row-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
         const tr = document.createElement("tr");
         tr.id = rowId;
         tr.innerHTML = `
           <td class="mono">${escapeHtml(username)}</td>
-          <td>${escapeHtml(user.display_name || "-")}</td>
-          <td class="mono">${escapeHtml(user.email || "-")}</td>
-          <td class="mono">${escapeHtml(user.phone || "-")}</td>
           <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
           <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
           <td>${isActive ? "Ja" : "Nein"}</td>
@@ -2846,6 +2994,15 @@
               <div class="student-action-row">
                 <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
                 <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
+              </div>
+              <div class="student-action-row">
+                <button type="button" class="ghost-btn" data-action="toggle-contact-details" data-target="${escapeHtml(contactPanelId)}">Kontaktdetails</button>
+                <span class="action-spacer" aria-hidden="true"></span>
+              </div>
+              <div id="${escapeHtml(contactPanelId)}" class="student-contact-panel hidden">
+                <div><b>Anzeigename:</b> ${escapeHtml(user.display_name || "-")}</div>
+                <div><b>E-Mail:</b> ${escapeHtml(user.email || "-")}</div>
+                <div><b>WhatsApp:</b> ${escapeHtml(user.phone || "-")}</div>
               </div>
               ${assignDocentRow}
             </div>
@@ -2876,6 +3033,15 @@
       wrap.querySelectorAll("button[data-action='assign-teacher']").forEach(btn => {
         const username = btn.getAttribute("data-username") || "";
         btn.addEventListener("click", () => assignDocentToStudentPrompt(username));
+      });
+      wrap.querySelectorAll("button[data-action='toggle-contact-details']").forEach(btn => {
+        const panelId = btn.getAttribute("data-target") || "";
+        btn.addEventListener("click", () => {
+          if (!panelId) return;
+          const panel = document.getElementById(panelId);
+          if (!panel) return;
+          panel.classList.toggle("hidden");
+        });
       });
     }
 
@@ -5780,6 +5946,7 @@
     document.getElementById("adminUsername").addEventListener("keydown", event => {
       if (event.key === "Enter") login();
     });
+    ensureResponsiveTableObserver();
     renderHomeworkTemplateOptions();
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
