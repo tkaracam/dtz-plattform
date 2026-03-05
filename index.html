@@ -1355,7 +1355,7 @@
       font-weight: 700;
     }
 
-    .portal-section summary {
+    .portal-section > summary {
       cursor: pointer;
       list-style: none;
       display: flex;
@@ -1368,22 +1368,22 @@
       border: 1px solid #d8e4f1;
     }
 
-    .portal-section summary::-webkit-details-marker {
+    .portal-section > summary::-webkit-details-marker {
       display: none;
     }
 
-    .portal-section summary::marker {
+    .portal-section > summary::marker {
       content: "";
     }
 
-    .portal-section summary::after {
+    .portal-section > summary::after {
       content: "▾";
       color: #51657e;
       font-size: 1rem;
       transition: transform 0.2s ease;
     }
 
-    .portal-section[open] summary::after {
+    .portal-section[open] > summary::after {
       transform: rotate(180deg);
     }
 
