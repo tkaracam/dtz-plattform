@@ -129,6 +129,14 @@
     .admin-pane { display: none; }
     .admin-pane.active { display: block; }
 
+    body.jess-mode .admin-pane {
+      display: none !important;
+    }
+
+    body.jess-mode .admin-pane.active {
+      display: block !important;
+    }
+
     .start-checklist {
       border: 1px solid #d4e1ef;
       border-radius: 14px;
@@ -1734,6 +1742,7 @@
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
+          <button id="jumpJessBtn" class="admin-menu-item" type="button">Jess</button>
           <button id="toggleAndereBtn" class="admin-menu-item is-toggle" type="button" aria-expanded="false">ANDERE</button>
           <div id="adminAndereGroup" class="admin-menu-subgroup hidden">
             <button id="jumpTeachersBtn" class="admin-menu-item owner-only hidden" type="button">Lehrkräfte</button>
@@ -1777,6 +1786,7 @@
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="teachers">Lehrkräfte</button>
           <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
           <button type="button" class="admin-quick-btn" data-pane="homeworks">Hausaufgaben</button>
+          <button type="button" class="admin-quick-btn" data-pane="jess">Jess</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="attendance">Anwesenheit</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="notify">Benachrichtigungen</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="room">Virtueller Saal</button>
@@ -2382,6 +2392,8 @@
     };
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
+    const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
+    const JESS_STACK_PANES = ["accounts", "courses", "homeworks", "archive"];
 
     const adminPaneMap = {
       accounts: "paneAccounts",
@@ -2727,8 +2739,35 @@
     }
 
     function openAdminPane(paneName) {
+      if (paneName === "jess") {
+        window.location.href = "./jess.html";
+        return;
+      }
+      if (IS_JESS_MODE) {
+        applyJessModeLayout();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
       setAdminPane(paneName);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function applyJessModeLayout() {
+      const enabled = IS_JESS_MODE && !!adminContext.role;
+      document.body.classList.toggle("jess-mode", enabled);
+      if (!enabled) return;
+      Object.entries(adminPaneMap).forEach(([key, paneId]) => {
+        const pane = document.getElementById(paneId);
+        if (!pane) return;
+        pane.classList.toggle("active", JESS_STACK_PANES.includes(key));
+      });
+      document.querySelectorAll(".admin-quick-btn").forEach(btn => {
+        btn.classList.toggle("is-active", btn.dataset.pane === "jess");
+      });
+      const labelNode = document.getElementById("activePaneLabel");
+      if (labelNode) labelNode.textContent = "Jess";
+      const checklist = document.querySelector("#panelCard .start-checklist");
+      if (checklist) checklist.classList.add("hidden");
     }
 
     function closeAdminMenu() {
@@ -2847,6 +2886,7 @@
         loadAuditLogs();
         listTeachers();
       }
+      applyJessModeLayout();
     }
 
     function showLogin() {
@@ -6297,6 +6337,10 @@
     document.getElementById("jumpArchiveBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("archive");
+    });
+    document.getElementById("jumpJessBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      window.location.href = "./jess.html";
     });
     document.getElementById("openOpsChecklistBtn").addEventListener("click", () => {
       closeAdminMenu();
