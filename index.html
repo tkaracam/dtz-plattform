@@ -1422,6 +1422,24 @@
       margin-bottom: 3px;
     }
 
+    .portal-item.homework-done {
+      border-color: #9ed8b6;
+      background: #ecfbf2;
+    }
+
+    .portal-item.homework-done strong {
+      color: #1f6f46;
+    }
+
+    .portal-item.homework-pending {
+      border-color: #f0b0b0;
+      background: #fff0f0;
+    }
+
+    .portal-item.homework-pending strong {
+      color: #9a2f2f;
+    }
+
     .progress-bar {
       margin-top: 5px;
       height: 8px;
@@ -4693,13 +4711,18 @@
         "portalHomeworkWrap",
         homeworks,
         "Noch keine Hausaufgaben.",
-        row => `
-          <div class="portal-item">
+        row => {
+          const statusRaw = String(row.status || "offen").toLowerCase();
+          const isDone = statusRaw === "abgegeben";
+          const stateClass = isDone ? "homework-done" : "homework-pending";
+          return `
+          <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>${escapeHtml(row.description || "-")}</div>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
           </div>
-        `
+        `;
+        }
       );
 
       renderPortalList(
@@ -5192,26 +5215,29 @@
       });
 
       const points = evaluatePoints(letterText, requiredPoints);
-      let niveau = String(payload.niveau_einschaetzung || "").trim();
-      if (!niveau) {
-        if (scoreTotal >= 16) niveau = "B1";
-        else if (scoreTotal >= 10) niveau = "A2-B1";
-        else niveau = "A2";
+      let niveau = String(payload.niveau_einschaetzung || "").trim().toUpperCase();
+      if (!["A1", "A2", "B1"].includes(niveau)) {
+        if (scoreTotal >= 15) niveau = "B1";
+        else if (scoreTotal >= 7) niveau = "A2";
+        else niveau = "A1";
       }
 
       // Word-count guardrails for realistic DTZ levels.
       const words = countWords(letterText);
       if (words < 20) {
         scoreTotal = Math.min(scoreTotal, 6);
-        niveau = "A2";
       } else if (words < 40) {
-        scoreTotal = Math.min(scoreTotal, 10);
-        if (niveau === "B1") niveau = "A2-B1";
+        scoreTotal = Math.min(scoreTotal, 14);
       }
-      // B1 is only allowed for 50-80 words.
+      // BAMF-Logik für Schreiben.
+      if (scoreTotal <= 6) niveau = "A1";
+      else if (scoreTotal <= 14) niveau = "A2";
+      else niveau = "B1";
+
+      // B1 only with DTZ-like text length window.
       if (niveau === "B1" && (words < 50 || words > 80)) {
-        niveau = "A2-B1";
-        scoreTotal = Math.min(scoreTotal, 15);
+        niveau = "A2";
+        scoreTotal = Math.min(scoreTotal, 14);
       }
 
       return {
@@ -5361,7 +5387,7 @@
 
       const payload = {
         score_total: score,
-        niveau_einschaetzung: (score >= 16 && words >= 50 && words <= 80) ? "B1" : (score >= 10 ? "A2-B1" : "A2"),
+        niveau_einschaetzung: (score >= 15 && words >= 50 && words <= 80) ? "B1" : (score >= 7 ? "A2" : "A1"),
         rubric,
         mistakes,
         corrected_letter: improveSimple(letterText),
