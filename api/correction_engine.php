@@ -198,6 +198,13 @@ function dtz_normalize_payload(array $payload, string $letterText, array $requir
         'wortschatz_orthografie' => dtz_clamp_int($rubricRaw['wortschatz_orthografie'] ?? null, 0, 5, 0),
     ];
     $score = dtz_clamp_int($payload['score_total'] ?? null, 0, 20, array_sum($rubric));
+    $points = dtz_evaluate_points($letterText, $requiredPoints);
+    $missingCount = count($points['missing']);
+    if ($missingCount >= 1) {
+        // g.a.s.t.-orientiert: volle Aufgabenbewältigung nur bei allen Leitpunkten.
+        $rubric['aufgabenbezug'] = min($rubric['aufgabenbezug'], $missingCount >= 3 ? 1 : ($missingCount === 2 ? 2 : 3));
+    }
+    $score = min($score, array_sum($rubric));
 
     $niveau = strtoupper(trim((string)($payload['niveau_einschaetzung'] ?? '')));
     if (!in_array($niveau, ['A1', 'A2', 'B1'], true)) {
@@ -217,6 +224,12 @@ function dtz_normalize_payload(array $payload, string $letterText, array $requir
     } elseif ($wordCount < 40) {
         $score = min($score, 14);
     }
+    if ($missingCount >= 1) {
+        $score = min($score, 14);
+    }
+    if ($missingCount >= 2) {
+        $score = min($score, 11);
+    }
 
     // BAMF/DTZ Schreiben: 15-20 B1, 7-14 A2, 0-6 unter A2 (hier als A1 angezeigt).
     if ($score <= 6) {
@@ -232,8 +245,10 @@ function dtz_normalize_payload(array $payload, string $letterText, array $requir
         $niveau = 'A2';
         $score = min($score, 14);
     }
-
-    $points = dtz_evaluate_points($letterText, $requiredPoints);
+    if ($niveau === 'B1' && $missingCount > 0) {
+        $niveau = 'A2';
+        $score = min($score, 14);
+    }
     $corrected = trim((string)($payload['corrected_letter'] ?? ''));
     if ($corrected === '') {
         $corrected = trim($letterText);
@@ -330,14 +345,14 @@ function dtz_run_correction(string $letterText, string $taskPrompt, array $requi
 
     $taskText = $taskPrompt !== '' ? $taskPrompt : 'Keine Aufgabenstellung angegeben.';
     $systemPrompt = <<<SYS
-Du bist eine erfahrene Deutschlehrkraft für DTZ Schreiben (g.a.s.t.-orientiert).
-Antworte ausschliesslich mit gueltigem JSON.
-Bewerte konstruktiv, klar und auf DTZ-Niveau.
-Nutze bei der Bewertung die Perspektive der DTZ-Kriterien:
-- Inhalt
-- Kommunikative Gestaltung
-- Ausdruck
-- Korrektheit
+Du bist eine erfahrene Prüferin für DTZ Schreiben (g.a.s.t.-orientiert).
+Antworte ausschließlich mit gültigem JSON.
+Bewerte streng, fair und prüfungsnah.
+Nutze die Perspektive der offiziellen DTZ-Bereiche:
+- Aufgabenbewältigung / Inhalt
+- Textaufbau / Kohärenz
+- Sprachliche Korrektheit
+- Wortschatz / Orthografie
 SYS;
 
     $userPrompt = <<<USR
@@ -378,12 +393,17 @@ Antworte nur in diesem JSON-Format:
 Regeln:
 - Gesamtpunktzahl zwischen 0 und 20.
 - Jede Rubrikkategorie zwischen 0 und 5.
+- score_total darf die Summe der Rubrikpunkte nicht überschreiten.
 - Niveau nach BAMF-Logik für Schreiben:
   - 15-20 Punkte: B1
   - 7-14 Punkte: A2
   - 0-6 Punkte: A1 (unter A2)
+- Aufgabenbezug mit 5 Punkten nur dann, wenn alle Pflichtpunkte inhaltlich erfüllt sind.
+- Wenn ein Pflichtpunkt fehlt: Gesamtpunktzahl maximal 14 und kein B1.
+- Wenn zwei oder mehr Pflichtpunkte fehlen: deutlich abwerten.
 - Der korrigierte Brief soll DTZ-gerecht, klar und natürlich sein.
 - Der korrigierte Brief soll etwa 70 Wörter haben (Zielbereich 65-75 Wörter).
+- Korrigiere nur den vorhandenen Inhalt. Keine neuen Fakten erfinden.
 - Schreibe nichts ausserhalb des JSON.
 - Orthografie streng nach Standarddeutsch:
   - Nach Komma wird klein weitergeschrieben, ausser es folgt ein Nomen/Eigenname oder der Beginn eines neuen Satzes.
