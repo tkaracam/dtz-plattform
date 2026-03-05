@@ -699,6 +699,17 @@
       flex: 1 1 0;
     }
 
+    .lid-top-actions {
+      align-items: stretch;
+      flex-wrap: nowrap;
+    }
+
+    .lid-top-actions .btn-wrap {
+      max-width: none;
+      min-width: 0;
+      flex: 1 1 0;
+    }
+
     .ghost-btn {
       width: auto;
       background: transparent;
@@ -1810,6 +1821,11 @@
         flex-direction: row;
         align-items: stretch;
       }
+
+      .lid-top-actions {
+        flex-direction: row;
+        align-items: stretch;
+      }
     }
 
     @media (max-width: 480px) {
@@ -2351,15 +2367,12 @@
             <p class="section-subtitle">Jeder Versuch erzeugt eine neue Prüfung mit 33 Fragen.</p>
           </div>
         </div>
-        <div class="row-end" style="margin-bottom: 12px;">
+        <div class="row-end lid-top-actions" style="margin-bottom: 12px;">
           <div class="btn-wrap">
             <button id="newClassicLidExamBtn" type="button">Neue Prüfung</button>
           </div>
           <div class="btn-wrap">
             <button id="submitClassicLidExamBtn" type="button">Test auswerten</button>
-          </div>
-          <div class="btn-wrap">
-            <button id="backToMenuFromClassicLidBtn" type="button" class="secondary-btn">Zurück zum Menü</button>
           </div>
         </div>
 
@@ -6395,7 +6408,8 @@
     document.getElementById("backToMenuFromRoomBtn").addEventListener("click", () => setMainView("portal"));
     const backToMenuFromBskBtn = document.getElementById("backToMenuFromBskBtn");
     if (backToMenuFromBskBtn) backToMenuFromBskBtn.addEventListener("click", () => setMainView("portal"));
-    document.getElementById("backToMenuFromClassicLidBtn").addEventListener("click", () => setMainView("portal"));
+    const backToMenuFromClassicLidBtn = document.getElementById("backToMenuFromClassicLidBtn");
+    if (backToMenuFromClassicLidBtn) backToMenuFromClassicLidBtn.addEventListener("click", () => setMainView("portal"));
     document.getElementById("newClassicLidExamBtnBottom").addEventListener("click", generateClassicLidExam);
     document.getElementById("submitClassicLidExamBtnBottom").addEventListener("click", evaluateClassicLidExam);
     document.getElementById("backToMenuFromClassicLidBtnBottom").addEventListener("click", () => setMainView("portal"));
