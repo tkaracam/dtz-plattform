@@ -586,6 +586,21 @@
       overflow-wrap: normal;
     }
 
+    .course-member-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .course-member-selection-count {
+      color: #5a6172;
+      font-size: 0.88rem;
+      line-height: 1.2;
+    }
+
     #pendingBulkActions button {
       padding: 7px 9px;
       font-size: 0.82rem;
@@ -3490,6 +3505,11 @@
       wrap.innerHTML = `
         <div class="card" style="margin-top:8px;padding:12px;">
           <strong>Kursmitglieder: ${escapeHtml(course.name || courseId)}</strong>
+          <div class="course-member-toolbar">
+            <button type="button" id="courseMembersSelectAllBtn" class="ghost-btn">Alle auswählen</button>
+            <button type="button" id="courseMembersClearBtn" class="ghost-btn">Auswahl löschen</button>
+            <span id="courseMembersSelectionCount" class="course-member-selection-count">0 ausgewählt</span>
+          </div>
           <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">
             <div class="course-members-grid">${rows}</div>
           </div>
@@ -3498,10 +3518,46 @@
           </div>
         </div>
       `;
+      const selectAllBtn = document.getElementById("courseMembersSelectAllBtn");
+      const clearBtn = document.getElementById("courseMembersClearBtn");
+      if (selectAllBtn) {
+        selectAllBtn.addEventListener("click", () => setCourseMembersChecked(true));
+      }
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => setCourseMembersChecked(false));
+      }
+      wrap.querySelectorAll("[data-course-member]").forEach(el => {
+        el.addEventListener("change", updateCourseMemberSelectionUi);
+      });
+      updateCourseMemberSelectionUi();
       const saveBtn = document.getElementById("saveCourseMembersBtn");
       if (saveBtn) {
         saveBtn.addEventListener("click", () => saveCourseMembers(courseId));
       }
+    }
+
+    function setCourseMembersChecked(checked) {
+      const wrap = document.getElementById("courseAssignWrap");
+      if (!wrap) return;
+      wrap.querySelectorAll("[data-course-member]").forEach(el => {
+        el.checked = !!checked;
+      });
+      updateCourseMemberSelectionUi();
+    }
+
+    function updateCourseMemberSelectionUi() {
+      const wrap = document.getElementById("courseAssignWrap");
+      if (!wrap) return;
+      const all = Array.from(wrap.querySelectorAll("[data-course-member]"));
+      const checked = all.filter(el => !!el.checked).length;
+      const countNode = document.getElementById("courseMembersSelectionCount");
+      if (countNode) {
+        countNode.textContent = `${checked} ausgewählt`;
+      }
+      const selectAllBtn = document.getElementById("courseMembersSelectAllBtn");
+      const clearBtn = document.getElementById("courseMembersClearBtn");
+      if (selectAllBtn) selectAllBtn.disabled = all.length === 0 || checked === all.length;
+      if (clearBtn) clearBtn.disabled = checked === 0;
     }
 
     async function listCourses() {
