@@ -1921,8 +1921,7 @@
               <div>
                 <label>Kursaktionen</label>
                 <div class="course-switch-actions">
-                  <button id="openSelectedMembersBtn" type="button" class="ghost-btn">Teilnehmende bearbeiten</button>
-                  <button id="useSelectedCourseBtn" type="button" class="ghost-btn">Als Arbeitskurs verwenden</button>
+                  <button id="openSelectedMembersBtn" type="button" class="ghost-btn">TN bearbeiten</button>
                   <button id="openSelectedCourseBtn" type="button">Kurs öffnen</button>
                   <button id="closeSelectedCourseBtn" type="button" class="danger-btn">Kurs schließen</button>
                 </div>
@@ -6138,7 +6137,6 @@
       renderCourseAssignEditor(selectedCourseId);
       setBox("courseStatus", "ok", "Mitgliedereditor geöffnet.");
     });
-    document.getElementById("useSelectedCourseBtn").addEventListener("click", useSelectedCourseInHomework);
     document.getElementById("openSelectedCourseBtn").addEventListener("click", () => {
       if (!selectedCourseId) {
         setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
