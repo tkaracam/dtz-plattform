@@ -615,6 +615,29 @@
       margin-top: 0;
     }
 
+    .archive-brief-toggle {
+      width: auto;
+      min-width: 0;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      box-shadow: none;
+    }
+
+    .archive-brief-content {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #eddde5;
+      background: #fff;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      font-size: 0.85rem;
+      color: #4a4453;
+      max-height: 260px;
+      overflow: auto;
+    }
+
     #userListWrap {
       width: 100%;
       overflow-x: auto;
@@ -4695,15 +4718,16 @@
         wrap.innerHTML = `
           <div class="archive-card-list">
             ${records.map(row => {
-              const task = String(row.task_prompt || "").trim();
+              const taskPrompt = String(row.task_prompt || "").trim();
+              const taskTitle = String(row.task_title || "").trim();
               const letter = String(row.letter_text || "").trim();
               const writeDuration = formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label);
               const status = String(row.review_status || "pending");
               const canApprove = status === "pending";
               const scoreText = row.score_total == null ? "-" : `${escapeHtml(String(row.score_total))}/20`;
-              const taskShort = escapeHtml(task.length > 160 ? `${task.slice(0, 160)}...` : (task || "-"));
-              const letterShort = escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : (letter || "-"));
+              const taskShort = escapeHtml(resolveTaskShortLabel(taskPrompt, taskTitle));
               const uploadId = escapeHtml(row.upload_id || "");
+              const briefContentId = `archive-brief-${uploadId}`;
               return `
                 <article class="archive-card">
                   <div class="archive-card-head">
@@ -4718,7 +4742,10 @@
                     <div><strong>ID:</strong> <span class="mono">${uploadId}</span></div>
                     <div><strong>Aufgabe:</strong> ${taskShort}</div>
                   </div>
-                  <div class="archive-card-snippet"><strong>Brief:</strong><br>${letterShort}</div>
+                  <div class="archive-card-snippet">
+                    <button type="button" class="ghost-btn archive-brief-toggle" data-brief-toggle="${briefContentId}" data-open-label="Brief öffnen" data-close-label="Brief schließen">Brief öffnen</button>
+                    <div id="${briefContentId}" class="archive-brief-content hidden">${escapeHtml(letter || "-")}</div>
+                  </div>
                   ${canApprove
                     ? `<div class="actions"><button type="button" data-letter-preview="${uploadId}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${uploadId}">Korrektur freigeben</button><button type="button" data-letter-reject="${uploadId}" class="ghost-btn">Ablehnen</button></div>`
                     : '<span class="muted">Abgeschlossen</span>'}
@@ -4747,25 +4774,31 @@
         `;
         const tbody = document.createElement("tbody");
         records.forEach(row => {
-          const task = String(row.task_prompt || "").trim();
+          const taskPrompt = String(row.task_prompt || "").trim();
+          const taskTitle = String(row.task_title || "").trim();
           const letter = String(row.letter_text || "").trim();
           const writeDuration = formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label);
           const status = String(row.review_status || "pending");
           const canApprove = status === "pending";
+          const uploadId = escapeHtml(row.upload_id || "");
+          const briefContentId = `archive-brief-${uploadId}`;
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
-            <td class="mono">${escapeHtml(row.upload_id || "")}</td>
+            <td class="mono">${uploadId}</td>
             <td>${escapeHtml(row.student_name || "-")}</td>
             <td class="mono">${escapeHtml(row.student_username || "-")}</td>
             <td class="mono">${escapeHtml(writeDuration)}</td>
             <td>${escapeHtml(status)}</td>
             <td>${row.score_total == null ? "-" : escapeHtml(String(row.score_total) + "/20")}</td>
-            <td>${escapeHtml(task.length > 140 ? `${task.slice(0, 140)}...` : task || "-")}</td>
-            <td>${escapeHtml(letter.length > 220 ? `${letter.slice(0, 220)}...` : letter || "-")}</td>
+            <td>${escapeHtml(resolveTaskShortLabel(taskPrompt, taskTitle))}</td>
+            <td>
+              <button type="button" class="ghost-btn archive-brief-toggle" data-brief-toggle="${briefContentId}" data-open-label="Brief öffnen" data-close-label="Brief schließen">Brief öffnen</button>
+              <div id="${briefContentId}" class="archive-brief-content hidden">${escapeHtml(letter || "-")}</div>
+            </td>
             <td>
               ${canApprove
-                ? `<div class="actions"><button type="button" data-letter-preview="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button><button type="button" data-letter-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button></div>`
+                ? `<div class="actions"><button type="button" data-letter-preview="${uploadId}" class="ghost-btn">Mail-Korrektur öffnen</button><button type="button" data-letter-approve="${uploadId}">Korrektur freigeben</button><button type="button" data-letter-reject="${uploadId}" class="ghost-btn">Ablehnen</button></div>`
                 : '<span class="muted">Abgeschlossen</span>'}
             </td>
           `;
@@ -4784,6 +4817,40 @@
       wrap.querySelectorAll("[data-letter-reject]").forEach(btn => {
         btn.addEventListener("click", () => reviewLetter(btn.getAttribute("data-letter-reject") || "", "reject"));
       });
+      wrap.querySelectorAll("[data-brief-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const targetId = String(btn.getAttribute("data-brief-toggle") || "");
+          if (!targetId) return;
+          const panel = document.getElementById(targetId);
+          if (!panel) return;
+          const isHidden = panel.classList.contains("hidden");
+          panel.classList.toggle("hidden", !isHidden);
+          btn.textContent = isHidden
+            ? String(btn.getAttribute("data-close-label") || "Brief schließen")
+            : String(btn.getAttribute("data-open-label") || "Brief öffnen");
+        });
+      });
+    }
+
+    function resolveTaskShortLabel(taskPrompt, taskTitle) {
+      const prompt = String(taskPrompt || "").trim();
+      const title = String(taskTitle || "").trim();
+      if (title) {
+        const matchByTitle = HOMEWORK_MAIL_TEMPLATES.findIndex(t => String(t.title || "").trim() === title);
+        if (matchByTitle >= 0) return `${matchByTitle + 1}. ${title}`;
+      }
+      if (prompt) {
+        const exactIdx = HOMEWORK_MAIL_TEMPLATES.findIndex(t => String(t.prompt || "").trim() === prompt);
+        if (exactIdx >= 0) return `${exactIdx + 1}. ${String(HOMEWORK_MAIL_TEMPLATES[exactIdx].title || "").trim()}`;
+        const fuzzyIdx = HOMEWORK_MAIL_TEMPLATES.findIndex(t => {
+          const p = String(t.prompt || "").trim();
+          const h = String(t.title || "").trim();
+          if (!p && !h) return false;
+          return (p && prompt.startsWith(p)) || (h && prompt.toLowerCase().includes(h.toLowerCase()));
+        });
+        if (fuzzyIdx >= 0) return `${fuzzyIdx + 1}. ${String(HOMEWORK_MAIL_TEMPLATES[fuzzyIdx].title || "").trim()}`;
+      }
+      return title || "Unbekannte Aufgabe";
     }
 
     function renderPendingQueue(rows) {
