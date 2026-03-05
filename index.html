@@ -688,6 +688,17 @@
       flex: 1 1 0;
     }
 
+    .speaking-top-actions {
+      align-items: stretch;
+      flex-wrap: nowrap;
+    }
+
+    .speaking-top-actions .btn-wrap {
+      max-width: none;
+      min-width: 0;
+      flex: 1 1 0;
+    }
+
     .ghost-btn {
       width: auto;
       background: transparent;
@@ -1794,6 +1805,11 @@
         flex-direction: row;
         align-items: stretch;
       }
+
+      .speaking-top-actions {
+        flex-direction: row;
+        align-items: stretch;
+      }
     }
 
     @media (max-width: 480px) {
@@ -2239,7 +2255,7 @@
           </summary>
           <div class="card-accordion-body">
 
-            <div class="row-end">
+            <div class="row-end speaking-top-actions">
           <div class="btn-wrap">
             <button id="newSpeakingSetBtn" type="button">Neue Sprechaufgaben</button>
           </div>
