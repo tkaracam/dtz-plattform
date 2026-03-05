@@ -1930,27 +1930,32 @@
             <p id="courseSwitchHint" class="course-switch-hint">Bitte zuerst einen Kurs auswählen.</p>
           </div>
 
-          <div class="grid">
-            <div>
-              <label for="newCourseName">Kursname</label>
-              <input id="newCourseName" type="text" placeholder="z. B. bamf233-b1-abendkurs">
+          <details class="fold-section">
+            <summary>Kurs erstellen</summary>
+            <div class="fold-section-content">
+              <div class="grid">
+                <div>
+                  <label for="newCourseName">Kursname</label>
+                  <input id="newCourseName" type="text" placeholder="z. B. bamf233-b1-abendkurs">
+                </div>
+                <div>
+                  <label for="newCourseLevel">Niveau (optional)</label>
+                  <input id="newCourseLevel" type="text" placeholder="z. B. B1">
+                </div>
+                <div>
+                  <label for="newCourseSchedule">Kurszeiten (optional)</label>
+                  <input id="newCourseSchedule" type="text" placeholder="z. B. Mo-Mi 18:00-20:15">
+                </div>
+              </div>
+              <div class="actions course-create-actions">
+                <button id="createCourseBtn" type="button">Kurs erstellen</button>
+                <button id="refreshCoursesBtn" class="ghost-btn" type="button">Kurse aktualisieren</button>
+              </div>
+              <div id="courseStatus" class="hidden"></div>
+              <div id="courseListWrap" style="margin-top: 10px;"></div>
+              <div id="courseAssignWrap" style="margin-top: 10px;"></div>
             </div>
-            <div>
-              <label for="newCourseLevel">Niveau (optional)</label>
-              <input id="newCourseLevel" type="text" placeholder="z. B. B1">
-            </div>
-            <div>
-              <label for="newCourseSchedule">Kurszeiten (optional)</label>
-              <input id="newCourseSchedule" type="text" placeholder="z. B. Mo-Mi 18:00-20:15">
-            </div>
-          </div>
-          <div class="actions course-create-actions">
-            <button id="createCourseBtn" type="button">Kurs erstellen</button>
-            <button id="refreshCoursesBtn" class="ghost-btn" type="button">Kurse aktualisieren</button>
-          </div>
-          <div id="courseStatus" class="hidden"></div>
-          <div id="courseListWrap" style="margin-top: 10px;"></div>
-          <div id="courseAssignWrap" style="margin-top: 10px;"></div>
+          </details>
         </div>
         </div>
 
