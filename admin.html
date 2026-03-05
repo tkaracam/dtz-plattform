@@ -525,6 +525,34 @@
       font-size: 0.86rem;
     }
 
+    .course-create-actions {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .course-create-actions button {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .course-members-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px 10px;
+      align-items: start;
+    }
+
+    .course-member-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 2px;
+      min-width: 0;
+      word-break: break-word;
+    }
+
     .bulk-preview {
       margin-top: 10px;
       width: 100%;
@@ -1068,12 +1096,12 @@
       }
 
       .course-switch-actions {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .course-row-actions {
         min-width: 0;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       #userListWrap table {
@@ -1484,7 +1512,19 @@
       }
 
       .course-switch-actions {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .course-row-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .course-create-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .course-members-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       #panelCard table {
@@ -1639,7 +1679,7 @@
             <p class="section-subtitle">Neue Konten erstellen, Passwörter zurücksetzen und Nutzerstatus ändern.</p>
           </div>
 
-          <details class="fold-section" open>
+          <details class="fold-section">
             <summary>Einzelkonto erstellen</summary>
             <div class="fold-section-content">
               <div class="grid">
@@ -1717,7 +1757,7 @@
             </div>
           </details>
 
-          <details class="fold-section" open>
+          <details class="fold-section">
             <summary>Bestehende Konten</summary>
             <div class="fold-section-content">
               <div class="actions" style="margin-top: 0;">
@@ -1801,7 +1841,7 @@
               <input id="newCourseSchedule" type="text" placeholder="z. B. Mo-Mi 18:00-20:15">
             </div>
           </div>
-          <div class="actions">
+          <div class="actions course-create-actions">
             <button id="createCourseBtn" type="button">Kurs erstellen</button>
             <button id="refreshCoursesBtn" class="ghost-btn" type="button">Kurse aktualisieren</button>
           </div>
@@ -3217,6 +3257,7 @@
               <button type="button" data-course-switch="${escapeHtml(c.course_id || "")}" class="ghost-btn">Wechseln</button>
               <button type="button" data-course-assign="${escapeHtml(c.course_id || "")}">Mitglieder</button>
               <button type="button" data-course-toggle="${escapeHtml(c.course_id || "")}" data-course-active="${c.active ? "1" : "0"}" class="${c.active ? "danger-btn" : "ghost-btn"}">${c.active ? "Kurs schließen" : "Kurs öffnen"}</button>
+              <button type="button" data-course-delete="${escapeHtml(c.course_id || "")}" class="danger-btn">Kurs löschen</button>
             </div>
           </td>
         </tr>
@@ -3247,6 +3288,12 @@
           setCourseActive(id, !activeNow);
         });
       });
+      wrap.querySelectorAll("button[data-course-delete]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-course-delete") || "";
+          deleteCourse(id);
+        });
+      });
 
       if (selectedCourseId) {
         renderCourseAssignEditor(selectedCourseId);
@@ -3267,7 +3314,7 @@
         const checked = members.has(uname) ? "checked" : "";
         const label = u.display_name ? `${u.display_name} (${uname})` : uname;
         return `
-          <label class="mono" style="display:block;padding:4px 0;">
+          <label class="mono course-member-item">
             <input type="checkbox" data-course-member="${escapeHtml(uname)}" ${checked}> ${escapeHtml(label)}
           </label>
         `;
@@ -3275,7 +3322,9 @@
       wrap.innerHTML = `
         <div class="card" style="margin-top:8px;padding:12px;">
           <strong>Kursmitglieder: ${escapeHtml(course.name || courseId)}</strong>
-          <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">${rows}</div>
+          <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">
+            <div class="course-members-grid">${rows}</div>
+          </div>
           <div class="actions" style="margin-top:8px;">
             <button type="button" id="saveCourseMembersBtn">Mitglieder speichern</button>
           </div>
@@ -3358,6 +3407,38 @@
         }
       } catch (err) {
         setBox("courseStatus", "error", `Kursstatus konnte nicht geändert werden: ${err.message}`);
+      }
+    }
+
+    async function deleteCourse(courseId) {
+      clearBox("courseStatus");
+      if (!courseId) return;
+      const course = getCourseById(courseId);
+      const label = course ? getCourseLabel(course, false) : courseId;
+      if (!confirm(`Kurs wirklich löschen?\n${label}`)) {
+        return;
+      }
+      if (!confirm("Letzte Bestätigung: Dieser Kurs wird dauerhaft entfernt.")) {
+        return;
+      }
+      try {
+        const response = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "delete",
+            course_id: courseId
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        if (selectedCourseId === courseId) {
+          setSelectedCourse("", false);
+        }
+        setBox("courseStatus", "ok", "Kurs wurde gelöscht.");
+        await listCourses();
+      } catch (err) {
+        setBox("courseStatus", "error", `Kurs konnte nicht gelöscht werden: ${err.message}`);
       }
     }
 

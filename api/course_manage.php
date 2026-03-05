@@ -131,6 +131,36 @@ if ($action === 'create') {
         echo json_encode(['error' => 'Kurs nicht gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+} elseif ($action === 'delete') {
+    $courseId = trim((string)($body['course_id'] ?? ''));
+    if ($courseId === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'course_id ist erforderlich.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $found = false;
+    $nextCourses = [];
+    foreach ($courses as $c) {
+        if (!is_array($c)) {
+            continue;
+        }
+        if ((string)($c['course_id'] ?? '') !== $courseId) {
+            $nextCourses[] = $c;
+            continue;
+        }
+        if (!admin_can_access_course_record($c, $admin)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Keine Berechtigung fuer diesen Kurs.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $found = true;
+    }
+    if (!$found) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Kurs nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $courses = $nextCourses;
 } else {
     http_response_code(400);
     echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
