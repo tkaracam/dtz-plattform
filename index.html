@@ -1440,6 +1440,23 @@
       color: #9a2f2f;
     }
 
+    .task-notify-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      margin-left: 8px;
+      border-radius: 999px;
+      background: #ef5a88;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1;
+      vertical-align: middle;
+    }
+
     .progress-bar {
       margin-top: 5px;
       height: 8px;
@@ -1831,7 +1848,7 @@
         <details id="workAccordion" class="card-accordion">
           <summary class="card-accordion-summary">
             <div class="title-wrap">
-              <h2 class="section-title">Mail schreiben und prüfen</h2>
+              <h2 class="section-title">Mail schreiben und prüfen <span id="workTaskNotifyBadge" class="task-notify-badge hidden">0</span></h2>
               <p class="section-subtitle">Bitte im DTZ-Stil schreiben: Anrede, Anlass, Bitte/Wunsch, Schluss.</p>
             </div>
             <span class="card-accordion-icon">▾</span>
@@ -1997,7 +2014,7 @@
               <details class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
-                    <h3 style="margin:0;">Mail schreiben und prüfen</h3>
+                    <h3 style="margin:0;">Mail schreiben und prüfen <span id="portalTaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
                     <p class="section-subtitle">Zugewiesene Aufgabe bearbeiten und direkt hochladen.</p>
                   </div>
                   <span class="card-accordion-icon">▾</span>
@@ -3771,6 +3788,7 @@
       }
       stopAssignmentCountdown();
       renderAssignmentPlaceholder("Bitte anmelden, um die zugewiesene Aufgabe zu sehen.", "Nicht angemeldet");
+      updateTaskNotifyBadges([]);
       currentStudentUsername = "";
     }
 
@@ -4700,12 +4718,29 @@
       }
     }
 
+    function updateTaskNotifyBadges(homeworks) {
+      const rows = Array.isArray(homeworks) ? homeworks : [];
+      const pendingCount = rows.filter(row => String(row?.status || "").toLowerCase() !== "abgegeben").length;
+      ["workTaskNotifyBadge", "portalTaskNotifyBadge"].forEach(id => {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+        if (pendingCount > 0) {
+          badge.textContent = String(pendingCount);
+          badge.classList.remove("hidden");
+        } else {
+          badge.textContent = "0";
+          badge.classList.add("hidden");
+        }
+      });
+    }
+
     function renderPortalData(payload) {
       const results = Array.isArray(payload.results) ? payload.results : [];
       const homeworks = Array.isArray(payload.homeworks) ? payload.homeworks : [];
       const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
       const readiness = payload.readiness || {};
       const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];
+      updateTaskNotifyBadges(homeworks);
 
       renderPortalList(
         "portalHomeworkWrap",
