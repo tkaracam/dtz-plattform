@@ -976,6 +976,12 @@
       color: #1f3f63;
     }
 
+    .assignment-description {
+      margin: 0;
+      white-space: pre-line;
+      line-height: 1.5;
+    }
+
     .assignment-meta {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1859,7 +1865,7 @@
                   <h3 id="currentAssignmentTitle">Zugewiesene Aufgabe</h3>
                   <span id="currentAssignmentState" class="task-chip">Wird geladen...</span>
                 </div>
-                <p id="currentAssignmentDescription" class="muted">Ihre Lehrkraft weist Ihnen eine Aufgabe zu. Bitte warten Sie einen Moment.</p>
+                <p id="currentAssignmentDescription" class="muted assignment-description">Ihre Lehrkraft weist Ihnen eine Aufgabe zu. Bitte warten Sie einen Moment.</p>
                 <div class="assignment-meta">
                   <div><strong>Dauer:</strong> <span id="currentAssignmentDuration">-</span></div>
                   <div><strong>Abgabetimer:</strong> <span id="currentAssignmentCountdown">--:--</span></div>
@@ -2024,7 +2030,7 @@
                         <h3 id="portalCurrentAssignmentTitle">Zugewiesene Aufgabe</h3>
                         <span id="portalCurrentAssignmentState" class="task-chip">Wird geladen...</span>
                       </div>
-                      <p id="portalCurrentAssignmentDescription" class="muted">Ihre Lehrkraft weist Ihnen eine Aufgabe zu. Bitte warten Sie einen Moment.</p>
+                      <p id="portalCurrentAssignmentDescription" class="muted assignment-description">Ihre Lehrkraft weist Ihnen eine Aufgabe zu. Bitte warten Sie einen Moment.</p>
                       <div class="assignment-meta">
                         <div><strong>Dauer:</strong> <span id="portalCurrentAssignmentDuration">-</span></div>
                         <div><strong>Abgabetimer:</strong> <span id="portalCurrentAssignmentCountdown">--:--</span></div>
@@ -4361,6 +4367,15 @@
       }
     }
 
+    function formatAssignmentDescriptionText(rawText) {
+      let text = String(rawText || "").trim();
+      if (!text) return "";
+      if (!/\r?\n/.test(text) && text.includes(" - ")) {
+        text = text.replace(/\s-\s+/g, "\n- ");
+      }
+      return text;
+    }
+
     function parseRequiredPointsFromText(text) {
       const rows = String(text || "")
         .split(/\r?\n/)
@@ -4546,6 +4561,7 @@
       getAssignmentUiSets().forEach(set => {
         const countdownNode = document.getElementById(set.countdownId);
         const stateNode = document.getElementById(set.stateId);
+        const startBtn = document.getElementById(set.startBtnId);
         if (countdownNode) countdownNode.textContent = formatSeconds(remaining);
         if (currentAssignedHomeworkState.submitted_at) {
           if (stateNode) {
@@ -4564,6 +4580,19 @@
             stateNode.textContent = "Läuft";
             stateNode.className = "task-chip done";
           }
+        } else {
+          if (stateNode) {
+            stateNode.textContent = "Nicht gestartet";
+            stateNode.className = "task-chip";
+          }
+        }
+
+        if (startBtn) {
+          const canStart = !!currentAssignedHomeworkState.can_start;
+          const notActiveYetLocal = !!currentAssignedHomeworkState.not_active_yet;
+          startBtn.disabled = !canStart;
+          startBtn.textContent = canStart ? "Bearbeitung starten" : (notActiveYetLocal ? "Startet später" : "Bereits gestartet");
+          startBtn.classList.toggle("started-btn", !canStart && !notActiveYetLocal);
         }
       });
       const locked = !currentAssignedHomeworkState.can_submit;
@@ -4597,7 +4626,9 @@
         const attachLink = document.getElementById(set.attachLinkId);
 
         if (titleNode) titleNode.textContent = String(currentAssignedHomework.title || "Zugewiesene Aufgabe");
-        if (descNode) descNode.textContent = String(currentAssignedHomework.description || "").trim() || "Keine Beschreibung vorhanden.";
+        const normalizedDescription = formatAssignmentDescriptionText(String(currentAssignedHomework.description || ""));
+        currentAssignedHomework.description = normalizedDescription;
+        if (descNode) descNode.textContent = normalizedDescription || "Keine Beschreibung vorhanden.";
         if (durationNode) durationNode.textContent = formatDurationMinutes(currentAssignedHomework.duration_minutes);
 
         if (stateNode) {
