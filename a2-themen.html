@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A2-Themen | Grammatik | Interaktive Übungen</title>
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --panel: #ffffff;
+      --line: #d9e1ef;
+      --text: #1f2f46;
+      --muted: #5f6f88;
+      --pink: #ea8fb0;
+      --dark: #4f4a6b;
+      --ok: #2b8a5b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #f1f5fb 100%);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .hero {
+      border-radius: 20px;
+      border: 1px solid #b9c8df;
+      background: radial-gradient(circle at top right, #8c7999 0%, #4a496e 45%, #2d395a 100%);
+      color: #fff;
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 3.2vw, 2rem);
+    }
+    .hero p {
+      margin: 0;
+      color: #e7edf8;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .card {
+      grid-column: span 12;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.12rem;
+      color: #253b5a;
+    }
+    .topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      border: 1px solid #d4dbea;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #f8faff;
+      color: #304b72;
+      font-size: .9rem;
+    }
+    .grammar-item {
+      border: 1px solid #dfe6f2;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fbfdff;
+    }
+    .grammar-item strong { color: #334a70; }
+    .task {
+      border: 1px solid #dce6f2;
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+    .task label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #314a70;
+    }
+    .task textarea, .task input {
+      width: 100%;
+      border: 1px solid #c8d6eb;
+      border-radius: 10px;
+      padding: 9px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+    .task textarea { min-height: 88px; resize: vertical; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+    }
+    button.secondary {
+      color: #2f4a74;
+      background: #edf3fe;
+      border: 1px solid #c9d8f0;
+    }
+    .result {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d8e4f3;
+      background: #f8fbff;
+      color: var(--muted);
+      min-height: 40px;
+      white-space: pre-wrap;
+    }
+    .ok { color: var(--ok); }
+    @media (min-width: 860px) {
+      .col-6 { grid-column: span 6; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>A2-Themen, Grammatik und interaktive Übungen</h1>
+      <p>Trainingsbereich für A2: Themenwortschatz, Grammatik-Bausteine und kurze Aufgaben mit Sofort-Feedback.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card col-6">
+        <h2>A2-Themen</h2>
+        <div class="topics">
+          <span class="chip">Familie und Freunde</span>
+          <span class="chip">Wohnen</span>
+          <span class="chip">Arbeit und Beruf</span>
+          <span class="chip">Einkaufen</span>
+          <span class="chip">Gesundheit</span>
+          <span class="chip">Termine und Zeit</span>
+          <span class="chip">Freizeit</span>
+          <span class="chip">Reisen und Verkehr</span>
+          <span class="chip">Behörden</span>
+          <span class="chip">Schule und Kurs</span>
+        </div>
+      </article>
+
+      <article class="card col-6">
+        <h2>Grammatik (A2-Fokus)</h2>
+        <div class="grammar-item"><strong>Perfekt:</strong> Ich <em>habe</em> gestern gearbeitet.</div>
+        <div class="grammar-item"><strong>Nebensatz mit weil:</strong> Ich komme später, <em>weil ich einen Termin habe</em>.</div>
+        <div class="grammar-item"><strong>Modalverben:</strong> Ich <em>muss</em> morgen zum Amt gehen.</div>
+        <div class="grammar-item"><strong>Trennbare Verben:</strong> Ich <em>stehe</em> um 6 Uhr <em>auf</em>.</div>
+        <div class="grammar-item"><strong>Präpositionen:</strong> am Montag, um 8 Uhr, im Kurs.</div>
+      </article>
+
+      <article class="card col-6">
+        <h2>Interaktive Übung 1: Satzbildung</h2>
+        <div class="task">
+          <label for="u1">Bilden Sie einen Satz mit „weil“ und „Arzttermin“:</label>
+          <textarea id="u1" placeholder="Beispiel: Ich ..."></textarea>
+          <div class="row">
+            <button type="button" id="check1">Prüfen</button>
+            <button type="button" class="secondary" id="clear1">Leeren</button>
+          </div>
+          <div class="result" id="r1"></div>
+        </div>
+      </article>
+
+      <article class="card col-6">
+        <h2>Interaktive Übung 2: Perfekt</h2>
+        <div class="task">
+          <label for="u2">Schreiben Sie einen Perfekt-Satz mit „lernen“:</label>
+          <input id="u2" type="text" placeholder="Ich habe ... gelernt.">
+          <div class="row">
+            <button type="button" id="check2">Prüfen</button>
+            <button type="button" class="secondary" id="clear2">Leeren</button>
+          </div>
+          <div class="result" id="r2"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const u1 = document.getElementById('u1');
+    const r1 = document.getElementById('r1');
+    document.getElementById('check1').addEventListener('click', () => {
+      const txt = (u1.value || '').trim();
+      if (!txt) {
+        r1.textContent = 'Bitte zuerst einen Satz schreiben.';
+        return;
+      }
+      const hasWeil = /\bweil\b/i.test(txt);
+      const hasArzt = /arzttermin/i.test(txt);
+      if (hasWeil && hasArzt) {
+        r1.innerHTML = '<span class="ok">Gut! Die Schlüsselwörter sind vorhanden.</span>';
+      } else {
+        r1.textContent = 'Tipp: Verwenden Sie „weil“ und „Arzttermin“ im selben Satz.';
+      }
+    });
+    document.getElementById('clear1').addEventListener('click', () => {
+      u1.value = '';
+      r1.textContent = '';
+    });
+
+    const u2 = document.getElementById('u2');
+    const r2 = document.getElementById('r2');
+    document.getElementById('check2').addEventListener('click', () => {
+      const txt = (u2.value || '').trim();
+      if (!txt) {
+        r2.textContent = 'Bitte zuerst einen Satz schreiben.';
+        return;
+      }
+      const hasHabe = /\bhabe\b/i.test(txt);
+      const hasGelernt = /gelernt/i.test(txt);
+      if (hasHabe && hasGelernt) {
+        r2.innerHTML = '<span class="ok">Richtiges Perfekt-Muster erkannt.</span>';
+      } else {
+        r2.textContent = 'Tipp: Achten Sie auf „habe ... gelernt“.';
+      }
+    });
+    document.getElementById('clear2').addEventListener('click', () => {
+      u2.value = '';
+      r2.textContent = '';
+    });
+  </script>
+</body>
+</html>
