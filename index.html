@@ -2011,7 +2011,7 @@
         <section class="portal-section">
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
-              <details id="portalHomeworkAccordion" class="card-accordion" open>
+              <details id="portalHomeworkAccordion" class="card-accordion">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
                     <h3 style="margin:0;">Meine Hausaufgaben</h3>
@@ -2071,7 +2071,7 @@
               </details>
             </section>
             <section class="portal-block">
-              <details class="card-accordion" open>
+              <details class="card-accordion">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
                     <h3 style="margin:0;">Korrigierte Briefe</h3>
@@ -3758,7 +3758,7 @@
 
     function openSpeakingView() {
       setMainView("speaking");
-      setAccordionOpen("speakingAccordion", true);
+      setAccordionOpen("speakingAccordion", false);
       generateSpeakingSet();
       setSpeakingTab(1);
     }
