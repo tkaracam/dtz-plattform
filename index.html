@@ -1570,6 +1570,14 @@
       font-size: 0.92rem;
     }
 
+    .speak-example-wrap {
+      margin-top: 10px;
+    }
+
+    .speak-example-box {
+      margin-top: 8px;
+    }
+
     .speak-form-grid {
       margin-top: 10px;
       display: grid;
@@ -2308,6 +2316,12 @@
             <p class="speak-muted" id="speakPart3Lead"></p>
             <ul id="speakPart3Points" class="speak-list"></ul>
             <div class="speak-note">Tipp: Reagieren, Vorschläge machen und am Ende eine Einigung formulieren.</div>
+            <div class="speak-example-wrap">
+              <div class="btn-wrap">
+                <button id="speakPart3ExampleBtn" type="button" class="secondary-btn">Beispiel</button>
+              </div>
+              <div id="speakPart3Example" class="speak-draft speak-example-box hidden"></div>
+            </div>
           </section>
         </div>
           </div>
@@ -3197,6 +3211,206 @@
         task: "einen Termin im Bürgeramt vorbereiten",
         plan: "den Behördentermin",
         points: ["Unterlagen", "Terminzeit", "Anfahrt", "Wartezeit", "Nachbereitung"]
+      },
+      {
+        task: "einen Elternabend in der Schule vorbereiten",
+        plan: "den Elternabend",
+        points: ["Termin", "Themenliste", "Einladungen", "Moderation", "Protokoll"]
+      },
+      {
+        task: "einen gemeinsamen Museumsbesuch organisieren",
+        plan: "den Museumsbesuch",
+        points: ["Treffpunkt", "Tickets", "Anreise", "Zeitplan", "Kosten"]
+      },
+      {
+        task: "einen Lernausflug in die Stadtbibliothek planen",
+        plan: "den Lernausflug",
+        points: ["Datum", "Anmeldung", "Arbeitsplätze", "Lernziele", "Rückfahrt"]
+      },
+      {
+        task: "einen Grillabend mit der Nachbarschaft planen",
+        plan: "den Grillabend",
+        points: ["Ort", "Einkauf", "Getränke", "Musik", "Aufräumen"]
+      },
+      {
+        task: "eine gemeinsame Bewerbungstrainingsrunde organisieren",
+        plan: "das Bewerbungstraining",
+        points: ["Themen", "Unterlagen", "Rollenspiele", "Feedback", "Zeitaufteilung"]
+      },
+      {
+        task: "einen Infotag zur Arbeitsagentur vorbereiten",
+        plan: "den Infotag",
+        points: ["Fragen sammeln", "Anfahrt", "Unterlagen", "Begleitung", "Nachbereitung"]
+      },
+      {
+        task: "ein Klassenpicknick im Park organisieren",
+        plan: "das Picknick",
+        points: ["Datum", "Mitbringliste", "Spiele", "Wetterplan B", "Abschluss"]
+      },
+      {
+        task: "einen Filmabend mit Diskussion im Kurs planen",
+        plan: "den Filmabend",
+        points: ["Filmauswahl", "Ort", "Technik", "Snacks", "Gesprächsfragen"]
+      },
+      {
+        task: "eine kleine Fahrradreparatur-Aktion im Hof organisieren",
+        plan: "die Aktion",
+        points: ["Werkzeug", "Helfer", "Zeit", "Sicherheit", "Aufgaben"]
+      },
+      {
+        task: "einen gemeinsamen Einkauf für ein Kursfrühstück planen",
+        plan: "das Frühstück",
+        points: ["Einkaufsliste", "Budget", "Aufteilung", "Uhrzeit", "Aufbau"]
+      },
+      {
+        task: "einen Spieleabend mit Freunden vorbereiten",
+        plan: "den Spieleabend",
+        points: ["Ort", "Teilnehmende", "Spiele", "Snacks", "Ende"]
+      },
+      {
+        task: "eine Lernpartnerschaft für die DTZ-Prüfung organisieren",
+        plan: "die Lernpartnerschaft",
+        points: ["Partnerwahl", "Ziele", "Treffen", "Material", "Kontrolle"]
+      },
+      {
+        task: "einen Deutsch-Stammtisch im Café planen",
+        plan: "den Stammtisch",
+        points: ["Termin", "Teilnehmende", "Themen", "Regeln", "Kosten"]
+      },
+      {
+        task: "einen Ausflug in den Zoo für Familien planen",
+        plan: "den Zoo-Ausflug",
+        points: ["Tickets", "Treffpunkt", "Essen", "Route", "Rückkehr"]
+      },
+      {
+        task: "eine gemeinsame Putzaktion im Wohnhaus organisieren",
+        plan: "die Putzaktion",
+        points: ["Bereiche", "Material", "Zeit", "Verteilung", "Entsorgung"]
+      },
+      {
+        task: "einen Besuch auf dem Wochenmarkt vorbereiten",
+        plan: "den Marktbesuch",
+        points: ["Einkaufsliste", "Budget", "Treffpunkt", "Transport", "Aufteilung"]
+      },
+      {
+        task: "eine Infoveranstaltung zur Mülltrennung planen",
+        plan: "die Infoveranstaltung",
+        points: ["Inhalte", "Ort", "Material", "Fragen", "Dokumentation"]
+      },
+      {
+        task: "einen gemeinsamen Kochkurs im Stadtteilzentrum organisieren",
+        plan: "den Kochkurs",
+        points: ["Menü", "Einkauf", "Küche", "Rollen", "Zeitplan"]
+      },
+      {
+        task: "eine kleine Wanderung mit Kindern planen",
+        plan: "die Familienwanderung",
+        points: ["Strecke", "Pausen", "Verpflegung", "Sicherheit", "Rückfahrt"]
+      },
+      {
+        task: "einen Besuch beim Rathaus vorbereiten",
+        plan: "den Rathausbesuch",
+        points: ["Termin", "Unterlagen", "Fragen", "Anfahrt", "Ergebnisse"]
+      },
+      {
+        task: "einen Sporttag im Verein organisieren",
+        plan: "den Sporttag",
+        points: ["Disziplinen", "Teams", "Zeitplan", "Ausrüstung", "Siegerehrung"]
+      },
+      {
+        task: "eine Bücher-Tauschbörse im Kurs planen",
+        plan: "die Tauschbörse",
+        points: ["Regeln", "Ort", "Anzahl Bücher", "Ablauf", "Restbestände"]
+      },
+      {
+        task: "eine gemeinsame Zugreise in eine Nachbarstadt planen",
+        plan: "die Zugreise",
+        points: ["Verbindung", "Tickets", "Programm", "Treffzeit", "Rückfahrt"]
+      },
+      {
+        task: "einen Erste-Hilfe-Kurs für die Gruppe organisieren",
+        plan: "den Erste-Hilfe-Kurs",
+        points: ["Anbieter", "Termin", "Kosten", "Anmeldung", "Bescheinigungen"]
+      },
+      {
+        task: "ein Sommerfest im Wohnviertel planen",
+        plan: "das Sommerfest",
+        points: ["Ort", "Programm", "Essen", "Musik", "Aufbau/Abbau"]
+      },
+      {
+        task: "eine gemeinsame Lerngruppe für Grammatik organisieren",
+        plan: "die Lerngruppe",
+        points: ["Themen", "Treffen", "Material", "Übungen", "Rollen"]
+      },
+      {
+        task: "einen Besuch in einem Berufsinformationszentrum planen",
+        plan: "den BIZ-Besuch",
+        points: ["Fragen", "Anmeldung", "Anreise", "Dokumentation", "Nächste Schritte"]
+      },
+      {
+        task: "eine Theateraufführung mit der Gruppe besuchen",
+        plan: "den Theaterbesuch",
+        points: ["Stückauswahl", "Karten", "Treffpunkt", "Kleidung", "Nachgespräch"]
+      },
+      {
+        task: "eine gemeinsame Foto-Tour durch die Stadt planen",
+        plan: "die Foto-Tour",
+        points: ["Route", "Motivideen", "Uhrzeit", "Ausrüstung", "Treffpunkt"]
+      },
+      {
+        task: "einen Besuch im Schwimmbad mit Freunden organisieren",
+        plan: "den Schwimmbadbesuch",
+        points: ["Eintritt", "Abfahrt", "Sachen", "Sicherheit", "Rückweg"]
+      },
+      {
+        task: "eine Informationsrunde zur Wohnungssuche vorbereiten",
+        plan: "die Informationsrunde",
+        points: ["Webseiten", "Dokumente", "Tipps", "Austausch", "Aufgaben"]
+      },
+      {
+        task: "eine gemeinsame Weihnachtsfeier im Kurs planen",
+        plan: "die Weihnachtsfeier",
+        points: ["Datum", "Dekoration", "Musik", "Essen", "Programm"]
+      },
+      {
+        task: "einen Frühlingsausflug mit der Gruppe organisieren",
+        plan: "den Frühlingsausflug",
+        points: ["Ziel", "Abfahrt", "Aktivitäten", "Budget", "Rückfahrt"]
+      },
+      {
+        task: "eine gemeinsame Nachhilfestunde für Kinder planen",
+        plan: "die Nachhilfestunde",
+        points: ["Fächer", "Zeit", "Material", "Ort", "Betreuung"]
+      },
+      {
+        task: "eine Hausordnung-Informationsrunde für neue Nachbarn vorbereiten",
+        plan: "die Informationsrunde",
+        points: ["Einladung", "Themen", "Beispiele", "Fragen", "Absprachen"]
+      },
+      {
+        task: "einen Besuch bei einer Ausbildungsmesse planen",
+        plan: "den Messebesuch",
+        points: ["Stände", "Unterlagen", "Fragen", "Zeitplan", "Kontakte"]
+      },
+      {
+        task: "eine gemeinsame Vorbereitung auf ein Vorstellungsgespräch organisieren",
+        plan: "die Vorbereitung",
+        points: ["Fragen", "Antworten", "Kleidung", "Rollenspiel", "Feedback"]
+      },
+      {
+        task: "eine Gesundheitswoche im Kurs organisieren",
+        plan: "die Gesundheitswoche",
+        points: ["Themen", "Referenten", "Termine", "Material", "Abschluss"]
+      },
+      {
+        task: "einen Besuch beim Recyclinghof gemeinsam planen",
+        plan: "den Besuch",
+        points: ["Sammelliste", "Transport", "Uhrzeit", "Regeln", "Kosten"]
+      },
+      {
+        task: "eine gemeinsame Planung für Ferienaktivitäten mit Kindern machen",
+        plan: "das Ferienprogramm",
+        points: ["Termine", "Angebote", "Kosten", "Anmeldung", "Begleitung"]
       }
     ];
 
@@ -4024,6 +4238,36 @@
         `Planen Sie gemeinsam ${currentSpeakingSet.part3.plan}. Planen Sie, was Sie tun möchten. ` +
         `Hier haben Sie einige Notizen.`;
       setList("speakPart3Points", currentSpeakingSet.part3.points);
+      const exampleBox = document.getElementById("speakPart3Example");
+      if (exampleBox) {
+        exampleBox.textContent = buildPart3Example(currentSpeakingSet.part3);
+        exampleBox.classList.add("hidden");
+      }
+      const exampleBtn = document.getElementById("speakPart3ExampleBtn");
+      if (exampleBtn) {
+        exampleBtn.textContent = "Beispiel";
+      }
+    }
+
+    function buildPart3Example(part3Topic) {
+      const points = Array.isArray(part3Topic?.points) ? part3Topic.points : [];
+      const p1 = points[0] || "Termin";
+      const p2 = points[1] || "Ort";
+      const p3 = points[2] || "Kosten";
+      return [
+        "Beispiel-Dialog (Teil 3)",
+        "",
+        `A: Wollen wir ${part3Topic?.task || "etwas zusammen planen"}?`,
+        "B: Ja, gern. Das ist eine gute Idee.",
+        `A: Sprechen wir zuerst über ${p1}. Was passt dir?`,
+        "B: Am Samstag wäre für mich gut.",
+        `A: Gut, dann planen wir auch ${p2}.`,
+        "B: Ein zentraler Treffpunkt ist besser für alle.",
+        `A: Und wie machen wir es mit ${p3}?`,
+        "B: Wir teilen die Kosten und Aufgaben gerecht auf.",
+        "A: Super, dann sind wir einverstanden.",
+        "B: Perfekt, ich bestätige alles kurz in einer Nachricht."
+      ].join("\n");
     }
 
     function setSpeakingTab(tabNo) {
@@ -6076,6 +6320,16 @@
     const refreshBskHistoryBtn = document.getElementById("refreshBskHistoryBtn");
     if (refreshBskHistoryBtn) refreshBskHistoryBtn.addEventListener("click", loadBskHistory);
     document.getElementById("buildPart1DraftBtn").addEventListener("click", generatePart1Draft);
+    const speakPart3ExampleBtn = document.getElementById("speakPart3ExampleBtn");
+    if (speakPart3ExampleBtn) {
+      speakPart3ExampleBtn.addEventListener("click", () => {
+        const exampleBox = document.getElementById("speakPart3Example");
+        if (!exampleBox) return;
+        const willOpen = exampleBox.classList.contains("hidden");
+        exampleBox.classList.toggle("hidden");
+        speakPart3ExampleBtn.textContent = willOpen ? "Beispiel schließen" : "Beispiel";
+      });
+    }
     document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
     document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
     document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
