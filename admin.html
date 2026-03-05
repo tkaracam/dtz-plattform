@@ -553,6 +553,13 @@
       word-break: break-word;
     }
 
+    #pendingBulkActions button {
+      padding: 7px 9px;
+      font-size: 0.82rem;
+      min-width: 0;
+      line-height: 1.2;
+    }
+
     .bulk-preview {
       margin-top: 10px;
       width: 100%;
@@ -2123,7 +2130,6 @@
         <div id="paneArchive" class="admin-pane">
         <div id="archiveSection">
           <h2 class="section-title" style="margin-top: 18px;">Mail Korrekturen</h2>
-          <p class="section-subtitle">Einträge filtern und bei Bedarf als CSV herunterladen.</p>
         </div>
         <div id="previewWrap" class="preview-wrap hidden">
           <div class="preview-head">
@@ -2162,9 +2168,7 @@
         <details class="fold-section" style="margin-top: 12px;">
           <summary>Mail Korrekturen (Alle Einträge)</summary>
           <div class="fold-section-content">
-            <div class="error" style="margin-top:0;">
-              Copyright-Hinweis: Keine offiziellen BAMF/g.a.s.t./Goethe-Prüfungsfragen 1:1 übernehmen. Nur eigene oder lizenzierte Inhalte verwenden.
-            </div>
+            <p class="section-subtitle" style="margin-top:0;">Mail Einträge filtern und bei Bedarf als CSV herunterladen.</p>
 
             <div class="grid">
               <div>
