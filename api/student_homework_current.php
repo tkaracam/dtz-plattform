@@ -104,6 +104,7 @@ $response = [
         'started_at' => $startedAt,
         'deadline_at' => (string)($state['deadline_at'] ?? ''),
         'submitted_at' => $submittedAt,
+        'last_upload_id' => (string)($state['last_upload_id'] ?? ''),
         'remaining_seconds' => $remaining,
         'expired' => $expired,
         'locked' => $locked,

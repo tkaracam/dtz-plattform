@@ -2447,6 +2447,7 @@
     let currentStudentUsername = "";
     let currentAssignedHomework = null;
     let currentAssignedHomeworkState = null;
+    let approvedCorrectionUploadIds = new Set();
     let assignmentCountdownTimerId = null;
     let assignmentAutoSubmitInFlight = false;
     let assignmentAutoSubmittedFor = "";
@@ -3954,6 +3955,7 @@
       const memberPanel = document.getElementById("memberPanel");
       memberPanel.classList.remove("hidden");
       currentStudentLabel = identityText || "Angemeldet";
+      approvedCorrectionUploadIds = new Set();
       renderAssignmentPlaceholder("Zugewiesene Aufgabe wird geladen...", "Wird geladen");
       loadStudentPortal();
       loadCurrentAssignedHomework();
@@ -4034,6 +4036,7 @@
         simulationTimerId = null;
       }
       stopAssignmentCountdown();
+      approvedCorrectionUploadIds = new Set();
       renderAssignmentPlaceholder("Bitte anmelden, um die zugewiesene Aufgabe zu sehen.", "Nicht angemeldet");
       updateTaskNotifyBadges([]);
       currentStudentUsername = "";
@@ -4710,6 +4713,42 @@
       ];
     }
 
+    function isCurrentAssignmentCorrectionApproved() {
+      if (!currentAssignedHomeworkState) return false;
+      const uploadId = String(currentAssignedHomeworkState.last_upload_id || "").trim();
+      if (!uploadId) return false;
+      return approvedCorrectionUploadIds.has(uploadId);
+    }
+
+    function assignmentStartButtonLabel() {
+      if (!currentAssignedHomeworkState) {
+        return "Bearbeitung starten";
+      }
+      const canStart = !!currentAssignedHomeworkState.can_start;
+      const notActiveYet = !!currentAssignedHomeworkState.not_active_yet;
+      const submitted = !!currentAssignedHomeworkState.submitted_at;
+      if (canStart) return "Bearbeitung starten";
+      if (notActiveYet) return "Startet später";
+      if (submitted) {
+        return isCurrentAssignmentCorrectionApproved() ? "Brief korrigiert" : "Bewertet";
+      }
+      return "Bereits gestartet";
+    }
+
+    function applyAssignmentStartButtonState() {
+      const canStart = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.can_start);
+      const notActiveYet = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.not_active_yet);
+      const label = assignmentStartButtonLabel();
+      getAssignmentUiSets().forEach(set => {
+        const startBtn = document.getElementById(set.startBtnId);
+        if (!startBtn) return;
+        startBtn.disabled = !canStart;
+        startBtn.textContent = label;
+        startBtn.classList.toggle("ready-btn", canStart);
+        startBtn.classList.toggle("running-btn", !canStart && !notActiveYet);
+      });
+    }
+
     function setAssignmentEditorLocked(locked) {
       getWriteEditors().forEach(editor => {
         const textarea = document.getElementById(editor.textareaId);
@@ -4865,14 +4904,10 @@
         }
 
         if (startBtn) {
-          const canStart = !!currentAssignedHomeworkState.can_start;
-          const notActiveYetLocal = !!currentAssignedHomeworkState.not_active_yet;
-          startBtn.disabled = !canStart;
-          startBtn.textContent = canStart ? "Bearbeitung starten" : (notActiveYetLocal ? "Startet später" : "Bereits gestartet");
-          startBtn.classList.toggle("ready-btn", canStart);
-          startBtn.classList.toggle("running-btn", !canStart && !notActiveYetLocal);
+          startBtn.disabled = true;
         }
       });
+      applyAssignmentStartButtonState();
       const locked = !currentAssignedHomeworkState.can_submit;
       setAssignmentEditorLocked(locked);
     }
@@ -4936,15 +4971,9 @@
           }
         }
 
-        if (startBtn) {
-          const canStart = !!currentAssignedHomeworkState.can_start;
-          startBtn.disabled = !canStart;
-          const notActiveYet = !!currentAssignedHomeworkState.not_active_yet;
-          startBtn.textContent = canStart ? "Bearbeitung starten" : (notActiveYet ? "Startet später" : "Bereits gestartet");
-          startBtn.classList.toggle("ready-btn", canStart);
-          startBtn.classList.toggle("running-btn", !canStart && !notActiveYet);
-        }
+        if (startBtn) startBtn.disabled = true;
       });
+      applyAssignmentStartButtonState();
 
       stopAssignmentCountdown();
       updateAssignmentCountdown();
@@ -4997,12 +5026,7 @@
         await loadCurrentAssignedHomework();
       } finally {
         if (btn) {
-          const canStart = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.can_start);
-          const notActiveYet = !!(currentAssignedHomeworkState && currentAssignedHomeworkState.not_active_yet);
-          btn.disabled = !canStart;
-          btn.textContent = canStart ? "Bearbeitung starten" : (notActiveYet ? "Startet später" : "Bereits gestartet");
-          btn.classList.toggle("ready-btn", canStart);
-          btn.classList.toggle("running-btn", !canStart && !notActiveYet);
+          applyAssignmentStartButtonState();
         }
       }
     }
@@ -5048,6 +5072,12 @@
       const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
       const readiness = payload.readiness || {};
       const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];
+      approvedCorrectionUploadIds = new Set(
+        corrections
+          .map(row => String(row && row.upload_id ? row.upload_id : "").trim())
+          .filter(Boolean)
+      );
+      applyAssignmentStartButtonState();
       updateTaskNotifyBadges(homeworks);
 
       renderPortalList(
