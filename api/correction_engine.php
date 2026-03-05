@@ -164,6 +164,30 @@ function dtz_normalize_mistakes($rawMistakes, string $letterText): array
     return $out;
 }
 
+function dtz_word_count(string $text): int
+{
+    preg_match_all('/\S+/u', trim($text), $m);
+    return count($m[0] ?? []);
+}
+
+function dtz_truncate_to_words(string $text, int $targetWords = 70): string
+{
+    $clean = trim((string)preg_replace('/\s+/u', ' ', $text));
+    if ($clean === '' || $targetWords < 1) {
+        return $clean;
+    }
+    preg_match_all('/\S+/u', $clean, $m);
+    $words = $m[0] ?? [];
+    if (count($words) <= $targetWords) {
+        return $clean;
+    }
+    $short = implode(' ', array_slice($words, 0, $targetWords));
+    if (!preg_match('/[.!?]$/u', $short)) {
+        $short .= '.';
+    }
+    return $short;
+}
+
 function dtz_normalize_payload(array $payload, string $letterText, array $requiredPoints, string $source): array
 {
     $rubricRaw = is_array($payload['rubric'] ?? null) ? $payload['rubric'] : [];
@@ -175,14 +199,14 @@ function dtz_normalize_payload(array $payload, string $letterText, array $requir
     ];
     $score = dtz_clamp_int($payload['score_total'] ?? null, 0, 20, array_sum($rubric));
 
-    $niveau = trim((string)($payload['niveau_einschaetzung'] ?? ''));
-    if ($niveau === '') {
-        if ($score >= 16) {
+    $niveau = strtoupper(trim((string)($payload['niveau_einschaetzung'] ?? '')));
+    if (!in_array($niveau, ['A1', 'A2', 'B1'], true)) {
+        if ($score >= 15) {
             $niveau = 'B1';
-        } elseif ($score >= 10) {
-            $niveau = 'A2-B1';
-        } else {
+        } elseif ($score >= 7) {
             $niveau = 'A2';
+        } else {
+            $niveau = 'A1';
         }
     }
 
@@ -190,22 +214,34 @@ function dtz_normalize_payload(array $payload, string $letterText, array $requir
     $wordCount = count($wordMatches[0] ?? []);
     if ($wordCount < 20) {
         $score = min($score, 6);
-        $niveau = 'A2';
     } elseif ($wordCount < 40) {
-        $score = min($score, 10);
-        if ($niveau === 'B1') {
-            $niveau = 'A2-B1';
-        }
+        $score = min($score, 14);
     }
+
+    // BAMF/DTZ Schreiben: 15-20 B1, 7-14 A2, 0-6 unter A2 (hier als A1 angezeigt).
+    if ($score <= 6) {
+        $niveau = 'A1';
+    } elseif ($score <= 14) {
+        $niveau = 'A2';
+    } else {
+        $niveau = 'B1';
+    }
+
+    // B1 requires a DTZ-like text length window.
     if ($niveau === 'B1' && ($wordCount < 50 || $wordCount > 80)) {
-        $niveau = 'A2-B1';
-        $score = min($score, 15);
+        $niveau = 'A2';
+        $score = min($score, 14);
     }
 
     $points = dtz_evaluate_points($letterText, $requiredPoints);
     $corrected = trim((string)($payload['corrected_letter'] ?? ''));
     if ($corrected === '') {
         $corrected = trim($letterText);
+    }
+    $corrected = trim((string)preg_replace('/\s+/u', ' ', $corrected));
+    $correctedWords = dtz_word_count($corrected);
+    if ($correctedWords > 75) {
+        $corrected = dtz_truncate_to_words($corrected, 70);
     }
     $feedbackDe = trim((string)($payload['teacher_feedback_de'] ?? ''));
     if ($feedbackDe === '') {
@@ -319,7 +355,7 @@ Schülerbrief:
 Antworte nur in diesem JSON-Format:
 {
   "score_total": 0,
-  "niveau_einschaetzung": "A2|A2-B1|B1",
+  "niveau_einschaetzung": "A1|A2|B1",
   "rubric": {
     "aufgabenbezug": 0,
     "textaufbau": 0,
@@ -342,7 +378,12 @@ Antworte nur in diesem JSON-Format:
 Regeln:
 - Gesamtpunktzahl zwischen 0 und 20.
 - Jede Rubrikkategorie zwischen 0 und 5.
+- Niveau nach BAMF-Logik für Schreiben:
+  - 15-20 Punkte: B1
+  - 7-14 Punkte: A2
+  - 0-6 Punkte: A1 (unter A2)
 - Der korrigierte Brief soll DTZ-gerecht, klar und natürlich sein.
+- Der korrigierte Brief soll etwa 70 Wörter haben (Zielbereich 65-75 Wörter).
 - Schreibe nichts ausserhalb des JSON.
 - Orthografie streng nach Standarddeutsch:
   - Nach Komma wird klein weitergeschrieben, ausser es folgt ein Nomen/Eigenname oder der Beginn eines neuen Satzes.
