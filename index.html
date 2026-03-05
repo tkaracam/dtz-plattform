@@ -3721,7 +3721,7 @@
 
     function openPortalView() {
       setMainView("portal");
-      loadStudentPortal();
+      refreshPortalData();
     }
 
     function openSimulationView() {
@@ -4679,7 +4679,10 @@
 
     async function loadCurrentAssignedHomework() {
       try {
-        const response = await fetch("./api/student_homework_current.php", { method: "GET" });
+        const response = await fetch(withNoCache("./api/student_homework_current.php"), {
+          method: "GET",
+          cache: "no-store"
+        });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderCurrentAssignment(payload);
@@ -4863,7 +4866,10 @@
     async function loadStudentPortal() {
       clearPortalStatus();
       try {
-        const response = await fetch("./api/student_portal.php", { method: "GET" });
+        const response = await fetch(withNoCache("./api/student_portal.php"), {
+          method: "GET",
+          cache: "no-store"
+        });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         renderPortalData(payload);
@@ -4876,6 +4882,14 @@
       } catch (err) {
         setPortalStatus("error", `Portal konnte nicht geladen werden: ${err.message}`);
       }
+    }
+
+    async function refreshPortalData() {
+      clearPortalStatus();
+      await Promise.all([
+        loadStudentPortal(),
+        loadCurrentAssignedHomework()
+      ]);
     }
 
     function ensureSimulationTask() {
@@ -5533,6 +5547,11 @@
       return apiUrl.replace(/correct\.php(?:\?.*)?$/i, "save_letter.php");
     }
 
+    function withNoCache(url) {
+      const sep = url.includes("?") ? "&" : "?";
+      return `${url}${sep}_ts=${Date.now()}`;
+    }
+
     async function uploadLetter(textareaId = "letterText", buttonId = "uploadBtn", statusBoxId = "statusBox", options = {}) {
       const forceSubmit = !!options.forceSubmit;
       const autoSubmitOnExpiry = !!options.autoSubmitOnExpiry;
@@ -6042,7 +6061,7 @@
     document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
     document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
     document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
-    document.getElementById("refreshPortalBtn").addEventListener("click", loadStudentPortal);
+    document.getElementById("refreshPortalBtn").addEventListener("click", refreshPortalData);
     document.getElementById("startSimulationBtn").addEventListener("click", startSimulation);
     document.getElementById("finishSimulationBtn").addEventListener("click", () => finishSimulation(false));
     document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);
