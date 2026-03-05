@@ -561,9 +561,29 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 4px 2px;
+      padding: 8px 10px;
       min-width: 0;
-      word-break: break-word;
+      word-break: normal;
+      overflow-wrap: normal;
+      border: 1px solid #d6e3f0;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .course-member-item input[type="checkbox"] {
+      width: auto;
+      min-width: 18px;
+      height: 18px;
+      margin: 0;
+      flex: 0 0 auto;
+      padding: 0;
+    }
+
+    .course-member-name {
+      min-width: 0;
+      line-height: 1.25;
+      word-break: normal;
+      overflow-wrap: normal;
     }
 
     #pendingBulkActions button {
@@ -1854,11 +1874,11 @@
               <input id="newCourseName" type="text" placeholder="z. B. bamf233-b1-abendkurs">
             </div>
             <div>
-              <label for="newCourseLevel">Niveau</label>
+              <label for="newCourseLevel">Niveau (optional)</label>
               <input id="newCourseLevel" type="text" placeholder="z. B. B1">
             </div>
             <div>
-              <label for="newCourseSchedule">Kurszeiten</label>
+              <label for="newCourseSchedule">Kurszeiten (optional)</label>
               <input id="newCourseSchedule" type="text" placeholder="z. B. Mo-Mi 18:00-20:15">
             </div>
           </div>
@@ -3346,7 +3366,8 @@
         const label = u.display_name ? `${u.display_name} (${uname})` : uname;
         return `
           <label class="mono course-member-item">
-            <input type="checkbox" data-course-member="${escapeHtml(uname)}" ${checked}> ${escapeHtml(label)}
+            <input type="checkbox" data-course-member="${escapeHtml(uname)}" ${checked}>
+            <span class="course-member-name">${escapeHtml(label)}</span>
           </label>
         `;
       }).join("");
