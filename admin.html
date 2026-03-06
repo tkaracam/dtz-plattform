@@ -2279,6 +2279,16 @@
                   <button id="kursCreateHomeworkBtn" type="button">Hausaufgabe zuweisen</button>
                 </div>
                 <div id="kursHomeworkStatus" class="hidden"></div>
+
+                <details id="kursAssignedHomeworkDetails" class="fold-section" style="margin-top:10px;">
+                  <summary>Zugewiesene Aufgaben</summary>
+                  <div class="fold-section-content">
+                    <div class="actions" style="margin-top:0;">
+                      <button id="kursRefreshHomeworkBtn" type="button" class="ghost-btn">Aufgaben aktualisieren</button>
+                    </div>
+                    <div id="kursHomeworkListWrap" style="margin-top:10px;"></div>
+                  </div>
+                </details>
               </div>
             </details>
 
@@ -3251,6 +3261,8 @@
       if (kursInfo) kursInfo.textContent = "Bitte zuerst einen Kurs auswählen.";
       clearBox("kursActionStatus");
       clearBox("kursHomeworkStatus");
+      const kursHomeworkListWrap = document.getElementById("kursHomeworkListWrap");
+      if (kursHomeworkListWrap) kursHomeworkListWrap.innerHTML = "<p>Bitte zuerst einen Kurs auswählen.</p>";
       document.getElementById("panelCard").classList.add("hidden");
       document.getElementById("loginCard").classList.remove("hidden");
       const pwdInput = document.getElementById("adminPassword");
@@ -4171,6 +4183,7 @@
         renderCourseAssignEditor(id);
       }
       resetKursCorrectionsView();
+      listKursHomeworkAssignments();
     }
 
     function useSelectedCourseInHomework() {
@@ -4936,7 +4949,7 @@
         document.getElementById("kursHwTaskTemplate").value = "";
         updateKursHomeworkTemplatePreview();
         document.getElementById("kursHwStartsAt").value = "";
-        listHomeworkAssignments();
+        await refreshAllHomeworkLists();
       } catch (err) {
         setBox("kursHomeworkStatus", "error", `Aufgabe konnte nicht gespeichert werden: ${err.message}`);
       }
@@ -5391,8 +5404,94 @@
       }
     }
 
-    async function setHomeworkActive(assignmentId, active) {
-      clearBox("homeworkStatus");
+    function renderKursHomeworkAssignments(rows) {
+      const wrap = document.getElementById("kursHomeworkListWrap");
+      if (!wrap) return;
+      if (!Array.isArray(rows) || !rows.length) {
+        wrap.innerHTML = "<p>Für den ausgewählten Kurs sind noch keine Aufgaben vorhanden.</p>";
+        return;
+      }
+      const tableRows = rows.map(item => {
+        const assignmentId = String(item.id || "");
+        const active = String(item.status || "active") === "active";
+        const toggleText = active ? "Archivieren" : "Aktivieren";
+        const startsAt = formatDisplayDateTime(String(item.starts_at || ""));
+        const createdAt = formatDisplayDateTime(String(item.created_at || ""));
+        return `
+          <tr>
+            <td>${escapeHtml(String(item.title || "-"))}</td>
+            <td class="mono">${escapeHtml(String(item.duration_minutes || 0))} Min</td>
+            <td class="mono">${escapeHtml(startsAt || "-")}</td>
+            <td class="mono">${escapeHtml(createdAt || "-")}</td>
+            <td>${active ? "Aktiv" : "Archiv"}</td>
+            <td class="mono">${escapeHtml(`${item.assigned_total || 0}`)}</td>
+            <td class="mono">${escapeHtml(`${item.started_total || 0}`)}</td>
+            <td class="mono">${escapeHtml(`${item.submitted_total || 0}`)}</td>
+            <td>
+              <div class="course-row-actions">
+                <button type="button" data-kurs-hw-toggle="${escapeHtml(assignmentId)}" data-kurs-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
+                  ${toggleText}
+                </button>
+                <button type="button" data-kurs-hw-delete="${escapeHtml(assignmentId)}" class="danger-btn">Löschen</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Dauer</th>
+              <th>Start</th>
+              <th>Erstellt</th>
+              <th>Status</th>
+              <th>Zugewiesen</th>
+              <th>Gestartet</th>
+              <th>Abgegeben</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("button[data-kurs-hw-toggle]").forEach(btn => {
+        const id = String(btn.getAttribute("data-kurs-hw-toggle") || "");
+        const activeNow = btn.getAttribute("data-kurs-hw-active") === "1";
+        btn.addEventListener("click", () => setHomeworkActive(id, !activeNow, { statusBoxId: "kursHomeworkStatus", refresh: refreshAllHomeworkLists }));
+      });
+      wrap.querySelectorAll("button[data-kurs-hw-delete]").forEach(btn => {
+        const id = String(btn.getAttribute("data-kurs-hw-delete") || "");
+        btn.addEventListener("click", () => deleteHomeworkAssignment(id, { statusBoxId: "kursHomeworkStatus", refresh: refreshAllHomeworkLists }));
+      });
+    }
+
+    async function listKursHomeworkAssignments() {
+      const wrap = document.getElementById("kursHomeworkListWrap");
+      if (!wrap) return;
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        wrap.innerHTML = "<p>Bitte zuerst einen Kurs auswählen.</p>";
+        return;
+      }
+      try {
+        const assignments = await fetchHomeworkAssignments();
+        const filtered = assignments.filter(item => String(item.course_id || "") === String(course.course_id || ""));
+        renderKursHomeworkAssignments(filtered);
+      } catch (err) {
+        wrap.innerHTML = `<p>Aufgaben konnten nicht geladen werden: ${escapeHtml(err.message)}</p>`;
+      }
+    }
+
+    async function refreshAllHomeworkLists() {
+      await Promise.all([listHomeworkAssignments(), listKursHomeworkAssignments()]);
+    }
+
+    async function setHomeworkActive(assignmentId, active, options = {}) {
+      const statusBoxId = String(options.statusBoxId || "homeworkStatus");
+      const refreshFn = typeof options.refresh === "function" ? options.refresh : listHomeworkAssignments;
+      clearBox(statusBoxId);
       if (!assignmentId) return;
       try {
         await callHomeworkAssignApi({
@@ -5400,15 +5499,17 @@
           assignment_id: assignmentId,
           active
         });
-        setBox("homeworkStatus", "ok", `Aufgabe wurde ${active ? "aktiviert" : "archiviert"}.`);
-        listHomeworkAssignments();
+        setBox(statusBoxId, "ok", `Aufgabe wurde ${active ? "aktiviert" : "archiviert"}.`);
+        await refreshFn();
       } catch (err) {
-        setBox("homeworkStatus", "error", `Statuswechsel fehlgeschlagen: ${err.message}`);
+        setBox(statusBoxId, "error", `Statuswechsel fehlgeschlagen: ${err.message}`);
       }
     }
 
-    async function deleteHomeworkAssignment(assignmentId) {
-      clearBox("homeworkStatus");
+    async function deleteHomeworkAssignment(assignmentId, options = {}) {
+      const statusBoxId = String(options.statusBoxId || "homeworkStatus");
+      const refreshFn = typeof options.refresh === "function" ? options.refresh : listHomeworkAssignments;
+      clearBox(statusBoxId);
       if (!assignmentId) return;
       const confirmed = window.confirm("Aufgabe wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.");
       if (!confirmed) return;
@@ -5417,10 +5518,10 @@
           action: "delete",
           assignment_id: assignmentId
         });
-        setBox("homeworkStatus", "ok", "Aufgabe wurde gelöscht.");
-        listHomeworkAssignments();
+        setBox(statusBoxId, "ok", "Aufgabe wurde gelöscht.");
+        await refreshFn();
       } catch (err) {
-        setBox("homeworkStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
+        setBox(statusBoxId, "error", `Löschen fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -7749,6 +7850,7 @@
     document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
+    document.getElementById("kursRefreshHomeworkBtn").addEventListener("click", listKursHomeworkAssignments);
     document.getElementById("kursOpenPendingQueueBtn").addEventListener("click", () => loadKursCorrectionsView("pending"));
     document.getElementById("kursOpenArchiveEntriesBtn").addEventListener("click", () => loadKursCorrectionsView("entries"));
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
