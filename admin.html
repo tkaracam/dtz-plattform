@@ -1875,6 +1875,18 @@
           <div id="accountsSection">
             <h2 class="section-title">Schülerzugänge</h2>
             <p class="section-subtitle">Neue Konten erstellen, Passwörter zurücksetzen und Nutzerstatus ändern.</p>
+            <div class="grid">
+              <div>
+                <label for="accountsCourseScope">Kurskontext (optional)</label>
+                <select id="accountsCourseScope">
+                  <option value="">Alle Kurse</option>
+                </select>
+              </div>
+              <div class="actions">
+                <button id="syncAccountsScopeBtn" type="button" class="ghost-btn">Aus Kursverwaltung übernehmen</button>
+              </div>
+            </div>
+            <p id="accountsScopeHint" class="section-subtitle">Aktiver Kontext: Alle Kurse.</p>
           </div>
 
           <details class="fold-section">
@@ -2440,9 +2452,11 @@
     let teacherBskRecords = [];
     let teacherUsers = [];
     let currentStudents = [];
+    let visibleStudents = [];
     let selectedStudentUsernames = new Set();
     let currentCourses = [];
     let selectedCourseId = "";
+    let accountsScopeCourseId = "";
     let currentAttendanceSessionId = "";
     let currentAlertTargets = [];
     let currentAttendanceRequests = [];
@@ -2969,6 +2983,10 @@
 
     function showLogin() {
       adminContext = { role: "", username: "", display_name: "", permissions: {} };
+      currentStudents = [];
+      visibleStudents = [];
+      currentCourses = [];
+      accountsScopeCourseId = "";
       applyAdminRoleUi();
       updateAdminIdentityLine();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
@@ -3188,6 +3206,7 @@
         await listStudents();
         await listCourses();
         setSelectedCourse(courseId, true);
+        setAccountsScopeCourse(courseId);
 
         if (createdRows.length === count) {
           setBox("courseBuilderStatus", "ok", `Kurs erstellt: ${courseName}. ${createdRows.length} TN wurden angelegt.`);
@@ -3265,6 +3284,7 @@
       if (!rows.length) {
         rows = buildBulkCredentials();
       }
+      const scopedCourse = getAccountsScopeCourse();
       renderBulkPreview(rows);
       const btn = document.getElementById("bulkCreateBtn");
       btn.disabled = true;
@@ -3272,10 +3292,19 @@
 
       let ok = 0;
       let fail = 0;
+      const createdUsernames = [];
       const failed = [];
       for (const row of rows) {
         try {
-          await createStudentViaApi(row.username, row.password, "");
+          const createExtra = {};
+          if (isOwnerAdmin() && scopedCourse) {
+            const courseTeacher = String(scopedCourse.teacher_username || "").trim().toLowerCase();
+            if (courseTeacher) {
+              createExtra.teacher_username = courseTeacher;
+            }
+          }
+          const created = await createStudentViaApi(row.username, row.password, "", "", "", createExtra);
+          createdUsernames.push(String(created.username || "").trim());
           ok += 1;
         } catch (err) {
           fail += 1;
@@ -3283,9 +3312,22 @@
         }
       }
 
-      if (ok > 0) listStudents();
+      if (scopedCourse && createdUsernames.length) {
+        try {
+          await addUsersToCourseMembers(scopedCourse.course_id, createdUsernames);
+        } catch (err) {
+          failed.push(`Kurszuweisung fehlgeschlagen (${scopedCourse.name || scopedCourse.course_id}): ${err.message}`);
+          fail += 1;
+        }
+      }
+
+      if (ok > 0) {
+        await listStudents();
+        if (scopedCourse) await listCourses();
+      }
       if (fail === 0) {
-        setBox("bulkStatus", "ok", `${ok} Konten wurden erstellt.`);
+        const targetText = scopedCourse ? ` und Kurs ${scopedCourse.name || scopedCourse.course_id} zugewiesen` : "";
+        setBox("bulkStatus", "ok", `${ok} Konten wurden erstellt${targetText}.`);
       } else {
         const short = failed.slice(0, 4).join(", ");
         setBox("bulkStatus", "error", `${ok} erstellt, ${fail} fehlgeschlagen. ${short}`);
@@ -3405,7 +3447,7 @@
     }
 
     function renderStudents(users) {
-      currentStudents = users.slice();
+      visibleStudents = users.slice();
       const validUsernames = new Set(users.map(u => String(u.username || "").trim()).filter(Boolean));
       selectedStudentUsernames.forEach(username => {
         if (!validUsernames.has(username)) selectedStudentUsernames.delete(username);
@@ -3430,6 +3472,8 @@
         </thead>
       `;
       const tbody = document.createElement("tbody");
+      const scopedCourseId = getAccountsScopeCourseId();
+      const inScopedMode = !!scopedCourseId;
       users.forEach(user => {
         const isActive = !!user.active;
         const username = String(user.username || "");
@@ -3461,7 +3505,7 @@
               </div>
               <div class="student-action-row">
                 <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
-                <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">Löschen</button>
+                <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">${inScopedMode ? "Aus Kurs entfernen" : "Löschen"}</button>
               </div>
               <div class="student-action-row">
                 <button type="button" class="ghost-btn" data-action="toggle-contact-details" data-target="${escapeHtml(contactPanelId)}">Kontaktdetails</button>
@@ -3524,7 +3568,7 @@
     }
 
     function updateStudentSelectionUi() {
-      const total = currentStudents.length;
+      const total = visibleStudents.length;
       const selectedCount = selectedStudentUsernames.size;
       const countNode = document.getElementById("studentSelectionCount");
       if (countNode) {
@@ -3540,12 +3584,12 @@
     function setAllStudentsSelected(checked) {
       selectedStudentUsernames.clear();
       if (checked) {
-        currentStudents.forEach(user => {
+        visibleStudents.forEach(user => {
           const username = String(user.username || "").trim();
           if (username) selectedStudentUsernames.add(username);
         });
       }
-      renderStudents(currentStudents);
+      renderStudents(visibleStudents);
     }
 
     function getCourseById(courseId) {
@@ -3559,6 +3603,141 @@
       const base = `${course.name || course.course_id || "-"} (${course.level || "-"})`;
       if (!withStatus) return base;
       return `${base} • ${course.active ? "offen" : "geschlossen"}`;
+    }
+
+    function getAccountsScopeCourseId() {
+      const select = document.getElementById("accountsCourseScope");
+      const raw = String(select?.value || accountsScopeCourseId || "").trim();
+      return raw;
+    }
+
+    function getAccountsScopeCourse() {
+      const id = getAccountsScopeCourseId();
+      if (!id) return null;
+      return getCourseById(id);
+    }
+
+    function getScopedStudentsForAccounts() {
+      const scopeCourse = getAccountsScopeCourse();
+      if (!scopeCourse) return currentStudents.slice();
+      const members = new Set(
+        (Array.isArray(scopeCourse.members) ? scopeCourse.members : [])
+          .map(u => String(u || "").trim().toLowerCase())
+          .filter(Boolean)
+      );
+      return currentStudents.filter(user => {
+        const username = String(user.username || "").trim().toLowerCase();
+        return username && members.has(username);
+      });
+    }
+
+    function updateAccountsScopeHint() {
+      const hint = document.getElementById("accountsScopeHint");
+      if (!hint) return;
+      const course = getAccountsScopeCourse();
+      if (!course) {
+        hint.textContent = "Aktiver Kontext: Alle Kurse.";
+        return;
+      }
+      const members = Array.isArray(course.members) ? course.members.length : 0;
+      hint.textContent = `Aktiver Kontext: ${getCourseLabel(course, false)} | Mitglieder: ${members}`;
+    }
+
+    function renderAccountsScopeCourseSelect() {
+      const select = document.getElementById("accountsCourseScope");
+      if (!select) return;
+      const previous = String(select.value || accountsScopeCourseId || "").trim();
+      const options = ['<option value="">Alle Kurse</option>'];
+      currentCourses.forEach(course => {
+        const id = String(course.course_id || "").trim();
+        if (!id) return;
+        options.push(`<option value="${escapeHtml(id)}">${escapeHtml(getCourseLabel(course, true))}</option>`);
+      });
+      select.innerHTML = options.join("");
+
+      let nextValue = "";
+      if (previous && currentCourses.some(c => String(c.course_id || "") === previous)) {
+        nextValue = previous;
+      } else if (accountsScopeCourseId && currentCourses.some(c => String(c.course_id || "") === accountsScopeCourseId)) {
+        nextValue = accountsScopeCourseId;
+      } else if (selectedCourseId && currentCourses.some(c => String(c.course_id || "") === selectedCourseId)) {
+        nextValue = selectedCourseId;
+      }
+      select.value = nextValue;
+      accountsScopeCourseId = nextValue;
+      updateAccountsScopeHint();
+    }
+
+    function setAccountsScopeCourse(courseId) {
+      const id = String(courseId || "").trim();
+      const select = document.getElementById("accountsCourseScope");
+      if (select && id && !Array.from(select.options).some(o => o.value === id)) {
+        return;
+      }
+      if (select) select.value = id;
+      accountsScopeCourseId = id;
+      const bulkPrefixInput = document.getElementById("bulkPrefix");
+      if (bulkPrefixInput) {
+        const scopedCourse = getAccountsScopeCourse();
+        if (scopedCourse) {
+          bulkPrefixInput.value = buildCourseUserPrefix(scopedCourse.name || scopedCourse.course_id || "kurs");
+        } else if (!bulkPrefixInput.value.trim()) {
+          bulkPrefixInput.value = "kurs";
+        }
+      }
+      updateAccountsScopeHint();
+      renderStudents(getScopedStudentsForAccounts());
+    }
+
+    async function addUsersToCourseMembers(courseId, usernames) {
+      const id = String(courseId || "").trim();
+      const rows = Array.isArray(usernames) ? usernames : [];
+      if (!id || !rows.length) return;
+      const course = getCourseById(id);
+      if (!course) throw new Error("Kurs wurde nicht gefunden.");
+      const members = new Set(
+        (Array.isArray(course.members) ? course.members : [])
+          .map(u => String(u || "").trim().toLowerCase())
+          .filter(Boolean)
+      );
+      rows.forEach(username => {
+        const normalized = String(username || "").trim().toLowerCase();
+        if (normalized) members.add(normalized);
+      });
+      const response = await fetch("./api/course_manage.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "set_members",
+          course_id: id,
+          members: Array.from(members)
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+    }
+
+    async function removeUserFromCourseMembers(courseId, username) {
+      const id = String(courseId || "").trim();
+      const normalizedUsername = String(username || "").trim().toLowerCase();
+      if (!id || !normalizedUsername) return;
+      const course = getCourseById(id);
+      if (!course) throw new Error("Kurs wurde nicht gefunden.");
+      const members = (Array.isArray(course.members) ? course.members : [])
+        .map(u => String(u || "").trim().toLowerCase())
+        .filter(Boolean)
+        .filter(member => member !== normalizedUsername);
+      const response = await fetch("./api/course_manage.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "set_members",
+          course_id: id,
+          members
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
     }
 
     function renderCourseSelect() {
@@ -3587,6 +3766,8 @@
           homeworkCourse.value = prevHw;
         }
       }
+
+      renderAccountsScopeCourseSelect();
     }
 
     function updateCourseSwitchHint() {
@@ -3638,6 +3819,9 @@
       selectedCourseId = id;
       const select = document.getElementById("courseSwitchSelect");
       if (select) select.value = id;
+      if (!getAccountsScopeCourseId() && id) {
+        setAccountsScopeCourse(id);
+      }
       updateCourseSwitchHint();
       if (openEditor) {
         renderCourseAssignEditor(id);
@@ -3663,6 +3847,11 @@
       currentCourses = courses.slice();
       renderCourseSelect();
       renderCourseSwitcher();
+      if (!accountsScopeCourseId && selectedCourseId) {
+        setAccountsScopeCourse(selectedCourseId);
+      } else {
+        renderAccountsScopeCourseSelect();
+      }
       const wrap = document.getElementById("courseListWrap");
       if (!courses.length) {
         wrap.innerHTML = "<p>Noch keine Kurse vorhanden.</p>";
@@ -3886,9 +4075,23 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         if (Array.isArray(payload.students)) {
-          currentStudents = payload.students;
+          const known = new Map(
+            currentStudents.map(user => [String(user.username || "").trim().toLowerCase(), user])
+          );
+          currentStudents = payload.students
+            .map(user => {
+              const username = String(user.username || "").trim().toLowerCase();
+              const existing = known.get(username) || {};
+              return {
+                ...existing,
+                ...user
+              };
+            })
+            .filter(user => String(user.username || "").trim() !== "");
         }
         renderCourses(Array.isArray(payload.courses) ? payload.courses : []);
+        renderStudents(getScopedStudentsForAccounts());
+        renderHomeworkUserPicker();
       } catch (err) {
         document.getElementById("courseListWrap").innerHTML = `<p>Kursliste konnte nicht geladen werden: ${escapeHtml(err.message)}</p>`;
       }
@@ -3919,6 +4122,7 @@
         await listCourses();
         if (createdCourseId) {
           setSelectedCourse(createdCourseId, true);
+          setAccountsScopeCourse(createdCourseId);
         }
       } catch (err) {
         setBox("courseStatus", "error", `Kurs konnte nicht erstellt werden: ${err.message}`);
@@ -4868,9 +5072,11 @@
         const response = await fetch("./api/student_list.php", { method: "GET" });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        renderStudents(Array.isArray(payload.users) ? payload.users : []);
+        currentStudents = Array.isArray(payload.users) ? payload.users.slice() : [];
+        renderStudents(getScopedStudentsForAccounts());
         renderHomeworkUserPicker();
       } catch (_) {
+        currentStudents = [];
         renderStudents([]);
         renderHomeworkUserPicker();
       }
@@ -4883,19 +5089,32 @@
       const password = document.getElementById("newStudentPassword").value;
       const email = document.getElementById("newStudentEmail").value.trim();
       const phone = document.getElementById("newStudentPhone").value.trim();
+      const scopedCourse = getAccountsScopeCourse();
       if (!username || !password) {
         setBox("userStatus", "error", "Benutzername und Passwort sind erforderlich.");
         return;
       }
       try {
-        const payload = await createStudentViaApi(username, password, displayName, email, phone);
-        setBox("userStatus", "ok", `Zugang erstellt: ${payload.username}`);
+        const createExtra = {};
+        if (isOwnerAdmin() && scopedCourse) {
+          const courseTeacher = String(scopedCourse.teacher_username || "").trim().toLowerCase();
+          if (courseTeacher) {
+            createExtra.teacher_username = courseTeacher;
+          }
+        }
+        const payload = await createStudentViaApi(username, password, displayName, email, phone, createExtra);
+        if (scopedCourse) {
+          await addUsersToCourseMembers(scopedCourse.course_id, [payload.username]);
+        }
+        const targetText = scopedCourse ? ` (Kurs: ${scopedCourse.name || scopedCourse.course_id})` : "";
+        setBox("userStatus", "ok", `Zugang erstellt: ${payload.username}${targetText}`);
         document.getElementById("newStudentUsername").value = "";
         document.getElementById("newStudentDisplayName").value = "";
         document.getElementById("newStudentPassword").value = "";
         document.getElementById("newStudentEmail").value = "";
         document.getElementById("newStudentPhone").value = "";
-        listStudents();
+        await listStudents();
+        if (scopedCourse) await listCourses();
       } catch (err) {
         setBox("userStatus", "error", `Erstellen fehlgeschlagen: ${err.message}`);
       }
@@ -5070,21 +5289,35 @@
     async function deleteStudent(username) {
       clearBox("userStatus");
       if (!username) return;
-      const confirmed = window.confirm(`Benutzer ${username} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`);
-      if (!confirmed) return;
+      const scopedCourse = getAccountsScopeCourse();
+      const removeFromCourseMode = !!scopedCourse;
+      if (removeFromCourseMode) {
+        const confirmedRemove = window.confirm(`Teilnehmer ${username} aus Kurs "${scopedCourse.name || scopedCourse.course_id}" entfernen?`);
+        if (!confirmedRemove) return;
+      } else {
+        const confirmed = window.confirm(`Benutzer ${username} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`);
+        if (!confirmed) return;
+      }
       try {
-        const response = await fetch("./api/student_manage.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "delete",
-            username
-          })
-        });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("userStatus", "ok", `Benutzer gelöscht: ${username}`);
-        listStudents();
+        if (removeFromCourseMode) {
+          await removeUserFromCourseMembers(scopedCourse.course_id, username);
+          setBox("userStatus", "ok", `${username} wurde aus Kurs "${scopedCourse.name || scopedCourse.course_id}" entfernt.`);
+          await listCourses();
+          await listStudents();
+        } else {
+          const response = await fetch("./api/student_manage.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "delete",
+              username
+            })
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          setBox("userStatus", "ok", `Benutzer gelöscht: ${username}`);
+          await listStudents();
+        }
       } catch (err) {
         setBox("userStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
       }
@@ -6555,6 +6788,19 @@
       logout();
     });
     document.getElementById("createStudentBtn").addEventListener("click", createStudent);
+    document.getElementById("accountsCourseScope").addEventListener("change", event => {
+      const id = String(event.target?.value || "").trim();
+      setAccountsScopeCourse(id);
+    });
+    document.getElementById("syncAccountsScopeBtn").addEventListener("click", () => {
+      if (!selectedCourseId) {
+        setBox("userStatus", "error", "Bitte zuerst in Kursverwaltung einen Kurs auswählen.");
+        return;
+      }
+      setAccountsScopeCourse(selectedCourseId);
+      const course = getAccountsScopeCourse();
+      setBox("userStatus", "ok", `Kurskontext übernommen: ${course ? getCourseLabel(course, false) : selectedCourseId}`);
+    });
     document.getElementById("createTeacherBtn").addEventListener("click", createTeacher);
     document.getElementById("refreshTeachersBtn").addEventListener("click", listTeachers);
     document.getElementById("generatePwdBtn").addEventListener("click", () => {
