@@ -29,7 +29,6 @@ if ($role !== 'owner' && $role !== 'docent') {
 }
 $username = mb_strtolower(trim((string)($_SESSION['admin_username'] ?? '')));
 $displayName = trim((string)($_SESSION['admin_display_name'] ?? ''));
-$bamfCode = normalize_bamf_code((string)($_SESSION['admin_bamf_code'] ?? ''));
 $authenticated = !empty($_SESSION['admin_authenticated']);
 if ($authenticated && $role === '') {
     $role = 'owner';
@@ -43,7 +42,6 @@ echo json_encode([
     'role' => $authenticated ? $role : '',
     'username' => $authenticated ? $username : '',
     'display_name' => $authenticated ? $displayName : '',
-    'bamf_code' => $authenticated ? $bamfCode : '',
     'permissions' => [
         'manage_teachers' => $authenticated && $role === 'owner',
     ],

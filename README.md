@@ -62,8 +62,8 @@ Dieses Repo enthält bereits:
 ## Rollen im Lehrerbereich
 
 - **Haupt-Admin (owner):** Login mit `ADMIN_PANEL_USERNAME` + `ADMIN_PANEL_PASSWORD`, volle Rechte.
-- **Docent:** Wird im Bereich **Lehrkräfte** angelegt (inkl. `bamf###`-Code) und bekommt einen eigenen Lehrerzugang.
-- Docent-Zugriffe werden auf eigene BAMF-Kurse/Benutzer eingeschraenkt.
+- **Docent:** Wird im Bereich **Lehrkräfte** angelegt und bekommt einen eigenen Lehrerzugang.
+- Docent-Zugriffe werden auf eigene Kurse/Benutzer eingeschraenkt.
 
 ### Persistent Storage
 

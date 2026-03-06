@@ -34,7 +34,6 @@ $displayName = trim((string)($body['display_name'] ?? ''));
 $email = trim((string)($body['email'] ?? ''));
 $phone = trim((string)($body['phone'] ?? ''));
 $teacherUsername = mb_strtolower(trim((string)($body['teacher_username'] ?? '')));
-$bamfCode = normalize_bamf_code((string)($body['bamf_code'] ?? ''));
 
 if (!preg_match('/^[a-z0-9._-]{3,32}$/', $username)) {
     http_response_code(400);
@@ -43,34 +42,7 @@ if (!preg_match('/^[a-z0-9._-]{3,32}$/', $username)) {
 }
 
 if (($admin['role'] ?? '') === 'docent') {
-    $docentCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
-    if ($docentCode === '') {
-        http_response_code(403);
-        echo json_encode(['error' => 'Ihr Lehrerzugang hat keinen gueltigen BAMF-Code.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-    if (!str_starts_with($username, $docentCode)) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Docent darf nur Benutzer mit eigenem BAMF-Praefix erstellen.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
     $teacherUsername = (string)($admin['username'] ?? '');
-    $bamfCode = $docentCode;
-} else {
-    if ($bamfCode === '' && preg_match('/^(bamf\d{3})/i', $username, $m)) {
-        $bamfCode = normalize_bamf_code((string)($m[1] ?? ''));
-    }
-    if ($teacherUsername === '' && $bamfCode !== '') {
-        foreach (load_teacher_users() as $teacher) {
-            if (!is_array($teacher)) {
-                continue;
-            }
-            if (normalize_bamf_code((string)($teacher['bamf_code'] ?? '')) === $bamfCode) {
-                $teacherUsername = mb_strtolower(trim((string)($teacher['username'] ?? '')));
-                break;
-            }
-        }
-    }
 }
 
 if (mb_strlen($password) < 6 || mb_strlen($password) > 128) {
@@ -96,7 +68,6 @@ $users[] = [
     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
     'active' => true,
     'teacher_username' => $teacherUsername,
-    'bamf_code' => $bamfCode,
     'created_at' => gmdate('c'),
 ];
 
@@ -110,7 +81,6 @@ append_audit_log('student_create', [
     'username' => $username,
     'display_name' => $displayName,
     'teacher_username' => $teacherUsername,
-    'bamf_code' => $bamfCode,
 ]);
 
 echo json_encode([
@@ -120,5 +90,4 @@ echo json_encode([
     'email' => $email,
     'phone' => $phone,
     'teacher_username' => $teacherUsername,
-    'bamf_code' => $bamfCode,
 ], JSON_UNESCAPED_UNICODE);

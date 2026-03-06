@@ -71,7 +71,6 @@ $record = [
     'student_username' => (string)$student['username'],
     'student_name' => $student['display_name'] !== '' ? (string)$student['display_name'] : (string)$student['username'],
     'teacher_username' => (string)($student['teacher_username'] ?? ''),
-    'bamf_code' => normalize_bamf_code((string)($student['bamf_code'] ?? '')),
     'duration_minutes' => $durationMinutes,
     'score_total' => $scoreTotal,
     'niveau' => $niveau,

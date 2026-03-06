@@ -70,7 +70,6 @@ if ($username === '') {
 
 $loginRole = '';
 $loginDisplayName = '';
-$loginBamfCode = '';
 
 if (hash_equals($adminPassword, $password)) {
     $loginRole = 'owner';
@@ -100,7 +99,6 @@ if (hash_equals($adminPassword, $password)) {
     if (is_array($foundTeacher)) {
         $loginRole = 'docent';
         $loginDisplayName = trim((string)($foundTeacher['display_name'] ?? ''));
-        $loginBamfCode = normalize_bamf_code((string)($foundTeacher['bamf_code'] ?? ''));
     }
 }
 
@@ -116,14 +114,12 @@ $_SESSION['admin_authenticated'] = true;
 $_SESSION['admin_role'] = $loginRole;
 $_SESSION['admin_username'] = $username;
 $_SESSION['admin_display_name'] = $loginDisplayName;
-$_SESSION['admin_bamf_code'] = $loginBamfCode;
 $_SESSION['admin_login_at'] = gmdate('c');
 $_SESSION['last_activity_at'] = time();
 clear_rate_limit_failures('admin-login');
 append_audit_log('admin_login_success', [
     'username' => $username,
     'role' => $loginRole,
-    'bamf_code' => $loginBamfCode,
 ]);
 
 echo json_encode([
@@ -131,5 +127,4 @@ echo json_encode([
     'role' => $loginRole,
     'username' => $username,
     'display_name' => $loginDisplayName,
-    'bamf_code' => $loginBamfCode,
 ], JSON_UNESCAPED_UNICODE);

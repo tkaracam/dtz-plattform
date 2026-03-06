@@ -150,14 +150,9 @@ function assignment_visibility_for_admin(array $assignment, array $adminCtx): bo
         return true;
     }
     $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));
-    $adminCode = normalize_bamf_code((string)($adminCtx['bamf_code'] ?? ''));
     $teacher = mb_strtolower(trim((string)($assignment['teacher_username'] ?? '')));
-    $bamf = normalize_bamf_code((string)($assignment['bamf_code'] ?? ''));
 
     if ($adminUsername !== '' && $teacher !== '' && hash_equals($adminUsername, $teacher)) {
-        return true;
-    }
-    if ($adminCode !== '' && $bamf !== '' && hash_equals($adminCode, $bamf)) {
         return true;
     }
     return false;

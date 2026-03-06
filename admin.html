@@ -1849,7 +1849,7 @@
               <div class="grid">
                 <div>
                   <label for="bulkPrefix">Präfix</label>
-                  <input id="bulkPrefix" type="text" value="bamf" placeholder="z. B. bamf">
+                  <input id="bulkPrefix" type="text" value="kurs" placeholder="z. B. kurs">
                 </div>
                 <div>
                   <label for="bulkCount">Anzahl</label>
@@ -1961,7 +1961,7 @@
               <div class="grid">
                 <div>
                   <label for="newCourseName">Kursname</label>
-                  <input id="newCourseName" type="text" placeholder="z. B. bamf233-b1-abendkurs">
+                  <input id="newCourseName" type="text" placeholder="z. B. b1-abendkurs">
                 </div>
                 <div>
                   <label for="newCourseLevel">Niveau (optional)</label>
@@ -2082,7 +2082,7 @@
             </div>
             <div>
               <label for="attendanceCourse">Kursname</label>
-              <input id="attendanceCourse" type="text" placeholder="z. B. BAMF233-B1-Abendkurs" readonly>
+              <input id="attendanceCourse" type="text" placeholder="z. B. B1-Abendkurs" readonly>
             </div>
             <div>
               <label for="attendanceDate">Unterrichtsdatum</label>
@@ -2391,7 +2391,6 @@
       role: "",
       username: "",
       display_name: "",
-      bamf_code: "",
       permissions: {}
     };
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
@@ -2708,8 +2707,7 @@
       }
       const roleLabel = isOwnerAdmin() ? "Haupt-Admin" : "Docent";
       const name = String(adminContext.display_name || adminContext.username || "-");
-      const bamf = String(adminContext.bamf_code || "").trim();
-      node.textContent = bamf ? `${roleLabel}: ${name} (${bamf})` : `${roleLabel}: ${name}`;
+      node.textContent = `${roleLabel}: ${name}`;
     }
 
     function setAdminPane(paneName) {
@@ -2863,7 +2861,6 @@
           role: String(sessionPayload.role || ""),
           username: String(sessionPayload.username || ""),
           display_name: String(sessionPayload.display_name || ""),
-          bamf_code: String(sessionPayload.bamf_code || "").toLowerCase(),
           permissions: (sessionPayload.permissions && typeof sessionPayload.permissions === "object") ? sessionPayload.permissions : {}
         };
       }
@@ -2871,13 +2868,8 @@
       updateAdminIdentityLine();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
-        if (!isOwnerAdmin() && adminContext.bamf_code) {
-          bulkPrefixInput.value = adminContext.bamf_code;
-          bulkPrefixInput.readOnly = true;
-        } else {
-          bulkPrefixInput.readOnly = false;
-          if (!bulkPrefixInput.value.trim()) bulkPrefixInput.value = "bamf";
-        }
+        bulkPrefixInput.readOnly = false;
+        if (!bulkPrefixInput.value.trim()) bulkPrefixInput.value = "kurs";
       }
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
@@ -2900,7 +2892,7 @@
     }
 
     function showLogin() {
-      adminContext = { role: "", username: "", display_name: "", bamf_code: "", permissions: {} };
+      adminContext = { role: "", username: "", display_name: "", permissions: {} };
       applyAdminRoleUi();
       updateAdminIdentityLine();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
@@ -3223,7 +3215,6 @@
             <th class="select-col">Auswahl</th>
             <th>Benutzername</th>
             <th>Lehrkraft</th>
-            <th>BAMF</th>
             <th>Aktiv</th>
             <th>Erstellt</th>
             <th>Aktionen</th>
@@ -3252,7 +3243,6 @@
           <td class="select-col"><input type="checkbox" class="student-row-select" data-student-select="${escapeHtml(username)}" ${selected}></td>
           <td class="mono">${escapeHtml(username)}</td>
           <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
-          <td class="mono">${escapeHtml(user.bamf_code || "-")}</td>
           <td>${isActive ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
           <td class="actions-col">
@@ -4659,8 +4649,7 @@
         .filter(t => !!t && !!t.active && String(t.username || "").trim() !== "")
         .map(t => ({
           username: String(t.username || "").trim().toLowerCase(),
-          display_name: String(t.display_name || "").trim(),
-          bamf_code: String(t.bamf_code || "").trim().toLowerCase()
+          display_name: String(t.display_name || "").trim()
         }));
 
       if (!activeTeachers.length) {
@@ -4681,7 +4670,7 @@
       title.textContent = `Docent zuweisen: ${username}`;
       hint.textContent = "Docent auswählen und mit Speichern bestätigen.";
       select.innerHTML = activeTeachers.map(t => {
-        const label = `${t.username}${t.display_name ? ` (${t.display_name})` : ""}${t.bamf_code ? ` [${t.bamf_code}]` : ""}`;
+        const label = `${t.username}${t.display_name ? ` (${t.display_name})` : ""}`;
         return `<option value="${escapeHtml(t.username)}">${escapeHtml(label)}</option>`;
       }).join("");
       modal.classList.remove("hidden");

@@ -115,18 +115,13 @@ foreach ($files as $file) {
         $studentUsername = (string)($record['student_username'] ?? '');
         $studentUsernameLower = mb_strtolower(trim($studentUsername));
         $recordTeacher = mb_strtolower(trim((string)($record['teacher_username'] ?? '')));
-        $recordCode = normalize_bamf_code((string)($record['bamf_code'] ?? ''));
         $recommendation = (string)($record['recommendation'] ?? '');
 
         if (($admin['role'] ?? '') === 'docent') {
             $allowed = !empty($allowedUsernames[$studentUsernameLower]);
             if (!$allowed) {
                 $adminUsername = mb_strtolower(trim((string)($admin['username'] ?? '')));
-                $adminCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
                 if ($adminUsername !== '' && $recordTeacher !== '' && hash_equals($adminUsername, $recordTeacher)) {
-                    $allowed = true;
-                }
-                if ($adminCode !== '' && $recordCode !== '' && hash_equals($adminCode, $recordCode)) {
                     $allowed = true;
                 }
             }

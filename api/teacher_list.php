@@ -28,7 +28,6 @@ foreach ($teachers as $teacher) {
     $out[] = [
         'username' => mb_strtolower(trim((string)($teacher['username'] ?? ''))),
         'display_name' => trim((string)($teacher['display_name'] ?? '')),
-        'bamf_code' => normalize_bamf_code((string)($teacher['bamf_code'] ?? '')),
         'active' => (bool)($teacher['active'] ?? false),
         'created_at' => (string)($teacher['created_at'] ?? ''),
         'updated_at' => (string)($teacher['updated_at'] ?? ''),

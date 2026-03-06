@@ -59,7 +59,6 @@ $_SESSION['student_authenticated'] = true;
 $_SESSION['student_username'] = (string)$found['username'];
 $_SESSION['student_display_name'] = (string)($found['display_name'] ?? '');
 $_SESSION['student_teacher_username'] = mb_strtolower(trim((string)($found['teacher_username'] ?? '')));
-$_SESSION['student_bamf_code'] = normalize_bamf_code((string)($found['bamf_code'] ?? ''));
 $_SESSION['student_login_at'] = gmdate('c');
 $_SESSION['last_activity_at'] = time();
 clear_rate_limit_failures('student-login');
@@ -72,5 +71,4 @@ echo json_encode([
     'username' => (string)$found['username'],
     'display_name' => (string)($found['display_name'] ?? ''),
     'teacher_username' => mb_strtolower(trim((string)($found['teacher_username'] ?? ''))),
-    'bamf_code' => normalize_bamf_code((string)($found['bamf_code'] ?? '')),
 ], JSON_UNESCAPED_UNICODE);

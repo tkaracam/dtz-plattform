@@ -71,7 +71,6 @@ foreach ($items as $item) {
         'starts_at' => (string)($item['starts_at'] ?? ''),
         'status' => (string)($item['status'] ?? 'active'),
         'teacher_username' => (string)($item['teacher_username'] ?? ''),
-        'bamf_code' => (string)($item['bamf_code'] ?? ''),
         'created_at' => (string)($item['created_at'] ?? ''),
         'updated_at' => (string)($item['updated_at'] ?? ''),
         'assigned_total' => $total,

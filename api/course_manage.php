@@ -44,11 +44,7 @@ if ($action === 'create') {
     } catch (Throwable $e) {
         $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 6);
     }
-    $docentCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
-    if ($docentCode === '' && preg_match('/(bamf\d{3,})/i', $name, $m)) {
-        $docentCode = normalize_bamf_code((string)($m[1] ?? ''));
-    }
-    $idPrefix = (($admin['role'] ?? '') === 'docent' && $docentCode !== '') ? $docentCode : 'kurs';
+    $idPrefix = 'kurs';
     $id = $idPrefix . '-' . $suffix;
     $courses[] = [
         'course_id' => $id,
@@ -56,7 +52,6 @@ if ($action === 'create') {
         'level' => $level,
         'schedule' => $schedule,
         'teacher_username' => (string)($admin['username'] ?? ''),
-        'bamf_code' => $docentCode,
         'active' => true,
         'members' => [],
         'created_at' => gmdate('c'),

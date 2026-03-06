@@ -30,7 +30,6 @@ foreach ($users as $user) {
         'email' => (string)($user['email'] ?? ''),
         'phone' => (string)($user['phone'] ?? ''),
         'teacher_username' => (string)($user['teacher_username'] ?? ''),
-        'bamf_code' => normalize_bamf_code((string)($user['bamf_code'] ?? '')),
         'active' => (bool)($user['active'] ?? false),
         'created_at' => (string)($user['created_at'] ?? ''),
     ];

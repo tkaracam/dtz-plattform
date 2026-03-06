@@ -139,7 +139,6 @@ foreach ($files as $file) {
         $studentName = (string)($record['student_name'] ?? '');
         $studentUsername = mb_strtolower(trim((string)($record['student_username'] ?? '')));
         $recordTeacher = mb_strtolower(trim((string)($record['teacher_username'] ?? '')));
-        $recordCode = normalize_bamf_code((string)($record['bamf_code'] ?? ''));
         $taskPrompt = (string)($record['task_prompt'] ?? '');
         $letterText = (string)($record['letter_text'] ?? '');
         $writingDurationSeconds = (int)($record['writing_duration_seconds'] ?? 0);
@@ -149,11 +148,7 @@ foreach ($files as $file) {
             $allowed = !empty($allowedUsernames[$studentUsername]);
             if (!$allowed) {
                 $adminUsername = mb_strtolower(trim((string)($admin['username'] ?? '')));
-                $adminCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
                 if ($adminUsername !== '' && $recordTeacher !== '' && hash_equals($adminUsername, $recordTeacher)) {
-                    $allowed = true;
-                }
-                if ($adminCode !== '' && $recordCode !== '' && hash_equals($adminCode, $recordCode)) {
                     $allowed = true;
                 }
             }

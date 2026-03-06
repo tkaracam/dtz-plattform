@@ -78,7 +78,7 @@ if ($action === 'reset_password') {
     $users[$foundIndex]['phone'] = $phone;
     $users[$foundIndex]['updated_at'] = gmdate('c');
 } elseif ($action === 'assign_teacher') {
-    require_owner_admin_json();
+    require_owner_session_json();
     $teacherUsername = mb_strtolower(trim((string)($body['teacher_username'] ?? '')));
     if (!preg_match('/^[a-z0-9._-]{3,32}$/', $teacherUsername)) {
         http_response_code(400);
@@ -108,7 +108,6 @@ if ($action === 'reset_password') {
         exit;
     }
     $users[$foundIndex]['teacher_username'] = $teacherUsername;
-    $users[$foundIndex]['bamf_code'] = normalize_bamf_code((string)($teacherFound['bamf_code'] ?? ''));
     $users[$foundIndex]['updated_at'] = gmdate('c');
 } elseif ($action === 'delete') {
     $deletedUser = $users[$foundIndex];
@@ -160,5 +159,4 @@ echo json_encode([
     'email' => (string)($users[$foundIndex]['email'] ?? ''),
     'phone' => (string)($users[$foundIndex]['phone'] ?? ''),
     'teacher_username' => (string)($users[$foundIndex]['teacher_username'] ?? ''),
-    'bamf_code' => (string)($users[$foundIndex]['bamf_code'] ?? ''),
 ], JSON_UNESCAPED_UNICODE);

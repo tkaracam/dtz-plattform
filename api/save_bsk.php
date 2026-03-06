@@ -86,7 +86,6 @@ $record = [
     'student_name' => $studentSession['display_name'] !== '' ? $studentSession['display_name'] : $studentSession['username'],
     'student_username' => $studentSession['username'],
     'teacher_username' => (string)($studentSession['teacher_username'] ?? ''),
-    'bamf_code' => normalize_bamf_code((string)($studentSession['bamf_code'] ?? '')),
     'goal' => $goal,
     'level' => $level,
     'field' => $field,
