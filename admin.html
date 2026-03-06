@@ -1594,6 +1594,67 @@
       color: #8f5068;
     }
 
+    .course-shortcut-section {
+      margin-bottom: 14px;
+      border: 1px solid #eadbe2;
+      border-radius: 14px;
+      background: #fffafd;
+      padding: 12px;
+    }
+
+    .course-shortcut-head {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+      color: #4d4553;
+      font-weight: 700;
+    }
+
+    .course-shortcut-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    .course-shortcut-btn {
+      min-height: 78px;
+      border-radius: 18px;
+      border: 1px solid #f2b7c9;
+      background: linear-gradient(120deg, #f2849e, #f3a3b8);
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(201, 91, 126, 0.2);
+      text-align: left;
+      padding: 11px 12px;
+      display: grid;
+      gap: 4px;
+      align-content: center;
+    }
+
+    .course-shortcut-btn:hover {
+      box-shadow: 0 14px 28px rgba(201, 91, 126, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .course-shortcut-btn.is-selected {
+      border-color: #735a73;
+      background: linear-gradient(120deg, #6f6489, #85709f);
+      box-shadow: 0 14px 30px rgba(77, 69, 100, 0.26);
+    }
+
+    .course-shortcut-name {
+      font-size: 1.03rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+      word-break: break-word;
+    }
+
+    .course-shortcut-meta {
+      font-size: 0.78rem;
+      font-weight: 600;
+      opacity: 0.95;
+      line-height: 1.2;
+    }
+
     .card {
       border: 1px solid var(--line);
       background: var(--paper);
@@ -1924,6 +1985,12 @@
       </section>
 
       <section id="panelCard" class="card hidden">
+        <div id="courseShortcutSection" class="course-shortcut-section">
+          <h3 class="course-shortcut-head">Kurse</h3>
+          <div id="courseShortcutWrap" class="course-shortcut-wrap">
+            <p class="section-subtitle">Noch keine Kurse vorhanden.</p>
+          </div>
+        </div>
 
         <div id="paneCourseBuilder" class="admin-pane">
           <div class="bulk-wrap">
@@ -3123,6 +3190,7 @@
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       ensureResponsiveTableObserver();
+      renderCourseShortcutButtons();
       populateKursHomeworkTemplates();
       updateKursHomeworkTemplatePreview();
       setAdminPane(activeAdminPane || "accounts");
@@ -3147,6 +3215,7 @@
       currentStudents = [];
       visibleStudents = [];
       currentCourses = [];
+      renderCourseShortcutButtons();
       accountsScopeCourseId = "";
       applyAdminRoleUi();
       updateAdminIdentityLine();
@@ -4034,6 +4103,45 @@
         select.disabled = currentCourses.length === 0;
       });
       updateCourseSwitchHint();
+      renderCourseShortcutButtons();
+    }
+
+    function renderCourseShortcutButtons() {
+      const wrap = document.getElementById("courseShortcutWrap");
+      if (!wrap) return;
+      if (!Array.isArray(currentCourses) || !currentCourses.length) {
+        wrap.innerHTML = '<p class="section-subtitle">Noch keine Kurse vorhanden.</p>';
+        return;
+      }
+      const buttons = currentCourses.map(course => {
+        const courseId = String(course.course_id || "");
+        const name = String(course.name || courseId || "Kurs");
+        const members = Array.isArray(course.members) ? course.members.length : 0;
+        const isSelected = selectedCourseId && courseId === selectedCourseId;
+        return `
+          <button
+            type="button"
+            class="course-shortcut-btn ${isSelected ? "is-selected" : ""}"
+            data-course-shortcut="${escapeHtml(courseId)}"
+          >
+            <span class="course-shortcut-name">${escapeHtml(name)}</span>
+            <span class="course-shortcut-meta">TN: ${escapeHtml(String(members))}</span>
+          </button>
+        `;
+      }).join("");
+      wrap.innerHTML = buttons;
+      wrap.querySelectorAll("[data-course-shortcut]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = String(btn.getAttribute("data-course-shortcut") || "").trim();
+          if (!id) return;
+          openAdminPane("kurs");
+          setSelectedCourse(id, true);
+          const course = getCourseById(id);
+          if (course) {
+            setKursActionBox("ok", `Kurs geöffnet: ${getCourseLabel(course, false)}.`);
+          }
+        });
+      });
     }
 
     function setSelectedCourse(courseId, openEditor = false) {
@@ -4047,6 +4155,7 @@
       }
       updateCourseSwitchHint();
       updateKursPaneSummary();
+      renderCourseShortcutButtons();
       if (openEditor) {
         renderCourseAssignEditor(id);
       }
