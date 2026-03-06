@@ -2219,14 +2219,8 @@
             <p class="section-subtitle">Ausgewählten Kurs direkt verwalten: Teilnehmende und Hausaufgaben.</p>
 
             <details id="kursUsersDetails" class="fold-section">
-              <summary>Teilnehmende verwalten</summary>
+              <summary>Schülerzugänge</summary>
               <div class="fold-section-content">
-                <div class="kurs-actions-grid">
-                  <button id="kursEditUsersBtn" type="button" class="ghost-btn">Benutzer bearbeiten</button>
-                  <button id="kursDeleteUsersBtn" type="button" class="danger-btn">Löschen</button>
-                  <button id="kursResetPasswordsBtn" type="button">Neues Passwort erstellen</button>
-                  <button id="kursInsertUsersBtn" type="button" class="ghost-btn">TN einfügen</button>
-                </div>
                 <div id="kursActionStatus" class="hidden" style="margin-top:10px;"></div>
                 <div id="courseAssignWrap" style="margin-top: 10px;"></div>
               </div>
@@ -4036,10 +4030,8 @@
       const course = getCourseById(selectedCourseId);
       const infoNode = document.getElementById("kursPaneInfo");
       const memberCount = document.getElementById("kursPaneMemberCount");
-      const usersBtn = document.getElementById("kursEditUsersBtn");
       const deleteBtn = document.getElementById("kursDeleteUsersBtn");
       const resetBtn = document.getElementById("kursResetPasswordsBtn");
-      const insertBtn = document.getElementById("kursInsertUsersBtn");
       const hwBtn = document.getElementById("kursCreateHomeworkBtn");
       const hasCourse = !!course;
 
@@ -4051,7 +4043,7 @@
           ? `Ausgewählt: ${getCourseLabel(course, true)}`
           : "Bitte zuerst einen Kurs auswählen.";
       }
-      [usersBtn, deleteBtn, resetBtn, insertBtn, hwBtn].forEach(btn => {
+      [deleteBtn, resetBtn, hwBtn].forEach(btn => {
         if (!btn) return;
         btn.disabled = !hasCourse;
       });
@@ -4242,6 +4234,12 @@
       const usersByUsername = new Map(
         currentStudents.map(u => [String(u.username || "").trim(), u])
       );
+      const courseSlug = String(course.name || "kurs")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 20) || "kurs";
       const pickerRows = users.map(u => {
         const uname = String(u.username || "");
         const checked = members.has(uname) ? "checked" : "";
@@ -4273,54 +4271,92 @@
       }).join("");
       wrap.innerHTML = `
         <div class="card" style="margin-top:8px;padding:12px;">
-          <strong>Kursmitglieder: ${escapeHtml(course.name || courseId)}</strong>
+          <strong>Kurs: ${escapeHtml(course.name || courseId)}</strong>
 
-          <div class="course-participant-create">
-            <h4>Teilnehmende im Kurs erstellen</h4>
-            <div class="grid" style="margin-top:0;">
-              <div>
-                <label for="courseStudentUsernameInput">Benutzername</label>
-                <input id="courseStudentUsernameInput" type="text" placeholder="z. B. ${escapeHtml(String(course.name || "kurs").toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 20) || "kurs")}-01">
+          <details class="fold-section">
+            <summary>Einzelkonto erstellen</summary>
+            <div class="fold-section-content">
+              <div class="grid" style="margin-top:0;">
+                <div>
+                  <label for="courseStudentUsernameInput">Benutzername</label>
+                  <input id="courseStudentUsernameInput" type="text" placeholder="z. B. ${escapeHtml(courseSlug)}-01">
+                </div>
+                <div>
+                  <label for="courseStudentDisplayNameInput">Anzeigename (optional)</label>
+                  <input id="courseStudentDisplayNameInput" type="text" placeholder="z. B. Ayse Yilmaz">
+                </div>
+                <div>
+                  <label for="courseStudentPasswordInput">Passwort</label>
+                  <input id="courseStudentPasswordInput" type="text" placeholder="Passwort eingeben oder generieren">
+                </div>
+                <div>
+                  <label for="courseStudentEmailInput">E-Mail (optional)</label>
+                  <input id="courseStudentEmailInput" type="text" placeholder="z. B. teilnehmer@mail.com">
+                </div>
+                <div>
+                  <label for="courseStudentPhoneInput">WhatsApp (optional)</label>
+                  <input id="courseStudentPhoneInput" type="text" placeholder="z. B. 905551112233">
+                </div>
               </div>
-              <div>
-                <label for="courseStudentDisplayNameInput">Anzeigename (optional)</label>
-                <input id="courseStudentDisplayNameInput" type="text" placeholder="z. B. Ayse Yilmaz">
-              </div>
-              <div>
-                <label for="courseStudentPasswordInput">Passwort</label>
-                <input id="courseStudentPasswordInput" type="text" placeholder="Passwort eingeben oder generieren">
-              </div>
-              <div>
-                <label for="courseStudentEmailInput">E-Mail (optional)</label>
-                <input id="courseStudentEmailInput" type="text" placeholder="z. B. teilnehmer@mail.com">
-              </div>
-              <div>
-                <label for="courseStudentPhoneInput">WhatsApp (optional)</label>
-                <input id="courseStudentPhoneInput" type="text" placeholder="z. B. 905551112233">
+              <div class="actions">
+                <button type="button" id="courseStudentGeneratePwdBtn" class="ghost-btn">Passwort generieren</button>
+                <button type="button" id="courseStudentCreateBtn">Teilnehmer erstellen</button>
               </div>
             </div>
-            <div class="actions">
-              <button type="button" id="courseStudentGeneratePwdBtn" class="ghost-btn">Passwort generieren</button>
-              <button type="button" id="courseStudentCreateBtn">Teilnehmer erstellen</button>
+          </details>
+
+          <details class="fold-section">
+            <summary>Schnellgenerator (mehrere Schüler)</summary>
+            <div class="fold-section-content">
+              <div class="grid" style="margin-top:0;">
+                <div>
+                  <label for="courseBulkPrefixInput">Präfix</label>
+                  <input id="courseBulkPrefixInput" type="text" value="${escapeHtml(courseSlug)}" placeholder="z. B. kurs">
+                </div>
+                <div>
+                  <label for="courseBulkCountInput">Anzahl</label>
+                  <input id="courseBulkCountInput" type="number" min="1" max="100" value="20">
+                </div>
+                <div>
+                  <label for="courseBulkStartInput">Startnummer</label>
+                  <input id="courseBulkStartInput" type="number" min="1" max="9999" value="1">
+                </div>
+                <div>
+                  <label for="courseBulkPwdLengthInput">Passwortlänge</label>
+                  <input id="courseBulkPwdLengthInput" type="number" min="6" max="10" value="6">
+                </div>
+              </div>
+              <div class="actions">
+                <button type="button" id="courseBulkGenerateBtn" class="ghost-btn">Liste generieren</button>
+                <button type="button" id="courseBulkCreateBtn">Konten anlegen</button>
+              </div>
+              <textarea id="courseBulkPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
             </div>
-          </div>
+          </details>
 
-          <div class="course-participant-list">
-            <h4>Aktuelle Kurs-Teilnehmende (${memberUsernames.length})</h4>
-            ${memberRows || "<p>Noch keine Kurs-Teilnehmenden vorhanden.</p>"}
-          </div>
+          <details class="fold-section">
+            <summary>Bestehende Konten</summary>
+            <div class="fold-section-content">
+              <div class="course-participant-list">
+                <h4>Aktuelle Kurs-Teilnehmende (${memberUsernames.length})</h4>
+                ${memberRows || "<p>Noch keine Kurs-Teilnehmenden vorhanden.</p>"}
+              </div>
 
-          <div class="course-member-toolbar">
-            <button type="button" id="courseMembersSelectAllBtn" class="ghost-btn">Alle auswählen</button>
-            <button type="button" id="courseMembersClearBtn" class="ghost-btn">Auswahl löschen</button>
-            <span id="courseMembersSelectionCount" class="course-member-selection-count">0 ausgewählt</span>
-          </div>
-          <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">
-            <div class="course-members-grid">${pickerRows}</div>
-          </div>
-          <div class="actions" style="margin-top:8px;">
-            <button type="button" id="saveCourseMembersBtn">Mitglieder speichern</button>
-          </div>
+              <div class="course-member-toolbar">
+                <button type="button" id="courseMembersSelectAllBtn" class="ghost-btn">Alle auswählen</button>
+                <button type="button" id="courseMembersClearBtn" class="ghost-btn">Auswahl löschen</button>
+                <button type="button" id="kursResetPasswordsBtn">Neues Passwort erstellen</button>
+                <button type="button" id="kursDeleteUsersBtn" class="danger-btn">Löschen</button>
+                <span id="courseMembersSelectionCount" class="course-member-selection-count">0 ausgewählt</span>
+              </div>
+              <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">
+                <div class="course-members-grid">${pickerRows}</div>
+              </div>
+              <div class="actions" style="margin-top:8px;">
+                <button type="button" id="saveCourseMembersBtn">Mitglieder speichern</button>
+              </div>
+            </div>
+          </details>
         </div>
       `;
       const selectAllBtn = document.getElementById("courseMembersSelectAllBtn");
@@ -4356,6 +4392,92 @@
       const createBtn = document.getElementById("courseStudentCreateBtn");
       if (createBtn) {
         createBtn.addEventListener("click", () => createStudentForCourse(courseId));
+      }
+      const buildCourseBulkCredentials = () => {
+        const prefixInput = document.getElementById("courseBulkPrefixInput");
+        const countInput = document.getElementById("courseBulkCountInput");
+        const startInput = document.getElementById("courseBulkStartInput");
+        const lenInput = document.getElementById("courseBulkPwdLengthInput");
+        const prefix = String(prefixInput?.value || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "") || courseSlug;
+        const count = clamp(countInput?.value, 1, 100, 20);
+        const start = clamp(startInput?.value, 1, 9999, 1);
+        const len = clamp(lenInput?.value, 6, 10, 6);
+        const list = [];
+        for (let i = 0; i < count; i += 1) {
+          list.push({
+            username: `${prefix}-${String(start + i).padStart(2, "0")}`,
+            password: randomPassword(len)
+          });
+        }
+        return list;
+      };
+      const renderCourseBulkPreview = () => {
+        const preview = document.getElementById("courseBulkPreview");
+        if (!preview) return [];
+        const rows = buildCourseBulkCredentials();
+        preview.value = rows.map(row => `${row.username};${row.password}`).join("\n");
+        return rows;
+      };
+      const bulkGenerateBtn = document.getElementById("courseBulkGenerateBtn");
+      if (bulkGenerateBtn) {
+        bulkGenerateBtn.addEventListener("click", () => {
+          renderCourseBulkPreview();
+          setKursActionBox("ok", "Schnellgenerator-Liste erstellt.");
+        });
+      }
+      const bulkCreateBtn = document.getElementById("courseBulkCreateBtn");
+      if (bulkCreateBtn) {
+        bulkCreateBtn.addEventListener("click", async () => {
+          clearBox("kursActionStatus");
+          const preview = document.getElementById("courseBulkPreview");
+          const lines = String(preview?.value || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+          if (!lines.length) {
+            renderCourseBulkPreview();
+          }
+          const finalLines = String(preview?.value || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+          if (!finalLines.length) {
+            setKursActionBox("error", "Keine Konten zum Erstellen vorhanden.");
+            return;
+          }
+          const createdUsernames = [];
+          const failed = [];
+          const createExtra = {};
+          if ((adminContext.role || "") === "owner") {
+            const courseTeacher = String(course?.teacher_username || "").trim().toLowerCase();
+            if (courseTeacher) createExtra.teacher_username = courseTeacher;
+          }
+          for (const line of finalLines) {
+            const [usernameRaw, passwordRaw] = line.split(";");
+            const username = String(usernameRaw || "").trim().toLowerCase();
+            const password = String(passwordRaw || "").trim();
+            if (!username || !password) continue;
+            try {
+              const payload = await createStudentViaApi(username, password, "", "", "", createExtra);
+              createdUsernames.push(String(payload.username || "").trim().toLowerCase());
+            } catch (err) {
+              failed.push(`${username} (${err.message})`);
+            }
+          }
+          if (createdUsernames.length) {
+            await addUsersToCourseMembers(courseId, createdUsernames);
+          }
+          if (failed.length) {
+            setKursActionBox("error", `Teilweise erstellt: ${createdUsernames.length}, Fehler: ${failed.length}.`);
+          } else {
+            setKursActionBox("ok", `${createdUsernames.length} Konten wurden erstellt und dem Kurs zugewiesen.`);
+          }
+          await listStudents();
+          await listCourses();
+          setSelectedCourse(courseId, true);
+        });
+      }
+      const resetBtn = document.getElementById("kursResetPasswordsBtn");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", resetSelectedCourseParticipantsPasswords);
+      }
+      const deleteBtn = document.getElementById("kursDeleteUsersBtn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", deleteSelectedCourseParticipants);
       }
     }
 
@@ -7383,10 +7505,6 @@
     document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
-    document.getElementById("kursEditUsersBtn").addEventListener("click", () => openAccountsForSelectedCourse("edit"));
-    document.getElementById("kursInsertUsersBtn").addEventListener("click", () => openAccountsForSelectedCourse("insert"));
-    document.getElementById("kursDeleteUsersBtn").addEventListener("click", deleteSelectedCourseParticipants);
-    document.getElementById("kursResetPasswordsBtn").addEventListener("click", resetSelectedCourseParticipantsPasswords);
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
       updateAttendanceCourseBySelect();
       renderAttendanceEditor();
