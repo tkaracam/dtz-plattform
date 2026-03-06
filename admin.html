@@ -4230,10 +4230,20 @@
       }
       const memberUsernames = Array.isArray(course.members) ? course.members.map(u => String(u || "").trim()).filter(Boolean) : [];
       const members = new Set(memberUsernames);
-      const users = currentStudents.filter(u => !!u.active);
       const usersByUsername = new Map(
         currentStudents.map(u => [String(u.username || "").trim(), u])
       );
+      const users = memberUsernames.map(username => {
+        const user = usersByUsername.get(username);
+        if (user) return user;
+        return {
+          username,
+          display_name: "",
+          email: "",
+          phone: "",
+          active: 0
+        };
+      });
       const courseSlug = String(course.name || "kurs")
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "-")
