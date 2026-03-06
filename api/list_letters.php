@@ -61,6 +61,7 @@ $dateFrom = trim((string)($body['date_from'] ?? ''));
 $dateTo = trim((string)($body['date_to'] ?? ''));
 $studentQuery = mb_strtolower(trim((string)($body['student_query'] ?? '')));
 $textQuery = mb_strtolower(trim((string)($body['text_query'] ?? '')));
+$courseIdFilter = trim((string)($body['course_id'] ?? ''));
 
 $tsFrom = null;
 $tsTo = null;
@@ -97,6 +98,39 @@ if (($admin['role'] ?? '') === 'docent') {
         $uname = mb_strtolower(trim((string)($student['username'] ?? '')));
         if ($uname !== '') {
             $allowedUsernames[$uname] = true;
+        }
+    }
+}
+
+$courseUsernameFilter = null;
+if ($courseIdFilter !== '') {
+    $courses = load_courses();
+    $targetCourse = null;
+    foreach ($courses as $course) {
+        if (!is_array($course)) {
+            continue;
+        }
+        if ((string)($course['course_id'] ?? '') !== $courseIdFilter) {
+            continue;
+        }
+        $targetCourse = $course;
+        break;
+    }
+    if (!is_array($targetCourse)) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Kurs wurde nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!admin_can_access_course_record($targetCourse, $admin)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Kein Zugriff auf diesen Kurs.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $courseUsernameFilter = [];
+    foreach ((array)($targetCourse['members'] ?? []) as $memberUsername) {
+        $uname = mb_strtolower(trim((string)$memberUsername));
+        if ($uname !== '') {
+            $courseUsernameFilter[$uname] = true;
         }
     }
 }
@@ -155,6 +189,10 @@ foreach ($files as $file) {
             if (!$allowed) {
                 continue;
             }
+        }
+
+        if (is_array($courseUsernameFilter) && empty($courseUsernameFilter[$studentUsername])) {
+            continue;
         }
 
         if ($studentQuery !== '' && !str_contains(mb_strtolower($studentName), $studentQuery)) {

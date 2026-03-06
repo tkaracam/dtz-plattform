@@ -2270,6 +2270,9 @@
                   <button id="kursOpenPendingQueueBtn" type="button">Warteschlange (ausstehend: 0)</button>
                   <button id="kursOpenArchiveEntriesBtn" type="button" class="ghost-btn">Mail Korrekturen (Alle Einträge)</button>
                 </div>
+                <div id="kursCorrectionsStatus" class="hidden" style="margin-top:10px;"></div>
+                <div id="kursPendingQueueWrap" style="margin-top:10px;"></div>
+                <div id="kursArchiveWrap" class="hidden" style="margin-top:10px;"></div>
               </div>
             </details>
           </div>
@@ -2677,6 +2680,8 @@
     let pendingSeenInitialized = false;
     let pendingSeenIds = new Set();
     let pendingLastCritical = 0;
+    let kursCorrectionsMode = "";
+    let kursCorrectionsRecords = [];
     let assignTeacherTargetUsername = "";
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "accounts";
@@ -4090,6 +4095,7 @@
       });
       updateCourseSwitchHint();
       renderCourseShortcutButtons();
+      resetKursCorrectionsView();
     }
 
     function renderCourseShortcutButtons() {
@@ -4145,6 +4151,7 @@
       if (openEditor) {
         renderCourseAssignEditor(id);
       }
+      resetKursCorrectionsView();
     }
 
     function useSelectedCourseInHomework() {
@@ -4535,6 +4542,204 @@
 
     function setKursActionBox(type, message) {
       setBox("kursActionStatus", type, message);
+    }
+
+    function getSelectedCourseForKursCorrections() {
+      return getCourseById(selectedCourseId);
+    }
+
+    function resetKursCorrectionsView() {
+      kursCorrectionsMode = "";
+      kursCorrectionsRecords = [];
+      const statusBox = document.getElementById("kursCorrectionsStatus");
+      if (statusBox) clearBox("kursCorrectionsStatus");
+      const pendingWrap = document.getElementById("kursPendingQueueWrap");
+      const archiveWrap = document.getElementById("kursArchiveWrap");
+      if (pendingWrap) {
+        pendingWrap.classList.remove("hidden");
+        pendingWrap.innerHTML = "";
+      }
+      if (archiveWrap) {
+        archiveWrap.classList.add("hidden");
+        archiveWrap.innerHTML = "";
+      }
+      const pendingBtn = document.getElementById("kursOpenPendingQueueBtn");
+      const archiveBtn = document.getElementById("kursOpenArchiveEntriesBtn");
+      if (pendingBtn) {
+        pendingBtn.classList.remove("ghost-btn");
+        pendingBtn.textContent = "Warteschlange (ausstehend: 0)";
+      }
+      if (archiveBtn) {
+        archiveBtn.classList.add("ghost-btn");
+      }
+    }
+
+    function renderKursPendingQueue(rows) {
+      const wrap = document.getElementById("kursPendingQueueWrap");
+      if (!wrap) return;
+      if (!rows.length) {
+        wrap.innerHTML = "<p>Keine offenen Freigaben im ausgewählten Kurs.</p>";
+        return;
+      }
+      const rowsHtml = rows.map(row => `
+        <tr>
+          <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
+          <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+          <td>${escapeHtml(row.student_name || "-")}</td>
+          <td class="mono">${escapeHtml(formatWritingDuration(row.writing_duration_seconds, row.writing_duration_label))}</td>
+          <td>${escapeHtml(String(row.letter_text || "").trim().slice(0, 160) || "-")}${String(row.letter_text || "").trim().length > 160 ? "..." : ""}</td>
+          <td class="mono">${escapeHtml(row.upload_id || "-")}</td>
+          <td>
+            <div class="actions">
+              <button type="button" data-kurs-pending-approve="${escapeHtml(row.upload_id || "")}">Korrektur freigeben</button>
+              <button type="button" data-kurs-pending-reject="${escapeHtml(row.upload_id || "")}" class="ghost-btn">Ablehnen</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>Zeit</th><th>Username</th><th>Schüler</th><th>Schreibzeit</th><th>Mail</th><th>ID</th><th>Aktion</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("[data-kurs-pending-approve]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetterFromKurs(btn.getAttribute("data-kurs-pending-approve") || "", "approve"));
+      });
+      wrap.querySelectorAll("[data-kurs-pending-reject]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetterFromKurs(btn.getAttribute("data-kurs-pending-reject") || "", "reject"));
+      });
+    }
+
+    function renderKursArchiveRecords(records) {
+      const wrap = document.getElementById("kursArchiveWrap");
+      if (!wrap) return;
+      if (!records.length) {
+        wrap.innerHTML = "<p>Keine Mail-Einträge im ausgewählten Kurs.</p>";
+        return;
+      }
+      const rowsHtml = records.map(row => {
+        const taskPrompt = String(row.task_prompt || "").trim();
+        const taskTitle = String(row.task_title || "").trim();
+        const uploadId = escapeHtml(row.upload_id || "");
+        const briefId = `kurs-brief-${uploadId}`;
+        const status = String(row.review_status || "pending");
+        const canReview = status === "pending";
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(formatDisplayDateTime(row.created_at || ""))}</td>
+            <td class="mono">${escapeHtml(row.student_username || "-")}</td>
+            <td>${escapeHtml(status)}</td>
+            <td>${row.score_total == null ? "-" : escapeHtml(String(row.score_total) + "/20")}</td>
+            <td>${escapeHtml(resolveTaskShortLabel(taskPrompt, taskTitle))}</td>
+            <td>
+              <button type="button" class="ghost-btn archive-brief-toggle" data-brief-toggle="${briefId}" data-open-label="Brief öffnen" data-close-label="Brief schließen">Brief öffnen</button>
+              <div id="${briefId}" class="archive-brief-content hidden">${escapeHtml(String(row.letter_text || "").trim() || "-")}</div>
+            </td>
+            <td>
+              ${canReview
+                ? `<div class="actions"><button type="button" data-kurs-archive-approve="${uploadId}">Korrektur freigeben</button><button type="button" data-kurs-archive-reject="${uploadId}" class="ghost-btn">Ablehnen</button></div>`
+                : '<span class="muted">Abgeschlossen</span>'}
+            </td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead><tr><th>Zeit</th><th>Username</th><th>Status</th><th>Punkte</th><th>Aufgabe</th><th>Brief</th><th>Aktion</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+      wrap.querySelectorAll("[data-kurs-archive-approve]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetterFromKurs(btn.getAttribute("data-kurs-archive-approve") || "", "approve"));
+      });
+      wrap.querySelectorAll("[data-kurs-archive-reject]").forEach(btn => {
+        btn.addEventListener("click", () => reviewLetterFromKurs(btn.getAttribute("data-kurs-archive-reject") || "", "reject"));
+      });
+      wrap.querySelectorAll("[data-brief-toggle]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const targetId = String(btn.getAttribute("data-brief-toggle") || "");
+          if (!targetId) return;
+          const panel = document.getElementById(targetId);
+          if (!panel) return;
+          const isHidden = panel.classList.contains("hidden");
+          panel.classList.toggle("hidden", !isHidden);
+          btn.textContent = isHidden
+            ? String(btn.getAttribute("data-close-label") || "Brief schließen")
+            : String(btn.getAttribute("data-open-label") || "Brief öffnen");
+        });
+      });
+    }
+
+    async function loadKursCorrectionsView(mode = "pending", options = {}) {
+      const silent = !!options.silent;
+      const course = getSelectedCourseForKursCorrections();
+      if (!course) {
+        if (!silent) setBox("kursCorrectionsStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      const pendingBtn = document.getElementById("kursOpenPendingQueueBtn");
+      const archiveBtn = document.getElementById("kursOpenArchiveEntriesBtn");
+      const pendingWrap = document.getElementById("kursPendingQueueWrap");
+      const archiveWrap = document.getElementById("kursArchiveWrap");
+      kursCorrectionsMode = mode === "entries" ? "entries" : "pending";
+      if (pendingBtn) pendingBtn.disabled = true;
+      if (archiveBtn) archiveBtn.disabled = true;
+      try {
+        const response = await fetch("./api/list_letters.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            course_id: String(course.course_id || ""),
+            limit: 200,
+            date_from: "",
+            date_to: "",
+            student_query: "",
+            text_query: ""
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        kursCorrectionsRecords = Array.isArray(payload.records) ? payload.records : [];
+        const pendingRows = kursCorrectionsRecords.filter(row => String(row.review_status || "pending") === "pending");
+        if (pendingBtn) {
+          pendingBtn.textContent = `Warteschlange (ausstehend: ${pendingRows.length})`;
+          pendingBtn.classList.toggle("ghost-btn", kursCorrectionsMode !== "pending");
+        }
+        if (archiveBtn) {
+          archiveBtn.classList.toggle("ghost-btn", kursCorrectionsMode === "pending");
+        }
+        renderKursPendingQueue(pendingRows);
+        renderKursArchiveRecords(kursCorrectionsRecords);
+        if (pendingWrap) pendingWrap.classList.toggle("hidden", kursCorrectionsMode !== "pending");
+        if (archiveWrap) archiveWrap.classList.toggle("hidden", kursCorrectionsMode !== "entries");
+        if (!silent) {
+          const info = kursCorrectionsMode === "pending"
+            ? `${pendingRows.length} offene Freigaben im Kurs ${course.name || course.course_id}.`
+            : `${kursCorrectionsRecords.length} Mail-Einträge im Kurs ${course.name || course.course_id}.`;
+          setBox("kursCorrectionsStatus", "ok", info);
+        }
+      } catch (err) {
+        if (!silent) setBox("kursCorrectionsStatus", "error", `Mail Korrekturen konnten nicht geladen werden: ${err.message}`);
+      } finally {
+        if (pendingBtn) pendingBtn.disabled = false;
+        if (archiveBtn) archiveBtn.disabled = false;
+      }
+    }
+
+    async function reviewLetterFromKurs(uploadId, decision) {
+      clearBox("kursCorrectionsStatus");
+      if (!uploadId) return;
+      const note = window.prompt(decision === "approve" ? "Freigabe-Notiz (optional):" : "Ablehnungsgrund (optional):", "");
+      if (note === null) return;
+      try {
+        await sendLetterReview(uploadId, decision, note);
+        setBox("kursCorrectionsStatus", "ok", `${decision === "approve" ? "Freigabe" : "Ablehnung"} gespeichert: ${uploadId}`);
+        await loadKursCorrectionsView(kursCorrectionsMode || "pending", { silent: true });
+        listLetters({ silent: true });
+      } catch (err) {
+        setBox("kursCorrectionsStatus", "error", `Aktion fehlgeschlagen: ${err.message}`);
+      }
     }
 
     async function deleteSelectedCourseParticipants() {
@@ -6164,7 +6369,6 @@
       const safeWarn = Math.max(0, Number(warnCount || 0));
       const title = document.getElementById("pendingQueueTitle");
       const btn = document.getElementById("loadPendingBtn");
-      const kursPendingBtn = document.getElementById("kursOpenPendingQueueBtn");
       const slaSummary = document.getElementById("pendingSlaSummary");
       if (title) {
         title.textContent = `Warteschlange (ausstehend: ${safeCount})`;
@@ -6172,26 +6376,8 @@
       if (btn) {
         btn.textContent = `Nur Warteschlange (${safeCount})`;
       }
-      if (kursPendingBtn) {
-        kursPendingBtn.textContent = `Warteschlange (ausstehend: ${safeCount})`;
-      }
       if (slaSummary) {
         slaSummary.textContent = `Kritisch: ${safeCritical} | Warnung: ${safeWarn}`;
-      }
-    }
-
-    function openArchiveFromKurs(view) {
-      openAdminPane("archive");
-      const pendingDetails = document.getElementById("archivePendingDetails");
-      const allEntriesDetails = document.getElementById("archiveAllEntriesDetails");
-      if (pendingDetails && allEntriesDetails) {
-        if (view === "pending") {
-          pendingDetails.open = true;
-          allEntriesDetails.open = false;
-        } else {
-          pendingDetails.open = false;
-          allEntriesDetails.open = true;
-        }
       }
     }
 
@@ -7544,8 +7730,8 @@
     document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
-    document.getElementById("kursOpenPendingQueueBtn").addEventListener("click", () => openArchiveFromKurs("pending"));
-    document.getElementById("kursOpenArchiveEntriesBtn").addEventListener("click", () => openArchiveFromKurs("entries"));
+    document.getElementById("kursOpenPendingQueueBtn").addEventListener("click", () => loadKursCorrectionsView("pending"));
+    document.getElementById("kursOpenArchiveEntriesBtn").addEventListener("click", () => loadKursCorrectionsView("entries"));
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
       updateAttendanceCourseBySelect();
       renderAttendanceEditor();
