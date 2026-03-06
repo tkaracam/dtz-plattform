@@ -1791,6 +1791,7 @@
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
           <button id="goHomeBtn" class="admin-menu-item" type="button">Startseite</button>
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
+          <button id="jumpCourseBuilderBtn" class="admin-menu-item" type="button">Kurs erstellen</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
@@ -1835,6 +1836,7 @@
       <section id="panelCard" class="card hidden">
         <div class="admin-quick-nav">
           <button type="button" class="admin-quick-btn" data-pane="accounts">Schülerzugänge</button>
+          <button type="button" class="admin-quick-btn" data-pane="coursebuilder">Kurs erstellen</button>
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="teachers">Lehrkräfte</button>
           <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
           <button type="button" class="admin-quick-btn" data-pane="homeworks">Hausaufgaben</button>
@@ -1844,6 +1846,29 @@
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="room">Virtueller Saal</button>
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="audit">Audit</button>
           <button type="button" class="admin-quick-btn" data-pane="archive">Mail Korrekturen</button>
+        </div>
+
+        <div id="paneCourseBuilder" class="admin-pane">
+          <div class="bulk-wrap">
+            <h2 class="section-title" style="font-size: 1.35rem;">Kurs erstellen</h2>
+            <p class="section-subtitle">Kursname eingeben und Teilnehmendenzahl festlegen. Konten werden automatisch erzeugt.</p>
+            <div class="grid">
+              <div>
+                <label for="courseBuilderName">Kursname</label>
+                <input id="courseBuilderName" type="text" placeholder="z. B. b1-abendkurs">
+              </div>
+              <div>
+                <label for="courseBuilderCount">Teilnehmende (Anzahl)</label>
+                <input id="courseBuilderCount" type="number" min="1" max="100" value="20">
+              </div>
+            </div>
+            <div class="actions">
+              <button id="createCourseWithStudentsBtn" type="button">Kurs + TN erstellen</button>
+              <button id="copyCourseBuilderListBtn" type="button" class="ghost-btn">Liste kopieren</button>
+            </div>
+            <textarea id="courseBuilderPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
+            <div id="courseBuilderStatus" class="hidden"></div>
+          </div>
         </div>
 
         <div id="paneAccounts" class="admin-pane active">
@@ -2446,9 +2471,10 @@
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "homeworks", "archive"];
-    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCoursesBtn", "jumpHomeworkBtn", "jumpArchiveBtn", "jumpJessBtn"];
+    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpHomeworkBtn", "jumpArchiveBtn", "jumpJessBtn"];
 
     const adminPaneMap = {
+      coursebuilder: "paneCourseBuilder",
       accounts: "paneAccounts",
       teachers: "paneTeachers",
       courses: "paneCourses",
@@ -2458,6 +2484,7 @@
     };
 
     const adminPaneLabels = {
+      coursebuilder: "Kurs erstellen",
       accounts: "Schülerzugänge",
       teachers: "Lehrkräfte",
       courses: "Kurse",
@@ -3060,6 +3087,137 @@
         });
       }
       return rows;
+    }
+
+    function buildCourseUserPrefix(courseName) {
+      const normalized = normalizePrefix(courseName)
+        .replace(/[._-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      return normalized || "kurs";
+    }
+
+    function buildUniqueCourseUsername(base, index, existingUsernames) {
+      const root = String(base || "kurs").slice(0, 24) || "kurs";
+      const first = `${root}-${String(index).padStart(2, "0")}`.slice(0, 32);
+      if (!existingUsernames.has(first.toLowerCase())) {
+        return first;
+      }
+      for (let attempt = 0; attempt < 200; attempt += 1) {
+        const salt = String(Math.floor(Math.random() * 90) + 10);
+        const candidate = `${root}-${String(index).padStart(2, "0")}-${salt}`.slice(0, 32);
+        if (!existingUsernames.has(candidate.toLowerCase())) {
+          return candidate;
+        }
+      }
+      return "";
+    }
+
+    async function createCourseWithStudents() {
+      clearBox("courseBuilderStatus");
+      const courseName = String(document.getElementById("courseBuilderName")?.value || "").trim();
+      const count = clamp(document.getElementById("courseBuilderCount")?.value, 1, 100, 20);
+      const preview = document.getElementById("courseBuilderPreview");
+      const btn = document.getElementById("createCourseWithStudentsBtn");
+      if (!courseName) {
+        setBox("courseBuilderStatus", "error", "Kursname ist erforderlich.");
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Wird erstellt...";
+      }
+
+      try {
+        const courseRes = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", name: courseName, level: "", schedule: "" })
+        });
+        const coursePayload = await parseJsonResponse(courseRes);
+        if (!courseRes.ok) throw new Error(coursePayload.error || `Fehler: ${courseRes.status}`);
+
+        const courseId = String(coursePayload.course_id || "").trim();
+        if (!courseId) throw new Error("course_id fehlt.");
+
+        const prefix = buildCourseUserPrefix(courseName);
+        const existingUsernames = new Set(
+          currentStudents.map(u => String(u.username || "").trim().toLowerCase()).filter(Boolean)
+        );
+        const createExtra = {};
+        const teacherUsername = String(adminContext.username || "").trim().toLowerCase();
+        if (teacherUsername) {
+          createExtra.teacher_username = teacherUsername;
+        }
+
+        const createdRows = [];
+        const failedRows = [];
+        for (let i = 1; i <= count; i += 1) {
+          const username = buildUniqueCourseUsername(prefix, i, existingUsernames);
+          if (!username) {
+            failedRows.push(`Index ${i}: Benutzername konnte nicht erzeugt werden`);
+            continue;
+          }
+          const password = easyPassword(6);
+          try {
+            await createStudentViaApi(username, password, "", "", "", createExtra);
+            existingUsernames.add(username.toLowerCase());
+            createdRows.push({ username, password });
+          } catch (err) {
+            failedRows.push(`${username}: ${err.message}`);
+          }
+        }
+
+        if (createdRows.length) {
+          const memberRes = await fetch("./api/course_manage.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "set_members",
+              course_id: courseId,
+              members: createdRows.map(row => row.username)
+            })
+          });
+          const memberPayload = await parseJsonResponse(memberRes);
+          if (!memberRes.ok) throw new Error(memberPayload.error || `Fehler: ${memberRes.status}`);
+        }
+
+        if (preview) {
+          preview.value = createdRows.map(row => `${row.username};${row.password}`).join("\n");
+        }
+
+        await listStudents();
+        await listCourses();
+        setSelectedCourse(courseId, true);
+
+        if (createdRows.length === count) {
+          setBox("courseBuilderStatus", "ok", `Kurs erstellt: ${courseName}. ${createdRows.length} TN wurden angelegt.`);
+        } else {
+          const sample = failedRows.slice(0, 3).join(" | ");
+          setBox("courseBuilderStatus", createdRows.length > 0 ? "ok" : "error", `Kurs erstellt: ${courseName}. ${createdRows.length}/${count} TN angelegt.${sample ? ` Fehler: ${sample}` : ""}`);
+        }
+      } catch (err) {
+        setBox("courseBuilderStatus", "error", `Kurs/TN-Erstellung fehlgeschlagen: ${err.message}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Kurs + TN erstellen";
+        }
+      }
+    }
+
+    async function copyCourseBuilderList() {
+      clearBox("courseBuilderStatus");
+      const text = String(document.getElementById("courseBuilderPreview")?.value || "").trim();
+      if (!text) {
+        setBox("courseBuilderStatus", "error", "Keine Zugangsliste vorhanden.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        setBox("courseBuilderStatus", "ok", "Liste wurde kopiert.");
+      } catch (_) {
+        setBox("courseBuilderStatus", "error", "Kopieren nicht möglich.");
+      }
     }
 
     function renderBulkPreview(rows) {
@@ -6481,6 +6639,8 @@
     document.getElementById("bulkCopyBtn").addEventListener("click", copyBulkList);
     document.getElementById("bulkCsvBtn").addEventListener("click", downloadBulkCsv);
     document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
+    document.getElementById("createCourseWithStudentsBtn").addEventListener("click", createCourseWithStudents);
+    document.getElementById("copyCourseBuilderListBtn").addEventListener("click", copyCourseBuilderList);
     document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
     document.getElementById("studentSelectAllChk").addEventListener("change", event => {
       setAllStudentsSelected(!!event.target.checked);
@@ -6509,6 +6669,10 @@
     document.getElementById("jumpAccountsBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("accounts");
+    });
+    document.getElementById("jumpCourseBuilderBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      openAdminPane("coursebuilder");
     });
     document.getElementById("jumpTeachersBtn").addEventListener("click", () => {
       closeAdminMenu();
