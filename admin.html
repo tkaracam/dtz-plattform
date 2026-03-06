@@ -2262,6 +2262,16 @@
                 <div id="kursHomeworkStatus" class="hidden"></div>
               </div>
             </details>
+
+            <details id="kursCorrectionsDetails" class="fold-section">
+              <summary>Mail Korrekturen</summary>
+              <div class="fold-section-content">
+                <div class="actions">
+                  <button id="kursOpenPendingQueueBtn" type="button">Warteschlange (ausstehend: 0)</button>
+                  <button id="kursOpenArchiveEntriesBtn" type="button" class="ghost-btn">Mail Korrekturen (Alle Einträge)</button>
+                </div>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -2561,7 +2571,7 @@
           </div>
           <div id="previewMistakes" class="preview-meta"></div>
         </div>
-        <details class="fold-section">
+        <details id="archivePendingDetails" class="fold-section">
           <summary><span id="pendingQueueTitle">Warteschlange (ausstehend: 0)</span></summary>
           <div class="fold-section-content">
             <div id="pendingBulkActions" class="actions" style="margin-top: 0; display: none;">
@@ -2577,7 +2587,7 @@
             <div id="pendingQueueWrap" style="margin-top: 10px;"></div>
           </div>
         </details>
-        <details class="fold-section" style="margin-top: 12px;">
+        <details id="archiveAllEntriesDetails" class="fold-section" style="margin-top: 12px;">
           <summary>Mail Korrekturen (Alle Einträge)</summary>
           <div class="fold-section-content">
             <p class="section-subtitle" style="margin-top:0;">Mail Einträge filtern und bei Bedarf als CSV herunterladen.</p>
@@ -6154,6 +6164,7 @@
       const safeWarn = Math.max(0, Number(warnCount || 0));
       const title = document.getElementById("pendingQueueTitle");
       const btn = document.getElementById("loadPendingBtn");
+      const kursPendingBtn = document.getElementById("kursOpenPendingQueueBtn");
       const slaSummary = document.getElementById("pendingSlaSummary");
       if (title) {
         title.textContent = `Warteschlange (ausstehend: ${safeCount})`;
@@ -6161,8 +6172,26 @@
       if (btn) {
         btn.textContent = `Nur Warteschlange (${safeCount})`;
       }
+      if (kursPendingBtn) {
+        kursPendingBtn.textContent = `Warteschlange (ausstehend: ${safeCount})`;
+      }
       if (slaSummary) {
         slaSummary.textContent = `Kritisch: ${safeCritical} | Warnung: ${safeWarn}`;
+      }
+    }
+
+    function openArchiveFromKurs(view) {
+      openAdminPane("archive");
+      const pendingDetails = document.getElementById("archivePendingDetails");
+      const allEntriesDetails = document.getElementById("archiveAllEntriesDetails");
+      if (pendingDetails && allEntriesDetails) {
+        if (view === "pending") {
+          pendingDetails.open = true;
+          allEntriesDetails.open = false;
+        } else {
+          pendingDetails.open = false;
+          allEntriesDetails.open = true;
+        }
       }
     }
 
@@ -7515,6 +7544,8 @@
     document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
+    document.getElementById("kursOpenPendingQueueBtn").addEventListener("click", () => openArchiveFromKurs("pending"));
+    document.getElementById("kursOpenArchiveEntriesBtn").addEventListener("click", () => openArchiveFromKurs("entries"));
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
       updateAttendanceCourseBySelect();
       renderAttendanceEditor();
