@@ -117,9 +117,35 @@ if ($action === 'reset_password') {
         echo json_encode(['error' => 'Änderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    $removedFromCourses = 0;
+    $coursesChanged = false;
+    $courses = load_courses();
+    foreach ($courses as &$course) {
+        if (!is_array($course)) {
+            continue;
+        }
+        if (($admin['role'] ?? '') !== 'owner' && !admin_can_access_course_record($course, $admin)) {
+            continue;
+        }
+        $members = is_array($course['members'] ?? null) ? $course['members'] : [];
+        $before = count($members);
+        $members = array_values(array_filter($members, static function ($m) use ($username): bool {
+            return mb_strtolower(trim((string)$m)) !== $username;
+        }));
+        if ($before !== count($members)) {
+            $course['members'] = $members;
+            $coursesChanged = true;
+            $removedFromCourses += ($before - count($members));
+        }
+    }
+    unset($course);
+    if ($coursesChanged) {
+        write_courses($courses);
+    }
     append_audit_log('student_manage', [
         'username' => $username,
         'action' => $action,
+        'removed_from_courses' => $removedFromCourses,
     ]);
     echo json_encode([
         'ok' => true,

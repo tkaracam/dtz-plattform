@@ -613,6 +613,50 @@
       line-height: 1.2;
     }
 
+    .course-participant-create {
+      margin-top: 10px;
+      border: 1px solid #d7e4f1;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+    }
+
+    .course-participant-list {
+      margin-top: 10px;
+      border: 1px solid #d7e4f1;
+      border-radius: 12px;
+      padding: 10px;
+      background: #ffffff;
+    }
+
+    .course-participant-list h4,
+    .course-participant-create h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: #27476a;
+    }
+
+    .course-member-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid #e2ebf5;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-top: 8px;
+    }
+
+    .course-member-row:first-of-type {
+      margin-top: 0;
+    }
+
+    .course-member-row .meta {
+      color: #5a6172;
+      font-size: 0.84rem;
+      margin-top: 2px;
+    }
+
     #pendingBulkActions button {
       padding: 7px 9px;
       font-size: 0.82rem;
@@ -1662,6 +1706,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .course-member-row {
+        grid-template-columns: 1fr;
+      }
+
       #panelCard table {
         width: 100%;
         min-width: 0 !important;
@@ -1947,6 +1995,7 @@
                 <label>Kursaktionen</label>
                 <div class="course-switch-actions">
                   <button id="openSelectedMembersBtn" type="button" class="ghost-btn">TN bearbeiten</button>
+                  <button id="useSelectedCourseBtn" type="button" class="ghost-btn">Aufgabe zuweisen</button>
                   <button id="openSelectedCourseBtn" type="button">Kurs öffnen</button>
                   <button id="closeSelectedCourseBtn" type="button" class="danger-btn">Kurs schließen</button>
                 </div>
@@ -3034,7 +3083,7 @@
         .filter(row => row.username && row.password.length >= 6);
     }
 
-    async function createStudentViaApi(username, password, displayName = "", email = "", phone = "") {
+    async function createStudentViaApi(username, password, displayName = "", email = "", phone = "", extra = {}) {
       const response = await fetch("./api/student_create.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -3043,7 +3092,8 @@
           display_name: displayName,
           email,
           phone,
-          password
+          password,
+          ...extra
         })
       });
       const payload = await parseJsonResponse(response);
@@ -3525,9 +3575,13 @@
         wrap.innerHTML = "";
         return;
       }
-      const members = new Set(Array.isArray(course.members) ? course.members : []);
+      const memberUsernames = Array.isArray(course.members) ? course.members.map(u => String(u || "").trim()).filter(Boolean) : [];
+      const members = new Set(memberUsernames);
       const users = currentStudents.filter(u => !!u.active);
-      const rows = users.map(u => {
+      const usersByUsername = new Map(
+        currentStudents.map(u => [String(u.username || "").trim(), u])
+      );
+      const pickerRows = users.map(u => {
         const uname = String(u.username || "");
         const checked = members.has(uname) ? "checked" : "";
         const label = u.display_name ? `${u.display_name} (${uname})` : uname;
@@ -3538,16 +3592,70 @@
           </label>
         `;
       }).join("");
+      const memberRows = memberUsernames.map(uname => {
+        const user = usersByUsername.get(uname) || {};
+        const label = String(user.display_name || "").trim();
+        const detailBits = [];
+        if (label) detailBits.push(label);
+        if (user.email) detailBits.push(String(user.email));
+        if (user.phone) detailBits.push(String(user.phone));
+        const meta = detailBits.length ? `<div class="meta">${escapeHtml(detailBits.join(" | "))}</div>` : "";
+        return `
+          <div class="course-member-row">
+            <div>
+              <div class="mono">${escapeHtml(uname)}</div>
+              ${meta}
+            </div>
+            <button type="button" class="danger-btn" data-course-member-delete="${escapeHtml(uname)}">Löschen</button>
+          </div>
+        `;
+      }).join("");
       wrap.innerHTML = `
         <div class="card" style="margin-top:8px;padding:12px;">
           <strong>Kursmitglieder: ${escapeHtml(course.name || courseId)}</strong>
+
+          <div class="course-participant-create">
+            <h4>Teilnehmende im Kurs erstellen</h4>
+            <div class="grid" style="margin-top:0;">
+              <div>
+                <label for="courseStudentUsernameInput">Benutzername</label>
+                <input id="courseStudentUsernameInput" type="text" placeholder="z. B. ${escapeHtml(String(course.name || "kurs").toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 20) || "kurs")}-01">
+              </div>
+              <div>
+                <label for="courseStudentDisplayNameInput">Anzeigename (optional)</label>
+                <input id="courseStudentDisplayNameInput" type="text" placeholder="z. B. Ayse Yilmaz">
+              </div>
+              <div>
+                <label for="courseStudentPasswordInput">Passwort</label>
+                <input id="courseStudentPasswordInput" type="text" placeholder="Passwort eingeben oder generieren">
+              </div>
+              <div>
+                <label for="courseStudentEmailInput">E-Mail (optional)</label>
+                <input id="courseStudentEmailInput" type="text" placeholder="z. B. teilnehmer@mail.com">
+              </div>
+              <div>
+                <label for="courseStudentPhoneInput">WhatsApp (optional)</label>
+                <input id="courseStudentPhoneInput" type="text" placeholder="z. B. 905551112233">
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" id="courseStudentGeneratePwdBtn" class="ghost-btn">Passwort generieren</button>
+              <button type="button" id="courseStudentCreateBtn">Teilnehmer erstellen</button>
+            </div>
+          </div>
+
+          <div class="course-participant-list">
+            <h4>Aktuelle Kurs-Teilnehmende (${memberUsernames.length})</h4>
+            ${memberRows || "<p>Noch keine Kurs-Teilnehmenden vorhanden.</p>"}
+          </div>
+
           <div class="course-member-toolbar">
             <button type="button" id="courseMembersSelectAllBtn" class="ghost-btn">Alle auswählen</button>
             <button type="button" id="courseMembersClearBtn" class="ghost-btn">Auswahl löschen</button>
             <span id="courseMembersSelectionCount" class="course-member-selection-count">0 ausgewählt</span>
           </div>
           <div style="margin-top:8px;max-height:220px;overflow:auto;border:1px solid #d6e3f0;border-radius:10px;padding:8px;">
-            <div class="course-members-grid">${rows}</div>
+            <div class="course-members-grid">${pickerRows}</div>
           </div>
           <div class="actions" style="margin-top:8px;">
             <button type="button" id="saveCourseMembersBtn">Mitglieder speichern</button>
@@ -3565,10 +3673,28 @@
       wrap.querySelectorAll("[data-course-member]").forEach(el => {
         el.addEventListener("change", updateCourseMemberSelectionUi);
       });
+      wrap.querySelectorAll("[data-course-member-delete]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const username = String(btn.getAttribute("data-course-member-delete") || "").trim();
+          if (!username) return;
+          deleteCourseStudent(courseId, username);
+        });
+      });
       updateCourseMemberSelectionUi();
       const saveBtn = document.getElementById("saveCourseMembersBtn");
       if (saveBtn) {
         saveBtn.addEventListener("click", () => saveCourseMembers(courseId));
+      }
+      const pwdBtn = document.getElementById("courseStudentGeneratePwdBtn");
+      if (pwdBtn) {
+        pwdBtn.addEventListener("click", () => {
+          const passwordInput = document.getElementById("courseStudentPasswordInput");
+          if (passwordInput) passwordInput.value = randomPassword();
+        });
+      }
+      const createBtn = document.getElementById("courseStudentCreateBtn");
+      if (createBtn) {
+        createBtn.addEventListener("click", () => createStudentForCourse(courseId));
       }
     }
 
@@ -3601,7 +3727,7 @@
         const response = await fetch("./api/course_list.php", { method: "GET" });
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        if (Array.isArray(payload.students) && payload.students.length) {
+        if (Array.isArray(payload.students)) {
           currentStudents = payload.students;
         }
         renderCourses(Array.isArray(payload.courses) ? payload.courses : []);
@@ -3712,9 +3838,81 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("courseStatus", "ok", "Kursmitglieder wurden gespeichert.");
-        listCourses();
+        await listCourses();
+        setSelectedCourse(courseId, true);
       } catch (err) {
         setBox("courseStatus", "error", `Speichern der Kursmitglieder fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function createStudentForCourse(courseId) {
+      clearBox("courseStatus");
+      const username = String(document.getElementById("courseStudentUsernameInput")?.value || "").trim();
+      const displayName = String(document.getElementById("courseStudentDisplayNameInput")?.value || "").trim();
+      const password = String(document.getElementById("courseStudentPasswordInput")?.value || "");
+      const email = String(document.getElementById("courseStudentEmailInput")?.value || "").trim();
+      const phone = String(document.getElementById("courseStudentPhoneInput")?.value || "").trim();
+      if (!username || !password) {
+        setBox("courseStatus", "error", "Benutzername und Passwort sind erforderlich.");
+        return;
+      }
+      try {
+        const course = getCourseById(courseId);
+        const createExtra = {};
+        if ((adminContext.role || "") === "owner") {
+          const courseTeacher = String(course?.teacher_username || "").trim().toLowerCase();
+          if (courseTeacher) {
+            createExtra.teacher_username = courseTeacher;
+          }
+        }
+        const payload = await createStudentViaApi(username, password, displayName, email, phone, createExtra);
+        const members = new Set(Array.isArray(course?.members) ? course.members.map(u => String(u || "").trim()) : []);
+        members.add(String(payload.username || "").trim());
+
+        const response = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "set_members", course_id: courseId, members: Array.from(members).filter(Boolean) })
+        });
+        const assignPayload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(assignPayload.error || `Fehler: ${response.status}`);
+
+        setBox("courseStatus", "ok", `Teilnehmer erstellt und dem Kurs zugewiesen: ${payload.username}`);
+        document.getElementById("courseStudentUsernameInput").value = "";
+        document.getElementById("courseStudentDisplayNameInput").value = "";
+        document.getElementById("courseStudentPasswordInput").value = "";
+        document.getElementById("courseStudentEmailInput").value = "";
+        document.getElementById("courseStudentPhoneInput").value = "";
+        await listStudents();
+        await listCourses();
+        setSelectedCourse(courseId, true);
+      } catch (err) {
+        setBox("courseStatus", "error", `Teilnehmer konnte nicht erstellt werden: ${err.message}`);
+      }
+    }
+
+    async function deleteCourseStudent(courseId, username) {
+      clearBox("courseStatus");
+      if (!username) return;
+      const confirmed = window.confirm(`Teilnehmer ${username} wirklich löschen?`);
+      if (!confirmed) return;
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "delete",
+            username
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("courseStatus", "ok", `Teilnehmer gelöscht: ${username}`);
+        await listStudents();
+        await listCourses();
+        setSelectedCourse(courseId, true);
+      } catch (err) {
+        setBox("courseStatus", "error", `Löschen fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -6221,6 +6419,13 @@
       }
       renderCourseAssignEditor(selectedCourseId);
       setBox("courseStatus", "ok", "Mitgliedereditor geöffnet.");
+    });
+    document.getElementById("useSelectedCourseBtn").addEventListener("click", () => {
+      if (!selectedCourseId) {
+        setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      useSelectedCourseInHomework();
     });
     document.getElementById("openSelectedCourseBtn").addEventListener("click", () => {
       if (!selectedCourseId) {
