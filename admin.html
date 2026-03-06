@@ -118,6 +118,22 @@
       color: rgba(239, 248, 255, 0.94);
     }
 
+    .hero-status-line {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e4f1ff;
+    }
+
+    .hero-status-line .admin-identity-line {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e4f1ff;
+    }
+
     .layout {
       margin-top: 10px;
       display: grid;
@@ -232,6 +248,36 @@
       letter-spacing: 0.01em;
       display: grid;
       gap: 2px;
+    }
+
+    .admin-course-jump {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      width: min(560px, calc(100% - 170px));
+    }
+
+    .admin-course-jump label {
+      margin: 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #c8deff;
+      white-space: nowrap;
+    }
+
+    .admin-course-jump select {
+      width: 100%;
+      margin: 0;
+      min-height: 36px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(186, 214, 240, 0.9);
+      background: rgba(255, 255, 255, 0.96);
+      color: #173c5e;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: none;
     }
 
     .admin-identity-line {
@@ -1458,6 +1504,24 @@
       color: #887f8f;
     }
 
+    .hero-status-line {
+      color: #fdeef6;
+    }
+
+    .hero-status-line .admin-identity-line {
+      color: #fdeef6;
+    }
+
+    .admin-course-jump label {
+      color: #7d6d79;
+    }
+
+    .admin-course-jump select {
+      border-color: #e6cfda;
+      background: #fff;
+      color: #51495a;
+    }
+
     .admin-menu-trigger {
       color: #6f4f5f;
       border: 1px solid #e6cfda;
@@ -1652,6 +1716,20 @@
         font-size: 0.86rem;
       }
 
+      .admin-course-jump {
+        width: min(500px, calc(100% - 128px));
+        gap: 6px;
+      }
+
+      .admin-course-jump label {
+        font-size: 0.76rem;
+      }
+
+      .admin-course-jump select {
+        min-height: 34px;
+        font-size: 0.84rem;
+      }
+
       .admin-menu-trigger {
         min-width: 110px;
       }
@@ -1779,12 +1857,18 @@
   <div class="container">
     <section class="hero">
       <h1>Lehrerbereich</h1>
+      <div class="hero-status-line">
+        <div>Bereich: <span id="activePaneLabel">Anmeldung</span></div>
+        <div id="adminIdentityLine" class="admin-identity-line">Nicht angemeldet</div>
+      </div>
     </section>
 
     <nav class="admin-topbar">
-      <div class="admin-topbar-left">
-        <div>Bereich: <span id="activePaneLabel">Anmeldung</span></div>
-        <div id="adminIdentityLine" class="admin-identity-line">Nicht angemeldet</div>
+      <div class="admin-topbar-left admin-course-jump">
+        <label for="topCourseJumpSelect">Kurswechsel</label>
+        <select id="topCourseJumpSelect" disabled>
+          <option value="">Kurs direkt öffnen</option>
+        </select>
       </div>
       <div class="admin-topbar-right">
         <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger">Menü</button>
@@ -2961,6 +3045,8 @@
         bulkPrefixInput.readOnly = false;
         if (!bulkPrefixInput.value.trim()) bulkPrefixInput.value = "kurs";
       }
+      const topCourseJump = document.getElementById("topCourseJumpSelect");
+      if (topCourseJump) topCourseJump.disabled = false;
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       ensureResponsiveTableObserver();
@@ -2992,6 +3078,11 @@
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
+      }
+      const topCourseJump = document.getElementById("topCourseJumpSelect");
+      if (topCourseJump) {
+        topCourseJump.innerHTML = '<option value="">Kurs direkt öffnen</option>';
+        topCourseJump.disabled = true;
       }
       document.getElementById("panelCard").classList.add("hidden");
       document.getElementById("loginCard").classList.remove("hidden");
@@ -3792,33 +3883,51 @@
       hint.textContent = `Aktueller Kurs: ${getCourseLabel(course, true)} | Mitglieder: ${Array.isArray(course.members) ? course.members.length : 0}`;
     }
 
-    function renderCourseSwitcher() {
-      const select = document.getElementById("courseSwitchSelect");
-      if (!select) return;
+    function getCourseSwitcherSelects() {
+      return [
+        document.getElementById("courseSwitchSelect"),
+        document.getElementById("topCourseJumpSelect")
+      ].filter(Boolean);
+    }
 
-      const previous = selectedCourseId || String(select.value || "");
+    function renderCourseSwitcher() {
+      const selects = getCourseSwitcherSelects();
+      if (!selects.length) return;
+      const previous = selectedCourseId || String(selects.find(node => node.value)?.value || "");
       const options = ['<option value="">Bitte Kurs auswählen</option>'];
       currentCourses.forEach(c => {
         options.push(`<option value="${escapeHtml(c.course_id || "")}">${escapeHtml(getCourseLabel(c, true))}</option>`);
       });
-      select.innerHTML = options.join("");
+
+      selects.forEach(select => {
+        const currentValue = String(select.value || "");
+        select.innerHTML = options.join("");
+        const validCurrent = currentValue && currentCourses.some(c => String(c.course_id || "") === currentValue);
+        if (validCurrent) select.value = currentValue;
+      });
 
       const validPrevious = previous && currentCourses.some(c => String(c.course_id || "") === previous);
+      let chosenId = "";
       if (validPrevious) {
-        select.value = previous;
+        chosenId = previous;
       } else if (currentCourses.length) {
         const active = currentCourses.find(c => !!c.active) || currentCourses[0];
-        select.value = String(active?.course_id || "");
+        chosenId = String(active?.course_id || "");
       }
-      selectedCourseId = String(select.value || "");
+      selectedCourseId = chosenId;
+      selects.forEach(select => {
+        select.value = chosenId;
+        select.disabled = currentCourses.length === 0;
+      });
       updateCourseSwitchHint();
     }
 
     function setSelectedCourse(courseId, openEditor = false) {
       const id = String(courseId || "").trim();
       selectedCourseId = id;
-      const select = document.getElementById("courseSwitchSelect");
-      if (select) select.value = id;
+      getCourseSwitcherSelects().forEach(select => {
+        select.value = id;
+      });
       if (!getAccountsScopeCourseId() && id) {
         setAccountsScopeCourse(id);
       }
@@ -6816,6 +6925,19 @@
       const id = String(event.target?.value || "");
       setSelectedCourse(id, true);
     });
+    const topCourseJumpSelect = document.getElementById("topCourseJumpSelect");
+    if (topCourseJumpSelect) {
+      topCourseJumpSelect.addEventListener("change", event => {
+        const id = String(event.target?.value || "").trim();
+        if (!id) return;
+        openAdminPane("courses");
+        setSelectedCourse(id, true);
+        const course = getCourseById(id);
+        if (course) {
+          setBox("courseStatus", "ok", `Kurs geöffnet: ${getCourseLabel(course, false)}.`);
+        }
+      });
+    }
     document.getElementById("openSelectedMembersBtn").addEventListener("click", () => {
       if (!selectedCourseId) {
         setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
