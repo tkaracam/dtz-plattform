@@ -45,14 +45,10 @@ if ($action === 'create') {
         $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 6);
     }
     $docentCode = normalize_bamf_code((string)($admin['bamf_code'] ?? ''));
-    if (($admin['role'] ?? '') === 'docent') {
-        if ($docentCode === '') {
-            http_response_code(403);
-            echo json_encode(['error' => 'Ihr Lehrerzugang hat keinen gueltigen BAMF-Code.'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
+    if ($docentCode === '' && preg_match('/(bamf\d{3,})/i', $name, $m)) {
+        $docentCode = normalize_bamf_code((string)($m[1] ?? ''));
     }
-    $idPrefix = ($admin['role'] ?? '') === 'docent' ? $docentCode : 'kurs';
+    $idPrefix = (($admin['role'] ?? '') === 'docent' && $docentCode !== '') ? $docentCode : 'kurs';
     $id = $idPrefix . '-' . $suffix;
     $courses[] = [
         'course_id' => $id,
