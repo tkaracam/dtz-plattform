@@ -1616,6 +1616,30 @@
       margin: 0 0 10px;
     }
 
+    .course-shortcut-create-btn {
+      border: 1px solid #88d9b5;
+      background: linear-gradient(120deg, #1ea975, #45bf8e);
+      color: #ffffff;
+      box-shadow: 0 10px 22px rgba(31, 150, 103, 0.24);
+    }
+
+    .course-shortcut-create-btn:hover {
+      box-shadow: 0 12px 24px rgba(31, 150, 103, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .course-shortcut-delete-btn {
+      border: 1px solid #f3b7b2;
+      background: linear-gradient(120deg, #d35a50, #e3796f);
+      color: #ffffff;
+      box-shadow: 0 10px 22px rgba(188, 73, 62, 0.22);
+    }
+
+    .course-shortcut-delete-btn:hover {
+      box-shadow: 0 12px 24px rgba(188, 73, 62, 0.3);
+      transform: translateY(-1px);
+    }
+
     .course-shortcut-wrap {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -2012,8 +2036,8 @@
         <div id="courseShortcutSection" class="course-shortcut-section">
           <h3 class="course-shortcut-head">Kurse</h3>
           <div class="course-shortcut-actions">
-            <button id="shortcutOpenCourseBuilderBtn" type="button">Kurs erstellen</button>
-            <button id="shortcutOpenCourseBuilderBtnAlt" type="button" class="ghost-btn">Kurs erstellen</button>
+            <button id="shortcutOpenCourseBuilderBtn" type="button" class="course-shortcut-create-btn">Kurs erstellen</button>
+            <button id="shortcutDeleteCourseBtn" type="button" class="course-shortcut-delete-btn">Kurs löschen</button>
           </div>
           <div id="courseShortcutWrap" class="course-shortcut-wrap">
             <p class="section-subtitle">Noch keine Kurse vorhanden.</p>
@@ -7902,13 +7926,23 @@
     document.getElementById("createCourseWithStudentsBtn").addEventListener("click", createCourseWithStudents);
     document.getElementById("copyCourseBuilderListBtn").addEventListener("click", copyCourseBuilderList);
     const shortcutOpenCourseBuilderBtn = document.getElementById("shortcutOpenCourseBuilderBtn");
-    const shortcutOpenCourseBuilderBtnAlt = document.getElementById("shortcutOpenCourseBuilderBtnAlt");
-    [shortcutOpenCourseBuilderBtn, shortcutOpenCourseBuilderBtnAlt].forEach(btn => {
-      if (!btn) return;
-      btn.addEventListener("click", () => {
+    if (shortcutOpenCourseBuilderBtn) {
+      shortcutOpenCourseBuilderBtn.addEventListener("click", () => {
         openAdminPane("coursebuilder");
       });
-    });
+    }
+    const shortcutDeleteCourseBtn = document.getElementById("shortcutDeleteCourseBtn");
+    if (shortcutDeleteCourseBtn) {
+      shortcutDeleteCourseBtn.addEventListener("click", () => {
+        if (!selectedCourseId) {
+          setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+          openAdminPane("courses");
+          return;
+        }
+        openAdminPane("courses");
+        deleteCourse(selectedCourseId);
+      });
+    }
     document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
     document.getElementById("studentSelectAllChk").addEventListener("change", event => {
       setAllStudentsSelected(!!event.target.checked);
