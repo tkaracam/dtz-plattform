@@ -1609,6 +1609,13 @@
       font-weight: 700;
     }
 
+    .course-shortcut-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 10px;
+    }
+
     .course-shortcut-wrap {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -1811,6 +1818,10 @@
         gap: 8px;
       }
 
+      .course-shortcut-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
       .course-shortcut-btn {
         min-height: 64px;
         border-radius: 14px;
@@ -2006,6 +2017,10 @@
       <section id="panelCard" class="card hidden">
         <div id="courseShortcutSection" class="course-shortcut-section">
           <h3 class="course-shortcut-head">Kurse</h3>
+          <div class="course-shortcut-actions">
+            <button id="shortcutOpenCourseBuilderBtn" type="button">Kurs erstellen</button>
+            <button id="shortcutOpenCourseBuilderBtnAlt" type="button" class="ghost-btn">Kurs erstellen</button>
+          </div>
           <div id="courseShortcutWrap" class="course-shortcut-wrap">
             <p class="section-subtitle">Noch keine Kurse vorhanden.</p>
           </div>
@@ -2713,7 +2728,7 @@
     let kursCorrectionsRecords = [];
     let assignTeacherTargetUsername = "";
     let currentRoomDetail = { room: null, participants: [] };
-    let activeAdminPane = "accounts";
+    let activeAdminPane = "coursebuilder";
     let adminContext = {
       role: "",
       username: "",
@@ -2747,6 +2762,15 @@
       audit: "Audit",
       archive: "Mail Korrekturen"
     };
+
+    const HOMEWORK_MAIL_TEMPLATES_ARCHIVE = [
+      {
+        id: "kurswechsel",
+        title: "Kurswechsel",
+        prompt: "Sie möchten von einem Abendkurs in einen Vormittagskurs wechseln. Schreiben Sie an die Schule.",
+        points: ["Nennen Sie Ihren aktuellen Kurs.", "Sagen Sie, warum Sie wechseln möchten.", "Bitten Sie um einen Wechseltermin."]
+      }
+    ];
 
     const HOMEWORK_MAIL_TEMPLATES = [
       {
@@ -2862,12 +2886,6 @@
         title: "Jobcenter: Termin",
         prompt: "Sie können einen Termin beim Jobcenter nicht wahrnehmen. Schreiben Sie eine E-Mail.",
         points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
-      },
-      {
-        id: "kurswechsel",
-        title: "Kurswechsel",
-        prompt: "Sie möchten von einem Abendkurs in einen Vormittagskurs wechseln. Schreiben Sie an die Schule.",
-        points: ["Nennen Sie Ihren aktuellen Kurs.", "Sagen Sie, warum Sie wechseln möchten.", "Bitten Sie um einen Wechseltermin."]
       }
     ];
 
@@ -7889,6 +7907,14 @@
     document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
     document.getElementById("createCourseWithStudentsBtn").addEventListener("click", createCourseWithStudents);
     document.getElementById("copyCourseBuilderListBtn").addEventListener("click", copyCourseBuilderList);
+    const shortcutOpenCourseBuilderBtn = document.getElementById("shortcutOpenCourseBuilderBtn");
+    const shortcutOpenCourseBuilderBtnAlt = document.getElementById("shortcutOpenCourseBuilderBtnAlt");
+    [shortcutOpenCourseBuilderBtn, shortcutOpenCourseBuilderBtnAlt].forEach(btn => {
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        openAdminPane("coursebuilder");
+      });
+    });
     document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
     document.getElementById("studentSelectAllChk").addEventListener("change", event => {
       setAllStudentsSelected(!!event.target.checked);
