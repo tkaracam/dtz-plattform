@@ -134,6 +134,37 @@
       color: #e4f1ff;
     }
 
+    .hero-course-switch {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: auto minmax(220px, 420px);
+      gap: 8px;
+      align-items: center;
+      max-width: 640px;
+    }
+
+    .hero-course-switch label {
+      margin: 0;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #c8deff;
+      white-space: nowrap;
+    }
+
+    .hero-course-switch select {
+      width: 100%;
+      margin: 0;
+      min-height: 36px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(186, 214, 240, 0.9);
+      background: rgba(255, 255, 255, 0.96);
+      color: #173c5e;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: none;
+    }
+
     .layout {
       margin-top: 10px;
       display: grid;
@@ -233,51 +264,13 @@
       box-shadow: var(--shadow-hero);
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       color: #e9f4ff;
       position: relative;
       z-index: 5;
       position: sticky;
       top: 8px;
       z-index: 40;
-    }
-
-    .admin-topbar-left {
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      display: grid;
-      gap: 2px;
-    }
-
-    .admin-course-jump {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      width: min(560px, calc(100% - 170px));
-    }
-
-    .admin-course-jump label {
-      margin: 0;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #c8deff;
-      white-space: nowrap;
-    }
-
-    .admin-course-jump select {
-      width: 100%;
-      margin: 0;
-      min-height: 36px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(186, 214, 240, 0.9);
-      background: rgba(255, 255, 255, 0.96);
-      color: #173c5e;
-      font-size: 0.9rem;
-      font-weight: 600;
-      box-shadow: none;
     }
 
     .admin-identity-line {
@@ -580,6 +573,18 @@
       margin: 8px 0 0;
       font-size: 0.9rem;
       color: #284766;
+    }
+
+    .kurs-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .kurs-actions-grid button {
+      width: 100%;
+      min-width: 0;
     }
 
     .course-row-actions {
@@ -1271,8 +1276,13 @@
         top: 4px;
       }
 
-      .admin-topbar-left {
-        font-size: 0.86rem;
+      .hero-course-switch {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+      }
+
+      .hero-course-switch label {
+        font-size: 0.8rem;
       }
 
       .admin-menu-trigger {
@@ -1306,6 +1316,10 @@
 
       .course-switch-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .kurs-actions-grid {
+        grid-template-columns: 1fr;
       }
 
       .course-row-actions {
@@ -1512,11 +1526,11 @@
       color: #fdeef6;
     }
 
-    .admin-course-jump label {
+    .hero-course-switch label {
       color: #7d6d79;
     }
 
-    .admin-course-jump select {
+    .hero-course-switch select {
       border-color: #e6cfda;
       background: #fff;
       color: #51495a;
@@ -1712,20 +1726,11 @@
         top: 6px;
       }
 
-      .admin-topbar-left {
-        font-size: 0.86rem;
-      }
-
-      .admin-course-jump {
-        width: min(500px, calc(100% - 128px));
-        gap: 6px;
-      }
-
-      .admin-course-jump label {
+      .hero-course-switch label {
         font-size: 0.76rem;
       }
 
-      .admin-course-jump select {
+      .hero-course-switch select {
         min-height: 34px;
         font-size: 0.84rem;
       }
@@ -1861,15 +1866,15 @@
         <div>Bereich: <span id="activePaneLabel">Anmeldung</span></div>
         <div id="adminIdentityLine" class="admin-identity-line">Nicht angemeldet</div>
       </div>
-    </section>
-
-    <nav class="admin-topbar">
-      <div class="admin-topbar-left admin-course-jump">
+      <div class="hero-course-switch">
         <label for="topCourseJumpSelect">Kurswechsel</label>
         <select id="topCourseJumpSelect" disabled>
           <option value="">Kurs direkt öffnen</option>
         </select>
       </div>
+    </section>
+
+    <nav class="admin-topbar">
       <div class="admin-topbar-right">
         <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger">Menü</button>
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
@@ -1877,6 +1882,7 @@
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
           <button id="jumpCourseBuilderBtn" class="admin-menu-item" type="button">Kurs erstellen</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
+          <button id="jumpKursBtn" class="admin-menu-item" type="button">Kurs</button>
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
           <button id="jumpJessBtn" class="admin-menu-item" type="button">Jess</button>
@@ -1923,6 +1929,7 @@
           <button type="button" class="admin-quick-btn" data-pane="coursebuilder">Kurs erstellen</button>
           <button type="button" class="admin-quick-btn owner-only hidden" data-pane="teachers">Lehrkräfte</button>
           <button type="button" class="admin-quick-btn" data-pane="courses">Kurse</button>
+          <button type="button" class="admin-quick-btn" data-pane="kurs">Kurs</button>
           <button type="button" class="admin-quick-btn" data-pane="homeworks">Hausaufgaben</button>
           <button type="button" class="admin-quick-btn" data-pane="jess">Jess</button>
           <button type="button" class="admin-quick-btn archived-module hidden" data-pane="attendance">Anwesenheit</button>
@@ -2148,10 +2155,83 @@
               </div>
               <div id="courseStatus" class="hidden"></div>
               <div id="courseListWrap" style="margin-top: 10px;"></div>
-              <div id="courseAssignWrap" style="margin-top: 10px;"></div>
             </div>
           </details>
         </div>
+        </div>
+
+        <div id="paneKurs" class="admin-pane">
+          <div class="bulk-wrap">
+            <h2 class="section-title" style="font-size: 1.35rem;">Kurs</h2>
+            <p class="section-subtitle">Ausgewählten Kurs direkt verwalten: Teilnehmende und Hausaufgaben.</p>
+
+            <div class="course-switch-panel">
+              <div class="grid" style="margin-top:0;">
+                <div>
+                  <label for="kursPaneCourseSelect">Kurs auswählen</label>
+                  <select id="kursPaneCourseSelect">
+                    <option value="">Bitte Kurs auswählen</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="kursPaneMemberCount">TN-Anzahl</label>
+                  <input id="kursPaneMemberCount" type="text" value="0" readonly>
+                </div>
+              </div>
+              <p id="kursPaneInfo" class="course-switch-hint">Bitte zuerst einen Kurs auswählen.</p>
+            </div>
+
+            <details id="kursUsersDetails" class="fold-section">
+              <summary>Teilnehmende verwalten</summary>
+              <div class="fold-section-content">
+                <div class="kurs-actions-grid">
+                  <button id="kursEditUsersBtn" type="button" class="ghost-btn">Benutzer bearbeiten</button>
+                  <button id="kursDeleteUsersBtn" type="button" class="danger-btn">Löschen</button>
+                  <button id="kursResetPasswordsBtn" type="button">Neues Passwort erstellen</button>
+                  <button id="kursInsertUsersBtn" type="button" class="ghost-btn">TN einfügen</button>
+                </div>
+                <div id="kursActionStatus" class="hidden" style="margin-top:10px;"></div>
+                <div id="courseAssignWrap" style="margin-top: 10px;"></div>
+              </div>
+            </details>
+
+            <details id="kursHomeworkDetails" class="fold-section">
+              <summary>Kurs-Hausaufgaben</summary>
+              <div class="fold-section-content">
+                <div>
+                  <label for="kursHwTaskTemplate">Mail-Aufgabe auswählen</label>
+                  <select id="kursHwTaskTemplate">
+                    <option value="">Bitte Aufgabe wählen</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="kursHwTaskPreview">Aufgabenstellung</label>
+                  <textarea id="kursHwTaskPreview" rows="6" readonly></textarea>
+                </div>
+                <div class="grid">
+                  <div>
+                    <label for="kursHwDurationValue">Dauer</label>
+                    <input id="kursHwDurationValue" type="number" min="5" max="1440" value="60">
+                  </div>
+                  <div>
+                    <label for="kursHwDurationUnit">Einheit</label>
+                    <select id="kursHwDurationUnit">
+                      <option value="minutes" selected>Minuten</option>
+                      <option value="hours">Stunden</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="kursHwStartsAt">Startzeit</label>
+                    <input id="kursHwStartsAt" type="datetime-local" required>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button id="kursCreateHomeworkBtn" type="button">Hausaufgabe zuweisen</button>
+                </div>
+                <div id="kursHomeworkStatus" class="hidden"></div>
+              </div>
+            </details>
+          </div>
         </div>
 
         <div id="paneHomeworks" class="admin-pane">
@@ -2568,14 +2648,15 @@
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
-    const JESS_STACK_PANES = ["accounts", "courses", "homeworks", "archive"];
-    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpHomeworkBtn", "jumpArchiveBtn", "jumpJessBtn"];
+    const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
+    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpArchiveBtn", "jumpJessBtn"];
 
     const adminPaneMap = {
       coursebuilder: "paneCourseBuilder",
       accounts: "paneAccounts",
       teachers: "paneTeachers",
       courses: "paneCourses",
+      kurs: "paneKurs",
       homeworks: "paneHomeworks",
       audit: "paneAudit",
       archive: "paneArchive"
@@ -2586,6 +2667,7 @@
       accounts: "Schülerzugänge",
       teachers: "Lehrkräfte",
       courses: "Kurse",
+      kurs: "Kurs",
       homeworks: "Hausaufgaben",
       audit: "Audit",
       archive: "Mail Korrekturen"
@@ -2909,6 +2991,11 @@
         btn.classList.toggle("is-active", btn.dataset.pane === paneName);
       });
 
+      if (paneName === "kurs") {
+        renderCourseAssignEditor(selectedCourseId);
+        updateKursPaneSummary();
+      }
+
       const checklist = document.querySelector("#panelCard .start-checklist");
       if (checklist) {
         checklist.classList.toggle("hidden", paneName !== "accounts");
@@ -3050,6 +3137,8 @@
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       ensureResponsiveTableObserver();
+      populateKursHomeworkTemplates();
+      updateKursHomeworkTemplatePreview();
       setAdminPane(activeAdminPane || "accounts");
       renderRecentRoomTasks();
       renderBulkPreview(buildBulkCredentials());
@@ -3084,6 +3173,17 @@
         topCourseJump.innerHTML = '<option value="">Kurs direkt öffnen</option>';
         topCourseJump.disabled = true;
       }
+      const kursSelect = document.getElementById("kursPaneCourseSelect");
+      if (kursSelect) {
+        kursSelect.innerHTML = '<option value="">Bitte Kurs auswählen</option>';
+        kursSelect.disabled = true;
+      }
+      const kursCount = document.getElementById("kursPaneMemberCount");
+      if (kursCount) kursCount.value = "0";
+      const kursInfo = document.getElementById("kursPaneInfo");
+      if (kursInfo) kursInfo.textContent = "Bitte zuerst einen Kurs auswählen.";
+      clearBox("kursActionStatus");
+      clearBox("kursHomeworkStatus");
       document.getElementById("panelCard").classList.add("hidden");
       document.getElementById("loginCard").classList.remove("hidden");
       const pwdInput = document.getElementById("adminPassword");
@@ -3878,16 +3978,44 @@
       if (!hint) return;
       if (!course) {
         hint.textContent = "Bitte zuerst einen Kurs auswählen.";
+        updateKursPaneSummary();
         return;
       }
       hint.textContent = `Aktueller Kurs: ${getCourseLabel(course, true)} | Mitglieder: ${Array.isArray(course.members) ? course.members.length : 0}`;
+      updateKursPaneSummary();
     }
 
     function getCourseSwitcherSelects() {
       return [
         document.getElementById("courseSwitchSelect"),
-        document.getElementById("topCourseJumpSelect")
+        document.getElementById("topCourseJumpSelect"),
+        document.getElementById("kursPaneCourseSelect")
       ].filter(Boolean);
+    }
+
+    function updateKursPaneSummary() {
+      const course = getCourseById(selectedCourseId);
+      const infoNode = document.getElementById("kursPaneInfo");
+      const memberCount = document.getElementById("kursPaneMemberCount");
+      const usersBtn = document.getElementById("kursEditUsersBtn");
+      const deleteBtn = document.getElementById("kursDeleteUsersBtn");
+      const resetBtn = document.getElementById("kursResetPasswordsBtn");
+      const insertBtn = document.getElementById("kursInsertUsersBtn");
+      const hwBtn = document.getElementById("kursCreateHomeworkBtn");
+      const hasCourse = !!course;
+
+      if (memberCount) {
+        memberCount.value = hasCourse ? String(Array.isArray(course.members) ? course.members.length : 0) : "0";
+      }
+      if (infoNode) {
+        infoNode.textContent = hasCourse
+          ? `Ausgewählt: ${getCourseLabel(course, true)}`
+          : "Bitte zuerst einen Kurs auswählen.";
+      }
+      [usersBtn, deleteBtn, resetBtn, insertBtn, hwBtn].forEach(btn => {
+        if (!btn) return;
+        btn.disabled = !hasCourse;
+      });
     }
 
     function renderCourseSwitcher() {
@@ -3932,6 +4060,7 @@
         setAccountsScopeCourse(id);
       }
       updateCourseSwitchHint();
+      updateKursPaneSummary();
       if (openEditor) {
         renderCourseAssignEditor(id);
       }
@@ -3943,13 +4072,10 @@
         setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
         return;
       }
-      const courseId = String(course.course_id || "");
-      const hwCourse = document.getElementById("hwCourseId");
-      if (hwCourse && Array.from(hwCourse.options).some(o => o.value === courseId)) {
-        hwCourse.value = courseId;
-      }
-      setBox("courseStatus", "ok", `Arbeitskurs gesetzt: ${getCourseLabel(course, false)}.`);
-      openAdminPane("homeworks");
+      openAdminPane("kurs");
+      const details = document.getElementById("kursHomeworkDetails");
+      if (details) details.open = true;
+      setBox("kursHomeworkStatus", "ok", `Kurs gewählt: ${getCourseLabel(course, false)}.`);
     }
 
     function renderCourses(courses) {
@@ -4176,6 +4302,199 @@
       const clearBtn = document.getElementById("courseMembersClearBtn");
       if (selectAllBtn) selectAllBtn.disabled = all.length === 0 || checked === all.length;
       if (clearBtn) clearBtn.disabled = checked === 0;
+    }
+
+    function getCheckedCourseMemberUsernames() {
+      const wrap = document.getElementById("courseAssignWrap");
+      if (!wrap) return [];
+      return Array.from(wrap.querySelectorAll("[data-course-member]:checked"))
+        .map(node => String(node.getAttribute("data-course-member") || "").trim().toLowerCase())
+        .filter(Boolean);
+    }
+
+    function setKursActionBox(type, message) {
+      setBox("kursActionStatus", type, message);
+    }
+
+    async function deleteSelectedCourseParticipants() {
+      clearBox("kursActionStatus");
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        setKursActionBox("error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      const selected = getCheckedCourseMemberUsernames();
+      if (!selected.length) {
+        setKursActionBox("error", "Bitte zuerst Teilnehmende markieren.");
+        return;
+      }
+      const confirmed = window.confirm(`${selected.length} markierte Teilnehmende aus dem Kurs entfernen?`);
+      if (!confirmed) return;
+      try {
+        const selectedSet = new Set(selected);
+        const currentMembers = Array.isArray(course.members) ? course.members : [];
+        const nextMembers = currentMembers
+          .map(user => String(user || "").trim().toLowerCase())
+          .filter(Boolean)
+          .filter(username => !selectedSet.has(username));
+        const response = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_members",
+            course_id: String(course.course_id || ""),
+            members: nextMembers
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setKursActionBox("ok", `${selected.length} Teilnehmende wurden aus dem Kurs entfernt.`);
+        await listCourses();
+        setSelectedCourse(String(course.course_id || ""), true);
+      } catch (err) {
+        setKursActionBox("error", `Löschen fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function resetSelectedCourseParticipantsPasswords() {
+      clearBox("kursActionStatus");
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        setKursActionBox("error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      const selected = getCheckedCourseMemberUsernames();
+      if (!selected.length) {
+        setKursActionBox("error", "Bitte zuerst Teilnehmende markieren.");
+        return;
+      }
+      const confirmed = window.confirm(`${selected.length} neue Passwörter erstellen?`);
+      if (!confirmed) return;
+      const created = [];
+      const failed = [];
+      for (const username of selected) {
+        const password = randomPassword();
+        try {
+          const response = await fetch("./api/student_manage.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "reset_password",
+              username,
+              new_password: password
+            })
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          created.push(`${username}: ${password}`);
+        } catch (err) {
+          failed.push(`${username} (${err.message})`);
+        }
+      }
+      if (created.length) {
+        window.alert(`Neue Passwörter:\n${created.join("\n")}`);
+      }
+      if (failed.length) {
+        setKursActionBox("error", `Teilweise fehlgeschlagen (${failed.length}).`);
+      } else {
+        setKursActionBox("ok", `Passwort wurde für ${created.length} Teilnehmende neu erstellt.`);
+      }
+    }
+
+    function openAccountsForSelectedCourse(mode) {
+      clearBox("kursActionStatus");
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        setKursActionBox("error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      setAccountsScopeCourse(String(course.course_id || ""));
+      openAdminPane("accounts");
+      const details = document.querySelectorAll("#paneAccounts details.fold-section");
+      if (mode === "insert") {
+        if (details[0]) details[0].open = true;
+      } else if (mode === "edit") {
+        if (details[2]) details[2].open = true;
+      }
+      setBox("userStatus", "ok", `Kurskontext übernommen: ${getCourseLabel(course, false)}.`);
+    }
+
+    function populateKursHomeworkTemplates() {
+      const select = document.getElementById("kursHwTaskTemplate");
+      if (!select) return;
+      const options = ['<option value="">Bitte Aufgabe wählen</option>'];
+      HOMEWORK_MAIL_TEMPLATES.forEach((template, index) => {
+        options.push(`<option value="${escapeHtml(template.id)}">${index + 1}. ${escapeHtml(template.title)}</option>`);
+      });
+      select.innerHTML = options.join("");
+    }
+
+    function getSelectedKursHomeworkTemplate() {
+      const select = document.getElementById("kursHwTaskTemplate");
+      const selectedId = String(select?.value || "").trim();
+      return HOMEWORK_MAIL_TEMPLATES.find(template => String(template.id || "") === selectedId) || null;
+    }
+
+    function updateKursHomeworkTemplatePreview() {
+      const preview = document.getElementById("kursHwTaskPreview");
+      if (!preview) return;
+      const template = getSelectedKursHomeworkTemplate();
+      if (!template) {
+        preview.value = "";
+        return;
+      }
+      preview.value = buildHomeworkTemplateDescription(template);
+    }
+
+    async function createHomeworkAssignmentForSelectedCourse() {
+      clearBox("kursHomeworkStatus");
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        setBox("kursHomeworkStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        return;
+      }
+      const selectedTemplate = getSelectedKursHomeworkTemplate();
+      const title = String(selectedTemplate?.title || "").trim();
+      const description = selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "";
+      const durationValue = Number(document.getElementById("kursHwDurationValue")?.value || 0);
+      const durationUnit = String(document.getElementById("kursHwDurationUnit")?.value || "minutes");
+      const startsAtRaw = String(document.getElementById("kursHwStartsAt")?.value || "").trim();
+      if (!selectedTemplate || !title || !description) {
+        setBox("kursHomeworkStatus", "error", "Bitte zuerst eine Mail-Aufgabe auswählen.");
+        return;
+      }
+      let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
+      if (durationUnit === "hours") durationMinutes *= 60;
+      durationMinutes = Math.max(5, Math.min(24 * 60, durationMinutes));
+      if (!startsAtRaw) {
+        setBox("kursHomeworkStatus", "error", "Bitte eine Startzeit festlegen.");
+        return;
+      }
+      const ts = Date.parse(startsAtRaw);
+      if (!Number.isFinite(ts)) {
+        setBox("kursHomeworkStatus", "error", "Ungültige Startzeit.");
+        return;
+      }
+      try {
+        const payload = await callHomeworkAssignApi({
+          action: "create",
+          title,
+          description,
+          attachment: "",
+          target_type: "course",
+          course_id: String(course.course_id || ""),
+          usernames: [],
+          duration_minutes: durationMinutes,
+          starts_at: new Date(ts).toISOString()
+        });
+        setBox("kursHomeworkStatus", "ok", `Hausaufgabe gespeichert. Zugewiesen: ${payload.target_count || 0}`);
+        document.getElementById("kursHwTaskTemplate").value = "";
+        updateKursHomeworkTemplatePreview();
+        document.getElementById("kursHwStartsAt").value = "";
+        listHomeworkAssignments();
+      } catch (err) {
+        setBox("kursHomeworkStatus", "error", `Aufgabe konnte nicht gespeichert werden: ${err.message}`);
+      }
     }
 
     async function listCourses() {
@@ -6925,16 +7244,23 @@
       const id = String(event.target?.value || "");
       setSelectedCourse(id, true);
     });
+    const kursPaneCourseSelect = document.getElementById("kursPaneCourseSelect");
+    if (kursPaneCourseSelect) {
+      kursPaneCourseSelect.addEventListener("change", event => {
+        const id = String(event.target?.value || "");
+        setSelectedCourse(id, true);
+      });
+    }
     const topCourseJumpSelect = document.getElementById("topCourseJumpSelect");
     if (topCourseJumpSelect) {
       topCourseJumpSelect.addEventListener("change", event => {
         const id = String(event.target?.value || "").trim();
         if (!id) return;
-        openAdminPane("courses");
+        openAdminPane("kurs");
         setSelectedCourse(id, true);
         const course = getCourseById(id);
         if (course) {
-          setBox("courseStatus", "ok", `Kurs geöffnet: ${getCourseLabel(course, false)}.`);
+          setKursActionBox("ok", `Kurs geöffnet: ${getCourseLabel(course, false)}.`);
         }
       });
     }
@@ -6943,8 +7269,11 @@
         setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
         return;
       }
+      openAdminPane("kurs");
+      const details = document.getElementById("kursUsersDetails");
+      if (details) details.open = true;
       renderCourseAssignEditor(selectedCourseId);
-      setBox("courseStatus", "ok", "Mitgliedereditor geöffnet.");
+      setKursActionBox("ok", "Teilnehmenden-Verwaltung geöffnet.");
     });
     document.getElementById("useSelectedCourseBtn").addEventListener("click", () => {
       if (!selectedCourseId) {
@@ -6973,6 +7302,12 @@
     document.getElementById("hwClearUsersBtn").addEventListener("click", () => setHomeworkUserSelection(false));
     document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
     document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
+    document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
+    document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
+    document.getElementById("kursEditUsersBtn").addEventListener("click", () => openAccountsForSelectedCourse("edit"));
+    document.getElementById("kursInsertUsersBtn").addEventListener("click", () => openAccountsForSelectedCourse("insert"));
+    document.getElementById("kursDeleteUsersBtn").addEventListener("click", deleteSelectedCourseParticipants);
+    document.getElementById("kursResetPasswordsBtn").addEventListener("click", resetSelectedCourseParticipantsPasswords);
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
       updateAttendanceCourseBySelect();
       renderAttendanceEditor();
@@ -7049,6 +7384,10 @@
     document.getElementById("jumpCoursesBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("courses");
+    });
+    document.getElementById("jumpKursBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      openAdminPane("kurs");
     });
     document.getElementById("jumpHomeworkBtn").addEventListener("click", () => {
       closeAdminMenu();
