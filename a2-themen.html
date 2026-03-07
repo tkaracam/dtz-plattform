@@ -14,6 +14,8 @@
       --pink: #ea8fb0;
       --dark: #4f4a6b;
       --ok: #2b8a5b;
+      --err: #b65252;
+      --chip: #f8faff;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,7 +26,7 @@
       line-height: 1.45;
     }
     .wrap {
-      max-width: 980px;
+      max-width: 1080px;
       margin: 0 auto;
       padding: 18px;
     }
@@ -61,6 +63,7 @@
       font-size: 1.12rem;
       color: #253b5a;
     }
+    .muted { color: var(--muted); }
     .topics {
       display: flex;
       flex-wrap: wrap;
@@ -70,9 +73,9 @@
       border: 1px solid #d4dbea;
       border-radius: 999px;
       padding: 6px 10px;
-      background: #f8faff;
+      background: var(--chip);
       color: #304b72;
-      font-size: .9rem;
+      font-size: .88rem;
     }
     .grammar-item {
       border: 1px solid #dfe6f2;
@@ -82,35 +85,24 @@
       background: #fbfdff;
     }
     .grammar-item strong { color: #334a70; }
-    .task {
-      border: 1px solid #dce6f2;
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 8px;
-      background: #fff;
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
     }
-    .task label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #314a70;
-    }
-    .task textarea, .task input {
+    .toolbar label { font-weight: 700; color: #314a70; }
+    select, input[type="text"] {
       width: 100%;
       border: 1px solid #c8d6eb;
       border-radius: 10px;
-      padding: 9px;
+      padding: 10px;
       font: inherit;
       color: var(--text);
       background: #fff;
     }
-    .task textarea { min-height: 88px; resize: vertical; }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
+
     button {
       border: none;
       border-radius: 10px;
@@ -126,6 +118,56 @@
       background: #edf3fe;
       border: 1px solid #c9d8f0;
     }
+
+    .task-box {
+      border: 1px solid #dce6f2;
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+    .task-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #cad8ef;
+      background: #f2f7ff;
+      color: #2e4e77;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    .prompt {
+      margin: 0 0 10px;
+      font-weight: 700;
+      color: #2a446b;
+    }
+    .choice-wrap {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .choice-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fcfeff;
+    }
+    .answer-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
     .result {
       margin-top: 8px;
       padding: 10px;
@@ -136,9 +178,33 @@
       min-height: 40px;
       white-space: pre-wrap;
     }
-    .ok { color: var(--ok); }
+    .ok { color: var(--ok); font-weight: 700; }
+    .err { color: var(--err); font-weight: 700; }
+    .stats {
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 10px;
+      color: #314f79;
+      font-size: .92rem;
+    }
+    .copyright-note {
+      font-size: .85rem;
+      color: #516b90;
+      margin-top: 10px;
+      border-top: 1px dashed #d4deef;
+      padding-top: 8px;
+    }
+
     @media (min-width: 860px) {
       .col-6 { grid-column: span 6; }
+      .toolbar {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+      }
+      .answer-row {
+        grid-template-columns: 1fr auto auto;
+      }
     }
   </style>
 </head>
@@ -146,105 +212,283 @@
   <main class="wrap">
     <section class="hero">
       <h1>A2-Themen, Grammatik und interaktive Übungen</h1>
-      <p>Trainingsbereich für A2: Themenwortschatz, Grammatik-Bausteine und kurze Aufgaben mit Sofort-Feedback.</p>
+      <p>Originale, neu formulierte Übungen auf Basis typischer A2-Grammatikfelder. Mit direktem Feedback und Lösungshinweis.</p>
     </section>
 
     <section class="grid">
       <article class="card col-6">
-        <h2>A2-Themen</h2>
+        <h2>A2-Themenfelder</h2>
         <div class="topics">
-          <span class="chip">Familie und Freunde</span>
+          <span class="chip">Familie und Alltag</span>
           <span class="chip">Wohnen</span>
           <span class="chip">Arbeit und Beruf</span>
-          <span class="chip">Einkaufen</span>
+          <span class="chip">Einkaufen und Service</span>
           <span class="chip">Gesundheit</span>
           <span class="chip">Termine und Zeit</span>
           <span class="chip">Freizeit</span>
           <span class="chip">Reisen und Verkehr</span>
-          <span class="chip">Behörden</span>
           <span class="chip">Schule und Kurs</span>
+          <span class="chip">Behörde und Formulare</span>
         </div>
       </article>
 
       <article class="card col-6">
-        <h2>Grammatik (A2-Fokus)</h2>
-        <div class="grammar-item"><strong>Perfekt:</strong> Ich <em>habe</em> gestern gearbeitet.</div>
-        <div class="grammar-item"><strong>Nebensatz mit weil:</strong> Ich komme später, <em>weil ich einen Termin habe</em>.</div>
-        <div class="grammar-item"><strong>Modalverben:</strong> Ich <em>muss</em> morgen zum Amt gehen.</div>
-        <div class="grammar-item"><strong>Trennbare Verben:</strong> Ich <em>stehe</em> um 6 Uhr <em>auf</em>.</div>
-        <div class="grammar-item"><strong>Präpositionen:</strong> am Montag, um 8 Uhr, im Kurs.</div>
+        <h2>Grammatikfokus (A2)</h2>
+        <div class="grammar-item"><strong>Perfekt mit haben/sein:</strong> Ich habe gelernt. / Ich bin gefahren.</div>
+        <div class="grammar-item"><strong>Nebensätze:</strong> weil, dass, wenn (Verb am Ende).</div>
+        <div class="grammar-item"><strong>Modalverben:</strong> müssen, können, dürfen im Alltag.</div>
+        <div class="grammar-item"><strong>Präpositionen:</strong> am, um, im, nach, zu, mit, bei, von.</div>
+        <div class="grammar-item"><strong>Trennbare Verben:</strong> aufstehen, einkaufen, anrufen.</div>
+        <div class="grammar-item"><strong>Vergleiche:</strong> Komparativ/Superlativ (größer, am größten).</div>
       </article>
 
-      <article class="card col-6">
-        <h2>Interaktive Übung 1: Satzbildung</h2>
-        <div class="task">
-          <label for="u1">Bilden Sie einen Satz mit „weil“ und „Arzttermin“:</label>
-          <textarea id="u1" placeholder="Beispiel: Ich ..."></textarea>
-          <div class="row">
-            <button type="button" id="check1">Prüfen</button>
-            <button type="button" class="secondary" id="clear1">Leeren</button>
+      <article class="card">
+        <h2>Interaktiver Übungsgenerator</h2>
+
+        <div class="toolbar">
+          <div>
+            <label for="topicFilter">Thema wählen</label>
+            <select id="topicFilter">
+              <option value="ALLE">Alle Themen</option>
+              <option value="Perfekt">Perfekt</option>
+              <option value="Nebensatz">Nebensatz</option>
+              <option value="Modalverben">Modalverben</option>
+              <option value="Präpositionen">Präpositionen</option>
+              <option value="Trennbare Verben">Trennbare Verben</option>
+              <option value="Vergleich">Vergleich</option>
+              <option value="Kasus">Kasus</option>
+            </select>
           </div>
-          <div class="result" id="r1"></div>
+          <button type="button" id="newTaskBtn">Neue Aufgabe</button>
         </div>
-      </article>
 
-      <article class="card col-6">
-        <h2>Interaktive Übung 2: Perfekt</h2>
-        <div class="task">
-          <label for="u2">Schreiben Sie einen Perfekt-Satz mit „lernen“:</label>
-          <input id="u2" type="text" placeholder="Ich habe ... gelernt.">
-          <div class="row">
-            <button type="button" id="check2">Prüfen</button>
-            <button type="button" class="secondary" id="clear2">Leeren</button>
+        <div class="task-box" id="taskBox">
+          <div class="task-header">
+            <span class="badge" id="taskTopicBadge">Thema</span>
+            <span class="badge" id="taskTypeBadge">Aufgabentyp</span>
           </div>
-          <div class="result" id="r2"></div>
+
+          <p class="prompt" id="taskPrompt">Bitte klicken Sie auf „Neue Aufgabe“.</p>
+
+          <div class="choice-wrap" id="choiceWrap" hidden></div>
+
+          <div class="answer-row" id="fillWrap" hidden>
+            <input id="answerInput" type="text" placeholder="Ihre Antwort...">
+            <button type="button" id="checkBtn">Prüfen</button>
+            <button type="button" class="secondary" id="solutionBtn">Lösung anzeigen</button>
+          </div>
+
+          <div class="answer-row" id="choiceButtons" hidden>
+            <button type="button" id="checkChoiceBtn">Prüfen</button>
+            <button type="button" class="secondary" id="solutionChoiceBtn">Lösung anzeigen</button>
+            <button type="button" class="secondary" id="nextBtn">Nächste Aufgabe</button>
+          </div>
+
+          <div class="result" id="resultBox"></div>
+          <div class="stats" id="statsBox">Richtig: 0 | Versuche: 0</div>
+
+          <div class="copyright-note">
+            Hinweis: Alle Übungen auf dieser Seite sind neu erstellt und nicht wörtlich aus Lehrwerken übernommen.
+          </div>
         </div>
       </article>
     </section>
   </main>
 
   <script>
-    const u1 = document.getElementById('u1');
-    const r1 = document.getElementById('r1');
-    document.getElementById('check1').addEventListener('click', () => {
-      const txt = (u1.value || '').trim();
-      if (!txt) {
-        r1.textContent = 'Bitte zuerst einen Satz schreiben.';
+    const tasks = [
+      { type: "fill", topic: "Perfekt", prompt: "Lückentext: Ich ___ gestern mit dem Bus gefahren. (haben/sein)", answers: ["bin"], hint: "Bewegung -> meistens mit 'sein'.", solution: "Ich bin gestern mit dem Bus gefahren." },
+      { type: "fill", topic: "Perfekt", prompt: "Lückentext: Wir ___ am Wochenende Deutsch gelernt.", answers: ["haben"], hint: "'lernen' bildet Perfekt mit 'haben'.", solution: "Wir haben am Wochenende Deutsch gelernt." },
+      { type: "fill", topic: "Perfekt", prompt: "Lückentext: Meine Schwester ___ um 7 Uhr aufgestanden.", answers: ["ist"], hint: "Orts-/Zustandswechsel -> oft 'sein'.", solution: "Meine Schwester ist um 7 Uhr aufgestanden." },
+      { type: "choice", topic: "Perfekt", prompt: "Welche Form ist korrekt?", options: ["Ich habe gestern ins Kino gegangen.", "Ich bin gestern ins Kino gegangen.", "Ich bin gestern ins Kino gegeht."], answerIndex: 1, hint: "'gehen' -> Perfekt mit 'sein'.", solution: "Ich bin gestern ins Kino gegangen." },
+
+      { type: "fill", topic: "Nebensatz", prompt: "Setzen Sie ein: Ich bleibe zu Hause, ___ ich krank bin.", answers: ["weil"], hint: "Grund angeben -> 'weil'.", solution: "Ich bleibe zu Hause, weil ich krank bin." },
+      { type: "choice", topic: "Nebensatz", prompt: "Welche Satzstellung ist richtig?", options: ["..., weil ich habe morgen einen Termin.", "..., weil ich morgen einen Termin habe.", "..., weil habe ich morgen einen Termin."], answerIndex: 1, hint: "Im Nebensatz steht das Verb am Ende.", solution: "..., weil ich morgen einen Termin habe." },
+      { type: "fill", topic: "Nebensatz", prompt: "Setzen Sie ein: Ich weiß, ___ der Kurs heute ausfällt.", answers: ["dass"], hint: "Ein Inhaltssatz braucht hier 'dass'.", solution: "Ich weiß, dass der Kurs heute ausfällt." },
+      { type: "fill", topic: "Nebensatz", prompt: "Setzen Sie ein: ___ ich Zeit habe, besuche ich meine Freundin.", answers: ["wenn"], hint: "Bedingung/Wiederholung -> 'wenn'.", solution: "Wenn ich Zeit habe, besuche ich meine Freundin." },
+
+      { type: "fill", topic: "Modalverben", prompt: "Lückentext: Ich ___ morgen zum Amt gehen.", answers: ["muss"], hint: "Notwendigkeit -> müssen.", solution: "Ich muss morgen zum Amt gehen." },
+      { type: "choice", topic: "Modalverben", prompt: "Welche Form passt? (Erlaubnis)", options: ["Du darfst heute früher gehen.", "Du musst heute früher gehen.", "Du kannst heute früher gehen müssen."], answerIndex: 0, hint: "Erlaubnis = dürfen.", solution: "Du darfst heute früher gehen." },
+      { type: "fill", topic: "Modalverben", prompt: "Lückentext: Wir ___ gut Deutsch sprechen. (Fähigkeit)", answers: ["können"], hint: "Fähigkeit -> können.", solution: "Wir können gut Deutsch sprechen." },
+
+      { type: "fill", topic: "Präpositionen", prompt: "Setzen Sie ein: Der Termin ist ___ Montag ___ 9 Uhr.", answers: ["am um"], hint: "Tag + Uhrzeit: am ... um ...", solution: "Der Termin ist am Montag um 9 Uhr." },
+      { type: "choice", topic: "Präpositionen", prompt: "Welche Variante ist korrekt?", options: ["Ich fahre nach Berlin.", "Ich fahre zu Berlin.", "Ich fahre im Berlin."], answerIndex: 0, hint: "Stadt/Land ohne Artikel: nach + Ort.", solution: "Ich fahre nach Berlin." },
+      { type: "fill", topic: "Präpositionen", prompt: "Setzen Sie ein: Ich gehe heute ___ Arzt.", answers: ["zum"], hint: "zu dem = zum.", solution: "Ich gehe heute zum Arzt." },
+      { type: "choice", topic: "Präpositionen", prompt: "Welche Form ist richtig?", options: ["Ich wohne bei meinen Eltern.", "Ich wohne von meinen Eltern.", "Ich wohne mit meinen Eltern bei."], answerIndex: 0, hint: "'bei' drückt Aufenthalt bei Personen aus.", solution: "Ich wohne bei meinen Eltern." },
+
+      { type: "fill", topic: "Trennbare Verben", prompt: "Lückentext: Ich ___ jeden Tag um 6 Uhr ___. (aufstehen)", answers: ["stehe auf"], hint: "Im Hauptsatz steht die Vorsilbe am Ende.", solution: "Ich stehe jeden Tag um 6 Uhr auf." },
+      { type: "fill", topic: "Trennbare Verben", prompt: "Lückentext: Wir ___ unsere Lehrerin morgen ___. (anrufen)", answers: ["rufen an"], hint: "rufen ... an", solution: "Wir rufen unsere Lehrerin morgen an." },
+      { type: "choice", topic: "Trennbare Verben", prompt: "Welche Form ist korrekt?", options: ["Ich einkaufe heute im Supermarkt.", "Ich kaufe heute im Supermarkt ein.", "Ich kaufe ein heute im Supermarkt."], answerIndex: 1, hint: "Trennbares Verb: einkaufen -> kaufe ... ein.", solution: "Ich kaufe heute im Supermarkt ein." },
+
+      { type: "choice", topic: "Vergleich", prompt: "Welche Form ist richtig?", options: ["Mein Zimmer ist groß als dein Zimmer.", "Mein Zimmer ist größer als dein Zimmer.", "Mein Zimmer ist am groß als dein Zimmer."], answerIndex: 1, hint: "Komparativ: größer als.", solution: "Mein Zimmer ist größer als dein Zimmer." },
+      { type: "fill", topic: "Vergleich", prompt: "Lückentext: Das ist der ___ Weg zur Schule. (kurz)", answers: ["kürzeste", "kuerzeste"], hint: "Superlativ mit Artikel: der/die/das + ...-ste", solution: "Das ist der kürzeste Weg zur Schule." },
+
+      { type: "choice", topic: "Kasus", prompt: "Welche Frage passt zum Akkusativ?", options: ["Wem helfen Sie?", "Wen besuchen Sie?", "Wo wohnen Sie?"], answerIndex: 1, hint: "Akkusativ fragt oft mit 'wen/was'.", solution: "Wen besuchen Sie?" },
+      { type: "fill", topic: "Kasus", prompt: "Setzen Sie das richtige Pronomen ein: Ich sehe ___ (du).", answers: ["dich"], hint: "Akkusativ von 'du' ist 'dich'.", solution: "Ich sehe dich." },
+      { type: "fill", topic: "Kasus", prompt: "Setzen Sie das richtige Pronomen ein: Ich helfe ___ (du).", answers: ["dir"], hint: "Dativ von 'du' ist 'dir'.", solution: "Ich helfe dir." },
+
+      { type: "fill", topic: "Präpositionen", prompt: "Setzen Sie ein: Der Unterricht beginnt ___ 18:00 Uhr.", answers: ["um"], hint: "Uhrzeit -> um.", solution: "Der Unterricht beginnt um 18:00 Uhr." },
+      { type: "fill", topic: "Präpositionen", prompt: "Setzen Sie ein: Ich komme ___ der Türkei.", answers: ["aus"], hint: "Herkunft -> aus.", solution: "Ich komme aus der Türkei." },
+      { type: "choice", topic: "Nebensatz", prompt: "Welche Variante ist korrekt?", options: ["Ich frage, ob der Kurs heute stattfindet.", "Ich frage, ob findet der Kurs heute statt.", "Ich frage ob, der Kurs heute stattfindet."], answerIndex: 0, hint: "Bei 'ob'-Sätzen steht das Verb am Ende.", solution: "Ich frage, ob der Kurs heute stattfindet." },
+      { type: "choice", topic: "Modalverben", prompt: "Welche Form ist natürlich?", options: ["Ich muss heute früher gehen.", "Ich muss heute früher zu gehen.", "Ich muss heute gehen früher."], answerIndex: 0, hint: "Modalverb + Infinitiv ohne 'zu'.", solution: "Ich muss heute früher gehen." }
+    ];
+
+    const topicFilter = document.getElementById("topicFilter");
+    const newTaskBtn = document.getElementById("newTaskBtn");
+    const taskTopicBadge = document.getElementById("taskTopicBadge");
+    const taskTypeBadge = document.getElementById("taskTypeBadge");
+    const taskPrompt = document.getElementById("taskPrompt");
+    const choiceWrap = document.getElementById("choiceWrap");
+    const fillWrap = document.getElementById("fillWrap");
+    const choiceButtons = document.getElementById("choiceButtons");
+    const answerInput = document.getElementById("answerInput");
+    const resultBox = document.getElementById("resultBox");
+    const statsBox = document.getElementById("statsBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const solutionBtn = document.getElementById("solutionBtn");
+    const checkChoiceBtn = document.getElementById("checkChoiceBtn");
+    const solutionChoiceBtn = document.getElementById("solutionChoiceBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    let currentTask = null;
+    let correctCount = 0;
+    let tryCount = 0;
+
+    function normalizeText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[.,!?;:]/g, "")
+        .replace(/[ä]/g, "ae")
+        .replace(/[ö]/g, "oe")
+        .replace(/[ü]/g, "ue")
+        .replace(/[ß]/g, "ss")
+        .replace(/\s+/g, " ");
+    }
+
+    function getFilteredTasks() {
+      const filter = String(topicFilter.value || "ALLE");
+      if (filter === "ALLE") return tasks;
+      return tasks.filter(task => task.topic === filter);
+    }
+
+    function randomTask() {
+      const list = getFilteredTasks();
+      if (!list.length) return null;
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function renderTask(task) {
+      currentTask = task;
+      resultBox.textContent = "";
+      if (!task) {
+        taskPrompt.textContent = "Für dieses Thema sind noch keine Aufgaben hinterlegt.";
+        choiceWrap.hidden = true;
+        fillWrap.hidden = true;
+        choiceButtons.hidden = true;
         return;
       }
-      const hasWeil = /\bweil\b/i.test(txt);
-      const hasArzt = /arzttermin/i.test(txt);
-      if (hasWeil && hasArzt) {
-        r1.innerHTML = '<span class="ok">Gut! Die Schlüsselwörter sind vorhanden.</span>';
+
+      taskTopicBadge.textContent = task.topic;
+      taskTypeBadge.textContent = task.type === "choice" ? "Auswahl" : "Lückentext";
+      taskPrompt.textContent = task.prompt;
+
+      if (task.type === "choice") {
+        fillWrap.hidden = true;
+        choiceButtons.hidden = false;
+        choiceWrap.hidden = false;
+        choiceWrap.innerHTML = "";
+        task.options.forEach((opt, index) => {
+          const id = `opt-${index}`;
+          const row = document.createElement("label");
+          row.className = "choice-item";
+          row.innerHTML = `<input type=\"radio\" name=\"taskChoice\" id=\"${id}\" value=\"${index}\"><span>${opt}</span>`;
+          choiceWrap.appendChild(row);
+        });
       } else {
-        r1.textContent = 'Tipp: Verwenden Sie „weil“ und „Arzttermin“ im selben Satz.';
+        choiceWrap.hidden = true;
+        fillWrap.hidden = false;
+        choiceButtons.hidden = true;
+        answerInput.value = "";
+        answerInput.focus();
       }
-    });
-    document.getElementById('clear1').addEventListener('click', () => {
-      u1.value = '';
-      r1.textContent = '';
+    }
+
+    function markResult(ok, text) {
+      resultBox.innerHTML = ok
+        ? `<span class=\"ok\">${text}</span>`
+        : `<span class=\"err\">${text}</span>`;
+      statsBox.textContent = `Richtig: ${correctCount} | Versuche: ${tryCount}`;
+    }
+
+    function checkFill() {
+      if (!currentTask || currentTask.type !== "fill") return;
+      const input = normalizeText(answerInput.value);
+      if (!input) {
+        markResult(false, "Bitte zuerst eine Antwort eingeben.");
+        return;
+      }
+      tryCount += 1;
+
+      const valid = (currentTask.answers || []).some(ans => normalizeText(ans) === input);
+      if (valid) {
+        correctCount += 1;
+        markResult(true, `Richtig. ${currentTask.hint || ""}`);
+      } else {
+        markResult(false, `Noch nicht korrekt. Tipp: ${currentTask.hint || "Bitte erneut versuchen."}`);
+      }
+    }
+
+    function showFillSolution() {
+      if (!currentTask || currentTask.type !== "fill") return;
+      markResult(false, `Lösung: ${currentTask.solution}`);
+    }
+
+    function checkChoice() {
+      if (!currentTask || currentTask.type !== "choice") return;
+      const selected = document.querySelector('input[name="taskChoice"]:checked');
+      if (!selected) {
+        markResult(false, "Bitte eine Option auswählen.");
+        return;
+      }
+      tryCount += 1;
+      const idx = Number(selected.value);
+      if (idx === currentTask.answerIndex) {
+        correctCount += 1;
+        markResult(true, `Richtig. ${currentTask.hint || ""}`);
+      } else {
+        markResult(false, `Leider falsch. Tipp: ${currentTask.hint || ""}`);
+      }
+    }
+
+    function showChoiceSolution() {
+      if (!currentTask || currentTask.type !== "choice") return;
+      markResult(false, `Lösung: ${currentTask.solution}`);
+    }
+
+    newTaskBtn.addEventListener("click", () => {
+      renderTask(randomTask());
     });
 
-    const u2 = document.getElementById('u2');
-    const r2 = document.getElementById('r2');
-    document.getElementById('check2').addEventListener('click', () => {
-      const txt = (u2.value || '').trim();
-      if (!txt) {
-        r2.textContent = 'Bitte zuerst einen Satz schreiben.';
-        return;
-      }
-      const hasHabe = /\bhabe\b/i.test(txt);
-      const hasGelernt = /gelernt/i.test(txt);
-      if (hasHabe && hasGelernt) {
-        r2.innerHTML = '<span class="ok">Richtiges Perfekt-Muster erkannt.</span>';
-      } else {
-        r2.textContent = 'Tipp: Achten Sie auf „habe ... gelernt“.';
+    topicFilter.addEventListener("change", () => {
+      renderTask(randomTask());
+    });
+
+    checkBtn.addEventListener("click", checkFill);
+    solutionBtn.addEventListener("click", showFillSolution);
+    checkChoiceBtn.addEventListener("click", checkChoice);
+    solutionChoiceBtn.addEventListener("click", showChoiceSolution);
+    nextBtn.addEventListener("click", () => renderTask(randomTask()));
+
+    answerInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        checkFill();
       }
     });
-    document.getElementById('clear2').addEventListener('click', () => {
-      u2.value = '';
-      r2.textContent = '';
-    });
+
+    renderTask(randomTask());
   </script>
 </body>
 </html>
