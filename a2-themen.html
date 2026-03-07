@@ -851,7 +851,13 @@
       const solutionPool = list
         .map(q => String(q.solution || "").trim())
         .filter(Boolean);
-      return list.map(q => forceAbcMcq(q, solutionPool));
+      return list.map(q => {
+        const sameTopicPool = list
+          .filter(item => String(item.topic || "") === String(q.topic || ""))
+          .map(item => String(item.solution || "").trim())
+          .filter(Boolean);
+        return forceAbcMcq(q, sameTopicPool, solutionPool);
+      });
     }
 
     function uniqueByNorm(values) {
@@ -868,18 +874,85 @@
       return out;
     }
 
-    function forceAbcMcq(question, solutionPool) {
+    function makeRelatedDistractors(question, correct, topicPool, globalPool) {
+      const preps = ["am", "um", "im", "nach", "zu", "zum", "bei", "mit", "aus", "von"];
+      const modals = ["muss", "kann", "darf", "will", "soll", "moechte"];
+      const auxForms = ["habe", "hast", "hat", "haben", "habt", "bin", "bist", "ist", "sind", "seid"];
+      const connectors = ["weil", "dass", "wenn", "denn"];
+
+      const candidates = [];
+      const safe = String(correct || "").trim();
+      const lc = safe.toLowerCase();
+
+      if (question.type === "mcq" && Array.isArray(question.options)) {
+        question.options.forEach((opt, idx) => {
+          if (idx !== question.correctIndex) candidates.push(String(opt || "").trim());
+        });
+      }
+
+      if (/\b(weil|dass|wenn|denn)\b/i.test(safe)) {
+        connectors.forEach(word => {
+          if (!new RegExp(`\\b${word}\\b`, "i").test(safe)) {
+            candidates.push(safe.replace(/\b(weil|dass|wenn|denn)\b/i, word));
+          }
+        });
+      }
+
+      if (/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i.test(safe)) {
+        preps.forEach(word => {
+          if (!new RegExp(`\\b${word}\\b`, "i").test(safe)) {
+            candidates.push(safe.replace(/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i, word));
+          }
+        });
+      }
+
+      if (/\b(muss|kann|darf|will|soll|moechte)\b/i.test(lc)) {
+        modals.forEach(word => {
+          if (!new RegExp(`\\b${word}\\b`, "i").test(lc)) {
+            candidates.push(safe.replace(/\b(muss|kann|darf|will|soll|moechte)\b/i, word));
+          }
+        });
+      }
+
+      if (/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b/i.test(lc)) {
+        auxForms.forEach(word => {
+          if (!new RegExp(`\\b${word}\\b`, "i").test(lc)) {
+            candidates.push(safe.replace(/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b/i, word));
+          }
+        });
+      }
+
+      if (safe.includes(", ")) {
+        candidates.push(safe.replace(", ", " "));
+      }
+
+      const words = safe.split(/\s+/).filter(Boolean);
+      if (words.length >= 3) {
+        const swapped = words.slice();
+        const i = words.length - 2;
+        const tmp = swapped[i];
+        swapped[i] = swapped[i + 1];
+        swapped[i + 1] = tmp;
+        candidates.push(swapped.join(" "));
+      }
+
+      candidates.push(...topicPool);
+      candidates.push(...globalPool);
+
+      return uniqueByNorm(candidates).filter(item => norm(item) !== norm(safe));
+    }
+
+    function forceAbcMcq(question, topicPool, globalPool) {
       const correct = question.type === "mcq"
         ? String(question.options[question.correctIndex] || question.solution || "").trim()
         : String(question.solution || "").trim();
       const safeCorrect = correct || "Keine korrekte Lösung verfügbar.";
-      let distractorPool = solutionPool.filter(item => norm(item) !== norm(safeCorrect));
-      if (question.type === "mcq") {
-        question.options.forEach((opt, idx) => {
-          if (idx !== question.correctIndex) distractorPool.push(String(opt || "").trim());
-        });
-      }
-      distractorPool = uniqueByNorm(distractorPool).filter(item => norm(item) !== norm(safeCorrect));
+      let distractorPool = makeRelatedDistractors(
+        question,
+        safeCorrect,
+        Array.isArray(topicPool) ? topicPool : [],
+        Array.isArray(globalPool) ? globalPool : []
+      );
 
       const distractors = [];
       const shuffledPool = shuffle(distractorPool.slice());
