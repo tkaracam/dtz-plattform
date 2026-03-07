@@ -874,72 +874,126 @@
       return out;
     }
 
-    function makeRelatedDistractors(question, correct, topicPool, globalPool) {
-      const preps = ["am", "um", "im", "nach", "zu", "zum", "bei", "mit", "aus", "von"];
-      const modals = ["muss", "kann", "darf", "will", "soll", "moechte"];
-      const auxForms = ["habe", "hast", "hat", "haben", "habt", "bin", "bist", "ist", "sind", "seid"];
-      const connectors = ["weil", "dass", "wenn", "denn"];
+    function replacementPoolByToken(token, topic) {
+      const t = norm(token);
+      const groups = [
+        ["am", "um", "im", "nach", "zu", "zum", "bei", "mit", "aus", "von"],
+        ["weil", "dass", "wenn", "denn"],
+        ["muss", "kann", "darf", "will", "soll", "moechte"],
+        ["habe", "hast", "hat", "haben", "habt", "bin", "bist", "ist", "sind", "seid"],
+        ["der", "die", "das", "den", "dem", "des"],
+        ["ein", "eine", "einen", "einem", "einer"]
+      ];
+      for (const group of groups) {
+        if (group.includes(t)) return group.filter(x => x !== t);
+      }
+      if (topic === "Perfekt" && /^ge.+(t|en)$/.test(t)) {
+        return [t.replace(/^ge/, ""), t.replace(/(t|en)$/, "")];
+      }
+      return [];
+    }
 
-      const candidates = [];
+    function buildShortDistractors(correct, topic) {
       const safe = String(correct || "").trim();
-      const lc = safe.toLowerCase();
+      const tokens = safe.split(/\s+/).filter(Boolean);
+      const out = [];
+      for (let i = 0; i < tokens.length && out.length < 2; i += 1) {
+        const pool = replacementPoolByToken(tokens[i], topic);
+        if (!pool.length) continue;
+        for (let j = 0; j < pool.length && out.length < 2; j += 1) {
+          const copy = tokens.slice();
+          copy[i] = pool[j];
+          out.push(copy.join(" "));
+        }
+      }
+      if (out.length < 2 && tokens.length >= 2) {
+        const swapped = tokens.slice();
+        const temp = swapped[0];
+        swapped[0] = swapped[1];
+        swapped[1] = temp;
+        out.push(swapped.join(" "));
+      }
+      while (out.length < 2) {
+        out.push(`${safe} !`);
+      }
+      return uniqueByNorm(out).filter(item => norm(item) !== norm(safe)).slice(0, 2);
+    }
 
-      if (question.type === "mcq" && Array.isArray(question.options)) {
-        question.options.forEach((opt, idx) => {
-          if (idx !== question.correctIndex) candidates.push(String(opt || "").trim());
-        });
+    function buildSentenceDistractors(correct, topic) {
+      const safe = String(correct || "").trim();
+      const out = [];
+
+      const add = value => {
+        const text = String(value || "").trim();
+        if (!text) return;
+        if (norm(text) === norm(safe)) return;
+        out.push(text);
+      };
+
+      if (topic === "Perfekt") {
+        add(safe.replace(/\b(habe|hast|hat|haben|habt)\b/i, "bin"));
+        add(safe.replace(/\b(bin|bist|ist|sind|seid)\b/i, "habe"));
+      }
+      if (topic === "Nebensatz") {
+        add(safe.replace(/,\s*(weil|dass|wenn)\s+(.+)\s+([a-zäöüß]+)\.?$/i, ", $1 $3 $2."));
+        add(safe.replace(/\b(weil|dass|wenn)\b/i, "denn"));
+      }
+      if (topic === "Modalverben") {
+        add(safe.replace(/\b(muss|kann|darf|will|soll|moechte)\s+([a-zäöüß]+)\b/i, "$1 zu $2"));
+        add(safe.replace(/\b(muss|kann|darf|will|soll|moechte)\b/i, "gehen"));
+      }
+      if (topic === "Präpositionen") {
+        add(safe.replace(/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i, "zu"));
+        add(safe.replace(/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i, "im"));
+      }
+      if (topic === "Trennbare Verben") {
+        add(safe.replace(/\b([a-zäöüß]+)\s+([a-zäöüß]+)\.$/i, "$2$1."));
+        add(safe.replace(/\b(an|auf|ab|mit|ein|aus)\s*$/i, ""));
+      }
+      if (topic === "Kasus") {
+        add(safe.replace(/\b(dem|den|der|die|das)\b/i, "den"));
+        add(safe.replace(/\b(dem|den|der|die|das)\b/i, "der"));
       }
 
-      if (/\b(weil|dass|wenn|denn)\b/i.test(safe)) {
-        connectors.forEach(word => {
-          if (!new RegExp(`\\b${word}\\b`, "i").test(safe)) {
-            candidates.push(safe.replace(/\b(weil|dass|wenn|denn)\b/i, word));
-          }
-        });
-      }
-
-      if (/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i.test(safe)) {
-        preps.forEach(word => {
-          if (!new RegExp(`\\b${word}\\b`, "i").test(safe)) {
-            candidates.push(safe.replace(/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i, word));
-          }
-        });
-      }
-
-      if (/\b(muss|kann|darf|will|soll|moechte)\b/i.test(lc)) {
-        modals.forEach(word => {
-          if (!new RegExp(`\\b${word}\\b`, "i").test(lc)) {
-            candidates.push(safe.replace(/\b(muss|kann|darf|will|soll|moechte)\b/i, word));
-          }
-        });
-      }
-
-      if (/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b/i.test(lc)) {
-        auxForms.forEach(word => {
-          if (!new RegExp(`\\b${word}\\b`, "i").test(lc)) {
-            candidates.push(safe.replace(/\b(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\b/i, word));
-          }
-        });
-      }
-
-      if (safe.includes(", ")) {
-        candidates.push(safe.replace(", ", " "));
-      }
-
+      add(safe.replace(/,\s+/g, " "));
       const words = safe.split(/\s+/).filter(Boolean);
-      if (words.length >= 3) {
+      if (words.length >= 4) {
         const swapped = words.slice();
         const i = words.length - 2;
         const tmp = swapped[i];
-        swapped[i] = swapped[i + 1];
-        swapped[i + 1] = tmp;
-        candidates.push(swapped.join(" "));
+        swapped[i] = swapped[i - 1];
+        swapped[i - 1] = tmp;
+        add(swapped.join(" "));
       }
 
-      candidates.push(...topicPool);
-      candidates.push(...globalPool);
+      const cleaned = uniqueByNorm(out).filter(item => norm(item) !== norm(safe));
+      while (cleaned.length < 2) {
+        cleaned.push(`${safe} (falsch)`);
+      }
+      return cleaned.slice(0, 2);
+    }
 
-      return uniqueByNorm(candidates).filter(item => norm(item) !== norm(safe));
+    function makeRelatedDistractors(question, correct, topicPool, globalPool) {
+      const safe = String(correct || "").trim();
+      const isShort = safe.split(/\s+/).filter(Boolean).length <= 3 && !/[.!?]/.test(safe);
+      const topic = String(question.topic || "");
+      let localWrong = isShort
+        ? buildShortDistractors(safe, topic)
+        : buildSentenceDistractors(safe, topic);
+      localWrong = uniqueByNorm(localWrong).filter(item => norm(item) !== norm(safe));
+
+      if (localWrong.length >= 2) return localWrong.slice(0, 2);
+
+      const pool = uniqueByNorm([...(topicPool || []), ...(globalPool || [])])
+        .filter(item => norm(item) !== norm(safe));
+      const merged = localWrong.slice();
+      for (let i = 0; i < pool.length && merged.length < 2; i += 1) {
+        merged.push(pool[i]);
+      }
+      while (merged.length < 2) {
+        merged.push(`${safe} (falsch)`);
+      }
+      return merged.slice(0, 2);
     }
 
     function forceAbcMcq(question, topicPool, globalPool) {
@@ -947,23 +1001,13 @@
         ? String(question.options[question.correctIndex] || question.solution || "").trim()
         : String(question.solution || "").trim();
       const safeCorrect = correct || "Keine korrekte Lösung verfügbar.";
-      let distractorPool = makeRelatedDistractors(
+      const distractorPair = makeRelatedDistractors(
         question,
         safeCorrect,
         Array.isArray(topicPool) ? topicPool : [],
         Array.isArray(globalPool) ? globalPool : []
       );
-
-      const distractors = [];
-      const shuffledPool = shuffle(distractorPool.slice());
-      for (let i = 0; i < shuffledPool.length && distractors.length < 2; i += 1) {
-        distractors.push(shuffledPool[i]);
-      }
-      while (distractors.length < 2) {
-        distractors.push(`Nicht korrekt (${distractors.length + 1})`);
-      }
-
-      let options = uniqueByNorm([safeCorrect, distractors[0], distractors[1]]);
+      let options = uniqueByNorm([safeCorrect, distractorPair[0], distractorPair[1]]);
       while (options.length < 3) {
         options.push(`Nicht korrekt (${options.length + 1})`);
       }
