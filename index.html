@@ -6390,6 +6390,20 @@
     document.getElementById("navToggleBtn").addEventListener("click", () => {
       document.getElementById("topNav").classList.toggle("open");
     });
+    document.addEventListener("click", event => {
+      const nav = document.getElementById("topNav");
+      if (!nav || !nav.classList.contains("open")) return;
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (!nav.contains(target)) {
+        closeNavOnMobile();
+      }
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeNavOnMobile();
+      }
+    });
     document.getElementById("navLogoBtn").addEventListener("click", () => navigateToSection("home"));
     document.getElementById("navLogoBtn").addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") {
