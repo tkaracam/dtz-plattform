@@ -975,6 +975,15 @@
 
     function makeRelatedDistractors(question, correct, topicPool, globalPool) {
       const safe = String(correct || "").trim();
+      if (question.type === "mcq" && Array.isArray(question.options)) {
+        const ownWrong = question.options
+          .filter((_, idx) => idx !== question.correctIndex)
+          .map(opt => String(opt || "").trim());
+        const cleanOwnWrong = uniqueByNorm(ownWrong).filter(item => norm(item) !== norm(safe));
+        if (cleanOwnWrong.length >= 2) {
+          return cleanOwnWrong.slice(0, 2);
+        }
+      }
       const isShort = safe.split(/\s+/).filter(Boolean).length <= 3 && !/[.!?]/.test(safe);
       const topic = String(question.topic || "");
       let localWrong = isShort
@@ -982,18 +991,50 @@
         : buildSentenceDistractors(safe, topic);
       localWrong = uniqueByNorm(localWrong).filter(item => norm(item) !== norm(safe));
 
-      if (localWrong.length >= 2) return localWrong.slice(0, 2);
-
-      const pool = uniqueByNorm([...(topicPool || []), ...(globalPool || [])])
-        .filter(item => norm(item) !== norm(safe));
       const merged = localWrong.slice();
-      for (let i = 0; i < pool.length && merged.length < 2; i += 1) {
-        merged.push(pool[i]);
+      let fillTry = 1;
+      while (merged.length < 2 && fillTry < 8) {
+        const candidate = createGuaranteedWrongOption(safe, fillTry);
+        if (candidate && norm(candidate) !== norm(safe)) {
+          merged.push(candidate);
+        }
+        fillTry += 1;
       }
       while (merged.length < 2) {
-        merged.push(`${safe} (falsch)`);
+        merged.push(`${safe} (falsch ${merged.length + 1})`);
       }
-      return merged.slice(0, 2);
+      return uniqueByNorm(merged).filter(item => norm(item) !== norm(safe)).slice(0, 2);
+    }
+
+    function getValidNormSet(question, safeCorrect) {
+      const set = new Set();
+      set.add(norm(safeCorrect));
+      if (question.type === "text" && Array.isArray(question.answers)) {
+        question.answers.forEach(ans => {
+          const key = norm(ans);
+          if (key) set.add(key);
+        });
+      }
+      if (question.type === "mcq" && Array.isArray(question.options)) {
+        const correctOption = String(question.options[question.correctIndex] || "").trim();
+        const key = norm(correctOption);
+        if (key) set.add(key);
+      }
+      return set;
+    }
+
+    function createGuaranteedWrongOption(correct, index) {
+      const safe = String(correct || "").trim();
+      const words = safe.split(/\s+/).filter(Boolean);
+      if (words.length >= 4) {
+        if (index === 1) {
+          return `${words.slice(1).join(" ")} ${words[0]}`;
+        }
+        if (index === 2) {
+          return words.filter((_, idx) => idx !== 1).join(" ");
+        }
+      }
+      return `${safe} (falsch ${index})`;
     }
 
     function forceAbcMcq(question, topicPool, globalPool) {
@@ -1007,7 +1048,22 @@
         Array.isArray(topicPool) ? topicPool : [],
         Array.isArray(globalPool) ? globalPool : []
       );
-      let options = uniqueByNorm([safeCorrect, distractorPair[0], distractorPair[1]]);
+      const validNorms = getValidNormSet(question, safeCorrect);
+      let rawWrong = [distractorPair[0], distractorPair[1]]
+        .map(item => String(item || "").trim())
+        .filter(Boolean)
+        .filter(item => !validNorms.has(norm(item)));
+
+      let fillTry = 1;
+      while (rawWrong.length < 2 && fillTry < 8) {
+        const candidate = createGuaranteedWrongOption(safeCorrect, fillTry);
+        if (candidate && !validNorms.has(norm(candidate))) {
+          rawWrong.push(candidate);
+        }
+        fillTry += 1;
+      }
+
+      let options = uniqueByNorm([safeCorrect, rawWrong[0], rawWrong[1]]);
       while (options.length < 3) {
         options.push(`Nicht korrekt (${options.length + 1})`);
       }
@@ -1188,7 +1244,7 @@
       state.started = true;
       badgeTopic.textContent = `Thema: ${state.topic}`;
       badgeType.textContent = "Modus: A/B/C";
-      questionPrompt.textContent = "Jede richtige Antwort gibt 2 Punkte.";
+      questionPrompt.textContent = "Jede richtige Antwort gibt 2 Punkte. Pro Frage gibt es genau eine richtige Lösung.";
       renderAllQuestions();
       examActions.hidden = false;
       renderStats();
