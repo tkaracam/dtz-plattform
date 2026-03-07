@@ -68,6 +68,74 @@
       background: #fbfdff;
     }
     .grammar-item strong { color: #334a70; }
+    .subhead {
+      margin: 14px 0 8px;
+      font-size: .95rem;
+      color: #35507a;
+      font-weight: 700;
+    }
+    .topic-explain {
+      display: grid;
+      gap: 8px;
+    }
+    .topic-block {
+      border: 1px solid #d8e3f4;
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .topic-block summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      background: #f7fbff;
+      border-bottom: 1px solid #d8e3f4;
+      font-weight: 700;
+      color: #2b466f;
+      position: relative;
+      padding-right: 36px;
+    }
+    .topic-block summary::-webkit-details-marker { display: none; }
+    .topic-block summary::after {
+      content: "▾";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6c84ab;
+      font-size: .9rem;
+    }
+    .topic-block[open] summary::after {
+      content: "▴";
+    }
+    .topic-body {
+      padding: 10px 12px 12px;
+      display: grid;
+      gap: 8px;
+    }
+    .topic-line {
+      margin: 0;
+      color: #2f4d77;
+      font-size: .92rem;
+    }
+    .topic-line strong {
+      color: #213c62;
+    }
+    .topic-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #38557e;
+      font-size: .9rem;
+    }
+    .topic-list li { margin: 2px 0; }
+    .mini-example {
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 8px;
+      background: #f9fcff;
+      color: #334f79;
+      font-size: .88rem;
+    }
 
     .toolbar {
       display: grid;
@@ -269,6 +337,86 @@
         <div class="grammar-item"><strong>Präpositionen:</strong> am/um/im, nach/zu, aus/von, bei/mit.</div>
         <div class="grammar-item"><strong>Trennbare Verben:</strong> aufstehen, anrufen, einkaufen, mitbringen.</div>
         <div class="grammar-item"><strong>Kasus:</strong> Akkusativ/Dativ bei Artikeln und Pronomen.</div>
+        <h3 class="subhead">Themen-Erklärungen (A2)</h3>
+        <div class="topic-explain">
+          <details class="topic-block">
+            <summary>Perfekt</summary>
+            <div class="topic-body">
+              <p class="topic-line"><strong>Kurzregel:</strong> Im Perfekt nutzen Sie ein Hilfsverb (haben/sein) + Partizip II am Satzende.</p>
+              <p class="topic-line"><strong>Formel:</strong> Subjekt + haben/sein + ... + Partizip II.</p>
+              <ul class="topic-list">
+                <li><strong>haben:</strong> für die meisten Verben (z. B. arbeiten, lernen, machen)</li>
+                <li><strong>sein:</strong> bei Bewegung/Ortswechsel oder Zustandswechsel (z. B. gehen, fahren, aufstehen)</li>
+              </ul>
+              <div class="mini-example"><strong>Beispiel:</strong> Ich <strong>bin</strong> gestern nach Berlin <strong>gefahren</strong>.</div>
+            </div>
+          </details>
+
+          <details class="topic-block">
+            <summary>Nebensätze (weil, dass, wenn)</summary>
+            <div class="topic-body">
+              <p class="topic-line"><strong>Kurzregel:</strong> Im Nebensatz steht das konjugierte Verb am Ende.</p>
+              <p class="topic-line"><strong>Formel:</strong> Hauptsatz + Konjunktion + ... + Verb.</p>
+              <ul class="topic-list">
+                <li><strong>weil</strong> = Grund</li>
+                <li><strong>dass</strong> = Inhalt/Information</li>
+                <li><strong>wenn</strong> = Bedingung/Zeitpunkt</li>
+              </ul>
+              <div class="mini-example"><strong>Beispiel:</strong> Ich komme später, weil ich noch einen Termin <strong>habe</strong>.</div>
+            </div>
+          </details>
+
+          <details class="topic-block">
+            <summary>Modalverben</summary>
+            <div class="topic-body">
+              <p class="topic-line"><strong>Kurzregel:</strong> Das Modalverb steht auf Position 2, der Infinitiv am Satzende.</p>
+              <p class="topic-line"><strong>Formel:</strong> Subjekt + Modalverb + ... + Infinitiv.</p>
+              <ul class="topic-list">
+                <li><strong>müssen</strong> (Notwendigkeit), <strong>können</strong> (Fähigkeit/Möglichkeit)</li>
+                <li><strong>dürfen</strong> (Erlaubnis), <strong>wollen</strong> (Absicht)</li>
+              </ul>
+              <div class="mini-example"><strong>Beispiel:</strong> Wir <strong>müssen</strong> heute früher <strong>gehen</strong>.</div>
+            </div>
+          </details>
+
+          <details class="topic-block">
+            <summary>Präpositionen (Zeit/Ort)</summary>
+            <div class="topic-body">
+              <p class="topic-line"><strong>Kurzregel:</strong> Verwenden Sie feste Präpositionen für Zeit und Ort.</p>
+              <ul class="topic-list">
+                <li><strong>Zeit:</strong> am Montag, um 9 Uhr, im Oktober</li>
+                <li><strong>Orte/Städte:</strong> nach Berlin, zu/zum Arzt, bei Freunden</li>
+                <li><strong>Herkunft:</strong> aus der Türkei, von der Arbeit</li>
+              </ul>
+              <div class="mini-example"><strong>Beispiel:</strong> Der Kurs beginnt <strong>am</strong> Dienstag <strong>um</strong> 18:00 Uhr.</div>
+            </div>
+          </details>
+
+          <details class="topic-block">
+            <summary>Trennbare Verben</summary>
+            <div class="topic-body">
+              <p class="topic-line"><strong>Kurzregel:</strong> Im Hauptsatz steht die Vorsilbe am Ende.</p>
+              <p class="topic-line"><strong>Formel:</strong> Subjekt + Verb(stamm) + ... + Präfix.</p>
+              <ul class="topic-list">
+                <li>aufstehen → Ich stehe um 6 Uhr <strong>auf</strong>.</li>
+                <li>anrufen → Wir rufen die Lehrerin <strong>an</strong>.</li>
+              </ul>
+              <div class="mini-example"><strong>Typischer Fehler:</strong> <em>Ich anrufe dich</em> ❌ → <em>Ich rufe dich an</em> ✅</div>
+            </div>
+          </details>
+
+          <details class="topic-block">
+            <summary>Kasus (Akkusativ und Dativ)</summary>
+            <div class="topic-body">
+              <p class="topic-line"><strong>Kurzregel:</strong> Viele Verben brauchen einen festen Fall.</p>
+              <ul class="topic-list">
+                <li><strong>Akkusativ:</strong> Ich sehe <strong>den</strong> Lehrer. / Ich sehe <strong>ihn</strong>.</li>
+                <li><strong>Dativ:</strong> Ich helfe <strong>dem</strong> Lehrer. / Ich helfe <strong>ihm</strong>.</li>
+              </ul>
+              <div class="mini-example"><strong>Mini-Check:</strong> <em>mit</em> + Dativ, <em>für</em> + Akkusativ.</div>
+            </div>
+          </details>
+        </div>
       </article>
 
       <article class="card">
