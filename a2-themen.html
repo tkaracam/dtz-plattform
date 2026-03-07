@@ -199,11 +199,6 @@
       border-color: #f1c9c9;
       background: #fff8f8;
     }
-    .question-actions {
-      display: grid;
-      gap: 8px;
-      margin-top: 8px;
-    }
     .question-result {
       margin-top: 8px;
       padding: 8px;
@@ -214,6 +209,11 @@
       white-space: pre-wrap;
       color: var(--muted);
       font-size: .92rem;
+    }
+    .exam-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
     }
     .ok { color: var(--ok); font-weight: 700; }
     .err { color: var(--err); font-weight: 700; }
@@ -244,8 +244,8 @@
       .action-row {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
-      .question-actions {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+      .exam-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   </style>
@@ -298,6 +298,10 @@
 
           <p class="prompt" id="questionPrompt">Bitte Test starten. Danach sehen Sie alle 50 Fragen auf einmal.</p>
           <div id="questionsList" class="questions-list"></div>
+          <div id="examActions" class="exam-actions" hidden>
+            <button type="button" id="checkAllBtn">Prüfen</button>
+            <button type="button" class="secondary" id="showAllSolutionsBtn">Lösungen zeigen</button>
+          </div>
           <div class="stats" id="statsBox">Kein Test aktiv.</div>
 
           <div class="note">
@@ -316,6 +320,9 @@
     const badgeProgress = document.getElementById("badgeProgress");
     const questionPrompt = document.getElementById("questionPrompt");
     const questionsList = document.getElementById("questionsList");
+    const examActions = document.getElementById("examActions");
+    const checkAllBtn = document.getElementById("checkAllBtn");
+    const showAllSolutionsBtn = document.getElementById("showAllSolutionsBtn");
     const statsBox = document.getElementById("statsBox");
 
     const state = {
@@ -909,15 +916,6 @@
         card.appendChild(wrap);
       }
 
-      const actions = document.createElement("div");
-      actions.className = "question-actions";
-      actions.innerHTML = `
-        <button type="button" data-action="check" data-index="${index}">Prüfen</button>
-        <button type="button" class="secondary" data-action="solution" data-index="${index}">Lösung zeigen</button>
-        <button type="button" class="secondary" data-action="next" data-index="${index}">Nächste Aufgabe</button>
-      `;
-      card.appendChild(actions);
-
       const result = document.createElement("div");
       result.className = "question-result";
       result.id = `question-result-${index}`;
@@ -940,16 +938,16 @@
       box.innerHTML = html;
     }
 
-    function evaluateQuestion(index) {
+    function evaluateQuestion(index, skipRender = false) {
       const q = state.questions[index];
-      if (!q) return;
+      if (!q) return { answered: false, correct: false };
 
       let ok = false;
       if (q.type === "mcq") {
         const selected = document.querySelector(`input[name="a2opt-${index}"]:checked`);
         if (!selected) {
           setQuestionResult(index, '<span class="err">Bitte zuerst eine Option auswählen.</span>');
-          return;
+          return { answered: false, correct: false };
         }
         ok = Number(selected.value) === q.correctIndex;
       } else {
@@ -957,7 +955,7 @@
         const value = norm(input ? input.value : "");
         if (!value) {
           setQuestionResult(index, '<span class="err">Bitte zuerst eine Antwort eingeben.</span>');
-          return;
+          return { answered: false, correct: false };
         }
         ok = q.answers.includes(value);
       }
@@ -976,25 +974,39 @@
         markCard(index, "err");
         setQuestionResult(index, `<span class="err">Nicht korrekt.</span> Tipp: ${q.hint || "Bitte erneut prüfen."}`);
       }
-      renderStats();
+      if (!skipRender) renderStats();
+      return { answered: true, correct: ok };
     }
 
-    function showQuestionSolution(index) {
+    function showQuestionSolution(index, skipRender = false) {
       const q = state.questions[index];
       if (!q) return;
       q.revealed = true;
       markCard(index, "err");
       setQuestionResult(index, `<span class="err">Lösung:</span> ${q.solution}`);
+      if (!skipRender) renderStats();
+    }
+
+    function evaluateAllQuestions() {
+      let missing = 0;
+      state.questions.forEach((_, index) => {
+        const result = evaluateQuestion(index, true);
+        if (!result.answered) missing += 1;
+      });
+      if (missing > 0) {
+        questionPrompt.textContent = `Test ausgewertet. ${missing} Frage(n) sind noch leer.`;
+      } else {
+        questionPrompt.textContent = "Test ausgewertet. Alle Fragen wurden geprüft.";
+      }
       renderStats();
     }
 
-    function jumpToNext(index) {
-      const next = document.getElementById(`question-card-${index + 1}`);
-      if (next) {
-        next.scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      document.getElementById("questionPrompt").scrollIntoView({ behavior: "smooth", block: "center" });
+    function showAllSolutions() {
+      state.questions.forEach((_, index) => {
+        showQuestionSolution(index, true);
+      });
+      questionPrompt.textContent = "Alle Lösungen wurden eingeblendet.";
+      renderStats();
     }
 
     function renderAllQuestions() {
@@ -1017,20 +1029,9 @@
       badgeTopic.textContent = `Thema: ${state.topic}`;
       questionPrompt.textContent = "Alle 50 Fragen sind sichtbar. Jede richtige Antwort gibt 2 Punkte.";
       renderAllQuestions();
+      examActions.hidden = false;
       renderStats();
     }
-
-    questionsList.addEventListener("click", event => {
-      const btn = event.target.closest("button[data-action]");
-      if (!btn) return;
-      const action = String(btn.dataset.action || "");
-      const index = Number(btn.dataset.index || -1);
-      if (index < 0) return;
-
-      if (action === "check") evaluateQuestion(index);
-      if (action === "solution") showQuestionSolution(index);
-      if (action === "next") jumpToNext(index);
-    });
 
     questionsList.addEventListener("keydown", event => {
       if (event.key !== "Enter") return;
@@ -1041,6 +1042,8 @@
     });
 
     startTestBtn.addEventListener("click", startTest);
+    checkAllBtn.addEventListener("click", evaluateAllQuestions);
+    showAllSolutionsBtn.addEventListener("click", showAllSolutions);
   </script>
 </body>
 </html>
