@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A2 Modalverben | DTZ-LID</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d5deed;
+      --text: #273650;
+      --muted: #61779a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comfortaa", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .hero {
+      background: linear-gradient(130deg, #eef4ff 0%, #fff3f7 100%);
+      border: 1px solid #d9e4f5;
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      color: #223a60;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+      color: #2b466f;
+    }
+    h3 {
+      margin: 0 0 6px;
+      font-size: .98rem;
+      color: #2b466f;
+    }
+    p { margin: 0; color: #35507a; }
+
+    .btn {
+      border: 1px solid #cad8ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #29476f;
+      background: #eef4ff;
+    }
+    .btn.primary {
+      color: #fff;
+      border-color: #d9afc5;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+    }
+
+    .grid2 {
+      display: grid;
+      gap: 8px;
+    }
+    .grid3 {
+      display: grid;
+      gap: 8px;
+    }
+    @media (min-width: 860px) {
+      .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .panel {
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .chip {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: .8rem;
+      color: #2d4a73;
+      background: #f3f8ff;
+      font-weight: 700;
+    }
+    .arrow {
+      color: #7a93b9;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .topic-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #35537d;
+      font-size: .9rem;
+    }
+    .topic-list li { margin: 3px 0; }
+
+    .mini {
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 8px;
+      background: #f9fcff;
+      color: #334f79;
+      font-size: .88rem;
+    }
+
+    .svg {
+      width: 100%;
+      border: 1px solid #d6e2f3;
+      border-radius: 10px;
+      background: #fff;
+      padding: 4px;
+    }
+
+    .tip {
+      border: 1px solid #efd6de;
+      background: #fff7fa;
+      border-radius: 10px;
+      padding: 8px;
+      color: #7c4d63;
+      font-size: .86rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .badge {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #f4f8ff;
+      color: #2e4b74;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .question-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .q-card {
+      border: 1px solid #d6e2f3;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+      display: grid;
+      gap: 8px;
+    }
+    .q-card.correct {
+      border-color: #b8e3cf;
+      background: #f4fff9;
+    }
+    .q-card.wrong {
+      border-color: #f0c8d1;
+      background: #fff7f9;
+    }
+
+    .q-title {
+      margin: 0;
+      font-size: .96rem;
+      color: #2a466f;
+      font-weight: 700;
+    }
+    .q-prompt {
+      margin: 0;
+      color: #314e77;
+      white-space: pre-line;
+    }
+    .opts {
+      display: grid;
+      gap: 6px;
+    }
+    .opt {
+      border: 1px solid #cfdbef;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .opt input { margin-top: 3px; }
+    .opt.correct-answer {
+      border-color: #96cdb5;
+      background: #eefcf4;
+    }
+
+    .solution {
+      margin: 0;
+      color: #46658f;
+      font-size: .86rem;
+      display: none;
+    }
+    .show-sol .solution { display: block; }
+
+    .actions {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .result {
+      margin-top: 8px;
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 10px;
+      color: #314f79;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Modalverben (A2) - Erklärung und Test</h1>
+      <a class="btn" href="./a2-themen.html">Zurück zu A2-Themen</a>
+    </section>
+
+    <section class="card">
+      <h2>Modalverben im Überblick</h2>
+      <div class="grid2">
+        <div class="panel">
+          <h3>Grundstruktur im Hauptsatz</h3>
+          <div class="flow-row">
+            <span class="chip">Subjekt</span><span class="arrow">→</span>
+            <span class="chip">Modalverb</span><span class="arrow">→</span>
+            <span class="chip">Objekt/Angabe</span><span class="arrow">→</span>
+            <span class="chip">Infinitiv (Ende)</span>
+          </div>
+          <div class="mini">Ich <strong>muss</strong> heute einen Brief <strong>schreiben</strong>.</div>
+          <div class="mini">Wir <strong>können</strong> morgen früher <strong>kommen</strong>.</div>
+        </div>
+        <div class="panel">
+          <h3>Bedeutung</h3>
+          <ul class="topic-list">
+            <li><strong>müssen</strong> = Notwendigkeit</li>
+            <li><strong>können</strong> = Fähigkeit/Möglichkeit</li>
+            <li><strong>dürfen</strong> = Erlaubnis</li>
+            <li><strong>wollen</strong> = Wunsch/Absicht</li>
+            <li><strong>sollen</strong> = Empfehlung/Auftrag</li>
+            <li><strong>möchten</strong> = höflicher Wunsch</li>
+          </ul>
+        </div>
+      </div>
+
+      <svg class="svg" viewBox="0 0 620 150" role="img" aria-label="Modalverb Satzbau">
+        <rect x="12" y="12" width="596" height="38" rx="8" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="24" y="36" font-size="13" fill="#24446f" font-weight="700">Hauptsatz:</text>
+        <text x="112" y="36" font-size="13" fill="#2d4a73">Du darfst heute früher nach Hause gehen.</text>
+
+        <rect x="12" y="58" width="596" height="38" rx="8" fill="#fff7fa" stroke="#f0d6df"/>
+        <text x="24" y="82" font-size="13" fill="#7b4b62" font-weight="700">Frage:</text>
+        <text x="112" y="82" font-size="13" fill="#6f5463">Darfst du heute früher nach Hause gehen?</text>
+
+        <rect x="12" y="104" width="596" height="34" rx="8" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="24" y="126" font-size="12" fill="#2d4a73">Wichtig: Nach Modalverb kommt der zweite Verbteil im Infinitiv ohne „zu“.</text>
+      </svg>
+
+      <div class="grid3" style="margin-top:8px;">
+        <div class="panel">
+          <h3>Negation</h3>
+          <ul class="topic-list">
+            <li>Ich kann heute <strong>nicht</strong> kommen.</li>
+            <li>Wir dürfen hier <strong>nicht</strong> rauchen.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Höflich sprechen</h3>
+          <ul class="topic-list">
+            <li>Ich <strong>möchte</strong> einen Termin vereinbaren.</li>
+            <li><strong>Könnten</strong> Sie mir bitte helfen?</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Häufige Fehler</h3>
+          <ul class="topic-list">
+            <li>Falsch: Ich muss <strong>zu gehen</strong>.</li>
+            <li>Richtig: Ich muss <strong>gehen</strong>.</li>
+            <li>Falsch: Ich gehen kann heute.</li>
+            <li>Richtig: Ich kann heute gehen.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tip">DTZ-Tipp: Für klare Sätze zuerst Subjekt + Modalverb schreiben und den Infinitiv ganz ans Ende setzen.</div>
+    </section>
+
+    <section class="card">
+      <h2>Nur Modalverben-Test (50 Fragen)</h2>
+      <div class="badge-row">
+        <span class="badge">Thema: Modalverben</span>
+        <span class="badge">A/B/C-Aufgaben</span>
+        <span class="badge">2 Punkte je richtige Antwort</span>
+        <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+      </div>
+
+      <div id="questionList" class="question-list"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Prüfen</button>
+        <button class="btn" id="solutionBtn" type="button">Lösungen zeigen</button>
+        <button class="btn" id="newBtn" type="button">Nächster Test</button>
+      </div>
+      <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+    </section>
+  </main>
+
+  <script>
+    const questionList = document.getElementById("questionList");
+    const progressBadge = document.getElementById("progressBadge");
+    const resultBox = document.getElementById("resultBox");
+    const checkBtn = document.getElementById("checkBtn");
+    const solutionBtn = document.getElementById("solutionBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    let questions = [];
+
+    const subjectRows = [
+      { p: "ich", mussen: "muss", koennen: "kann", duerfen: "darf", wollen: "will", sollen: "soll", moechten: "möchte" },
+      { p: "du", mussen: "musst", koennen: "kannst", duerfen: "darfst", wollen: "willst", sollen: "sollst", moechten: "möchtest" },
+      { p: "er", mussen: "muss", koennen: "kann", duerfen: "darf", wollen: "will", sollen: "soll", moechten: "möchte" },
+      { p: "wir", mussen: "müssen", koennen: "können", duerfen: "dürfen", wollen: "wollen", sollen: "sollen", moechten: "möchten" },
+      { p: "ihr", mussen: "müsst", koennen: "könnt", duerfen: "dürft", wollen: "wollt", sollen: "sollt", moechten: "möchtet" }
+    ];
+
+    const infinitives = [
+      "gehen", "kommen", "lernen", "schreiben", "arbeiten", "telefonieren", "bleiben", "einkaufen"
+    ];
+
+    const meaningItems = [
+      { text: "Ich muss heute pünktlich sein.", modal: "müssen", meaning: "Notwendigkeit" },
+      { text: "Du darfst hier parken.", modal: "dürfen", meaning: "Erlaubnis" },
+      { text: "Wir können morgen früher anfangen.", modal: "können", meaning: "Möglichkeit" },
+      { text: "Ich möchte einen Termin.", modal: "möchten", meaning: "höflicher Wunsch" },
+      { text: "Er soll den Brief heute schicken.", modal: "sollen", meaning: "Empfehlung/Auftrag" }
+    ];
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+      }
+      return a;
+    }
+
+    function uniqueOptions(good, wrongA, wrongB) {
+      const out = [];
+      const add = (value) => {
+        const v = String(value || "").trim();
+        if (!v) return;
+        if (out.includes(v)) return;
+        out.push(v);
+      };
+      add(good);
+      add(wrongA);
+      add(wrongB);
+      while (out.length < 3) {
+        add(`${good} (falsch)`);
+      }
+      return shuffle(out.slice(0, 3));
+    }
+
+    function makeQ(prompt, options, correct, solution, hint) {
+      return { prompt, options, correct, solution, hint };
+    }
+
+    function qConjugation() {
+      const s = pick(subjectRows);
+      const v = pick(infinitives);
+      const good = `${s.p} ${s.mussen} heute ${v}`;
+      const bad1 = `${s.p} müssen heute ${v}`;
+      const bad2 = `${s.p} ${s.mussen} heute zu ${v}`;
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welche Form ist korrekt?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "Modalverb wird konjugiert, Infinitiv steht am Satzende ohne „zu“."
+      );
+    }
+
+    function qMeaning() {
+      const m = pick(meaningItems);
+      const good = m.meaning;
+      const options = uniqueOptions(good, "Vergangenheit", "Widerspruch");
+      return makeQ(
+        `Welche Bedeutung hat das Modalverb in diesem Satz?\n${m.text}`,
+        options,
+        options.indexOf(good),
+        `${m.modal} -> ${m.meaning}`,
+        "Achten Sie auf die Funktion des Satzes (müssen/dürfen/können usw.)."
+      );
+    }
+
+    function qQuestionOrder() {
+      const s = pick(subjectRows);
+      const v = pick(infinitives);
+      const good = `${s.koennen.charAt(0).toUpperCase() + s.koennen.slice(1)} ${s.p} morgen ${v}?`;
+      const bad1 = `${s.p.charAt(0).toUpperCase() + s.p.slice(1)} ${s.koennen} morgen ${v}?`;
+      const bad2 = `${s.koennen.charAt(0).toUpperCase() + s.koennen.slice(1)} ${s.p} morgen zu ${v}?`;
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welche Frage mit Modalverb ist korrekt?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "In Entscheidungsfragen steht das konjugierte Verb am Satzanfang."
+      );
+    }
+
+    function qNoZu() {
+      const s = pick(subjectRows);
+      const v = pick(infinitives);
+      const good = `${s.p.charAt(0).toUpperCase() + s.p.slice(1)} will heute ${v}.`;
+      const bad1 = `${s.p.charAt(0).toUpperCase() + s.p.slice(1)} will heute zu ${v}.`;
+      const bad2 = `${s.p.charAt(0).toUpperCase() + s.p.slice(1)} ${v} heute will.`;
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welche Variante ist ohne „zu“ richtig?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "Nach Modalverben folgt direkt der Infinitiv ohne „zu“."
+      );
+    }
+
+    function qMoechten() {
+      const good = "Ich möchte einen Termin vereinbaren.";
+      const bad1 = "Ich möchte einen Termin zu vereinbaren.";
+      const bad2 = "Ich möchten einen Termin vereinbaren.";
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welche höfliche Form ist korrekt?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "Bei „ich“ heißt es „möchte"."
+      );
+    }
+
+    function qModalChoice() {
+      const good = "dürfen";
+      const opts = uniqueOptions(good, "müssen", "wollen");
+      return makeQ(
+        "Welche Modalverb-Gruppe drückt Erlaubnis aus?",
+        opts,
+        opts.indexOf(good),
+        "Erlaubnis -> dürfen",
+        "dürfen = erlaubt sein"
+      );
+    }
+
+    function generate50() {
+      const makers = [qConjugation, qMeaning, qQuestionOrder, qNoZu, qMoechten, qModalChoice];
+      const out = [];
+      for (let i = 0; i < 50; i += 1) out.push(makers[i % makers.length]());
+      return shuffle(out);
+    }
+
+    function render() {
+      questionList.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const card = document.createElement("article");
+        card.className = "q-card";
+
+        const title = document.createElement("p");
+        title.className = "q-title";
+        title.textContent = `Frage ${idx + 1}/50`;
+
+        const prompt = document.createElement("p");
+        prompt.className = "q-prompt";
+        prompt.textContent = q.prompt;
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+
+        q.options.forEach((opt, i) => {
+          const lab = document.createElement("label");
+          lab.className = "opt";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q_${idx}`;
+          radio.value = String(i);
+          radio.addEventListener("change", updateProgress);
+          const txt = document.createElement("span");
+          txt.innerHTML = `<strong>${String.fromCharCode(65 + i)})</strong> ${opt}`;
+          lab.append(radio, txt);
+          opts.appendChild(lab);
+        });
+
+        const solution = document.createElement("p");
+        solution.className = "solution";
+        solution.textContent = `Lösung: ${q.solution} | Hinweis: ${q.hint}`;
+
+        card.append(title, prompt, opts, solution);
+        questionList.appendChild(card);
+      });
+      updateProgress();
+      resultBox.textContent = "Noch nicht ausgewertet.";
+    }
+
+    function updateProgress() {
+      const selected = questionList.querySelectorAll("input[type='radio']:checked").length;
+      progressBadge.textContent = `Gelöst: ${selected}/50`;
+    }
+
+    function grade() {
+      let correct = 0;
+      questionList.querySelectorAll(".q-card").forEach((card, idx) => {
+        card.classList.remove("correct", "wrong");
+        card.querySelectorAll(".opt").forEach(o => o.classList.remove("correct-answer"));
+
+        const q = questions[idx];
+        const chosen = card.querySelector("input[type='radio']:checked");
+        const selected = chosen ? Number(chosen.value) : -1;
+
+        const labels = card.querySelectorAll(".opt");
+        if (labels[q.correct]) labels[q.correct].classList.add("correct-answer");
+
+        if (selected === q.correct) {
+          correct += 1;
+          card.classList.add("correct");
+        } else {
+          card.classList.add("wrong");
+        }
+      });
+
+      const points = correct * 2;
+      const total = 100;
+      const pct = Math.round((points / total) * 100);
+      resultBox.textContent = `Richtig: ${correct}/50\nPunkte: ${points}/${total}\nErgebnis: ${pct}%`;
+    }
+
+    function showSolutions() {
+      questionList.classList.add("show-sol");
+    }
+
+    function newTest() {
+      questions = generate50();
+      questionList.classList.remove("show-sol");
+      render();
+    }
+
+    checkBtn.addEventListener("click", grade);
+    solutionBtn.addEventListener("click", showSolutions);
+    newBtn.addEventListener("click", newTest);
+
+    newTest();
+  </script>
+</body>
+</html>
