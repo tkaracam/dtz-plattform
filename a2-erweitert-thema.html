@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A2 Erweiterte Themen | DTZ-LID</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d5deed;
+      --text: #273650;
+      --muted: #61779a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comfortaa", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .hero {
+      background: linear-gradient(130deg, #eef4ff 0%, #fff3f7 100%);
+      border: 1px solid #d9e4f5;
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 { margin: 0; font-size: clamp(1.35rem, 2.8vw, 2rem); color: #223a60; }
+    h2 { margin: 0 0 8px; font-size: 1.08rem; color: #2b466f; }
+    h3 { margin: 0 0 6px; font-size: 1.02rem; color: #2b466f; }
+    p { margin: 0; color: #35507a; }
+
+    .btn {
+      border: 1px solid #cad8ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #29476f;
+      background: #eef4ff;
+    }
+    .btn.primary {
+      color: #fff;
+      border-color: #d9afc5;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+    }
+
+    .grid2 { display: grid; gap: 8px; }
+    @media (min-width: 860px) {
+      .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .panel {
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .topic-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #35537d;
+      font-size: 1.02rem;
+    }
+    .topic-list li { margin: 3px 0; }
+
+    .mini {
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 8px;
+      background: #f9fcff;
+      color: #334f79;
+      font-size: 1.02rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .badge {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #f4f8ff;
+      color: #2e4b74;
+      font-size: .98rem;
+      font-weight: 700;
+    }
+
+    .question-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .q-card {
+      border: 1px solid #d6e2f3;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+      display: grid;
+      gap: 8px;
+    }
+    .q-card.correct {
+      border-color: #b8e3cf;
+      background: #f4fff9;
+    }
+    .q-card.wrong {
+      border-color: #f0c8d1;
+      background: #fff7f9;
+    }
+
+    .q-title {
+      margin: 0;
+      font-size: 1.08rem;
+      color: #2a466f;
+      font-weight: 700;
+    }
+    .q-prompt {
+      margin: 0;
+      color: #314e77;
+      white-space: pre-line;
+    }
+    .opts {
+      display: grid;
+      gap: 6px;
+    }
+    .opt {
+      border: 1px solid #cfdbef;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .opt input { margin-top: 3px; }
+    .opt.correct-answer {
+      border-color: #96cdb5;
+      background: #eefcf4;
+    }
+
+    .solution {
+      margin: 0;
+      color: #46658f;
+      font-size: .98rem;
+      display: none;
+    }
+    .show-sol .solution { display: block; }
+
+    .actions {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .result {
+      margin-top: 8px;
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 10px;
+      color: #314f79;
+      white-space: pre-wrap;
+    }
+
+    .topic-nav {
+      display: grid;
+      gap: 8px;
+    }
+    @media (min-width: 760px) {
+      .topic-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    .topic-nav a {
+      text-decoration: none;
+      border: 1px solid #cfdcf0;
+      background: #f8fbff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: #2a466f;
+      font-weight: 700;
+      font-size: .95rem;
+    }
+    .topic-nav a.active {
+      border-color: #9bb8e5;
+      background: #eaf2ff;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1 id="pageTitle">A2 Thema</h1>
+      <a class="btn" href="./a2-themen.html">Zurück zu A2-Themen</a>
+      <nav class="topic-nav" id="topicNav"></nav>
+    </section>
+
+    <section class="card">
+      <h2 id="expTitle">Erklärung</h2>
+      <div id="explanationWrap"></div>
+    </section>
+
+    <section class="card">
+      <h2 id="testTitle">Nur Thema-Test (50 Fragen)</h2>
+      <div class="badge-row">
+        <span class="badge" id="badgeTopic">Thema: -</span>
+        <span class="badge">A/B/C-Aufgaben</span>
+        <span class="badge">2 Punkte je richtige Antwort</span>
+        <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+      </div>
+
+      <div id="questionList" class="question-list"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Prüfen</button>
+        <button class="btn" id="solutionBtn" type="button">Lösungen zeigen</button>
+        <button class="btn" id="newBtn" type="button">Nächster Test</button>
+      </div>
+      <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+    </section>
+  </main>
+
+  <script>
+    const questionList = document.getElementById("questionList");
+    const progressBadge = document.getElementById("progressBadge");
+    const resultBox = document.getElementById("resultBox");
+    const checkBtn = document.getElementById("checkBtn");
+    const solutionBtn = document.getElementById("solutionBtn");
+    const newBtn = document.getElementById("newBtn");
+    const pageTitle = document.getElementById("pageTitle");
+    const expTitle = document.getElementById("expTitle");
+    const testTitle = document.getElementById("testTitle");
+    const badgeTopic = document.getElementById("badgeTopic");
+    const explanationWrap = document.getElementById("explanationWrap");
+    const topicNav = document.getElementById("topicNav");
+
+    let questions = [];
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function uniq(g, w1, w2) {
+      const out = [];
+      [g, w1, w2].forEach(v => {
+        const s = String(v || "").trim();
+        if (!s) return;
+        if (!out.includes(s)) out.push(s);
+      });
+      while (out.length < 3) out.push(g + " (falsch)");
+      return shuffle(out.slice(0, 3));
+    }
+    function makeQ(prompt, opts, right, solution, hint) {
+      return { prompt, options: opts, correct: right, solution, hint };
+    }
+
+    const TOPICS = {
+      "partizip-possessiv": {
+        title: "Partizipien ohne ge- + Possessivartikel",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>Partizip II ohne ge-: Wann?</h3>
+              <ul class="topic-list">
+                <li>Verben auf <strong>-ieren</strong> bilden das Partizip ohne <strong>ge-</strong>:
+                  <strong>studiert, repariert, telefoniert</strong></li>
+                <li>Verben mit festen Präfixen <strong>be-, emp-, ent-, er-, ge-, miss-, ver-, zer-</strong>
+                  haben im Partizip normalerweise ebenfalls kein <strong>ge-</strong>:
+                  <strong>bezahlt, erzählt, verkauft, entdeckt</strong></li>
+              </ul>
+              <div class="mini"><strong>Merksatz:</strong> Bei <strong>-ieren</strong> und festen Präfixen steht meist kein <strong>ge-</strong>.</div>
+              <div class="mini">Ich habe gestern mit meiner Lehrerin <strong>telefoniert</strong>.</div>
+              <div class="mini">Wir haben die Rechnung pünktlich <strong>bezahlt</strong>.</div>
+            </div>
+            <div class="panel">
+              <h3>Possessivartikel im A2-Alltag</h3>
+              <ul class="topic-list">
+                <li><strong>ich</strong>: mein/meine/meinen/meinem</li>
+                <li><strong>du</strong>: dein/deine/deinen/deinem</li>
+                <li><strong>er/es</strong>: sein/seine/seinen/seinem</li>
+                <li><strong>sie (Sing.)</strong>: ihr/ihre/ihren/ihrem</li>
+                <li><strong>wir</strong>: unser/unsere/unseren/unserem</li>
+                <li><strong>ihr</strong>: euer/eure/euren/eurem</li>
+              </ul>
+              <div class="mini">Nominativ: Das ist <strong>mein</strong> Kurs.</div>
+              <div class="mini">Akkusativ: Ich sehe <strong>meinen</strong> Lehrer.</div>
+              <div class="mini">Dativ: Ich helfe <strong>meiner</strong> Lehrerin.</div>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:8px;">
+            <h3>Kombination in einem Satz</h3>
+            <div class="mini">Ich habe <strong>meine</strong> Hausaufgabe pünktlich <strong>organisiert</strong>.</div>
+            <div class="mini">Wir haben <strong>unseren</strong> Termin gestern <strong>bestätigt</strong>.</div>
+            <div class="mini">Sie hat <strong>ihrem</strong> Bruder die Nachricht <strong>erzählt</strong>.</div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const data = [
+              ["organisieren", "hat organisiert", "hat georganisiert", "ist organisiert"],
+              ["telefonieren", "hat telefoniert", "hat getelefoniert", "ist telefoniert"],
+              ["verkaufen", "hat verkauft", "hat geverkauft", "ist verkauft"],
+              ["entdecken", "hat entdeckt", "hat geentdeckt", "ist entdeckt"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Welche Perfekt-Form passt zu "${d[0]}"?`, opts, opts.indexOf(d[1]), d[1], "Bei -ieren und be-/ver-/er- meist ohne ge-.");
+          },
+          () => {
+            const data = [
+              ["Das ist ___ Kurs.", "mein", "meine", "meiner"],
+              ["Wo ist Anna? - Das ist ___ Tasche.", "ihre", "ihr", "ihren"],
+              ["Wir suchen ___ Lehrer.", "unseren", "unser", "unsere"],
+              ["Ich helfe ___ Schwester.", "meiner", "meine", "meinen"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Possessivartikel müssen zum Nomen passen.");
+          },
+          () => {
+            const good = "Ich habe den Text erklärt.";
+            const bad1 = "Ich habe den Text geerklärt.";
+            const bad2 = "Ich bin den Text erklärt.";
+            const opts = uniq(good, bad1, bad2);
+            return makeQ("Welche Form ist korrekt?", opts, opts.indexOf(good), good, "Bei erklären: Partizip ohne ge- und mit haben.");
+          },
+          () => {
+            const data = [
+              ["___ Vater hat gestern lange gearbeitet.", "Mein", "Meine", "Meinen"],
+              ["Ich habe ___ Unterlagen schon sortiert.", "meine", "mein", "meiner"],
+              ["Wir danken ___ Lehrerin für die Hilfe.", "unserer", "unsere", "unseren"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Welche Form passt?\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Auf Kasus und Genus achten.");
+          },
+          () => {
+            const data = [
+              ["Welche Variante ist richtig?", "Sie hat ihren Bruder informiert.", "Sie hat ihren Bruder geinformiert.", "Sie ist ihren Bruder informiert."],
+              ["Welche Variante ist richtig?", "Wir haben den Termin bestätigt.", "Wir haben den Termin gebestätigt.", "Wir sind den Termin bestätigt."],
+              ["Welche Variante ist richtig?", "Ich habe meine E-Mail organisiert.", "Ich habe meine E-Mail georganisiert.", "Ich bin meine E-Mail organisiert."]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(d[0], opts, opts.indexOf(d[1]), d[1], "Bei diesen Verben: haben + Partizip ohne ge-.");
+          },
+          () => {
+            const data = [
+              ["Ergänzen Sie beide Lücken:\nIch habe ___ Nachbarin alles ___ (erzählen).", "meiner / erzählt", "meine / geerzählt", "meinen / erzählt"],
+              ["Ergänzen Sie beide Lücken:\nWir haben ___ Kursplan sofort ___ (organisieren).", "unseren / organisiert", "unser / georganisiert", "unseren / georganisiert"],
+              ["Ergänzen Sie beide Lücken:\nSie hat ___ Freundin die Regel ___ (erklären).", "ihrer / erklärt", "ihre / geerklärt", "ihren / erklärt"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(d[0], opts, opts.indexOf(d[1]), d[1], "Possessiv + korrektes Partizip kombinieren.");
+          }
+        ]
+      },
+
+      "wechselpraepositionen": {
+        title: "Wechselpräpositionen + ja / nein / doch",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>Wo? / Wohin?</h3>
+              <ul class="topic-list">
+                <li>Wo? -> Dativ: <strong>in der</strong> Stadt</li>
+                <li>Wohin? -> Akkusativ: <strong>in die</strong> Stadt</li>
+                <li>in, an, auf, unter, über, vor, hinter, neben, zwischen</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>ja / nein / doch</h3>
+              <ul class="topic-list">
+                <li>Hast du Zeit? -> Ja, habe ich.</li>
+                <li>Hast du keine Zeit? -> <strong>Doch</strong>, ich habe Zeit.</li>
+              </ul>
+              <div class="mini">Bei einer negativen Frage zeigt <strong>doch</strong> den positiven Widerspruch.</div>
+            </div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const data = [
+              ["Wohin gehst du heute Abend?", "Ich gehe in die Stadt.", "Ich gehe in der Stadt.", "Ich gehe in den Stadt."],
+              ["Wo ist das Buch?", "Das Buch liegt auf dem Tisch.", "Das Buch liegt auf den Tisch.", "Das Buch liegt in den Tisch."],
+              ["Wohin stellst du die Tasche?", "Ich stelle die Tasche an die Tür.", "Ich stelle die Tasche an der Tür.", "Ich stelle die Tasche bei die Tür."]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`${d[0]}\nWelche Antwort ist korrekt?`, opts, opts.indexOf(d[1]), d[1], "Wohin = Akkusativ, Wo = Dativ.");
+          },
+          () => {
+            const data = [
+              ["Hast du keine Zeit?", "Doch, ich habe Zeit.", "Ja, ich habe Zeit.", "Nein, ich habe Zeit."],
+              ["Kommst du nicht mit?", "Doch, ich komme mit.", "Nein, ich komme mit.", "Ja, ich komme nicht mit."]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`${d[0]}\nWelche Reaktion passt?`, opts, opts.indexOf(d[1]), d[1], "Bei Widerspruch auf Negation: doch.");
+          },
+          () => {
+            const data = [
+              ["___ Wochenende fahren wir nach Berlin.", "Am", "Im", "Um"],
+              ["Ich gehe ___ Arzt.", "zum", "am", "auf"],
+              ["Wir treffen uns ___ Bahnhof.", "am", "im", "um"],
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Zeit-/Ortspräpositionen genau lernen.");
+          }
+        ]
+      },
+
+      "indirekte-fragen": {
+        title: "Indirekte Fragen + höfliche Bitten + sollte/würde gern",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>Indirekte Fragen</h3>
+              <ul class="topic-list">
+                <li>Können Sie mir sagen, <strong>ob</strong> die Stelle frei ist?</li>
+                <li>Ich möchte wissen, <strong>wann</strong> der Kurs beginnt.</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Höflich & Empfehlung</h3>
+              <ul class="topic-list">
+                <li><strong>Könnten</strong> Sie mir bitte helfen?</li>
+                <li>Sie <strong>sollten</strong> mehr Wasser trinken.</li>
+                <li>Ich <strong>würde gern</strong> einen Computerkurs machen.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const good = "Können Sie mir sagen, ob die Stelle noch frei ist?";
+            const bad1 = "Können Sie mir sagen, die Stelle ist noch frei?";
+            const bad2 = "Können Sie mir sagen, ob ist die Stelle noch frei?";
+            const opts = uniq(good, bad1, bad2);
+            return makeQ("Welche indirekte Frage ist korrekt?", opts, opts.indexOf(good), good, "Bei Ja/Nein-Fragen: ob + Verb am Ende.");
+          },
+          () => {
+            const data = [
+              ["Ich möchte wissen, ___ der Kurs beginnt.", "wann", "ob", "dass"],
+              ["Können Sie mir sagen, ___ Sie heute Zeit haben?", "ob", "wann", "dass"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "W-Fragewort oder ob richtig wählen.");
+          },
+          () => {
+            const data = [
+              ["Welche Form ist höflich korrekt?", "Könnten Sie mir bitte helfen?", "Kannst du mir bitte helfen, Sie?", "Können Sie mir bitte helfen."],
+              ["Welche Empfehlung ist korrekt?", "Sie sollten früher schlafen.", "Sie sollte früher schlafen.", "Sie sollten früher schläft."]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(d[0], opts, opts.indexOf(d[1]), d[1], "Höflichkeitsformen und sollte + Infinitiv beachten.");
+          }
+        ]
+      },
+
+      "reflexiv-lassen": {
+        title: "lassen + reflexive Verben + legen/liegen + stellen/stehen",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>lassen + Infinitiv</h3>
+              <div class="mini">Ich lasse meine Wohnung renovieren.</div>
+              <h3 style="margin-top:6px;">Reflexive Verben</h3>
+              <div class="mini">Wir freuen <strong>uns</strong> über das Geschenk.</div>
+            </div>
+            <div class="panel">
+              <h3>Lage vs Bewegung</h3>
+              <ul class="topic-list">
+                <li>Ich <strong>lege</strong> das Buch auf den Tisch. (Wohin?)</li>
+                <li>Das Buch <strong>liegt</strong> auf dem Tisch. (Wo?)</li>
+                <li>Ich <strong>stelle</strong> die Tasche an die Tür.</li>
+                <li>Die Tasche <strong>steht</strong> an der Tür.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const data = [
+              ["Ich ___ meine Haare schneiden.", "lasse", "lässt", "lassen"],
+              ["Wir ___ die Wohnung renovieren.", "lassen", "lässt", "lasse"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "lassen + Infinitiv.");
+          },
+          () => {
+            const data = [
+              ["Wir freuen ___ auf den Kurs.", "uns", "euch", "mich"],
+              ["Ich interessiere ___ für Musik.", "mich", "mir", "dich"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Welches Reflexivpronomen passt?\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Reflexivpronomen an Person anpassen.");
+          },
+          () => {
+            const data = [
+              ["Das Buch ___ auf dem Tisch.", "liegt", "legt", "stellen"],
+              ["Ich ___ das Buch auf den Tisch.", "lege", "liegt", "stehe"],
+              ["Die Tasche ___ an der Tür.", "steht", "stellt", "stehe"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Wo? Zustand (liegen/stehen), Wohin? Bewegung (legen/stellen).");
+          }
+        ]
+      },
+
+      "relativsaetze": {
+        title: "Relativsätze (Nominativ, Akkusativ, Präpositionen)",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>Nominativ / Akkusativ</h3>
+              <ul class="topic-list">
+                <li>Das ist der Kurs, <strong>der</strong> sehr beliebt ist.</li>
+                <li>Das ist der Kurs, <strong>den</strong> ich besuche.</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Mit Präposition</h3>
+              <ul class="topic-list">
+                <li>Das ist der Kurs, <strong>in dem</strong> ich Deutsch lerne.</li>
+                <li>Das ist das Thema, <strong>über das</strong> wir sprechen.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const data = [
+              ["Das ist der Kurs, ___ ich besuche.", "den", "der", "dem"],
+              ["Das ist der Mann, ___ dort arbeitet.", "der", "den", "dem"],
+              ["Das ist die Tasche, ___ ich suche.", "die", "der", "den"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie das Relativpronomen:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Kasus im Relativsatz prüfen.");
+          },
+          () => {
+            const data = [
+              ["Das ist der Kurs, in ___ ich viel lerne.", "dem", "den", "der"],
+              ["Das ist das Thema, über ___ wir sprechen.", "das", "dem", "den"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Welche Form ist korrekt?\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Präposition + passender Kasus.");
+          },
+          () => {
+            const good = "Das sind Leute, die sehr freundlich sind.";
+            const bad1 = "Das sind Leute, den sehr freundlich sind.";
+            const bad2 = "Das sind Leute, der sehr freundlich sind.";
+            const opts = uniq(good, bad1, bad2);
+            return makeQ("Welcher Relativsatz ist korrekt?", opts, opts.indexOf(good), good, "Plural Nominativ -> die.");
+          }
+        ]
+      },
+
+      "verben-praepositionen": {
+        title: "Verben mit Präpositionen (wo-/da-, Pronomen)",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>Fragewörter</h3>
+              <ul class="topic-list">
+                <li>warten <strong>auf</strong> + Akk -> <strong>Worauf?</strong> / <strong>Auf wen?</strong></li>
+                <li>telefonieren <strong>mit</strong> + Dat -> <strong>Womit?</strong> / <strong>Mit wem?</strong></li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>da-/wo- und Personalpronomen</h3>
+              <ul class="topic-list">
+                <li>Ich warte auf den Bus. -> Ich warte <strong>darauf</strong>.</li>
+                <li>Ich spreche über meinen Freund. -> Ich spreche <strong>über ihn</strong>.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const data = [
+              ["Ich warte ___ den Bus.", "auf", "über", "mit"],
+              ["Ich interessiere mich ___ Musik.", "für", "mit", "an"],
+              ["Wir sprechen ___ das Thema.", "über", "auf", "mit"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Verb + feste Präposition.");
+          },
+          () => {
+            const data = [
+              ["Worauf wartest du? - Ich warte ___.", "darauf", "auf es", "darüber"],
+              ["Womit telefonierst du? - Ich telefoniere ___.", "damit", "mit es", "daran"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(d[0], opts, opts.indexOf(d[1]), d[1], "Für Sachen meist da-/wo-Form.");
+          },
+          () => {
+            const data = [
+              ["Auf wen wartest du? - Ich warte ___ meinen Freund.", "auf", "für", "mit"],
+              ["Mit wem telefonierst du? - Ich telefoniere ___ meiner Lehrerin.", "mit", "zu", "auf"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Welche Präposition passt?\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Bei Personen meist Präposition + Pronomen/Nomen.");
+          }
+        ]
+      },
+
+      "dativ-akkusativ-plus": {
+        title: "Dativ + Akkusativ, Datum, dies-, Adjektivdeklination",
+        explanation: `
+          <div class="grid2">
+            <div class="panel">
+              <h3>Dativ + Akkusativ</h3>
+              <div class="mini">Ich schenke <strong>meiner Mutter</strong> <strong>einen Blumenstrauß</strong>.</div>
+              <h3 style="margin-top:6px;">Datum</h3>
+              <div class="mini">Heute ist der dritte Zehnte.</div>
+            </div>
+            <div class="panel">
+              <h3>dies- und Adjektivdeklination</h3>
+              <ul class="topic-list">
+                <li>dieser Kurs / diesen Kurs / diesem Kurs</li>
+                <li>ein blauer Anzug / einen blauen Anzug</li>
+                <li>keine rote Rose / keine roten Rosen</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        makers: [
+          () => {
+            const data = [
+              ["Ich schenke ___ Mutter ___ Blumenstrauß.", "meiner / einen", "meine / einen", "meiner / ein"],
+              ["Wir zeigen ___ Lehrerin ___ Aufgabe.", "der / die", "die / der", "dem / die"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Welche Ergänzung ist korrekt?\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Zuerst Dativ (Person), dann Akkusativ (Sache).");
+          },
+          () => {
+            const data = [
+              ["Heute ist der ___.", "dritte Zehnte", "dritter Zehnte", "dritte Zehnten"],
+              ["Morgen ist der ___.", "fünfte Mai", "fünfter Mai", "fünften Mai"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Datum: Ergänzen Sie richtig:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Datum oft mit Ordinalzahl + Monatsname.");
+          },
+          () => {
+            const data = [
+              ["___ Kopierer ist neu.", "Dieser", "Diesen", "Diesem"],
+              ["Ich repariere ___ Kopierer.", "diesen", "dieser", "diesem"],
+              ["Ich helfe ___ Frau.", "dieser", "diese", "diesen"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Ergänzen Sie mit "dies-":\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Kasusendungen bei dies- beachten.");
+          },
+          () => {
+            const data = [
+              ["Er trägt ___ blauen Anzug.", "einen", "ein", "einem"],
+              ["Das ist ___ rote Rose.", "eine", "einen", "einer"],
+              ["Sie kauft ___ neuen Laptop.", "einen", "ein", "einem"]
+            ];
+            const d = pick(data); const opts = uniq(d[1], d[2], d[3]);
+            return makeQ(`Adjektivdeklination:\n${d[0]}`, opts, opts.indexOf(d[1]), d[1], "Nach unbestimmtem Artikel passende Endung wählen.");
+          }
+        ]
+      }
+    };
+
+    const topicOrder = [
+      "partizip-possessiv",
+      "wechselpraepositionen",
+      "indirekte-fragen",
+      "reflexiv-lassen",
+      "relativsaetze",
+      "verben-praepositionen",
+      "dativ-akkusativ-plus"
+    ];
+
+    const url = new URL(window.location.href);
+    const selectedTopic = topicOrder.includes(url.searchParams.get("topic"))
+      ? url.searchParams.get("topic")
+      : topicOrder[0];
+
+    function buildTopicNav() {
+      topicNav.innerHTML = "";
+      topicOrder.forEach((key) => {
+        const cfg = TOPICS[key];
+        const a = document.createElement("a");
+        a.href = `./a2-erweitert-thema.html?topic=${encodeURIComponent(key)}`;
+        a.textContent = cfg.title;
+        if (key === selectedTopic) a.classList.add("active");
+        topicNav.appendChild(a);
+      });
+    }
+
+    function generate50ForTopic(key) {
+      const makers = TOPICS[key].makers;
+      const out = [];
+      for (let i = 0; i < 50; i++) out.push(makers[i % makers.length]());
+      return shuffle(out);
+    }
+
+    function render() {
+      questionList.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const card = document.createElement("article");
+        card.className = "q-card";
+
+        const title = document.createElement("p");
+        title.className = "q-title";
+        title.textContent = `Frage ${idx + 1}/50`;
+
+        const prompt = document.createElement("p");
+        prompt.className = "q-prompt";
+        prompt.textContent = q.prompt;
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+
+        q.options.forEach((opt, i) => {
+          const lab = document.createElement("label");
+          lab.className = "opt";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q_${idx}`;
+          radio.value = String(i);
+          radio.addEventListener("change", updateProgress);
+          const txt = document.createElement("span");
+          txt.innerHTML = `<strong>${String.fromCharCode(65 + i)})</strong> ${opt}`;
+          lab.append(radio, txt);
+          opts.appendChild(lab);
+        });
+
+        const solution = document.createElement("p");
+        solution.className = "solution";
+        solution.textContent = `Lösung: ${q.solution} | Hinweis: ${q.hint}`;
+
+        card.append(title, prompt, opts, solution);
+        questionList.appendChild(card);
+      });
+      updateProgress();
+      resultBox.textContent = "Noch nicht ausgewertet.";
+    }
+
+    function updateProgress() {
+      const selected = questionList.querySelectorAll("input[type='radio']:checked").length;
+      progressBadge.textContent = `Gelöst: ${selected}/50`;
+    }
+
+    function grade() {
+      let correct = 0;
+      questionList.querySelectorAll(".q-card").forEach((card, idx) => {
+        card.classList.remove("correct", "wrong");
+        card.querySelectorAll(".opt").forEach(o => o.classList.remove("correct-answer"));
+
+        const q = questions[idx];
+        const chosen = card.querySelector("input[type='radio']:checked");
+        const selected = chosen ? Number(chosen.value) : -1;
+
+        const labels = card.querySelectorAll(".opt");
+        if (labels[q.correct]) labels[q.correct].classList.add("correct-answer");
+
+        if (selected === q.correct) {
+          correct += 1;
+          card.classList.add("correct");
+        } else {
+          card.classList.add("wrong");
+        }
+      });
+
+      const points = correct * 2;
+      const total = 100;
+      const pct = Math.round((points / total) * 100);
+      resultBox.textContent = `Richtig: ${correct}/50\nPunkte: ${points}/${total}\nErgebnis: ${pct}%`;
+    }
+
+    function showSolutions() {
+      questionList.classList.add("show-sol");
+    }
+
+    function newTest() {
+      questions = generate50ForTopic(selectedTopic);
+      questionList.classList.remove("show-sol");
+      render();
+    }
+
+    function initPage() {
+      const cfg = TOPICS[selectedTopic];
+      pageTitle.textContent = `${cfg.title} - Erklärung und Test`;
+      expTitle.textContent = `${cfg.title} im Überblick`;
+      testTitle.textContent = `Nur ${cfg.title}-Test (50 Fragen)`;
+      badgeTopic.textContent = `Thema: ${cfg.title}`;
+      explanationWrap.innerHTML = cfg.explanation;
+      buildTopicNav();
+      newTest();
+    }
+
+    checkBtn.addEventListener("click", grade);
+    solutionBtn.addEventListener("click", showSolutions);
+    newBtn.addEventListener("click", newTest);
+
+    initPage();
+  </script>
+</body>
+</html>
