@@ -136,6 +136,62 @@
       color: #334f79;
       font-size: .88rem;
     }
+    .topic-grid {
+      display: grid;
+      gap: 8px;
+    }
+    .topic-panel {
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 8px;
+    }
+    .topic-panel h4 {
+      margin: 0 0 6px;
+      color: #2c476f;
+      font-size: .9rem;
+    }
+    .topic-panel p {
+      margin: 0;
+      color: #3a557d;
+      font-size: .88rem;
+    }
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .flow-chip {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: .8rem;
+      color: #2d4a73;
+      background: #f3f8ff;
+      font-weight: 700;
+    }
+    .flow-arrow {
+      color: #7a93b9;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+    .topic-svg {
+      width: 100%;
+      border: 1px solid #d6e2f3;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 4px;
+    }
+    .tip-box {
+      border: 1px solid #f0d7dc;
+      background: #fff7f9;
+      border-radius: 10px;
+      padding: 8px;
+      color: #7c4d63;
+      font-size: .86rem;
+    }
 
     .toolbar {
       display: grid;
@@ -335,81 +391,186 @@
           <details class="topic-block">
             <summary>Perfekt</summary>
             <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Im Perfekt nutzen Sie ein Hilfsverb (haben/sein) + Partizip II am Satzende.</p>
-              <p class="topic-line"><strong>Formel:</strong> Subjekt + haben/sein + ... + Partizip II.</p>
-              <ul class="topic-list">
-                <li><strong>haben:</strong> für die meisten Verben (z. B. arbeiten, lernen, machen)</li>
-                <li><strong>sein:</strong> bei Bewegung/Ortswechsel oder Zustandswechsel (z. B. gehen, fahren, aufstehen)</li>
-              </ul>
-              <div class="mini-example"><strong>Beispiel:</strong> Ich <strong>bin</strong> gestern nach Berlin <strong>gefahren</strong>.</div>
+              <p class="topic-line"><strong>Kurzregel:</strong> Im Perfekt brauchen Sie ein Hilfsverb (<strong>haben</strong> / <strong>sein</strong>) und das Partizip II am Ende.</p>
+              <div class="flow-row" aria-label="Perfekt Schema">
+                <span class="flow-chip">Subjekt</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">Hilfsverb</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">Zeit/Objekt</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">Partizip II</span>
+              </div>
+              <div class="topic-grid">
+                <div class="topic-panel">
+                  <h4>haben oder sein?</h4>
+                  <ul class="topic-list">
+                    <li><strong>haben</strong>: die meisten Verben (lernen, arbeiten, schreiben)</li>
+                    <li><strong>sein</strong>: Bewegung/Ortswechsel (gehen, fahren, kommen)</li>
+                  </ul>
+                </div>
+                <div class="topic-panel">
+                  <h4>Präsens → Perfekt</h4>
+                  <p>Ich lerne Deutsch. → Ich <strong>habe</strong> Deutsch <strong>gelernt</strong>.</p>
+                </div>
+              </div>
+              <svg class="topic-svg" viewBox="0 0 560 88" role="img" aria-label="Perfekt Visualisierung">
+                <rect x="12" y="16" width="100" height="34" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
+                <rect x="122" y="16" width="100" height="34" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
+                <rect x="232" y="16" width="148" height="34" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
+                <rect x="390" y="16" width="158" height="34" rx="8" fill="#ffeef4" stroke="#efbfd3"/>
+                <text x="62" y="37" text-anchor="middle" font-size="12" fill="#2d4a73">Ich</text>
+                <text x="172" y="37" text-anchor="middle" font-size="12" fill="#2d4a73">habe</text>
+                <text x="306" y="37" text-anchor="middle" font-size="12" fill="#2d4a73">gestern viel</text>
+                <text x="469" y="37" text-anchor="middle" font-size="12" fill="#7c4d63">gelernt</text>
+              </svg>
+              <div class="tip-box"><strong>Fehlerfalle:</strong> Nicht „Ich bin gelernt“. Bei <em>lernen</em> immer <strong>haben</strong>.</div>
             </div>
           </details>
 
           <details class="topic-block">
             <summary>Nebensätze (weil, dass, wenn)</summary>
             <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Im Nebensatz steht das konjugierte Verb am Ende.</p>
-              <p class="topic-line"><strong>Formel:</strong> Hauptsatz + Konjunktion + ... + Verb.</p>
-              <ul class="topic-list">
-                <li><strong>weil</strong> = Grund</li>
-                <li><strong>dass</strong> = Inhalt/Information</li>
-                <li><strong>wenn</strong> = Bedingung/Zeitpunkt</li>
-              </ul>
-              <div class="mini-example"><strong>Beispiel:</strong> Ich komme später, weil ich noch einen Termin <strong>habe</strong>.</div>
+              <p class="topic-line"><strong>Kurzregel:</strong> Im Nebensatz steht das konjugierte Verb am Satzende.</p>
+              <div class="flow-row" aria-label="Nebensatz Schema">
+                <span class="flow-chip">Hauptsatz</span><span class="flow-arrow">+</span>
+                <span class="flow-chip">Konjunktion</span><span class="flow-arrow">+</span>
+                <span class="flow-chip">Mittelfeld</span><span class="flow-arrow">+</span>
+                <span class="flow-chip">Verb (Ende)</span>
+              </div>
+              <div class="topic-grid">
+                <div class="topic-panel">
+                  <h4>Bedeutung</h4>
+                  <ul class="topic-list">
+                    <li><strong>weil</strong> = Grund</li>
+                    <li><strong>dass</strong> = Information/Meinung</li>
+                    <li><strong>wenn</strong> = Bedingung oder Wiederholung</li>
+                  </ul>
+                </div>
+                <div class="topic-panel">
+                  <h4>Typische Muster</h4>
+                  <p>Ich komme später, weil ich einen Termin <strong>habe</strong>.</p>
+                  <p>Ich weiß, dass der Kurs heute ausfällt.</p>
+                </div>
+              </div>
+              <div class="tip-box"><strong>Fehlerfalle:</strong> Nicht „weil ich habe…“, sondern „weil ich … <strong>habe</strong>“.</div>
             </div>
           </details>
 
           <details class="topic-block">
             <summary>Modalverben</summary>
             <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Das Modalverb steht auf Position 2, der Infinitiv am Satzende.</p>
-              <p class="topic-line"><strong>Formel:</strong> Subjekt + Modalverb + ... + Infinitiv.</p>
-              <ul class="topic-list">
-                <li><strong>müssen</strong> (Notwendigkeit), <strong>können</strong> (Fähigkeit/Möglichkeit)</li>
-                <li><strong>dürfen</strong> (Erlaubnis), <strong>wollen</strong> (Absicht)</li>
-              </ul>
-              <div class="mini-example"><strong>Beispiel:</strong> Wir <strong>müssen</strong> heute früher <strong>gehen</strong>.</div>
+              <p class="topic-line"><strong>Kurzregel:</strong> Modalverb auf Position 2, zweites Verb im Infinitiv am Satzende.</p>
+              <div class="flow-row" aria-label="Modalverb Schema">
+                <span class="flow-chip">Subjekt</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">Modalverb</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">Rest</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">Infinitiv</span>
+              </div>
+              <div class="topic-grid">
+                <div class="topic-panel">
+                  <h4>Funktion</h4>
+                  <ul class="topic-list">
+                    <li><strong>müssen</strong> = Notwendigkeit</li>
+                    <li><strong>können</strong> = Fähigkeit/Möglichkeit</li>
+                    <li><strong>dürfen</strong> = Erlaubnis</li>
+                    <li><strong>wollen</strong> = Absicht</li>
+                  </ul>
+                </div>
+                <div class="topic-panel">
+                  <h4>Beispiel</h4>
+                  <p>Wir <strong>müssen</strong> heute früher <strong>gehen</strong>.</p>
+                  <p>Du <strong>darfst</strong> jetzt nach Hause <strong>gehen</strong>.</p>
+                </div>
+              </div>
+              <div class="tip-box"><strong>Fehlerfalle:</strong> Kein „zu“ nach Modalverb: „Ich muss gehen“ (nicht: „muss zu gehen“).</div>
             </div>
           </details>
 
           <details class="topic-block">
             <summary>Präpositionen (Zeit/Ort)</summary>
             <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Verwenden Sie feste Präpositionen für Zeit und Ort.</p>
-              <ul class="topic-list">
-                <li><strong>Zeit:</strong> am Montag, um 9 Uhr, im Oktober</li>
-                <li><strong>Orte/Städte:</strong> nach Berlin, zu/zum Arzt, bei Freunden</li>
-                <li><strong>Herkunft:</strong> aus der Türkei, von der Arbeit</li>
-              </ul>
-              <div class="mini-example"><strong>Beispiel:</strong> Der Kurs beginnt <strong>am</strong> Dienstag <strong>um</strong> 18:00 Uhr.</div>
+              <p class="topic-line"><strong>Kurzregel:</strong> Viele Präpositionen sind fest und müssen mit Situation + Kasus gelernt werden.</p>
+              <div class="topic-grid">
+                <div class="topic-panel">
+                  <h4>Zeit</h4>
+                  <ul class="topic-list">
+                    <li><strong>am</strong> Montag, <strong>am</strong> Wochenende</li>
+                    <li><strong>um</strong> 18:00 Uhr</li>
+                    <li><strong>im</strong> Oktober, <strong>im</strong> Sommer</li>
+                  </ul>
+                </div>
+                <div class="topic-panel">
+                  <h4>Ort/Richtung</h4>
+                  <ul class="topic-list">
+                    <li><strong>nach</strong> Berlin (Stadt/Land ohne Artikel)</li>
+                    <li><strong>zu/zum</strong> Arzt, <strong>bei</strong> Freunden</li>
+                    <li><strong>aus</strong> der Türkei, <strong>von</strong> der Arbeit</li>
+                  </ul>
+                </div>
+              </div>
+              <svg class="topic-svg" viewBox="0 0 560 86" role="img" aria-label="Praepositionen Zeitbeispiel">
+                <rect x="14" y="12" width="168" height="26" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
+                <rect x="194" y="12" width="168" height="26" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
+                <rect x="374" y="12" width="168" height="26" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
+                <text x="98" y="29" text-anchor="middle" font-size="12" fill="#2d4a73">am Dienstag</text>
+                <text x="278" y="29" text-anchor="middle" font-size="12" fill="#2d4a73">um 18:00 Uhr</text>
+                <text x="458" y="29" text-anchor="middle" font-size="12" fill="#2d4a73">im Kursraum</text>
+              </svg>
+              <div class="tip-box"><strong>Fehlerfalle:</strong> Stadt meist mit <strong>nach</strong> (nicht: „zu Berlin“).</div>
             </div>
           </details>
 
           <details class="topic-block">
             <summary>Trennbare Verben</summary>
             <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Im Hauptsatz steht die Vorsilbe am Ende.</p>
-              <p class="topic-line"><strong>Formel:</strong> Subjekt + Verb(stamm) + ... + Präfix.</p>
-              <ul class="topic-list">
-                <li>aufstehen → Ich stehe um 6 Uhr <strong>auf</strong>.</li>
-                <li>anrufen → Wir rufen die Lehrerin <strong>an</strong>.</li>
-              </ul>
-              <div class="mini-example"><strong>Typischer Fehler:</strong> <em>Ich anrufe dich</em> ❌ → <em>Ich rufe dich an</em> ✅</div>
+              <p class="topic-line"><strong>Kurzregel:</strong> Im Hauptsatz trennt sich die Vorsilbe und steht am Ende.</p>
+              <div class="flow-row" aria-label="Trennbare Verben Schema">
+                <span class="flow-chip">Ich</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">rufe</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">dich heute</span><span class="flow-arrow">→</span>
+                <span class="flow-chip">an</span>
+              </div>
+              <div class="topic-grid">
+                <div class="topic-panel">
+                  <h4>Beispiele</h4>
+                  <ul class="topic-list">
+                    <li>aufstehen → Ich stehe um 6 Uhr <strong>auf</strong>.</li>
+                    <li>einkaufen → Wir kaufen samstags <strong>ein</strong>.</li>
+                  </ul>
+                </div>
+                <div class="topic-panel">
+                  <h4>Nebensatz</h4>
+                  <p>Im Nebensatz bleibt das Verb zusammen: „..., weil ich dich <strong>anrufe</strong>.“</p>
+                </div>
+              </div>
+              <div class="tip-box"><strong>Fehlerfalle:</strong> „Ich anrufe dich“ ❌ → „Ich rufe dich an“ ✅</div>
             </div>
           </details>
 
           <details class="topic-block">
             <summary>Kasus (Akkusativ und Dativ)</summary>
             <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Viele Verben brauchen einen festen Fall.</p>
-              <ul class="topic-list">
-                <li><strong>Akkusativ:</strong> Ich sehe <strong>den</strong> Lehrer. / Ich sehe <strong>ihn</strong>.</li>
-                <li><strong>Dativ:</strong> Ich helfe <strong>dem</strong> Lehrer. / Ich helfe <strong>ihm</strong>.</li>
-              </ul>
-              <div class="mini-example"><strong>Mini-Check:</strong> <em>mit</em> + Dativ, <em>für</em> + Akkusativ.</div>
+              <p class="topic-line"><strong>Kurzregel:</strong> Fragen helfen: <strong>Wen/was?</strong> = Akkusativ, <strong>Wem?</strong> = Dativ.</p>
+              <div class="topic-grid">
+                <div class="topic-panel">
+                  <h4>Akkusativ</h4>
+                  <ul class="topic-list">
+                    <li>Ich sehe <strong>den</strong> Lehrer.</li>
+                    <li>Ich sehe <strong>ihn</strong>.</li>
+                  </ul>
+                </div>
+                <div class="topic-panel">
+                  <h4>Dativ</h4>
+                  <ul class="topic-list">
+                    <li>Ich helfe <strong>dem</strong> Lehrer.</li>
+                    <li>Ich helfe <strong>ihm</strong>.</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="mini-example"><strong>Merksatz:</strong> mit + Dativ, zu + Dativ, für + Akkusativ, durch + Akkusativ.</div>
+              <div class="tip-box"><strong>Fehlerfalle:</strong> „Ich helfe den Mann“ ❌ → „Ich helfe <strong>dem</strong> Mann“ ✅</div>
             </div>
           </details>
         </div>
+        <div class="note">Alle Erklärtexte und Visualisierungen wurden für DTZ-LID neu erstellt (keine 1:1-Übernahme).</div>
       </article>
 
       <article class="card">
