@@ -247,6 +247,50 @@
       color: #7c4d63;
       font-size: .86rem;
     }
+
+    .compare-wrap {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+    .compare-row {
+      border: 1px solid #d6e2f3;
+      border-radius: 10px;
+      padding: 10px;
+      background: #f7fbff;
+      display: grid;
+      gap: 4px;
+    }
+    .compare-row.pink {
+      background: #fff7fa;
+      border-color: #f0d6df;
+    }
+    .compare-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #26446d;
+    }
+    .compare-row.pink .compare-title {
+      color: #7b4b62;
+    }
+    .compare-sentence {
+      margin: 0;
+      font-size: clamp(1rem, 2.7vw, 1.15rem);
+      color: #2f4d76;
+      line-height: 1.5;
+    }
+    .compare-row.pink .compare-sentence {
+      color: #6f5463;
+    }
+    .compare-hint {
+      margin: 0;
+      font-size: .95rem;
+      color: #5f7aa4;
+    }
+    .compare-row.pink .compare-hint {
+      color: #9a6a80;
+    }
   </style>
 </head>
 <body>
@@ -283,17 +327,18 @@
         </div>
       </div>
 
-      <svg class="svg" viewBox="0 0 560 126" role="img" aria-label="Perfekt Visual">
-        <rect x="12" y="10" width="536" height="46" rx="8" fill="#f7fbff" stroke="#d0def2"/>
-        <text x="24" y="30" font-size="12" fill="#24446f" font-weight="700">Hauptsatz:</text>
-        <text x="106" y="30" font-size="12" fill="#2d4a73">Ich habe den Brief gestern geschrieben.</text>
-        <text x="24" y="45" font-size="11" fill="#6d86ad">Hilfsverb auf Position 2, Partizip am Ende.</text>
-
-        <rect x="12" y="68" width="536" height="46" rx="8" fill="#fff7fa" stroke="#f0d6df"/>
-        <text x="24" y="88" font-size="12" fill="#7b4b62" font-weight="700">Nebensatz:</text>
-        <text x="106" y="88" font-size="12" fill="#6f5463">..., weil ich den Brief gestern geschrieben habe.</text>
-        <text x="24" y="103" font-size="11" fill="#9a6a80">Im Nebensatz steht das konjugierte Verb hinten.</text>
-      </svg>
+      <div class="compare-wrap" aria-label="Perfekt Visual">
+        <div class="compare-row">
+          <p class="compare-title">Hauptsatz:</p>
+          <p class="compare-sentence">Ich habe den Brief gestern geschrieben.</p>
+          <p class="compare-hint">Hilfsverb auf Position 2, Partizip am Ende.</p>
+        </div>
+        <div class="compare-row pink">
+          <p class="compare-title">Nebensatz:</p>
+          <p class="compare-sentence">..., weil ich den Brief gestern geschrieben habe.</p>
+          <p class="compare-hint">Im Nebensatz steht das konjugierte Verb hinten.</p>
+        </div>
+      </div>
 
       <div class="tip">
         Fehlerfalle: Nicht "Ich bin gelernt". Bei "lernen" immer <strong>haben</strong>: "Ich habe gelernt".
