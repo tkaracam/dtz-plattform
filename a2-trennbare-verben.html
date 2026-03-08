@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A2 Trennbare Verben | DTZ-LID</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d5deed;
+      --text: #273650;
+      --muted: #61779a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comfortaa", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .hero {
+      background: linear-gradient(130deg, #eef4ff 0%, #fff3f7 100%);
+      border: 1px solid #d9e4f5;
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      color: #223a60;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+      color: #2b466f;
+    }
+    h3 {
+      margin: 0 0 6px;
+      font-size: .98rem;
+      color: #2b466f;
+    }
+    p { margin: 0; color: #35507a; }
+
+    .btn {
+      border: 1px solid #cad8ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #29476f;
+      background: #eef4ff;
+    }
+    .btn.primary {
+      color: #fff;
+      border-color: #d9afc5;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+    }
+
+    .grid2 {
+      display: grid;
+      gap: 8px;
+    }
+    .grid3 {
+      display: grid;
+      gap: 8px;
+    }
+    @media (min-width: 860px) {
+      .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .panel {
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .chip {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: .8rem;
+      color: #2d4a73;
+      background: #f3f8ff;
+      font-weight: 700;
+    }
+    .arrow {
+      color: #7a93b9;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .topic-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #35537d;
+      font-size: .9rem;
+    }
+    .topic-list li { margin: 3px 0; }
+
+    .mini {
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 8px;
+      background: #f9fcff;
+      color: #334f79;
+      font-size: .88rem;
+    }
+
+    .svg {
+      width: 100%;
+      border: 1px solid #d6e2f3;
+      border-radius: 10px;
+      background: #fff;
+      padding: 4px;
+    }
+
+    .tip {
+      border: 1px solid #efd6de;
+      background: #fff7fa;
+      border-radius: 10px;
+      padding: 8px;
+      color: #7c4d63;
+      font-size: .86rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .badge {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #f4f8ff;
+      color: #2e4b74;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .question-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .q-card {
+      border: 1px solid #d6e2f3;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+      display: grid;
+      gap: 8px;
+    }
+    .q-card.correct {
+      border-color: #b8e3cf;
+      background: #f4fff9;
+    }
+    .q-card.wrong {
+      border-color: #f0c8d1;
+      background: #fff7f9;
+    }
+
+    .q-title {
+      margin: 0;
+      font-size: .96rem;
+      color: #2a466f;
+      font-weight: 700;
+    }
+    .q-prompt {
+      margin: 0;
+      color: #314e77;
+      white-space: pre-line;
+    }
+    .opts {
+      display: grid;
+      gap: 6px;
+    }
+    .opt {
+      border: 1px solid #cfdbef;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .opt input { margin-top: 3px; }
+    .opt.correct-answer {
+      border-color: #96cdb5;
+      background: #eefcf4;
+    }
+
+    .solution {
+      margin: 0;
+      color: #46658f;
+      font-size: .86rem;
+      display: none;
+    }
+    .show-sol .solution { display: block; }
+
+    .actions {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .result {
+      margin-top: 8px;
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 10px;
+      color: #314f79;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Trennbare Verben (A2) - Erklärung und Test</h1>
+      <a class="btn" href="./a2-themen.html">Zurück zu A2-Themen</a>
+    </section>
+
+    <section class="card">
+      <h2>Trennbare Verben im Überblick</h2>
+      <div class="grid2">
+        <div class="panel">
+          <h3>Hauptsatz-Regel</h3>
+          <p>Im Hauptsatz wird das Verb getrennt: Stamm in Position 2, Vorsilbe am Ende.</p>
+          <div class="flow-row">
+            <span class="chip">Ich</span><span class="arrow">→</span>
+            <span class="chip">rufe</span><span class="arrow">→</span>
+            <span class="chip">dich später</span><span class="arrow">→</span>
+            <span class="chip">an</span>
+          </div>
+          <div class="mini">Wir stehen um 6 Uhr <strong>auf</strong>.</div>
+        </div>
+        <div class="panel">
+          <h3>Nebensatz-Regel</h3>
+          <p>Im Nebensatz bleibt das Verb zusammen und steht am Ende.</p>
+          <div class="mini">..., weil ich dich später <strong>anrufe</strong>.</div>
+          <div class="mini">..., wenn wir morgen früh <strong>aufstehen</strong>.</div>
+        </div>
+      </div>
+
+      <svg class="svg" viewBox="0 0 620 160" role="img" aria-label="Trennbare Verben Beispiele">
+        <rect x="12" y="12" width="596" height="42" rx="8" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="24" y="37" font-size="13" fill="#24446f" font-weight="700">Hauptsatz:</text>
+        <text x="112" y="37" font-size="13" fill="#2d4a73">Ich rufe meine Lehrerin heute Abend an.</text>
+
+        <rect x="12" y="62" width="596" height="42" rx="8" fill="#fff7fa" stroke="#f0d6df"/>
+        <text x="24" y="87" font-size="13" fill="#7b4b62" font-weight="700">Nebensatz:</text>
+        <text x="112" y="87" font-size="13" fill="#6f5463">..., weil ich meine Lehrerin heute Abend anrufe.</text>
+
+        <rect x="12" y="112" width="596" height="36" rx="8" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="24" y="136" font-size="12" fill="#2d4a73">Perfekt: Ich habe meine Lehrerin heute Abend angerufen.</text>
+      </svg>
+
+      <div class="grid3" style="margin-top:8px;">
+        <div class="panel">
+          <h3>Häufige Verben</h3>
+          <ul class="topic-list">
+            <li>anrufen</li>
+            <li>aufstehen</li>
+            <li>einkaufen</li>
+            <li>mitbringen</li>
+            <li>abholen</li>
+            <li>fernsehen</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Perfekt</h3>
+          <ul class="topic-list">
+            <li>anrufen -> angerufen</li>
+            <li>aufstehen -> aufgestanden</li>
+            <li>einkaufen -> eingekauft</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Fehlerfalle</h3>
+          <ul class="topic-list">
+            <li>Falsch: Ich anrufe dich.</li>
+            <li>Richtig: Ich rufe dich an.</li>
+            <li>Falsch: ..., weil ich rufe dich an.</li>
+            <li>Richtig: ..., weil ich dich anrufe.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tip">DTZ-Tipp: Kontrollieren Sie immer das Satzende. Dort erkennt man bei trennbaren Verben den häufigsten Fehler sofort.</div>
+    </section>
+
+    <section class="card">
+      <h2>Nur Trennbare-Verben-Test (50 Fragen)</h2>
+      <div class="badge-row">
+        <span class="badge">Thema: Trennbare Verben</span>
+        <span class="badge">A/B/C-Aufgaben</span>
+        <span class="badge">2 Punkte je richtige Antwort</span>
+        <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+      </div>
+
+      <div id="questionList" class="question-list"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Prüfen</button>
+        <button class="btn" id="solutionBtn" type="button">Lösungen zeigen</button>
+        <button class="btn" id="newBtn" type="button">Nächster Test</button>
+      </div>
+      <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+    </section>
+  </main>
+
+  <script>
+    const questionList = document.getElementById("questionList");
+    const progressBadge = document.getElementById("progressBadge");
+    const resultBox = document.getElementById("resultBox");
+    const checkBtn = document.getElementById("checkBtn");
+    const solutionBtn = document.getElementById("solutionBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    let questions = [];
+
+    const presentRows = [
+      { prompt: "Ich ___ dich heute Abend ___.", goodA: "rufe", goodB: "an", bad1: "anrufe", bad2: "an" },
+      { prompt: "Wir ___ morgen um 6 Uhr ___.", goodA: "stehen", goodB: "auf", bad1: "aufstehen", bad2: "auf" },
+      { prompt: "Sie ___ am Samstag ___.", goodA: "kauft", goodB: "ein", bad1: "einkauft", bad2: "ein" },
+      { prompt: "Er ___ seine Schwester vom Bahnhof ___.", goodA: "holt", goodB: "ab", bad1: "abholt", bad2: "ab" }
+    ];
+
+    const nebensatzRows = [
+      { good: "..., weil ich dich heute Abend anrufe.", bad1: "..., weil ich rufe dich heute Abend an.", bad2: "..., weil ich dich heute Abend rufe an." },
+      { good: "..., wenn wir morgen früh aufstehen.", bad1: "..., wenn wir stehen morgen früh auf.", bad2: "..., wenn wir auf stehen morgen früh." },
+      { good: "..., dass sie am Samstag einkauft.", bad1: "..., dass sie kauft am Samstag ein.", bad2: "..., dass sie ein kauft am Samstag." }
+    ];
+
+    const perfRows = [
+      { prompt: "Partizip II von anrufen", good: "angerufen", bad1: "an gerufen", bad2: "gerufen an" },
+      { prompt: "Partizip II von aufstehen", good: "aufgestanden", bad1: "auf gestanden", bad2: "gestanden auf" },
+      { prompt: "Partizip II von einkaufen", good: "eingekauft", bad1: "ein gekauft", bad2: "gekauft ein" },
+      { prompt: "Partizip II von mitbringen", good: "mitgebracht", bad1: "mit gebracht", bad2: "gebracht mit" }
+    ];
+
+    const meaningRows = [
+      { prompt: "Welche Form ist ein trennbares Verb?", good: "anrufen", bad1: "besuchen", bad2: "arbeiten" },
+      { prompt: "Welche Vorsilbe gehört zu „stehen" in „aufstehen"?", good: "auf", bad1: "an", bad2: "aus" },
+      { prompt: "Welcher Satz ist im Hauptsatz korrekt?", good: "Ich rufe dich morgen an.", bad1: "Ich anrufe dich morgen.", bad2: "Ich rufe an dich morgen." }
+    ];
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+      }
+      return a;
+    }
+
+    function uniqueOptions(good, wrongA, wrongB) {
+      const out = [];
+      const add = (value) => {
+        const v = String(value || "").trim();
+        if (!v) return;
+        if (out.includes(v)) return;
+        out.push(v);
+      };
+      add(good);
+      add(wrongA);
+      add(wrongB);
+      while (out.length < 3) {
+        add(`${good} (falsch)`);
+      }
+      return shuffle(out.slice(0, 3));
+    }
+
+    function makeQ(prompt, options, correct, solution, hint) {
+      return { prompt, options, correct, solution, hint };
+    }
+
+    function qPresent() {
+      const q = pick(presentRows);
+      const good = q.prompt.replace("___", q.goodA).replace("___", q.goodB);
+      const badA = q.prompt.replace("___", q.bad1).replace("___", q.bad2);
+      const badB = q.prompt.replace("___", q.goodB).replace("___", q.goodA);
+      const opts = uniqueOptions(good, badA, badB);
+      return makeQ(
+        `Welche Form ist korrekt?\n${q.prompt}`,
+        opts,
+        opts.indexOf(good),
+        good,
+        "Hauptsatz: Verbteil 2 + Vorsilbe am Satzende."
+      );
+    }
+
+    function qNebensatz() {
+      const q = pick(nebensatzRows);
+      const opts = uniqueOptions(q.good, q.bad1, q.bad2);
+      return makeQ(
+        "Welche Nebensatz-Form ist korrekt?",
+        opts,
+        opts.indexOf(q.good),
+        q.good,
+        "Im Nebensatz bleibt das trennbare Verb zusammen und steht am Ende."
+      );
+    }
+
+    function qPerfekt() {
+      const q = pick(perfRows);
+      const opts = uniqueOptions(q.good, q.bad1, q.bad2);
+      return makeQ(
+        `${q.prompt}:`,
+        opts,
+        opts.indexOf(q.good),
+        q.good,
+        "Partizip II bei trennbaren Verben wird zusammengeschrieben."
+      );
+    }
+
+    function qMeaning() {
+      const q = pick(meaningRows);
+      const opts = uniqueOptions(q.good, q.bad1, q.bad2);
+      return makeQ(
+        q.prompt,
+        opts,
+        opts.indexOf(q.good),
+        q.good,
+        "Auf Verbposition und Satzende achten."
+      );
+    }
+
+    function qSort() {
+      const good = "Ich stehe morgen um sechs Uhr auf.";
+      const bad1 = "Ich aufstehe morgen um sechs Uhr.";
+      const bad2 = "Ich stehe auf morgen um sechs Uhr.";
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welcher Satz hat die korrekte Stellung?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "Vorsilbe steht im Hauptsatz am Ende."
+      );
+    }
+
+    function qPrefix() {
+      const good = "mit";
+      const opts = uniqueOptions(good, "nach", "im");
+      return makeQ(
+        "Welche Vorsilbe bildet mit „bringen" ein trennbares Verb?",
+        opts,
+        opts.indexOf(good),
+        "mit + bringen -> mitbringen",
+        "Typische Vorsilben: an, auf, ein, mit, ab ..."
+      );
+    }
+
+    function generate50() {
+      const makers = [qPresent, qNebensatz, qPerfekt, qMeaning, qSort, qPrefix];
+      const out = [];
+      for (let i = 0; i < 50; i += 1) out.push(makers[i % makers.length]());
+      return shuffle(out);
+    }
+
+    function render() {
+      questionList.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const card = document.createElement("article");
+        card.className = "q-card";
+
+        const title = document.createElement("p");
+        title.className = "q-title";
+        title.textContent = `Frage ${idx + 1}/50`;
+
+        const prompt = document.createElement("p");
+        prompt.className = "q-prompt";
+        prompt.textContent = q.prompt;
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+
+        q.options.forEach((opt, i) => {
+          const lab = document.createElement("label");
+          lab.className = "opt";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q_${idx}`;
+          radio.value = String(i);
+          radio.addEventListener("change", updateProgress);
+          const txt = document.createElement("span");
+          txt.innerHTML = `<strong>${String.fromCharCode(65 + i)})</strong> ${opt}`;
+          lab.append(radio, txt);
+          opts.appendChild(lab);
+        });
+
+        const solution = document.createElement("p");
+        solution.className = "solution";
+        solution.textContent = `Lösung: ${q.solution} | Hinweis: ${q.hint}`;
+
+        card.append(title, prompt, opts, solution);
+        questionList.appendChild(card);
+      });
+      updateProgress();
+      resultBox.textContent = "Noch nicht ausgewertet.";
+    }
+
+    function updateProgress() {
+      const selected = questionList.querySelectorAll("input[type='radio']:checked").length;
+      progressBadge.textContent = `Gelöst: ${selected}/50`;
+    }
+
+    function grade() {
+      let correct = 0;
+      questionList.querySelectorAll(".q-card").forEach((card, idx) => {
+        card.classList.remove("correct", "wrong");
+        card.querySelectorAll(".opt").forEach(o => o.classList.remove("correct-answer"));
+
+        const q = questions[idx];
+        const chosen = card.querySelector("input[type='radio']:checked");
+        const selected = chosen ? Number(chosen.value) : -1;
+
+        const labels = card.querySelectorAll(".opt");
+        if (labels[q.correct]) labels[q.correct].classList.add("correct-answer");
+
+        if (selected === q.correct) {
+          correct += 1;
+          card.classList.add("correct");
+        } else {
+          card.classList.add("wrong");
+        }
+      });
+
+      const points = correct * 2;
+      const total = 100;
+      const pct = Math.round((points / total) * 100);
+      resultBox.textContent = `Richtig: ${correct}/50\nPunkte: ${points}/${total}\nErgebnis: ${pct}%`;
+    }
+
+    function showSolutions() {
+      questionList.classList.add("show-sol");
+    }
+
+    function newTest() {
+      questions = generate50();
+      questionList.classList.remove("show-sol");
+      render();
+    }
+
+    checkBtn.addEventListener("click", grade);
+    solutionBtn.addEventListener("click", showSolutions);
+    newBtn.addEventListener("click", newTest);
+
+    newTest();
+  </script>
+</body>
+</html>
