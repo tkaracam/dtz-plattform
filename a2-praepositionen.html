@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A2 Präpositionen | DTZ-LID</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d5deed;
+      --text: #273650;
+      --muted: #61779a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comfortaa", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .hero {
+      background: linear-gradient(130deg, #eef4ff 0%, #fff3f7 100%);
+      border: 1px solid #d9e4f5;
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      color: #223a60;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+      color: #2b466f;
+    }
+    h3 {
+      margin: 0 0 6px;
+      font-size: .98rem;
+      color: #2b466f;
+    }
+    p { margin: 0; color: #35507a; }
+
+    .btn {
+      border: 1px solid #cad8ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #29476f;
+      background: #eef4ff;
+    }
+    .btn.primary {
+      color: #fff;
+      border-color: #d9afc5;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+    }
+
+    .grid2 {
+      display: grid;
+      gap: 8px;
+    }
+    .grid3 {
+      display: grid;
+      gap: 8px;
+    }
+    @media (min-width: 860px) {
+      .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .panel {
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .topic-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #35537d;
+      font-size: .9rem;
+    }
+    .topic-list li { margin: 3px 0; }
+
+    .mini {
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 8px;
+      background: #f9fcff;
+      color: #334f79;
+      font-size: .88rem;
+    }
+
+    .svg {
+      width: 100%;
+      border: 1px solid #d6e2f3;
+      border-radius: 10px;
+      background: #fff;
+      padding: 4px;
+    }
+
+    .tip {
+      border: 1px solid #efd6de;
+      background: #fff7fa;
+      border-radius: 10px;
+      padding: 8px;
+      color: #7c4d63;
+      font-size: .86rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .badge {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #f4f8ff;
+      color: #2e4b74;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .question-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .q-card {
+      border: 1px solid #d6e2f3;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+      display: grid;
+      gap: 8px;
+    }
+    .q-card.correct {
+      border-color: #b8e3cf;
+      background: #f4fff9;
+    }
+    .q-card.wrong {
+      border-color: #f0c8d1;
+      background: #fff7f9;
+    }
+
+    .q-title {
+      margin: 0;
+      font-size: .96rem;
+      color: #2a466f;
+      font-weight: 700;
+    }
+    .q-prompt {
+      margin: 0;
+      color: #314e77;
+      white-space: pre-line;
+    }
+    .opts {
+      display: grid;
+      gap: 6px;
+    }
+    .opt {
+      border: 1px solid #cfdbef;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .opt input { margin-top: 3px; }
+    .opt.correct-answer {
+      border-color: #96cdb5;
+      background: #eefcf4;
+    }
+
+    .solution {
+      margin: 0;
+      color: #46658f;
+      font-size: .86rem;
+      display: none;
+    }
+    .show-sol .solution { display: block; }
+
+    .actions {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .result {
+      margin-top: 8px;
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 10px;
+      color: #314f79;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Präpositionen (Zeit/Ort) - Erklärung und Test</h1>
+      <a class="btn" href="./a2-themen.html">Zurück zu A2-Themen</a>
+    </section>
+
+    <section class="card">
+      <h2>Präpositionen im Überblick</h2>
+      <div class="grid2">
+        <div class="panel">
+          <h3>Zeitpräpositionen (Wann?)</h3>
+          <ul class="topic-list">
+            <li><strong>am</strong> Montag, am Wochenende</li>
+            <li><strong>um</strong> 8 Uhr, um 18:30 Uhr</li>
+            <li><strong>im</strong> Mai, im Sommer, im Jahr 2026</li>
+            <li><strong>von ... bis</strong> von 8 bis 12 Uhr</li>
+            <li><strong>ab</strong> morgen, ab nächster Woche</li>
+          </ul>
+          <div class="mini">Ich habe <strong>am</strong> Dienstag <strong>um</strong> 17 Uhr Kurs.</div>
+        </div>
+        <div class="panel">
+          <h3>Ort/Richtung (Wo? Wohin? Woher?)</h3>
+          <ul class="topic-list">
+            <li><strong>in</strong> der Stadt (Wo?) / in die Stadt (Wohin?)</li>
+            <li><strong>zu/zum/zur</strong> Schule, zum Arzt</li>
+            <li><strong>nach</strong> Berlin, nach Deutschland</li>
+            <li><strong>bei</strong> Freunden (Wo?)</li>
+            <li><strong>aus/von</strong> aus der Türkei, von der Arbeit</li>
+          </ul>
+        </div>
+      </div>
+
+      <svg class="svg" viewBox="0 0 620 170" role="img" aria-label="Praepositionen Beispiele">
+        <rect x="12" y="12" width="596" height="44" rx="8" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="24" y="39" font-size="13" fill="#24446f" font-weight="700">Zeit:</text>
+        <text x="78" y="39" font-size="13" fill="#2d4a73">Am Freitag um 19:00 Uhr beginnt der Kurs.</text>
+
+        <rect x="12" y="66" width="596" height="44" rx="8" fill="#fff7fa" stroke="#f0d6df"/>
+        <text x="24" y="93" font-size="13" fill="#7b4b62" font-weight="700">Wohin:</text>
+        <text x="92" y="93" font-size="13" fill="#6f5463">Ich fahre nach Berlin und gehe dann zur Schule.</text>
+
+        <rect x="12" y="120" width="596" height="38" rx="8" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="24" y="144" font-size="12" fill="#2d4a73">Woher: Ich komme aus Ankara und von der Arbeit direkt zum Kurs.</text>
+      </svg>
+
+      <div class="grid3" style="margin-top:8px;">
+        <div class="panel">
+          <h3>Typische Kombinationen</h3>
+          <ul class="topic-list">
+            <li>am Abend</li>
+            <li>im Kurs</li>
+            <li>zum Termin</li>
+            <li>bei der Ärztin</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Kasus kurz</h3>
+          <ul class="topic-list">
+            <li>mit, bei, zu, nach, aus, von -> meist Dativ</li>
+            <li>durch, für, gegen, ohne, um -> Akkusativ</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Häufige Fehler</h3>
+          <ul class="topic-list">
+            <li>Falsch: zu Berlin</li>
+            <li>Richtig: nach Berlin</li>
+            <li>Falsch: im Montag</li>
+            <li>Richtig: am Montag</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tip">DTZ-Tipp: Lernen Sie Präpositionen immer mit einem Beispielsatz, nicht nur als einzelne Wörter.</div>
+    </section>
+
+    <section class="card">
+      <h2>Nur Präpositionen-Test (50 Fragen)</h2>
+      <div class="badge-row">
+        <span class="badge">Thema: Präpositionen</span>
+        <span class="badge">A/B/C-Aufgaben</span>
+        <span class="badge">2 Punkte je richtige Antwort</span>
+        <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+      </div>
+
+      <div id="questionList" class="question-list"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Prüfen</button>
+        <button class="btn" id="solutionBtn" type="button">Lösungen zeigen</button>
+        <button class="btn" id="newBtn" type="button">Nächster Test</button>
+      </div>
+      <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+    </section>
+  </main>
+
+  <script>
+    const questionList = document.getElementById("questionList");
+    const progressBadge = document.getElementById("progressBadge");
+    const resultBox = document.getElementById("resultBox");
+    const checkBtn = document.getElementById("checkBtn");
+    const solutionBtn = document.getElementById("solutionBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    let questions = [];
+
+    const timeRows = [
+      { prompt: "___ Montag habe ich einen Termin.", good: "am", bad1: "im", bad2: "an" },
+      { prompt: "Der Kurs beginnt ___ 18 Uhr.", good: "um", bad1: "am", bad2: "im" },
+      { prompt: "Wir fahren ___ Sommer nach Hamburg.", good: "im", bad1: "am", bad2: "um" },
+      { prompt: "___ Wochenende lerne ich viel.", good: "am", bad1: "im", bad2: "um" },
+      { prompt: "Der Unterricht geht ___ 8 bis 12 Uhr.", good: "von", bad1: "am", bad2: "zu" }
+    ];
+
+    const placeRows = [
+      { prompt: "Ich fahre ___ Berlin.", good: "nach", bad1: "zu", bad2: "im" },
+      { prompt: "Ich gehe ___ Arzt.", good: "zum", bad1: "nach", bad2: "im" },
+      { prompt: "Ich bin heute ___ Schule.", good: "in der", bad1: "zur", bad2: "nach" },
+      { prompt: "Wir sind ___ Freunden.", good: "bei", bad1: "nach", bad2: "zu" },
+      { prompt: "Ich komme ___ der Arbeit.", good: "von", bad1: "zu", bad2: "im" }
+    ];
+
+    const caseRows = [
+      { prompt: "Ich gehe mit ___ Lehrer.", good: "dem", bad1: "den", bad2: "die" },
+      { prompt: "Der Brief ist für ___.", good: "den Teilnehmer", bad1: "dem Teilnehmer", bad2: "der Teilnehmer" },
+      { prompt: "Sie kommt aus ___ Türkei.", good: "der", bad1: "die", bad2: "dem" },
+      { prompt: "Wir sprechen über ___ Kurs.", good: "den", bad1: "dem", bad2: "der" },
+      { prompt: "Er geht ohne ___ Handy.", good: "sein", bad1: "seinem", bad2: "seiner" }
+    ];
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+      }
+      return a;
+    }
+
+    function uniqueOptions(good, wrongA, wrongB) {
+      const out = [];
+      const add = (value) => {
+        const v = String(value || "").trim();
+        if (!v) return;
+        if (out.includes(v)) return;
+        out.push(v);
+      };
+      add(good);
+      add(wrongA);
+      add(wrongB);
+      while (out.length < 3) {
+        add(`${good} (falsch)`);
+      }
+      return shuffle(out.slice(0, 3));
+    }
+
+    function makeQ(prompt, options, correct, solution, hint) {
+      return { prompt, options, correct, solution, hint };
+    }
+
+    function qTime() {
+      const q = pick(timeRows);
+      const opts = uniqueOptions(q.good, q.bad1, q.bad2);
+      return makeQ(
+        `Welche Präposition passt?\n${q.prompt}`,
+        opts,
+        opts.indexOf(q.good),
+        `${q.prompt.replace("___", q.good)}`,
+        "Zeitangaben: am (Tag), um (Uhrzeit), im (Monat/Jahreszeit)."
+      );
+    }
+
+    function qPlace() {
+      const q = pick(placeRows);
+      const opts = uniqueOptions(q.good, q.bad1, q.bad2);
+      return makeQ(
+        `Welche Präposition passt?\n${q.prompt}`,
+        opts,
+        opts.indexOf(q.good),
+        `${q.prompt.replace("___", q.good)}`,
+        "Ort/Richtung genau unterscheiden: nach/zu/in/bei/von."
+      );
+    }
+
+    function qCase() {
+      const q = pick(caseRows);
+      const opts = uniqueOptions(q.good, q.bad1, q.bad2);
+      return makeQ(
+        `Welche Form ist korrekt?\n${q.prompt}`,
+        opts,
+        opts.indexOf(q.good),
+        `${q.prompt.replace("___", q.good)}`,
+        "Präposition bestimmt oft den Kasus (Dativ/Akkusativ)."
+      );
+    }
+
+    function qMeaning() {
+      const good = "nach";
+      const opts = uniqueOptions(good, "zu", "bei");
+      return makeQ(
+        "Welche Präposition nutzt man typischerweise bei Städten/Ländern ohne Artikel?",
+        opts,
+        opts.indexOf(good),
+        "Stadt/Land ohne Artikel -> nach",
+        "nach Berlin, nach Deutschland"
+      );
+    }
+
+    function qCombo() {
+      const good = "am Montag um 9 Uhr";
+      const bad1 = "im Montag um 9 Uhr";
+      const bad2 = "am Montag im 9 Uhr";
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welche Kombination ist korrekt?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "am + Tag, um + Uhrzeit"
+      );
+    }
+
+    function qDirection() {
+      const good = "Ich gehe zum Arzt und fahre danach nach Hause.";
+      const bad1 = "Ich gehe nach Arzt und fahre danach zu Hause.";
+      const bad2 = "Ich gehe bei Arzt und fahre danach im Hause.";
+      const opts = uniqueOptions(good, bad1, bad2);
+      return makeQ(
+        "Welcher Satz ist korrekt?",
+        opts,
+        opts.indexOf(good),
+        good,
+        "zum Arzt (Person/Institution), nach Hause (Richtung)."
+      );
+    }
+
+    function generate50() {
+      const makers = [qTime, qPlace, qCase, qMeaning, qCombo, qDirection];
+      const out = [];
+      for (let i = 0; i < 50; i += 1) out.push(makers[i % makers.length]());
+      return shuffle(out);
+    }
+
+    function render() {
+      questionList.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const card = document.createElement("article");
+        card.className = "q-card";
+
+        const title = document.createElement("p");
+        title.className = "q-title";
+        title.textContent = `Frage ${idx + 1}/50`;
+
+        const prompt = document.createElement("p");
+        prompt.className = "q-prompt";
+        prompt.textContent = q.prompt;
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+
+        q.options.forEach((opt, i) => {
+          const lab = document.createElement("label");
+          lab.className = "opt";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q_${idx}`;
+          radio.value = String(i);
+          radio.addEventListener("change", updateProgress);
+          const txt = document.createElement("span");
+          txt.innerHTML = `<strong>${String.fromCharCode(65 + i)})</strong> ${opt}`;
+          lab.append(radio, txt);
+          opts.appendChild(lab);
+        });
+
+        const solution = document.createElement("p");
+        solution.className = "solution";
+        solution.textContent = `Lösung: ${q.solution} | Hinweis: ${q.hint}`;
+
+        card.append(title, prompt, opts, solution);
+        questionList.appendChild(card);
+      });
+      updateProgress();
+      resultBox.textContent = "Noch nicht ausgewertet.";
+    }
+
+    function updateProgress() {
+      const selected = questionList.querySelectorAll("input[type='radio']:checked").length;
+      progressBadge.textContent = `Gelöst: ${selected}/50`;
+    }
+
+    function grade() {
+      let correct = 0;
+      questionList.querySelectorAll(".q-card").forEach((card, idx) => {
+        card.classList.remove("correct", "wrong");
+        card.querySelectorAll(".opt").forEach(o => o.classList.remove("correct-answer"));
+
+        const q = questions[idx];
+        const chosen = card.querySelector("input[type='radio']:checked");
+        const selected = chosen ? Number(chosen.value) : -1;
+
+        const labels = card.querySelectorAll(".opt");
+        if (labels[q.correct]) labels[q.correct].classList.add("correct-answer");
+
+        if (selected === q.correct) {
+          correct += 1;
+          card.classList.add("correct");
+        } else {
+          card.classList.add("wrong");
+        }
+      });
+
+      const points = correct * 2;
+      const total = 100;
+      const pct = Math.round((points / total) * 100);
+      resultBox.textContent = `Richtig: ${correct}/50\nPunkte: ${points}/${total}\nErgebnis: ${pct}%`;
+    }
+
+    function showSolutions() {
+      questionList.classList.add("show-sol");
+    }
+
+    function newTest() {
+      questions = generate50();
+      questionList.classList.remove("show-sol");
+      render();
+    }
+
+    checkBtn.addEventListener("click", grade);
+    solutionBtn.addEventListener("click", showSolutions);
+    newBtn.addEventListener("click", newTest);
+
+    newTest();
+  </script>
+</body>
+</html>
