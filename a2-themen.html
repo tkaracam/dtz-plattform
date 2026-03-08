@@ -192,6 +192,24 @@
       color: #7c4d63;
       font-size: .86rem;
     }
+
+    .topic-jump-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+      border: 1px solid #d8b5c5;
+      box-sizing: border-box;
+    }
+    .topic-jump-btn:hover {
+      filter: brightness(1.03);
+    }
     .perfekt-table {
       width: 100%;
       border-collapse: collapse;
@@ -429,203 +447,10 @@
       <article class="card">
         <h3 class="subhead">Themen-Erklärungen (A2)</h3>
         <div class="topic-explain">
-          <details class="topic-block">
-            <summary>Perfekt</summary>
-            <div class="topic-body">
-              <p class="topic-line"><strong>Kurzregel:</strong> Perfekt = <strong>haben/sein</strong> + <strong>Partizip II</strong>. Für Alltag, Gespräche und E-Mails ist das die wichtigste Vergangenheitsform auf A2-Niveau.</p>
-              <div class="topic-grid">
-                <div class="topic-panel">
-                  <h4>Wann benutze ich Perfekt?</h4>
-                  <ul class="topic-list">
-                    <li>über Erlebnisse gestern/heute/früher sprechen</li>
-                    <li>kurze Berichte im Alltag: Kurs, Arbeit, Termin, Familie</li>
-                    <li>in E-Mails/Chats oft natürlicher als Präteritum</li>
-                  </ul>
-                </div>
-                <div class="topic-panel">
-                  <h4>Grundstruktur (Satzklammer)</h4>
-                  <div class="flow-row" aria-label="Perfekt Grundform">
-                    <span class="flow-chip">Subjekt</span><span class="flow-arrow">→</span>
-                    <span class="flow-chip">haben/sein</span><span class="flow-arrow">→</span>
-                    <span class="flow-chip">Mittelfeld</span><span class="flow-arrow">→</span>
-                    <span class="flow-chip">Partizip II</span>
-                  </div>
-                  <p>Ich <strong>habe</strong> gestern lange <strong>gelernt</strong>.</p>
-                </div>
-              </div>
-
-              <div class="topic-grid">
-                <div class="topic-panel">
-                  <h4>Entscheidung: haben oder sein?</h4>
-                  <ol class="decision-list">
-                    <li><strong>Hat das Verb ein Akkusativ-Objekt?</strong><br>Ja → fast immer <span class="perfekt-tag">haben</span><br><span class="muted">Beispiel: Ich habe <em>den Brief</em> geschrieben.</span></li>
-                    <li><strong>Bewegung mit Ortswechsel?</strong><br>Ja → meist <span class="perfekt-tag sein">sein</span><br><span class="muted">gehen, fahren, kommen, fliegen</span></li>
-                    <li><strong>Zustandswechsel oder Übergang?</strong><br>Ja → oft <span class="perfekt-tag sein">sein</span><br><span class="muted">aufstehen, einschlafen, sterben, passieren</span></li>
-                    <li><strong>Alle anderen Tätigkeiten</strong> → meistens <span class="perfekt-tag">haben</span></li>
-                  </ol>
-                  <div class="mini-example">
-                    <strong>Schnellregel:</strong> Wenn Sie fragen können „Wen/Was?“ und es ein Objekt gibt, wählen Sie fast immer <strong>haben</strong>.<br>
-                    „Ich habe den Text gelesen.“ ✅
-                  </div>
-                  <div class="topic-grid" style="margin-top: 8px;">
-                    <div class="topic-panel">
-                      <h4>Sehr häufig mit <span class="perfekt-tag sein">sein</span></h4>
-                      <p>sein, werden, bleiben, gehen, kommen, fahren, fliegen, aufstehen, einschlafen, passieren</p>
-                    </div>
-                    <div class="topic-panel">
-                      <h4>Mini-Check (haben oder sein?)</h4>
-                      <ul class="topic-list">
-                        <li>Ich ___ nach Berlin gefahren. → <strong>bin</strong></li>
-                        <li>Wir ___ lange telefoniert. → <strong>haben</strong></li>
-                        <li>Er ___ um 6 Uhr aufgestanden. → <strong>ist</strong></li>
-                        <li>Sie ___ eine E-Mail geschrieben. → <strong>hat</strong></li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <div class="topic-panel">
-                  <h4>Partizip II bilden</h4>
-                  <ul class="topic-list">
-                    <li><strong>regelmäßig:</strong> ge + Stamm + t<br><span class="muted">lernen → gelernt</span></li>
-                    <li><strong>unregelmäßig:</strong> oft ge + Stamm + en<br><span class="muted">fahren → gefahren, sehen → gesehen</span></li>
-                    <li><strong>trennbar:</strong> Präfix + ge + Stamm + t/en<br><span class="muted">anrufen → angerufen</span></li>
-                    <li><strong>nicht trennbar:</strong> ohne ge-<br><span class="muted">besuchen → besucht</span></li>
-                  </ul>
-                </div>
-              </div>
-
-              <svg class="topic-svg" viewBox="0 0 560 88" role="img" aria-label="Perfekt Hauptsatz Visualisierung">
-                <rect x="12" y="16" width="100" height="34" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
-                <rect x="122" y="16" width="100" height="34" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
-                <rect x="232" y="16" width="148" height="34" rx="8" fill="#f3f8ff" stroke="#bfd0ea"/>
-                <rect x="390" y="16" width="158" height="34" rx="8" fill="#ffeef4" stroke="#efbfd3"/>
-                <text x="62" y="37" text-anchor="middle" font-size="12" fill="#2d4a73">Ich</text>
-                <text x="172" y="37" text-anchor="middle" font-size="12" fill="#2d4a73">bin</text>
-                <text x="306" y="37" text-anchor="middle" font-size="12" fill="#2d4a73">heute pünktlich</text>
-                <text x="469" y="37" text-anchor="middle" font-size="12" fill="#7c4d63">gekommen</text>
-              </svg>
-
-              <svg class="topic-svg" viewBox="0 0 560 130" role="img" aria-label="Perfekt Hauptsatz und Nebensatz">
-                <rect x="12" y="12" width="536" height="44" rx="8" fill="#f7fbff" stroke="#d0def2"/>
-                <text x="24" y="32" font-size="12" fill="#24446f" font-weight="700">Hauptsatz:</text>
-                <text x="110" y="32" font-size="12" fill="#2d4a73">Ich</text>
-                <text x="140" y="32" font-size="12" fill="#2d4a73">habe</text>
-                <text x="188" y="32" font-size="12" fill="#2d4a73">den Brief</text>
-                <text x="245" y="32" font-size="12" fill="#2d4a73">gestern</text>
-                <text x="304" y="32" font-size="12" fill="#8e4e68" font-weight="700">geschrieben.</text>
-                <text x="24" y="48" font-size="11" fill="#6d86ad">Hilfsverb auf Position 2, Partizip am Ende.</text>
-
-                <rect x="12" y="72" width="536" height="44" rx="8" fill="#fff7fa" stroke="#f0d6df"/>
-                <text x="24" y="92" font-size="12" fill="#7b4b62" font-weight="700">Nebensatz:</text>
-                <text x="112" y="92" font-size="12" fill="#6f5463">..., weil ich den Brief gestern geschrieben</text>
-                <text x="380" y="92" font-size="12" fill="#7b4b62" font-weight="700">habe.</text>
-                <text x="24" y="108" font-size="11" fill="#9a6a80">Im Nebensatz geht das konjugierte Verb nach hinten.</text>
-              </svg>
-
-              <div class="topic-panel">
-                <h4>Typische Verben im Überblick</h4>
-                <table class="perfekt-table">
-                  <thead>
-                    <tr>
-                      <th>Infinitiv</th>
-                      <th>Partizip II</th>
-                      <th>Hilfsverb</th>
-                      <th>Beispiel</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>lernen</td>
-                      <td>gelernt</td>
-                      <td><span class="perfekt-tag">haben</span></td>
-                      <td>Ich habe heute Deutsch gelernt.</td>
-                    </tr>
-                    <tr>
-                      <td>arbeiten</td>
-                      <td>gearbeitet</td>
-                      <td><span class="perfekt-tag">haben</span></td>
-                      <td>Wir haben lange gearbeitet.</td>
-                    </tr>
-                    <tr>
-                      <td>gehen</td>
-                      <td>gegangen</td>
-                      <td><span class="perfekt-tag sein">sein</span></td>
-                      <td>Er ist zu Fuß gegangen.</td>
-                    </tr>
-                    <tr>
-                      <td>fahren</td>
-                      <td>gefahren</td>
-                      <td><span class="perfekt-tag sein">sein</span></td>
-                      <td>Sie ist mit dem Bus gefahren.</td>
-                    </tr>
-                    <tr>
-                      <td>anrufen</td>
-                      <td>angerufen</td>
-                      <td><span class="perfekt-tag">haben</span></td>
-                      <td>Ich habe meine Lehrerin angerufen.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <svg class="topic-svg" viewBox="0 0 560 118" role="img" aria-label="Perfekt Zeitbezug">
-                <line x1="38" y1="58" x2="522" y2="58" stroke="#bdd0eb" stroke-width="2"/>
-                <circle cx="120" cy="58" r="7" fill="#7a95bc"/>
-                <circle cx="278" cy="58" r="7" fill="#e28eaf"/>
-                <circle cx="430" cy="58" r="7" fill="#7a95bc"/>
-                <text x="96" y="84" font-size="11" fill="#3c587f">gestern</text>
-                <text x="258" y="84" font-size="11" fill="#7b4c63">heute</text>
-                <text x="410" y="84" font-size="11" fill="#3c587f">letzte Woche</text>
-                <text x="42" y="36" font-size="12" fill="#29476f" font-weight="700">Perfekt beschreibt abgeschlossene Handlungen in der Vergangenheit.</text>
-                <text x="42" y="101" font-size="11" fill="#6b84ac">Beispiel: Heute spreche ich über etwas, das gestern passiert ist.</text>
-              </svg>
-
-              <div class="topic-grid">
-                <div class="topic-panel">
-                  <h4>Negation und Fragen im Perfekt</h4>
-                  <ul class="topic-list">
-                    <li><strong>Negation:</strong> Ich habe den Brief <strong>nicht</strong> geschrieben.</li>
-                    <li><strong>W‑Frage:</strong> Wann hast du den Brief geschrieben?</li>
-                    <li><strong>Ja/Nein:</strong> Hast du den Brief geschrieben?</li>
-                  </ul>
-                  <div class="mini-example"><strong>Muster:</strong> Frage → Hilfsverb an Position 1, Partizip bleibt am Ende.</div>
-                </div>
-                <div class="topic-panel">
-                  <h4>A2-Praxis: Perfekt vs. Präteritum (häufig)</h4>
-                  <ul class="topic-list">
-                    <li>Alltag meist Perfekt: <em>Ich habe gearbeitet.</em></li>
-                    <li>Sehr häufig auch Präteritum: <em>ich war, ich hatte</em></li>
-                    <li>Im Schreiben sind beide möglich, wichtig ist die Konsistenz.</li>
-                  </ul>
-                  <div class="mini-example"><strong>Empfehlung:</strong> In DTZ-Texten lieber durchgängig Perfekt verwenden, außer bei festen Formen wie <em>war</em>.</div>
-                </div>
-              </div>
-
-              <div class="topic-grid">
-                <div class="topic-panel">
-                  <h4>Satzstellung: wichtige Muster</h4>
-                  <p><strong>Aussage:</strong> Ich habe den Text schon geschrieben.</p>
-                  <p><strong>W-Frage:</strong> Wann hast du den Text geschrieben?</p>
-                  <p><strong>Ja/Nein:</strong> Hast du den Text schon geschrieben?</p>
-                  <p><strong>Nebensatz:</strong> ..., weil ich den Text schon geschrieben habe.</p>
-                </div>
-                <div class="topic-panel">
-                  <h4>Präsens → Perfekt (3 schnelle Beispiele)</h4>
-                  <p>Ich lerne Deutsch. → Ich <strong>habe</strong> Deutsch <strong>gelernt</strong>.</p>
-                  <p>Wir fahren nach Berlin. → Wir <strong>sind</strong> nach Berlin <strong>gefahren</strong>.</p>
-                  <p>Sie ruft mich an. → Sie <strong>hat</strong> mich <strong>angerufen</strong>.</p>
-                </div>
-              </div>
-
-              <div class="tip-box">
-                <strong>Fehlerfallen:</strong><br>
-                1) Nicht „Ich bin gelernt“ ❌, sondern „Ich <strong>habe gelernt</strong>“ ✅.<br>
-                2) Partizip II im Hauptsatz ans Ende: „Ich habe heute viel gelernt.“<br>
-                3) Im Nebensatz geht das Hilfsverb nach hinten: „..., weil ich viel gelernt <strong>habe</strong>.“<br>
-                4) Nicht jedes Bewegungsverb automatisch mit sein: Bedeutung und Gebrauch prüfen.
-              </div>
-            </div>
-          </details>
+          <div class="topic-panel">
+            <h4 style="margin:0 0 8px;">Perfekt</h4>
+            <a class="topic-jump-btn" href="./a2-perfekt.html">Perfekt-Detailseite öffnen</a>
+          </div>
 
           <details class="topic-block">
             <summary>Nebensätze (weil, dass, wenn)</summary>
