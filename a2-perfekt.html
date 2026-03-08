@@ -377,8 +377,21 @@
       return a;
     }
 
+    function fixSeparableParticiple(value) {
+      return String(value || '')
+        .replace(/\b(an|auf|ab|mit|ein|aus|um|vor|zurueck|zurück)\s+ge([a-zäöüß]+)/gi, '$1ge$2')
+        .replace(/\s+([.,!?;:])/g, '$1')
+        .trim();
+    }
+
     function makeQ(prompt, options, correct, solution, hint) {
-      return { prompt, options, correct, solution, hint };
+      return {
+        prompt: fixSeparableParticiple(prompt),
+        options,
+        correct,
+        solution: fixSeparableParticiple(solution),
+        hint
+      };
     }
 
     function qAuxChoice() {
