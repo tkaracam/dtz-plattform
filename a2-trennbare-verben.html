@@ -399,7 +399,7 @@
 
     const meaningRows = [
       { prompt: "Welche Form ist ein trennbares Verb?", good: "anrufen", bad1: "besuchen", bad2: "arbeiten" },
-      { prompt: "Welche Vorsilbe gehört zu „stehen" in „aufstehen"?", good: "auf", bad1: "an", bad2: "aus" },
+      { prompt: "Welche Vorsilbe gehört zu „stehen“ in „aufstehen“?", good: "auf", bad1: "an", bad2: "aus" },
       { prompt: "Welcher Satz ist im Hauptsatz korrekt?", good: "Ich rufe dich morgen an.", bad1: "Ich anrufe dich morgen.", bad2: "Ich rufe an dich morgen." }
     ];
 
@@ -508,7 +508,7 @@
       const good = "mit";
       const opts = uniqueOptions(good, "nach", "im");
       return makeQ(
-        "Welche Vorsilbe bildet mit „bringen" ein trennbares Verb?",
+        "Welche Vorsilbe bildet mit „bringen“ ein trennbares Verb?",
         opts,
         opts.indexOf(good),
         "mit + bringen -> mitbringen",
