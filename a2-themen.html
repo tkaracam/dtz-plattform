@@ -614,7 +614,6 @@
             </div>
           </details>
         </div>
-        <div class="note">Alle Erklärtexte und Visualisierungen wurden für DTZ-LID neu erstellt (keine 1:1-Übernahme).</div>
       </article>
 
       <article class="card">
@@ -650,9 +649,6 @@
           </div>
           <div class="stats" id="statsBox">Kein Test aktiv.</div>
 
-          <div class="note">
-            Hinweis: Übungsinhalte sind neu formuliert (kein 1:1-Abdruck aus Lehrwerken).
-          </div>
         </div>
       </article>
     </section>
@@ -804,7 +800,7 @@
     }
 
     function genPerfekt() {
-      const mode = Math.floor(Math.random() * 5);
+      const mode = Math.floor(Math.random() * 7);
       const s = pick(subjects);
       const v = pick(perfektVerbs);
       const aux = v.aux === "haben" ? s.haben : s.sein;
@@ -857,6 +853,37 @@
           ["ich habe gestern im supermarkt eingekauft", "gestern habe ich im supermarkt eingekauft"],
           "Verbposition 2, Partizip am Ende.",
           sent
+        );
+      }
+      if (mode === 4) {
+        return makeText(
+          "Perfekt",
+          "haben oder sein",
+          `Welches Hilfsverb passt?\n___ + ${v.pp}`,
+          [v.aux],
+          "Bewegung/Zustandswechsel -> sein, sonst meistens haben.",
+          `${v.aux} + ${v.pp}`
+        );
+      }
+      if (mode === 5) {
+        const verbSet = shuffle(perfektVerbs).slice(0, 3);
+        const seinVerb = verbSet.find(x => x.aux === "sein") || pick(perfektVerbs.filter(x => x.aux === "sein"));
+        const habenVerb = verbSet.find(x => x.aux === "haben") || pick(perfektVerbs.filter(x => x.aux === "haben"));
+        const anotherHabenVerb = pick(perfektVerbs.filter(x => x.aux === "haben" && x.pp !== habenVerb.pp));
+        const correct = `sein: ${seinVerb.pp}`;
+        const options = shuffle([
+          correct,
+          `sein: ${habenVerb.pp}`,
+          `haben: ${anotherHabenVerb.pp}`
+        ]);
+        return makeMcq(
+          "Perfekt",
+          "haben oder sein",
+          "Welche Kombination ist korrekt?",
+          options,
+          options.indexOf(correct),
+          "Achten Sie auf Bewegung/Ortswechsel.",
+          correct
         );
       }
       return makeText(
