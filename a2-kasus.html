@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A2 Kasus | DTZ-LID</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --line: #d5deed;
+      --text: #273650;
+      --muted: #61779a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Comfortaa", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .hero {
+      background: linear-gradient(130deg, #eef4ff 0%, #fff3f7 100%);
+      border: 1px solid #d9e4f5;
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      color: #223a60;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+      color: #2b466f;
+    }
+    h3 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      color: #2b466f;
+    }
+    p {
+      margin: 0;
+      color: #35507a;
+      font-size: clamp(1rem, 2.4vw, 1.08rem);
+    }
+
+    .btn {
+      border: 1px solid #cad8ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #29476f;
+      background: #eef4ff;
+    }
+    .btn.primary {
+      color: #fff;
+      border-color: #d9afc5;
+      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
+    }
+
+    .grid2 {
+      display: grid;
+      gap: 8px;
+    }
+    @media (min-width: 860px) {
+      .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .panel {
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .chip {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: .86rem;
+      color: #2d4a73;
+      background: #f3f8ff;
+      font-weight: 700;
+    }
+    .arrow {
+      color: #7a93b9;
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .topic-list {
+      margin: 0;
+      padding-left: 20px;
+      color: #35537d;
+      font-size: clamp(1rem, 2.4vw, 1.05rem);
+    }
+    .topic-list li { margin: 5px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #d5e1f3;
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: clamp(.95rem, 2.2vw, 1rem);
+    }
+    th, td {
+      border-bottom: 1px solid #dce6f4;
+      padding: 8px;
+      text-align: left;
+      color: #334f79;
+    }
+    th {
+      background: #f3f8ff;
+      color: #2a476f;
+      font-weight: 700;
+    }
+
+    .svg {
+      width: 100%;
+      border: 1px solid #d6e2f3;
+      border-radius: 10px;
+      background: #fff;
+      padding: 4px;
+    }
+
+    .tip {
+      border: 1px solid #efd6de;
+      background: #fff7fa;
+      border-radius: 10px;
+      padding: 10px;
+      color: #7c4d63;
+      font-size: clamp(.96rem, 2.2vw, 1rem);
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .badge {
+      border: 1px solid #bfd0ea;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #f4f8ff;
+      color: #2e4b74;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .question-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .q-card {
+      border: 1px solid #d6e2f3;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+      display: grid;
+      gap: 8px;
+    }
+    .q-card.correct {
+      border-color: #b8e3cf;
+      background: #f4fff9;
+    }
+    .q-card.wrong {
+      border-color: #f0c8d1;
+      background: #fff7f9;
+    }
+
+    .q-title {
+      margin: 0;
+      font-size: .96rem;
+      color: #2a466f;
+      font-weight: 700;
+    }
+    .q-prompt {
+      margin: 0;
+      color: #314e77;
+      white-space: pre-line;
+      font-size: clamp(1rem, 2.4vw, 1.08rem);
+    }
+    .opts {
+      display: grid;
+      gap: 6px;
+    }
+    .opt {
+      border: 1px solid #cfdbef;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .opt input { margin-top: 3px; }
+    .opt.correct-answer {
+      border-color: #96cdb5;
+      background: #eefcf4;
+    }
+
+    .solution {
+      margin: 0;
+      color: #46658f;
+      font-size: .9rem;
+      display: none;
+    }
+    .show-sol .solution { display: block; }
+
+    .actions {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .result {
+      margin-top: 8px;
+      border: 1px dashed #c8d7ef;
+      border-radius: 10px;
+      padding: 10px;
+      color: #314f79;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Kasus (Akkusativ und Dativ) - Erklärung und Test</h1>
+      <a class="btn" href="./a2-themen.html">Zurück zu A2-Themen</a>
+    </section>
+
+    <section class="card">
+      <h2>Kasus im Überblick (A2)</h2>
+      <div class="grid2">
+        <div class="panel">
+          <h3>Fragen-Methode</h3>
+          <div class="flow-row">
+            <span class="chip">Wen/was?</span>
+            <span class="arrow">→</span>
+            <span class="chip">Akkusativ</span>
+            <span class="arrow">|</span>
+            <span class="chip">Wem?</span>
+            <span class="arrow">→</span>
+            <span class="chip">Dativ</span>
+          </div>
+          <p>Ich sehe <strong>den Mann</strong>. (Wen sehe ich?)</p>
+          <p>Ich helfe <strong>dem Mann</strong>. (Wem helfe ich?)</p>
+        </div>
+        <div class="panel">
+          <h3>Typische Signale</h3>
+          <ul class="topic-list">
+            <li><strong>Akkusativ:</strong> durch, für, gegen, ohne, um</li>
+            <li><strong>Dativ:</strong> aus, bei, mit, nach, seit, von, zu</li>
+            <li><strong>Dativ-Verben:</strong> helfen, danken, antworten, gratulieren, gefallen</li>
+            <li><strong>Akkusativ-Verben:</strong> sehen, kaufen, besuchen, brauchen, lesen</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:8px;">
+        <div class="panel">
+          <h3>Artikel-Tabelle (Singular)</h3>
+          <table aria-label="Artikel Akkusativ und Dativ">
+            <thead>
+              <tr>
+                <th>Kasus</th>
+                <th>Maskulin</th>
+                <th>Feminin</th>
+                <th>Neutral</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Nominativ</td>
+                <td>der</td>
+                <td>die</td>
+                <td>das</td>
+              </tr>
+              <tr>
+                <td>Akkusativ</td>
+                <td><strong>den</strong></td>
+                <td><strong>die</strong></td>
+                <td><strong>das</strong></td>
+              </tr>
+              <tr>
+                <td>Dativ</td>
+                <td><strong>dem</strong></td>
+                <td><strong>der</strong></td>
+                <td><strong>dem</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h3>Pronomen-Tabelle</h3>
+          <table aria-label="Pronomen Akkusativ und Dativ">
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>Akkusativ</th>
+                <th>Dativ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>ich</td><td>mich</td><td>mir</td></tr>
+              <tr><td>du</td><td>dich</td><td>dir</td></tr>
+              <tr><td>er</td><td>ihn</td><td>ihm</td></tr>
+              <tr><td>sie</td><td>sie</td><td>ihr</td></tr>
+              <tr><td>es</td><td>es</td><td>ihm</td></tr>
+              <tr><td>wir</td><td>uns</td><td>uns</td></tr>
+              <tr><td>ihr</td><td>euch</td><td>euch</td></tr>
+              <tr><td>sie/Sie</td><td>sie/Sie</td><td>ihnen/Ihnen</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <svg class="svg" viewBox="0 0 700 190" role="img" aria-label="Kasus Visualisierung">
+        <rect x="14" y="14" width="672" height="48" rx="10" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="30" y="44" font-size="18" fill="#26466f" font-weight="700">Akkusativ:</text>
+        <text x="150" y="44" font-size="18" fill="#2f4d76">Ich sehe den Lehrer. -> Ich sehe ihn.</text>
+
+        <rect x="14" y="72" width="672" height="48" rx="10" fill="#fff7fa" stroke="#f0d6df"/>
+        <text x="30" y="102" font-size="18" fill="#7b4b62" font-weight="700">Dativ:</text>
+        <text x="150" y="102" font-size="18" fill="#6f5463">Ich helfe dem Lehrer. -> Ich helfe ihm.</text>
+
+        <rect x="14" y="130" width="672" height="44" rx="10" fill="#f7fbff" stroke="#d0def2"/>
+        <text x="30" y="158" font-size="16" fill="#26466f">Wo? -> in dem Kursraum (Dativ) | Wohin? -> in den Kursraum (Akkusativ)</text>
+      </svg>
+
+      <div class="tip" style="margin-top:8px;">
+        Fehlerfalle: "Ich helfe den Mann" ist falsch. Bei <strong>helfen</strong> brauchen Sie den Dativ: "Ich helfe <strong>dem</strong> Mann".
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Nur Kasus-Test (50 Fragen)</h2>
+      <div class="badge-row">
+        <span class="badge">Thema: Kasus (Akkusativ/Dativ)</span>
+        <span class="badge">A/B/C-Aufgaben</span>
+        <span class="badge">2 Punkte je richtige Antwort</span>
+        <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+      </div>
+
+      <div id="questionList" class="question-list"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Prüfen</button>
+        <button class="btn" id="solutionBtn" type="button">Lösungen zeigen</button>
+        <button class="btn" id="newBtn" type="button">Nächster Test</button>
+      </div>
+      <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+    </section>
+  </main>
+
+  <script>
+    const questionList = document.getElementById("questionList");
+    const progressBadge = document.getElementById("progressBadge");
+    const resultBox = document.getElementById("resultBox");
+    const checkBtn = document.getElementById("checkBtn");
+    const solutionBtn = document.getElementById("solutionBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    let questions = [];
+
+    const nouns = [
+      { base: "Mann", nom: "der", acc: "den", dat: "dem" },
+      { base: "Lehrer", nom: "der", acc: "den", dat: "dem" },
+      { base: "Freund", nom: "der", acc: "den", dat: "dem" },
+      { base: "Kollege", nom: "der", acc: "den", dat: "dem" },
+      { base: "Frau", nom: "die", acc: "die", dat: "der" },
+      { base: "Lehrerin", nom: "die", acc: "die", dat: "der" },
+      { base: "Nachbarin", nom: "die", acc: "die", dat: "der" },
+      { base: "Mutter", nom: "die", acc: "die", dat: "der" },
+      { base: "Kind", nom: "das", acc: "das", dat: "dem" },
+      { base: "Auto", nom: "das", acc: "das", dat: "dem" },
+      { base: "Buch", nom: "das", acc: "das", dat: "dem" },
+      { base: "Handy", nom: "das", acc: "das", dat: "dem" }
+    ];
+
+    const transitiveVerbs = ["sehe", "besuche", "kaufe", "brauche", "lese", "frage"];
+    const dativeVerbs = ["helfe", "danke", "antworte", "folge", "gratuliere", "gefalle"];
+
+    const dativePrepItems = [
+      { prompt: "Ich spreche mit ___ Lehrer.", good: "dem", wrongA: "den", wrongB: "der", solution: "Ich spreche mit dem Lehrer." },
+      { prompt: "Wir wohnen bei ___ Nachbarin.", good: "der", wrongA: "die", wrongB: "dem", solution: "Wir wohnen bei der Nachbarin." },
+      { prompt: "Er fährt mit ___ Bus zur Arbeit.", good: "dem", wrongA: "den", wrongB: "der", solution: "Er fährt mit dem Bus zur Arbeit." },
+      { prompt: "Sie kommt von ___ Freundin.", good: "der", wrongA: "die", wrongB: "dem", solution: "Sie kommt von der Freundin." },
+      { prompt: "Ich gehe zu ___ Arzt.", good: "dem", wrongA: "den", wrongB: "der", solution: "Ich gehe zu dem Arzt." },
+      { prompt: "Wir reden seit gestern mit ___ Trainer.", good: "dem", wrongA: "den", wrongB: "der", solution: "Wir reden seit gestern mit dem Trainer." }
+    ];
+
+    const akkPrepItems = [
+      { prompt: "Ich kaufe ein Geschenk für ___ Lehrerin.", good: "die", wrongA: "der", wrongB: "dem", solution: "Ich kaufe ein Geschenk für die Lehrerin." },
+      { prompt: "Wir gehen ohne ___ Ausweis ins Amt.", good: "den", wrongA: "dem", wrongB: "der", solution: "Wir gehen ohne den Ausweis ins Amt." },
+      { prompt: "Er läuft durch ___ Park.", good: "den", wrongA: "dem", wrongB: "der", solution: "Er läuft durch den Park." },
+      { prompt: "Sie entscheidet sich gegen ___ Vorschlag.", good: "den", wrongA: "dem", wrongB: "der", solution: "Sie entscheidet sich gegen den Vorschlag." },
+      { prompt: "Der Bus fährt um ___ Marktplatz.", good: "den", wrongA: "dem", wrongB: "der", solution: "Der Bus fährt um den Marktplatz." },
+      { prompt: "Wir kämpfen um ___ Platz im Kurs.", good: "den", wrongA: "dem", wrongB: "der", solution: "Wir kämpfen um den Platz im Kurs." }
+    ];
+
+    const locationNouns = [
+      { base: "Tisch", acc: "den", dat: "dem" },
+      { base: "Stuhl", acc: "den", dat: "dem" },
+      { base: "Wand", acc: "die", dat: "der" },
+      { base: "Tür", acc: "die", dat: "der" },
+      { base: "Regal", acc: "das", dat: "dem" },
+      { base: "Sofa", acc: "das", dat: "dem" }
+    ];
+
+    const pronounItems = [
+      { prompt: "Die Lehrerin hilft dem Schüler. Sie hilft ___.", good: "ihm", wrongA: "ihn", wrongB: "er", hint: "helfen + Dativ" },
+      { prompt: "Ich sehe den Schüler. Ich sehe ___.", good: "ihn", wrongA: "ihm", wrongB: "er", hint: "sehen + Akkusativ" },
+      { prompt: "Wir danken der Frau. Wir danken ___.", good: "ihr", wrongA: "sie", wrongB: "ihn", hint: "danken + Dativ" },
+      { prompt: "Er besucht die Lehrerin. Er besucht ___.", good: "sie", wrongA: "ihr", wrongB: "ihm", hint: "besuchen + Akkusativ" },
+      { prompt: "Ich antworte dem Kind. Ich antworte ___.", good: "ihm", wrongA: "es", wrongB: "ihn", hint: "antworten + Dativ" },
+      { prompt: "Sie ruft den Kollegen an. Sie ruft ___.", good: "ihn", wrongA: "ihm", wrongB: "er", hint: "anrufen + Akkusativ" }
+    ];
+
+    const sentenceTriples = [
+      {
+        good: "Ich gebe dem Mann den Schlüssel.",
+        bad1: "Ich gebe den Mann dem Schlüssel.",
+        bad2: "Ich gebe dem Mann der Schlüssel.",
+        hint: "geben: Dativperson + Akkusativsache"
+      },
+      {
+        good: "Wir helfen der Nachbarin heute.",
+        bad1: "Wir helfen die Nachbarin heute.",
+        bad2: "Wir helfen den Nachbarin heute.",
+        hint: "helfen verlangt Dativ"
+      },
+      {
+        good: "Sie besucht den Lehrer am Nachmittag.",
+        bad1: "Sie besucht dem Lehrer am Nachmittag.",
+        bad2: "Sie besucht der Lehrer am Nachmittag.",
+        hint: "besuchen verlangt Akkusativ"
+      },
+      {
+        good: "Ich spreche mit dem Arzt.",
+        bad1: "Ich spreche mit den Arzt.",
+        bad2: "Ich spreche mit der Arzt.",
+        hint: "mit steht immer mit Dativ"
+      },
+      {
+        good: "Ohne den Ausweis kann ich nicht hinein.",
+        bad1: "Ohne dem Ausweis kann ich nicht hinein.",
+        bad2: "Ohne der Ausweis kann ich nicht hinein.",
+        hint: "ohne steht immer mit Akkusativ"
+      }
+    ];
+
+    function pick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+      }
+      return a;
+    }
+
+    function uniqueOptions(good, wrongA, wrongB) {
+      const fallbacks = ["den", "dem", "die", "der", "das", "ihn", "ihm", "sie", "ihr"]; 
+      const pool = [good, wrongA, wrongB].concat(fallbacks);
+      const out = [];
+      pool.forEach((item) => {
+        const val = String(item || "").trim();
+        if (!val) return;
+        if (out.includes(val)) return;
+        out.push(val);
+      });
+      if (!out.includes(good)) out.unshift(good);
+      const selected = out.slice(0, 3);
+      if (!selected.includes(good)) selected[0] = good;
+      return shuffle(selected);
+    }
+
+    function makeQ(prompt, options, correct, solution, hint) {
+      return { prompt, options, correct, solution, hint };
+    }
+
+    function qAkkVerbArticle() {
+      const noun = pick(nouns);
+      const verb = pick(transitiveVerbs);
+      const good = noun.acc;
+      const opts = uniqueOptions(good, noun.dat, noun.nom);
+      return makeQ(
+        `Ergänzen Sie den Artikel (Akkusativ):\nIch ${verb} ___ ${noun.base}.`,
+        opts,
+        opts.indexOf(good),
+        `Ich ${verb} ${noun.acc} ${noun.base}.`,
+        "Bei diesen Verben steht das Objekt im Akkusativ."
+      );
+    }
+
+    function qDativVerbArticle() {
+      const noun = pick(nouns);
+      const verb = pick(dativeVerbs);
+      const good = noun.dat;
+      const opts = uniqueOptions(good, noun.acc, noun.nom);
+      return makeQ(
+        `Ergänzen Sie den Artikel (Dativ):\nWir ${verb} ___ ${noun.base}.`,
+        opts,
+        opts.indexOf(good),
+        `Wir ${verb} ${noun.dat} ${noun.base}.`,
+        "Verben wie helfen/danken/antworten brauchen den Dativ."
+      );
+    }
+
+    function qDativePreposition() {
+      const item = pick(dativePrepItems);
+      const good = item.good;
+      const opts = uniqueOptions(good, item.wrongA, item.wrongB);
+      return makeQ(
+        `Ergänzen Sie den Artikel:\n${item.prompt}`,
+        opts,
+        opts.indexOf(good),
+        item.solution,
+        "mit/bei/von/zu/seit stehen mit Dativ."
+      );
+    }
+
+    function qAkkPreposition() {
+      const item = pick(akkPrepItems);
+      const good = item.good;
+      const opts = uniqueOptions(good, item.wrongA, item.wrongB);
+      return makeQ(
+        `Ergänzen Sie den Artikel:\n${item.prompt}`,
+        opts,
+        opts.indexOf(good),
+        item.solution,
+        "für/ohne/gegen/durch/um stehen mit Akkusativ."
+      );
+    }
+
+    function qWoDativ() {
+      const loc = pick(locationNouns);
+      const good = loc.dat;
+      const opts = uniqueOptions(good, loc.acc, "den");
+      return makeQ(
+        `Wo? Ergänzen Sie richtig:\nDas Buch liegt auf ___ ${loc.base}.`,
+        opts,
+        opts.indexOf(good),
+        `Das Buch liegt auf ${loc.dat} ${loc.base}.`,
+        "Wo? = Dativ bei Wechselpräpositionen."
+      );
+    }
+
+    function qWohinAkk() {
+      const loc = pick(locationNouns);
+      const good = loc.acc;
+      const opts = uniqueOptions(good, loc.dat, "der");
+      return makeQ(
+        `Wohin? Ergänzen Sie richtig:\nIch lege das Buch auf ___ ${loc.base}.`,
+        opts,
+        opts.indexOf(good),
+        `Ich lege das Buch auf ${loc.acc} ${loc.base}.`,
+        "Wohin? = Akkusativ bei Wechselpräpositionen."
+      );
+    }
+
+    function qPronounCase() {
+      const item = pick(pronounItems);
+      const opts = uniqueOptions(item.good, item.wrongA, item.wrongB);
+      return makeQ(
+        item.prompt,
+        opts,
+        opts.indexOf(item.good),
+        item.prompt.replace("___", item.good),
+        item.hint
+      );
+    }
+
+    function qSentenceChoice() {
+      const item = pick(sentenceTriples);
+      const opts = uniqueOptions(item.good, item.bad1, item.bad2);
+      return makeQ(
+        "Welche Variante ist grammatisch korrekt?",
+        opts,
+        opts.indexOf(item.good),
+        item.good,
+        item.hint
+      );
+    }
+
+    function generate50() {
+      const makers = [
+        qAkkVerbArticle,
+        qDativVerbArticle,
+        qDativePreposition,
+        qAkkPreposition,
+        qWoDativ,
+        qWohinAkk,
+        qPronounCase,
+        qSentenceChoice
+      ];
+      const out = [];
+      for (let i = 0; i < 50; i += 1) {
+        out.push(makers[i % makers.length]());
+      }
+      return shuffle(out);
+    }
+
+    function render() {
+      questionList.innerHTML = "";
+      questions.forEach((q, idx) => {
+        const card = document.createElement("article");
+        card.className = "q-card";
+
+        const title = document.createElement("p");
+        title.className = "q-title";
+        title.textContent = `Frage ${idx + 1}/50`;
+
+        const prompt = document.createElement("p");
+        prompt.className = "q-prompt";
+        prompt.textContent = q.prompt;
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+
+        q.options.forEach((opt, i) => {
+          const lab = document.createElement("label");
+          lab.className = "opt";
+          const radio = document.createElement("input");
+          radio.type = "radio";
+          radio.name = `q_${idx}`;
+          radio.value = String(i);
+          radio.addEventListener("change", updateProgress);
+          const txt = document.createElement("span");
+          txt.innerHTML = `<strong>${String.fromCharCode(65 + i)})</strong> ${opt}`;
+          lab.append(radio, txt);
+          opts.appendChild(lab);
+        });
+
+        const solution = document.createElement("p");
+        solution.className = "solution";
+        solution.textContent = `Lösung: ${q.solution} | Hinweis: ${q.hint}`;
+
+        card.append(title, prompt, opts, solution);
+        questionList.appendChild(card);
+      });
+
+      updateProgress();
+      resultBox.textContent = "Noch nicht ausgewertet.";
+    }
+
+    function updateProgress() {
+      const selected = questionList.querySelectorAll("input[type='radio']:checked").length;
+      progressBadge.textContent = `Gelöst: ${selected}/50`;
+    }
+
+    function grade() {
+      let correct = 0;
+      questionList.querySelectorAll(".q-card").forEach((card, idx) => {
+        card.classList.remove("correct", "wrong");
+        card.querySelectorAll(".opt").forEach(o => o.classList.remove("correct-answer"));
+
+        const q = questions[idx];
+        const chosen = card.querySelector("input[type='radio']:checked");
+        const selected = chosen ? Number(chosen.value) : -1;
+
+        const labels = card.querySelectorAll(".opt");
+        if (labels[q.correct]) labels[q.correct].classList.add("correct-answer");
+
+        if (selected === q.correct) {
+          correct += 1;
+          card.classList.add("correct");
+        } else {
+          card.classList.add("wrong");
+        }
+      });
+
+      const points = correct * 2;
+      const total = 100;
+      const pct = Math.round((points / total) * 100);
+      resultBox.textContent = `Richtig: ${correct}/50\nPunkte: ${points}/${total}\nErgebnis: ${pct}%`;
+    }
+
+    function showSolutions() {
+      questionList.classList.add("show-sol");
+    }
+
+    function newTest() {
+      questions = generate50();
+      questionList.classList.remove("show-sol");
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    checkBtn.addEventListener("click", grade);
+    solutionBtn.addEventListener("click", showSolutions);
+    newBtn.addEventListener("click", newTest);
+
+    newTest();
+  </script>
+</body>
+</html>
