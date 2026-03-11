@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 require_once __DIR__ . '/auth.php';
-require_owner_session_json();
+require_hauptadmin_session_json();
 
 $teachers = load_teacher_users();
 $out = [];

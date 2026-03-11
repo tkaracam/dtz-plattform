@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 require_once __DIR__ . '/auth.php';
-$admin = require_admin_session_json();
+$admin = require_admin_role_json(['hauptadmin', 'docent']);
 
 $users = load_student_users();
 $out = [];

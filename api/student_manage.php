@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-$admin = require_admin_session_json();
+$admin = require_admin_role_json(['hauptadmin', 'docent']);
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -78,7 +78,7 @@ if ($action === 'reset_password') {
     $users[$foundIndex]['phone'] = $phone;
     $users[$foundIndex]['updated_at'] = gmdate('c');
 } elseif ($action === 'assign_teacher') {
-    require_owner_session_json();
+    require_hauptadmin_session_json();
     $teacherUsername = mb_strtolower(trim((string)($body['teacher_username'] ?? '')));
     if (!preg_match('/^[a-z0-9._-]{3,32}$/', $teacherUsername)) {
         http_response_code(400);
@@ -124,7 +124,7 @@ if ($action === 'reset_password') {
         if (!is_array($course)) {
             continue;
         }
-        if (($admin['role'] ?? '') !== 'owner' && !admin_can_access_course_record($course, $admin)) {
+        if (!admin_is_hauptadmin($admin) && !admin_can_access_course_record($course, $admin)) {
             continue;
         }
         $members = is_array($course['members'] ?? null) ? $course['members'] : [];

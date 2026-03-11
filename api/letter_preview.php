@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-$admin = require_admin_session_json();
+$admin = require_admin_role_json(['hauptadmin', 'docent']);
 require_once __DIR__ . '/letter_reviews.php';
 require_once __DIR__ . '/correction_engine.php';
 

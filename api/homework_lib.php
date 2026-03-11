@@ -146,7 +146,7 @@ function assignment_user_state(array $assignment, string $username): array
 
 function assignment_visibility_for_admin(array $assignment, array $adminCtx): bool
 {
-    if (($adminCtx['role'] ?? '') === 'owner') {
+    if (admin_is_hauptadmin($adminCtx)) {
         return true;
     }
     $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));

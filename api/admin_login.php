@@ -69,10 +69,12 @@ if ($username === '') {
 }
 
 $loginRole = '';
+$loginRoleKey = '';
 $loginDisplayName = '';
 
 if (hash_equals($adminPassword, $password)) {
     $loginRole = 'owner';
+    $loginRoleKey = 'hauptadmin';
     $username = $ownerUsername;
     $loginDisplayName = 'Haupt-Admin';
 } else {
@@ -98,6 +100,7 @@ if (hash_equals($adminPassword, $password)) {
     }
     if (is_array($foundTeacher)) {
         $loginRole = 'docent';
+        $loginRoleKey = 'docent';
         $loginDisplayName = trim((string)($foundTeacher['display_name'] ?? ''));
     }
 }
@@ -112,6 +115,7 @@ if ($loginRole === '') {
 start_secure_session();
 $_SESSION['admin_authenticated'] = true;
 $_SESSION['admin_role'] = $loginRole;
+$_SESSION['admin_role_key'] = $loginRoleKey !== '' ? $loginRoleKey : normalize_admin_role_key($loginRole);
 $_SESSION['admin_username'] = $username;
 $_SESSION['admin_display_name'] = $loginDisplayName;
 $_SESSION['admin_login_at'] = gmdate('c');
@@ -120,11 +124,13 @@ clear_rate_limit_failures('admin-login');
 append_audit_log('admin_login_success', [
     'username' => $username,
     'role' => $loginRole,
+    'role_key' => $_SESSION['admin_role_key'],
 ]);
 
 echo json_encode([
     'ok' => true,
     'role' => $loginRole,
+    'role_key' => (string)$_SESSION['admin_role_key'],
     'username' => $username,
     'display_name' => $loginDisplayName,
 ], JSON_UNESCAPED_UNICODE);

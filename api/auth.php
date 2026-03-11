@@ -85,6 +85,32 @@ function require_bsk_module_enabled_json(): void
     exit;
 }
 
+function normalize_admin_role_key(string $role): string
+{
+    $normalized = mb_strtolower(trim($role));
+    if (in_array($normalized, ['owner', 'hauptadmin', 'haupt-admin', 'mainadmin'], true)) {
+        return 'hauptadmin';
+    }
+    if ($normalized === 'docent') {
+        return 'docent';
+    }
+    return '';
+}
+
+function admin_role_key_to_legacy(string $roleKey): string
+{
+    return normalize_admin_role_key($roleKey) === 'docent' ? 'docent' : 'owner';
+}
+
+function admin_is_hauptadmin(array $adminCtx): bool
+{
+    $roleKey = normalize_admin_role_key((string)($adminCtx['role_key'] ?? ''));
+    if ($roleKey !== '') {
+        return $roleKey === 'hauptadmin';
+    }
+    return mb_strtolower(trim((string)($adminCtx['role'] ?? ''))) === 'owner';
+}
+
 function require_admin_session_json(): array
 {
     start_secure_session();
@@ -95,31 +121,67 @@ function require_admin_session_json(): array
         exit;
     }
 
-    $role = (string)($_SESSION['admin_role'] ?? '');
-    if ($role !== 'owner' && $role !== 'docent') {
-        $role = 'owner';
+    $sessionRole = (string)($_SESSION['admin_role'] ?? '');
+    $sessionRoleKey = (string)($_SESSION['admin_role_key'] ?? '');
+    $roleKey = normalize_admin_role_key($sessionRoleKey !== '' ? $sessionRoleKey : $sessionRole);
+    if ($roleKey === '') {
+        $roleKey = 'hauptadmin';
     }
+    $role = admin_role_key_to_legacy($roleKey);
     $username = mb_strtolower(trim((string)($_SESSION['admin_username'] ?? '')));
-    if ($username === '' && $role === 'owner') {
+    if ($username === '' && $roleKey === 'hauptadmin') {
         $username = 'admin';
     }
     $displayName = trim((string)($_SESSION['admin_display_name'] ?? ''));
     return [
         'role' => $role,
+        'role_key' => $roleKey,
         'username' => $username,
         'display_name' => $displayName,
-        'is_owner' => $role === 'owner',
+        'is_owner' => $roleKey === 'hauptadmin',
+        'is_hauptadmin' => $roleKey === 'hauptadmin',
     ];
 }
 
 function require_owner_session_json(): array
 {
     $ctx = require_admin_session_json();
-    if (($ctx['role'] ?? '') !== 'owner') {
+    if (!admin_is_hauptadmin($ctx)) {
         http_response_code(403);
         echo json_encode(['error' => 'Nur der Haupt-Admin darf diese Aktion ausfuehren.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    return $ctx;
+}
+
+function require_hauptadmin_session_json(): array
+{
+    return require_owner_session_json();
+}
+
+function require_admin_role_json(array $allowedRoleKeys): array
+{
+    $ctx = require_admin_session_json();
+    $allowed = [];
+    foreach ($allowedRoleKeys as $roleKey) {
+        $normalized = normalize_admin_role_key((string)$roleKey);
+        if ($normalized !== '') {
+            $allowed[$normalized] = true;
+        }
+    }
+    if (!$allowed) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Konfigurationsfehler: keine gueltigen Rollen freigegeben.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $current = normalize_admin_role_key((string)($ctx['role_key'] ?? ''));
+    if ($current === '' || empty($allowed[$current])) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Keine Berechtigung fuer diese Aktion.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     return $ctx;
 }
 
@@ -134,6 +196,8 @@ function require_student_session_json(): array
     }
 
     return [
+        'role' => 'student',
+        'role_key' => 'schueler',
         'username' => (string)$_SESSION['student_username'],
         'display_name' => (string)($_SESSION['student_display_name'] ?? ''),
         'teacher_username' => mb_strtolower(trim((string)($_SESSION['student_teacher_username'] ?? ''))),
@@ -230,7 +294,7 @@ function find_student_user_by_username(string $username): ?array
 
 function admin_can_access_student_record(array $student, array $adminCtx): bool
 {
-    if (($adminCtx['role'] ?? '') === 'owner') {
+    if (admin_is_hauptadmin($adminCtx)) {
         return true;
     }
     $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));
@@ -245,7 +309,7 @@ function admin_can_access_student_record(array $student, array $adminCtx): bool
 
 function admin_can_access_student_username(string $username, array $adminCtx): bool
 {
-    if (($adminCtx['role'] ?? '') === 'owner') {
+    if (admin_is_hauptadmin($adminCtx)) {
         return true;
     }
     $student = find_student_user_by_username($username);
@@ -257,7 +321,7 @@ function admin_can_access_student_username(string $username, array $adminCtx): b
 
 function admin_can_access_course_record(array $course, array $adminCtx): bool
 {
-    if (($adminCtx['role'] ?? '') === 'owner') {
+    if (admin_is_hauptadmin($adminCtx)) {
         return true;
     }
     $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));

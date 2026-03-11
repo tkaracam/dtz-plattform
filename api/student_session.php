@@ -24,6 +24,8 @@ if (!empty($_SESSION['student_authenticated'])) {
 
 echo json_encode([
     'authenticated' => !empty($_SESSION['student_authenticated']) && !empty($_SESSION['student_username']),
+    'role' => !empty($_SESSION['student_authenticated']) ? 'student' : '',
+    'role_key' => !empty($_SESSION['student_authenticated']) ? 'schueler' : '',
     'username' => (string)($_SESSION['student_username'] ?? ''),
     'display_name' => (string)($_SESSION['student_display_name'] ?? ''),
 ], JSON_UNESCAPED_UNICODE);

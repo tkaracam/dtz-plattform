@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
 
-$admin = require_admin_session_json();
+$admin = require_admin_role_json(['hauptadmin', 'docent']);
 $now = time();
 $items = load_homework_assignments();
 $out = [];

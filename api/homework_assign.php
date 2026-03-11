@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
 
-$admin = require_admin_session_json();
+$admin = require_admin_role_json(['hauptadmin', 'docent']);
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {

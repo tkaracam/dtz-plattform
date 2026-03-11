@@ -23,26 +23,28 @@ if (!empty($_SESSION['admin_authenticated'])) {
     enforce_session_timeout_json();
 }
 
-$role = (string)($_SESSION['admin_role'] ?? '');
-if ($role !== 'owner' && $role !== 'docent') {
-    $role = '';
-}
+$sessionRole = (string)($_SESSION['admin_role'] ?? '');
+$sessionRoleKey = (string)($_SESSION['admin_role_key'] ?? '');
+$roleKey = normalize_admin_role_key($sessionRoleKey !== '' ? $sessionRoleKey : $sessionRole);
+$role = $roleKey !== '' ? admin_role_key_to_legacy($roleKey) : '';
 $username = mb_strtolower(trim((string)($_SESSION['admin_username'] ?? '')));
 $displayName = trim((string)($_SESSION['admin_display_name'] ?? ''));
 $authenticated = !empty($_SESSION['admin_authenticated']);
 if ($authenticated && $role === '') {
+    $roleKey = 'hauptadmin';
     $role = 'owner';
 }
-if ($authenticated && $role === 'owner' && $username === '') {
+if ($authenticated && $roleKey === 'hauptadmin' && $username === '') {
     $username = 'admin';
 }
 
 echo json_encode([
     'authenticated' => $authenticated,
     'role' => $authenticated ? $role : '',
+    'role_key' => $authenticated ? $roleKey : '',
     'username' => $authenticated ? $username : '',
     'display_name' => $authenticated ? $displayName : '',
     'permissions' => [
-        'manage_teachers' => $authenticated && $role === 'owner',
+        'manage_teachers' => $authenticated && $roleKey === 'hauptadmin',
     ],
 ], JSON_UNESCAPED_UNICODE);
