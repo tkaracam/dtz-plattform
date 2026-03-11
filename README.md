@@ -76,6 +76,21 @@ chmod +x tools/healthcheck.sh
 
 İstersen base URL vermezsen script varsayılan olarak `https://dtz-lid.com` kullanır.
 
+### Otomatik (GitHub Actions)
+
+`main` branch’e her push sonrası otomatik healthcheck çalışır:
+
+- Workflow: `Post-Deploy Healthcheck`
+- Dosya: `.github/workflows/post-deploy-healthcheck.yml`
+- Varsayılan hedef: `https://dtz-lid.com`
+- Deploy ısınması için başlangıç beklemesi + retry mekanizması içerir.
+
+Manuel tetikleme için:
+
+1. GitHub -> `Actions` -> `Post-Deploy Healthcheck`
+2. `Run workflow`
+3. Gerekirse `base_url` ve `warmup_seconds` alanlarını değiştir
+
 ### Persistent Storage
 
 `render.yaml` bindet eine Disk auf `/var/data`.

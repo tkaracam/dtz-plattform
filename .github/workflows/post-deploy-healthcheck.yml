@@ -1,0 +1,62 @@
+name: Post-Deploy Healthcheck
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Healthcheck URL (z. B. https://dtz-lid.com)"
+        required: false
+        default: "https://dtz-lid.com"
+      warmup_seconds:
+        description: "Deploy sonrası bekleme (saniye)"
+        required: false
+        default: "180"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-deploy-healthcheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url || 'https://dtz-lid.com' }}
+      WARMUP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.warmup_seconds || '180' }}
+      MAX_ATTEMPTS: "8"
+      RETRY_DELAY_SECONDS: "30"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare healthcheck script
+        run: chmod +x tools/healthcheck.sh
+
+      - name: Warmup (wait for Render deploy)
+        run: |
+          echo "Waiting ${WARMUP_SECONDS}s for deployment propagation..."
+          sleep "${WARMUP_SECONDS}"
+
+      - name: Run healthcheck with retry
+        run: |
+          set -euo pipefail
+          attempt=1
+          while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
+            echo "Attempt ${attempt}/${MAX_ATTEMPTS} -> ${BASE_URL}"
+            if ./tools/healthcheck.sh "${BASE_URL}"; then
+              echo "Healthcheck passed."
+              exit 0
+            fi
+            if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+              echo "Healthcheck failed. Retrying in ${RETRY_DELAY_SECONDS}s..."
+              sleep "${RETRY_DELAY_SECONDS}"
+            fi
+            attempt=$((attempt + 1))
+          done
+          echo "Healthcheck failed after ${MAX_ATTEMPTS} attempts."
+          exit 1
