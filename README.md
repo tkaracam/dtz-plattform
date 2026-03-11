@@ -65,6 +65,17 @@ Dieses Repo enthält bereits:
 - **Docent:** Wird im Bereich **Lehrkräfte** angelegt und bekommt einen eigenen Lehrerzugang.
 - Docent-Zugriffe werden auf eigene Kurse/Benutzer eingeschraenkt.
 
+## Deploy sonrası sağlık testi
+
+Her deploy sonrası kritik kontrolleri tek komutla çalıştır:
+
+```bash
+chmod +x tools/healthcheck.sh
+./tools/healthcheck.sh https://dtz-lid.com
+```
+
+İstersen base URL vermezsen script varsayılan olarak `https://dtz-lid.com` kullanır.
+
 ### Persistent Storage
 
 `render.yaml` bindet eine Disk auf `/var/data`.
