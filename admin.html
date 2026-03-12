@@ -2471,6 +2471,18 @@
                 <div id="kursArchiveWrap" class="hidden" style="margin-top:10px;"></div>
               </div>
             </details>
+
+            <details id="kursProgressDetails" class="fold-section">
+              <summary>Kurs-Fortschritt (7 Tage)</summary>
+              <div class="fold-section-content">
+                <div class="actions" style="margin-top: 0;">
+                  <button id="kursRefreshProgressBtn" type="button" class="ghost-btn">Fortschritt aktualisieren</button>
+                </div>
+                <div id="kursProgressStatus" class="hidden" style="margin-top:10px;"></div>
+                <div id="kursProgressSummaryWrap" class="progress-summary-grid" style="margin-top:10px;"></div>
+                <div id="kursProgressStudentsWrap" class="progress-block" style="margin-top:10px;"></div>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -3308,6 +3320,7 @@
       if (paneName === "kurs") {
         renderCourseAssignEditor(selectedCourseId);
         updateKursPaneSummary();
+        loadKursProgressOverview(true);
       } else if (paneName === "progress") {
         loadProgressOverview(true);
       }
@@ -4442,6 +4455,7 @@
       }
       resetKursCorrectionsView();
       listKursHomeworkAssignments();
+      loadKursProgressOverview(true);
     }
 
     function useSelectedCourseInHomework() {
@@ -4469,6 +4483,10 @@
       if (!courses.length) {
         wrap.innerHTML = "<p>Noch keine Kurse vorhanden.</p>";
         document.getElementById("courseAssignWrap").innerHTML = "";
+        const progressSummary = document.getElementById("kursProgressSummaryWrap");
+        const progressStudents = document.getElementById("kursProgressStudentsWrap");
+        if (progressSummary) progressSummary.innerHTML = "";
+        if (progressStudents) progressStudents.innerHTML = "<p>Kein Kurs ausgewählt.</p>";
         updateCourseSwitchHint();
         return;
       }
@@ -6107,6 +6125,89 @@
         if (riskWrap) riskWrap.innerHTML = "<h4>Risikogruppe (&lt; 50%)</h4><p>Keine Daten.</p>";
         if (trendWrap) trendWrap.innerHTML = "<h4>Trend (letzte 4 Wochen)</h4><p>Keine Daten.</p>";
         if (recentWrap) recentWrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Keine Daten.</p>";
+      }
+    }
+
+    function renderKursProgressSummary(summary = {}) {
+      const wrap = document.getElementById("kursProgressSummaryWrap");
+      if (!wrap) return;
+      const avgScore = summary.avg_score_window == null ? "-" : `${escapeHtml(String(summary.avg_score_window))}/20`;
+      const cards = [
+        { label: "Abgabequote", value: `${escapeHtml(String(summary.completion_window_percent ?? 0))}%`, meta: `${escapeHtml(String(summary.submitted_window_total ?? 0))}/${escapeHtml(String(summary.assigned_window_total ?? 0))}` },
+        { label: "Ø Punkte", value: avgScore, meta: `${escapeHtml(String(summary.approved_reviews_window_total ?? 0))} freigegeben` },
+        { label: "Offene Korrekturen", value: escapeHtml(String(summary.pending_reviews_total ?? 0)), meta: "wartend" },
+        { label: "Risikogruppe", value: escapeHtml(String(summary.risk_students_total ?? 0)), meta: "< 50%" }
+      ];
+      wrap.innerHTML = cards.map(card => `
+        <div class="progress-card">
+          <div class="label">${escapeHtml(card.label)}</div>
+          <div class="value">${card.value}</div>
+          <div class="meta">${escapeHtml(card.meta)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderKursProgressStudents(students = []) {
+      const wrap = document.getElementById("kursProgressStudentsWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(students) ? students.slice(0, 50) : [];
+      if (!rows.length) {
+        wrap.innerHTML = "<p>Keine Teilnehmenden-Daten im ausgewählten Zeitraum.</p>";
+        return;
+      }
+      const tableRows = rows.map(student => {
+        const displayName = String(student.student_name || "").trim() || String(student.student_username || "-");
+        const avgScore = student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`;
+        return `
+          <tr>
+            <td>${escapeHtml(displayName)}</td>
+            <td class="mono">${escapeHtml(String(student.student_username || "-"))}</td>
+            <td class="mono">${escapeHtml(String(student.submitted_window || 0))}/${escapeHtml(String(student.assigned_window || 0))}</td>
+            <td class="mono">${escapeHtml(String(student.completion_window_percent || 0))}%</td>
+            <td class="mono">${escapeHtml(String(student.pending_homeworks || 0))}</td>
+            <td class="mono">${avgScore}</td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Benutzername</th>
+              <th>Abgaben</th>
+              <th>Quote</th>
+              <th>Offen</th>
+              <th>Ø Punkte</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      applyResponsiveTableLabels(wrap);
+    }
+
+    async function loadKursProgressOverview(silent = false) {
+      const statusBoxId = "kursProgressStatus";
+      const summaryWrap = document.getElementById("kursProgressSummaryWrap");
+      const studentsWrap = document.getElementById("kursProgressStudentsWrap");
+      if (!selectedCourseId) {
+        if (!silent) setBox(statusBoxId, "error", "Bitte zuerst einen Kurs auswählen.");
+        if (summaryWrap) summaryWrap.innerHTML = "";
+        if (studentsWrap) studentsWrap.innerHTML = "<p>Kein Kurs ausgewählt.</p>";
+        return;
+      }
+      if (!silent) clearBox(statusBoxId);
+      try {
+        const payload = await fetchAdminProgress({ course_id: selectedCourseId, days: 7 });
+        renderKursProgressSummary(payload.summary || {});
+        renderKursProgressStudents(payload.students || []);
+        if (!silent) setBox(statusBoxId, "ok", "Kurs-Fortschritt wurde aktualisiert.");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (!silent) setBox(statusBoxId, "error", `Kurs-Fortschritt konnte nicht geladen werden: ${message}`);
+        if (summaryWrap) summaryWrap.innerHTML = "";
+        if (studentsWrap) studentsWrap.innerHTML = "<p>Keine Daten verfügbar.</p>";
       }
     }
 
@@ -8574,6 +8675,7 @@
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
     document.getElementById("kursRefreshHomeworkBtn").addEventListener("click", listKursHomeworkAssignments);
+    document.getElementById("kursRefreshProgressBtn").addEventListener("click", () => loadKursProgressOverview(false));
     document.getElementById("kursOpenPendingQueueBtn").addEventListener("click", () => loadKursCorrectionsView("pending"));
     document.getElementById("kursOpenArchiveEntriesBtn").addEventListener("click", () => loadKursCorrectionsView("entries"));
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
