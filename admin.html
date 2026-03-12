@@ -1781,6 +1781,48 @@
       gap: 10px;
     }
 
+    .admin-fastlane {
+      margin-bottom: 12px;
+      border: 1px solid #eadbe2;
+      border-radius: 14px;
+      background: #fffafd;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .admin-fastlane-head {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #6b5467;
+    }
+
+    .admin-fastlane-actions {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .admin-fastlane-btn {
+      width: 100%;
+      min-width: 0;
+      border-radius: 10px;
+      border: 1px solid #e4c7d4;
+      background: #fff7fa;
+      color: #6f4f5f;
+      box-shadow: none;
+      font-size: 0.88rem;
+      padding: 8px 9px;
+      font-weight: 700;
+    }
+
+    .admin-fastlane-btn:hover {
+      color: #f2849e;
+      border-color: #f2b7c9;
+      box-shadow: none;
+    }
+
     .course-shortcut-btn {
       min-height: 78px;
       border-radius: 18px;
@@ -2023,6 +2065,10 @@
         width: 100%;
       }
 
+      .admin-fastlane-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .course-switch-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -2173,6 +2219,17 @@
       </section>
 
       <section id="panelCard" class="card hidden">
+        <div class="admin-fastlane">
+          <p class="admin-fastlane-head">Schnellzugriff</p>
+          <div class="admin-fastlane-actions">
+            <button id="fastAccountsBtn" type="button" class="admin-fastlane-btn">Schülerzugänge</button>
+            <button id="fastCoursesBtn" type="button" class="admin-fastlane-btn">Kurse</button>
+            <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
+            <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
+            <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen</button>
+          </div>
+        </div>
+
         <div id="courseShortcutSection" class="course-shortcut-section">
           <h3 class="course-shortcut-head">Kurse</h3>
           <div class="course-shortcut-actions">
@@ -2308,6 +2365,12 @@
             <div class="fold-section-content">
               <div class="actions" style="margin-top: 0;">
                 <button id="refreshStudentsInlineBtn" type="button" class="ghost-btn">Schülerliste aktualisieren</button>
+              </div>
+              <div class="grid" style="margin-top: 10px;">
+                <div>
+                  <label for="studentAccountFilterInput">Schüler suchen</label>
+                  <input id="studentAccountFilterInput" type="text" placeholder="Benutzername oder Lehrkraft">
+                </div>
               </div>
               <div class="student-multi-select-bar">
                 <label class="student-multi-select-label" for="studentSelectAllChk">
@@ -2956,6 +3019,8 @@
       permissions: {}
     };
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
+    const ADMIN_LAST_PANE_KEY = "dtz_admin_last_pane_v1";
+    const ADMIN_LAST_COURSE_KEY = "dtz_admin_last_course_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
@@ -2984,6 +3049,26 @@
       audit: "Audit",
       archive: "Mail Korrekturen"
     };
+
+    function getStoredPreference(key) {
+      try {
+        return String(window.localStorage.getItem(key) || "");
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function setStoredPreference(key, value) {
+      try {
+        if (value === null || value === undefined || value === "") {
+          window.localStorage.removeItem(key);
+        } else {
+          window.localStorage.setItem(key, String(value));
+        }
+      } catch (_) {
+        // ignore storage errors
+      }
+    }
 
     const HOMEWORK_MAIL_TEMPLATES_ARCHIVE = [
       {
@@ -3310,6 +3395,7 @@
       }
       if ((paneName === "teachers" || paneName === "audit") && !isOwnerAdmin()) return;
       activeAdminPane = paneName;
+      setStoredPreference(ADMIN_LAST_PANE_KEY, paneName);
       Object.values(adminPaneMap).forEach(id => {
         const node = document.getElementById(id);
         if (!node) return;
@@ -3473,6 +3559,16 @@
       }
       const topCourseJump = document.getElementById("topCourseJumpSelect");
       if (topCourseJump) topCourseJump.disabled = false;
+      const preferredPane = getStoredPreference(ADMIN_LAST_PANE_KEY);
+      if (preferredPane && adminPaneMap[preferredPane] && !ARCHIVED_ADMIN_PANES.has(preferredPane)) {
+        if (isOwnerAdmin() || (preferredPane !== "teachers" && preferredPane !== "audit")) {
+          activeAdminPane = preferredPane;
+        }
+      }
+      const preferredCourse = getStoredPreference(ADMIN_LAST_COURSE_KEY);
+      if (preferredCourse) {
+        selectedCourseId = preferredCourse;
+      }
       document.getElementById("loginCard").classList.add("hidden");
       document.getElementById("panelCard").classList.remove("hidden");
       ensureResponsiveTableObserver();
@@ -3981,14 +4077,26 @@
     }
 
     function renderStudents(users) {
-      visibleStudents = users.slice();
-      const validUsernames = new Set(users.map(u => String(u.username || "").trim()).filter(Boolean));
+      const query = String(document.getElementById("studentAccountFilterInput")?.value || "").trim().toLowerCase();
+      const filteredUsers = query
+        ? users.filter(user => {
+            const username = String(user.username || "").toLowerCase();
+            const teacher = String(user.teacher_username || "").toLowerCase();
+            const displayName = String(user.display_name || "").toLowerCase();
+            return username.includes(query) || teacher.includes(query) || displayName.includes(query);
+          })
+        : users.slice();
+
+      visibleStudents = filteredUsers.slice();
+      const validUsernames = new Set(filteredUsers.map(u => String(u.username || "").trim()).filter(Boolean));
       selectedStudentUsernames.forEach(username => {
         if (!validUsernames.has(username)) selectedStudentUsernames.delete(username);
       });
       const wrap = document.getElementById("userListWrap");
-      if (!users.length) {
-        wrap.innerHTML = "<p>Noch keine Schülerzugänge.</p>";
+      if (!filteredUsers.length) {
+        wrap.innerHTML = query
+          ? "<p>Keine Treffer für den aktuellen Filter.</p>"
+          : "<p>Noch keine Schülerzugänge.</p>";
         updateStudentSelectionUi();
         return;
       }
@@ -4008,7 +4116,7 @@
       const tbody = document.createElement("tbody");
       const scopedCourseId = getAccountsScopeCourseId();
       const inScopedMode = !!scopedCourseId;
-      users.forEach(user => {
+      filteredUsers.forEach(user => {
         const isActive = !!user.active;
         const username = String(user.username || "");
         const canAssignDocent = isOwnerAdmin();
@@ -4058,6 +4166,13 @@
       });
       table.appendChild(tbody);
       wrap.innerHTML = "";
+      if (query) {
+        const info = document.createElement("p");
+        info.className = "section-subtitle";
+        info.style.margin = "0 0 8px 0";
+        info.textContent = `Filter aktiv: ${filteredUsers.length} von ${users.length} Konten`;
+        wrap.appendChild(info);
+      }
       wrap.appendChild(table);
 
       wrap.querySelectorAll("button[data-action='reset-password']").forEach(btn => {
@@ -4451,6 +4566,7 @@
     function setSelectedCourse(courseId, openEditor = false) {
       const id = String(courseId || "").trim();
       selectedCourseId = id;
+      setStoredPreference(ADMIN_LAST_COURSE_KEY, id || null);
       getCourseSwitcherSelects().forEach(select => {
         select.value = id;
       });
@@ -5262,7 +5378,23 @@
             })
             .filter(user => String(user.username || "").trim() !== "");
         }
-        renderCourses(Array.isArray(payload.courses) ? payload.courses : []);
+        const nextCourses = Array.isArray(payload.courses) ? payload.courses : [];
+        renderCourses(nextCourses);
+        const courseIds = new Set(nextCourses.map(course => String(course?.course_id || "").trim()).filter(Boolean));
+        let preferredCourseId = String(selectedCourseId || "").trim();
+        if (!preferredCourseId) {
+          preferredCourseId = getStoredPreference(ADMIN_LAST_COURSE_KEY);
+        }
+        if (preferredCourseId && !courseIds.has(preferredCourseId)) {
+          preferredCourseId = "";
+        }
+        if (!preferredCourseId && nextCourses.length) {
+          const activeCourse = nextCourses.find(course => !!course?.active);
+          preferredCourseId = String((activeCourse || nextCourses[0] || {}).course_id || "").trim();
+        }
+        if (preferredCourseId !== selectedCourseId) {
+          setSelectedCourse(preferredCourseId, false);
+        }
         renderStudents(getScopedStudentsForAccounts());
         renderHomeworkUserPicker();
       } catch (err) {
@@ -8821,6 +8953,12 @@
       });
     }
     document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
+    const studentAccountFilterInput = document.getElementById("studentAccountFilterInput");
+    if (studentAccountFilterInput) {
+      studentAccountFilterInput.addEventListener("input", () => {
+        renderStudents(getScopedStudentsForAccounts());
+      });
+    }
     document.getElementById("studentSelectAllChk").addEventListener("change", event => {
       setAllStudentsSelected(!!event.target.checked);
     });

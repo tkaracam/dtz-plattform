@@ -699,6 +699,37 @@
       flex: 1 1 0;
     }
 
+    .portal-quick-actions {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .portal-quick-btn {
+      border-radius: 12px;
+      border: 1px solid #d6e4f4;
+      background: #f8fbff;
+      color: #28486d;
+      padding: 9px 10px;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      box-shadow: none;
+    }
+
+    .portal-quick-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(72, 110, 154, 0.14);
+    }
+
+    .portal-quick-btn.active {
+      border-color: #f2b4c8;
+      background: #ffeef4;
+      color: #7d2b42;
+      font-weight: 700;
+    }
+
     .speaking-top-actions {
       align-items: stretch;
       flex-wrap: nowrap;
@@ -1214,6 +1245,15 @@
       cursor: pointer;
       color: #1d3f65;
       font-weight: 700;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::marker {
+      content: "";
     }
 
     .hidden { display: none; }
@@ -1824,6 +1864,10 @@
         align-items: stretch;
       }
 
+      .portal-quick-actions {
+        grid-template-columns: 1fr;
+      }
+
       .speaking-top-actions {
         flex-direction: row;
         align-items: stretch;
@@ -2067,6 +2111,11 @@
             <button id="refreshPortalBtn" type="button">Portal aktualisieren</button>
           </div>
         </div>
+        <div class="portal-quick-actions">
+          <button id="portalQuickHomeworkBtn" type="button" class="portal-quick-btn">Hausaufgaben</button>
+          <button id="portalQuickWriteBtn" type="button" class="portal-quick-btn">Mail schreiben</button>
+          <button id="portalQuickCorrectionsBtn" type="button" class="portal-quick-btn">Korrigierte Briefe</button>
+        </div>
         <div id="portalStatus" class="hidden"></div>
 
         <section class="portal-section">
@@ -2084,7 +2133,7 @@
                   <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
                 </div>
               </details>
-              <details class="card-accordion" style="margin-top:12px;">
+              <details id="portalWriteAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
                     <h3 style="margin:0;">Mail schreiben und prüfen <span id="portalTaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
@@ -3979,7 +4028,7 @@
 
     function openPortalView() {
       setMainView("portal");
-      setAccordionOpen("portalCorrectionsAccordion", false);
+      openPortalPanel("homework", false);
       refreshPortalData();
     }
 
@@ -4027,6 +4076,60 @@
       const node = document.getElementById(id);
       if (!node) return;
       node.open = !!isOpen;
+    }
+
+    const PORTAL_PANEL_TO_ACCORDION = {
+      homework: "portalHomeworkAccordion",
+      write: "portalWriteAccordion",
+      corrections: "portalCorrectionsAccordion"
+    };
+
+    function getPortalPanelByAccordionId(id) {
+      return Object.keys(PORTAL_PANEL_TO_ACCORDION).find(key => PORTAL_PANEL_TO_ACCORDION[key] === id) || "";
+    }
+
+    function setPortalQuickActive(panel) {
+      const mapping = {
+        homework: "portalQuickHomeworkBtn",
+        write: "portalQuickWriteBtn",
+        corrections: "portalQuickCorrectionsBtn"
+      };
+      Object.entries(mapping).forEach(([key, id]) => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.toggle("active", key === panel);
+      });
+    }
+
+    function openPortalPanel(panel, smooth = true) {
+      const targetId = PORTAL_PANEL_TO_ACCORDION[panel];
+      if (!targetId) return;
+      Object.values(PORTAL_PANEL_TO_ACCORDION).forEach(id => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.open = id === targetId;
+      });
+      setPortalQuickActive(panel);
+      const targetNode = document.getElementById(targetId);
+      if (smooth && targetNode) {
+        targetNode.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function syncPortalPanelToggleBehavior() {
+      Object.entries(PORTAL_PANEL_TO_ACCORDION).forEach(([panel, id]) => {
+        const details = document.getElementById(id);
+        if (!details) return;
+        details.addEventListener("toggle", () => {
+          if (!details.open) return;
+          Object.values(PORTAL_PANEL_TO_ACCORDION).forEach(otherId => {
+            if (otherId === id) return;
+            const other = document.getElementById(otherId);
+            if (other) other.open = false;
+          });
+          setPortalQuickActive(panel);
+        });
+      });
     }
 
     function openBskSuiteView() {
@@ -6366,6 +6469,20 @@
     document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
     document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
     document.getElementById("refreshPortalBtn").addEventListener("click", refreshPortalData);
+    const portalQuickHomeworkBtn = document.getElementById("portalQuickHomeworkBtn");
+    if (portalQuickHomeworkBtn) {
+      portalQuickHomeworkBtn.addEventListener("click", () => openPortalPanel("homework"));
+    }
+    const portalQuickWriteBtn = document.getElementById("portalQuickWriteBtn");
+    if (portalQuickWriteBtn) {
+      portalQuickWriteBtn.addEventListener("click", () => openPortalPanel("write"));
+    }
+    const portalQuickCorrectionsBtn = document.getElementById("portalQuickCorrectionsBtn");
+    if (portalQuickCorrectionsBtn) {
+      portalQuickCorrectionsBtn.addEventListener("click", () => openPortalPanel("corrections"));
+    }
+    syncPortalPanelToggleBehavior();
+    setPortalQuickActive("homework");
     document.getElementById("startSimulationBtn").addEventListener("click", startSimulation);
     document.getElementById("finishSimulationBtn").addEventListener("click", () => finishSimulation(false));
     document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);
