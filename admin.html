@@ -2526,6 +2526,7 @@
             <div id="progressStatus" class="hidden"></div>
             <div id="progressSummaryWrap" class="progress-summary-grid"></div>
             <div id="progressCoursesWrap" class="progress-block"></div>
+            <div id="progressStudentsWrap" class="progress-block"></div>
             <div id="progressRecentWrap" class="progress-block"></div>
           </div>
         </div>
@@ -5653,6 +5654,55 @@
       applyResponsiveTableLabels(wrap);
     }
 
+    function renderProgressStudents(students) {
+      const wrap = document.getElementById("progressStudentsWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(students) ? students : [];
+      if (!rows.length) {
+        wrap.innerHTML = "<h4>Teilnehmende im Zeitraum</h4><p>Keine Teilnehmerdaten verfügbar.</p>";
+        return;
+      }
+      const tableRows = rows.map(student => {
+        const name = String(student.student_name || "").trim();
+        const displayName = name !== "" ? name : String(student.student_username || "-");
+        const avgScore = student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`;
+        const submitted = Number(student.submitted_window || 0);
+        const assigned = Number(student.assigned_window || 0);
+        const pending = Number(student.pending_homeworks || 0);
+        const completion = Number(student.completion_window_percent || 0);
+        const lastSubmitted = formatDisplayDateTime(String(student.last_submitted_at || ""));
+        return `
+          <tr>
+            <td>${escapeHtml(displayName)}</td>
+            <td class="mono">${escapeHtml(String(student.student_username || "-"))}</td>
+            <td class="mono">${escapeHtml(String(submitted))}/${escapeHtml(String(assigned))}</td>
+            <td class="mono">${escapeHtml(String(completion))}%</td>
+            <td class="mono">${escapeHtml(String(pending))}</td>
+            <td class="mono">${avgScore}</td>
+            <td class="mono">${escapeHtml(lastSubmitted || "-")}</td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <h4>Teilnehmende im Zeitraum</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Benutzername</th>
+              <th>Abgaben</th>
+              <th>Quote</th>
+              <th>Offen</th>
+              <th>Ø Punkte</th>
+              <th>Letzte Abgabe</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      applyResponsiveTableLabels(wrap);
+    }
+
     function renderProgressRecent(recentRows) {
       const wrap = document.getElementById("progressRecentWrap");
       if (!wrap) return;
@@ -5682,14 +5732,17 @@
         const payload = await fetchAdminProgress({ course_id: courseId, days });
         renderProgressSummary(payload.summary || {});
         renderProgressCourses(payload.courses || []);
+        renderProgressStudents(payload.students || []);
         renderProgressRecent(payload.recent_approved || []);
         setBox("progressStatus", "ok", "Fortschritt wurde aktualisiert.");
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         if (!silent) setBox("progressStatus", "error", `Fortschritt konnte nicht geladen werden: ${message}`);
         const coursesWrap = document.getElementById("progressCoursesWrap");
+        const studentsWrap = document.getElementById("progressStudentsWrap");
         const recentWrap = document.getElementById("progressRecentWrap");
         if (coursesWrap) coursesWrap.innerHTML = "<h4>Kursvergleich</h4><p>Keine Daten.</p>";
+        if (studentsWrap) studentsWrap.innerHTML = "<h4>Teilnehmende im Zeitraum</h4><p>Keine Daten.</p>";
         if (recentWrap) recentWrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Keine Daten.</p>";
       }
     }

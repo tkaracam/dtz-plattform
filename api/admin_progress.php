@@ -116,6 +116,23 @@ foreach (load_student_users() as $student) {
     $visibleStudents[$uname] = $student;
 }
 
+$studentStats = [];
+foreach ($visibleStudents as $uname => $student) {
+    $studentName = trim((string)($student['display_name'] ?? $student['name'] ?? ''));
+    $studentStats[$uname] = [
+        'student_username' => (string)($student['username'] ?? $uname),
+        'student_name' => $studentName,
+        'assigned_window' => 0,
+        'submitted_window' => 0,
+        'pending_homeworks' => 0,
+        'last_submitted_at' => '',
+        'avg_score_window' => null,
+        '_score_sum_window' => 0,
+        '_score_count_window' => 0,
+        '_last_submitted_ts' => 0,
+    ];
+}
+
 $courseMembers = [];
 $studentCourseMap = [];
 foreach ($visibleCourses as $courseId => $course) {
@@ -223,11 +240,32 @@ foreach ($visibleAssignments as $assignment) {
         if ($uname === '') {
             continue;
         }
+        if (!isset($studentStats[$uname])) {
+            continue;
+        }
         $belongs = $studentCourseMap[$uname] ?? [];
         if (!$belongs) {
             continue;
         }
         $submittedAt = trim((string)((is_array($state) ? ($state['submitted_at'] ?? '') : '')));
+        $matchesFilter = $courseIdFilter === '' || isset($belongs[$courseIdFilter]);
+        if (!$matchesFilter) {
+            continue;
+        }
+        if ($assignmentIsActive && $submittedAt === '') {
+            $studentStats[$uname]['pending_homeworks']++;
+        }
+        if ($createdInWindow) {
+            $studentStats[$uname]['assigned_window']++;
+            if ($submittedAt !== '') {
+                $studentStats[$uname]['submitted_window']++;
+                $submittedTs = progress_iso_ts($submittedAt);
+                if ($submittedTs > (int)$studentStats[$uname]['_last_submitted_ts']) {
+                    $studentStats[$uname]['_last_submitted_ts'] = $submittedTs;
+                    $studentStats[$uname]['last_submitted_at'] = $submittedAt;
+                }
+            }
+        }
         foreach (array_keys($belongs) as $cid) {
             if (!isset($courseStats[$cid])) {
                 continue;
@@ -310,6 +348,10 @@ foreach ($letterRows as $letter) {
             $summaryApprovedWindow++;
             $summaryScoreSumWindow += $score;
             $summaryScoreCountWindow++;
+            if (isset($studentStats[$studentUsername])) {
+                $studentStats[$studentUsername]['_score_sum_window'] += $score;
+                $studentStats[$studentUsername]['_score_count_window']++;
+            }
             foreach ($courseIds as $cid) {
                 if (!isset($courseStats[$cid])) {
                     continue;
@@ -351,6 +393,34 @@ usort($courseRows, static function (array $a, array $b): int {
     return strcmp((string)($a['name'] ?? ''), (string)($b['name'] ?? ''));
 });
 
+$studentRows = [];
+foreach ($studentStats as $uname => $row) {
+    $assigned = (int)$row['assigned_window'];
+    $submitted = (int)$row['submitted_window'];
+    $completion = $assigned > 0 ? (int)round(($submitted / $assigned) * 100) : 0;
+    $scoreCount = (int)$row['_score_count_window'];
+    $avgScoreWindow = $scoreCount > 0 ? round($row['_score_sum_window'] / $scoreCount, 1) : null;
+    unset($row['_score_sum_window'], $row['_score_count_window'], $row['_last_submitted_ts']);
+    $row['completion_window_percent'] = $completion;
+    $row['avg_score_window'] = $avgScoreWindow;
+    $studentRows[] = $row;
+}
+
+usort($studentRows, static function (array $a, array $b): int {
+    $pendingA = (int)($a['pending_homeworks'] ?? 0);
+    $pendingB = (int)($b['pending_homeworks'] ?? 0);
+    if ($pendingA !== $pendingB) {
+        return $pendingB <=> $pendingA;
+    }
+    $completionA = (int)($a['completion_window_percent'] ?? 0);
+    $completionB = (int)($b['completion_window_percent'] ?? 0);
+    if ($completionA !== $completionB) {
+        return $completionA <=> $completionB;
+    }
+    return strcmp((string)($a['student_username'] ?? ''), (string)($b['student_username'] ?? ''));
+});
+$studentRows = array_slice($studentRows, 0, 200);
+
 usort($recentApproved, static function (array $a, array $b): int {
     return strcmp((string)($b['reviewed_at'] ?? ''), (string)($a['reviewed_at'] ?? ''));
 });
@@ -372,5 +442,6 @@ $summary = [
 echo json_encode([
     'summary' => $summary,
     'courses' => $courseRows,
+    'students' => $studentRows,
     'recent_approved' => $recentApproved,
 ], JSON_UNESCAPED_UNICODE);
