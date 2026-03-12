@@ -687,6 +687,75 @@
       color: #27476a;
     }
 
+    .progress-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .progress-card {
+      border: 1px solid #d7e4f1;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fbfdff;
+      min-height: 86px;
+    }
+
+    .progress-card .label {
+      font-size: 0.8rem;
+      color: #6a6f7e;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .progress-card .value {
+      font-size: 1.42rem;
+      font-weight: 700;
+      color: #2f3e57;
+      line-height: 1.15;
+    }
+
+    .progress-card .meta {
+      margin-top: 4px;
+      font-size: 0.82rem;
+      color: #5a6172;
+    }
+
+    .progress-block {
+      margin-top: 12px;
+      border: 1px solid #d7e4f1;
+      border-radius: 12px;
+      background: #ffffff;
+      padding: 10px;
+    }
+
+    .progress-block h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: #2f3e57;
+    }
+
+    .progress-recent-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .progress-recent-item {
+      border: 1px solid #e0eaf5;
+      border-radius: 10px;
+      background: #fbfdff;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      color: #3e4c62;
+    }
+
+    .progress-recent-item .mono {
+      color: #5b6478;
+      font-size: 0.82rem;
+    }
+
     .course-member-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -1904,6 +1973,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .progress-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .course-member-row {
         grid-template-columns: 1fr;
       }
@@ -1993,6 +2066,7 @@
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
           <button id="jumpKursBtn" class="admin-menu-item" type="button">Kurs</button>
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
+          <button id="jumpProgressBtn" class="admin-menu-item" type="button">Fortschritt</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
           <button id="jumpJessBtn" class="admin-menu-item" type="button">Jess</button>
           <button id="toggleAndereBtn" class="admin-menu-item is-toggle" type="button" aria-expanded="false">ANDERE</button>
@@ -2424,6 +2498,38 @@
         </div>
         </div>
 
+        <div id="paneProgress" class="admin-pane">
+          <div id="progressSection" class="bulk-wrap">
+            <h2 class="section-title" style="font-size: 1.35rem;">Fortschritt Live</h2>
+            <p class="section-subtitle">Abgabequote, offene Korrekturen und Punktetrend nach Kursen.</p>
+
+            <div class="grid">
+              <div>
+                <label for="progressCourseFilter">Kursfilter</label>
+                <select id="progressCourseFilter">
+                  <option value="">Alle Kurse</option>
+                </select>
+              </div>
+              <div>
+                <label for="progressDaysFilter">Zeitraum</label>
+                <select id="progressDaysFilter">
+                  <option value="7" selected>Letzte 7 Tage</option>
+                  <option value="14">Letzte 14 Tage</option>
+                  <option value="30">Letzte 30 Tage</option>
+                </select>
+              </div>
+              <div class="actions">
+                <button id="refreshProgressBtn" type="button">Daten aktualisieren</button>
+              </div>
+            </div>
+
+            <div id="progressStatus" class="hidden"></div>
+            <div id="progressSummaryWrap" class="progress-summary-grid"></div>
+            <div id="progressCoursesWrap" class="progress-block"></div>
+            <div id="progressRecentWrap" class="progress-block"></div>
+          </div>
+        </div>
+
         <div id="paneAttendance" class="admin-pane">
         <div id="attendanceSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Anwesenheit (sperrbar)</h2>
@@ -2757,7 +2863,7 @@
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
-    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpArchiveBtn", "jumpJessBtn"];
+    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpJessBtn"];
 
     const adminPaneMap = {
       coursebuilder: "paneCourseBuilder",
@@ -2766,6 +2872,7 @@
       courses: "paneCourses",
       kurs: "paneKurs",
       homeworks: "paneHomeworks",
+      progress: "paneProgress",
       audit: "paneAudit",
       archive: "paneArchive"
     };
@@ -2777,6 +2884,7 @@
       courses: "Kurse",
       kurs: "Kurs",
       homeworks: "Hausaufgaben",
+      progress: "Fortschritt",
       audit: "Audit",
       archive: "Mail Korrekturen"
     };
@@ -3105,6 +3213,8 @@
       if (paneName === "kurs") {
         renderCourseAssignEditor(selectedCourseId);
         updateKursPaneSummary();
+      } else if (paneName === "progress") {
+        loadProgressOverview(true);
       }
 
       const checklist = document.querySelector("#panelCard .start-checklist");
@@ -4074,6 +4184,23 @@
       }
 
       renderAccountsScopeCourseSelect();
+      renderProgressCourseFilter();
+    }
+
+    function renderProgressCourseFilter() {
+      const select = document.getElementById("progressCourseFilter");
+      if (!select) return;
+      const previous = String(select.value || "");
+      const options = ['<option value="">Alle Kurse</option>'];
+      currentCourses.forEach(course => {
+        const id = String(course.course_id || "");
+        if (!id) return;
+        options.push(`<option value="${escapeHtml(id)}">${escapeHtml(getCourseLabel(course, false))}</option>`);
+      });
+      select.innerHTML = options.join("");
+      if (previous && currentCourses.some(course => String(course.course_id || "") === previous)) {
+        select.value = previous;
+      }
     }
 
     function updateCourseSwitchHint() {
@@ -5428,6 +5555,143 @@
       }
 
       throw new Error(errors.join(" | "));
+    }
+
+    async function fetchAdminProgress(payload = {}) {
+      const days = clamp(payload.days, 1, 90, 7);
+      const courseId = String(payload.course_id || "").trim();
+      const query = new URLSearchParams();
+      query.set("days", String(days));
+      if (courseId) query.set("course_id", courseId);
+      const queryString = query.toString();
+      const candidates = [
+        `./api/admin_progress.php?${queryString}`,
+        `/api/admin_progress.php?${queryString}`
+      ];
+      const errors = [];
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url, { method: "GET" });
+          const result = await parseJsonResponse(response);
+          if (!response.ok) {
+            throw new Error(result.error || `Fehler: ${response.status}`);
+          }
+          if (!result || typeof result !== "object") {
+            throw new Error("Ungültige Antwort vom Fortschritt-Endpunkt.");
+          }
+          return result;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${url}: ${msg}`);
+        }
+      }
+      throw new Error(errors.join(" | "));
+    }
+
+    function renderProgressSummary(summary) {
+      const wrap = document.getElementById("progressSummaryWrap");
+      if (!wrap) return;
+      const data = (summary && typeof summary === "object") ? summary : {};
+      const avgScore = data.avg_score_window == null ? "-" : `${escapeHtml(String(data.avg_score_window))}/20`;
+      const cards = [
+        { label: "Kurse", value: String(data.courses_total ?? 0), meta: "sichtbar" },
+        { label: "Teilnehmende", value: String(data.students_total ?? 0), meta: "im Zugriff" },
+        { label: "Abgabequote", value: `${String(data.completion_window_percent ?? 0)}%`, meta: `${String(data.submitted_window_total ?? 0)} von ${String(data.assigned_window_total ?? 0)}` },
+        { label: "Ø Punkte", value: avgScore, meta: `${String(data.approved_reviews_window_total ?? 0)} freigegeben` },
+        { label: "Offene Korrekturen", value: String(data.pending_reviews_total ?? 0), meta: "wartend" },
+        { label: "Aktive Aufgaben", value: String(data.active_homeworks_total ?? 0), meta: "derzeit laufend" },
+        { label: "Fenster", value: `${String(data.window_days ?? 7)} Tage`, meta: "Auswertungszeitraum" },
+        { label: "Abgaben", value: String(data.submitted_window_total ?? 0), meta: "im Zeitraum" }
+      ];
+      wrap.innerHTML = cards.map(card => `
+        <div class="progress-card">
+          <div class="label">${escapeHtml(card.label)}</div>
+          <div class="value">${card.value}</div>
+          <div class="meta">${escapeHtml(card.meta)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderProgressCourses(courses) {
+      const wrap = document.getElementById("progressCoursesWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(courses) ? courses : [];
+      if (!rows.length) {
+        wrap.innerHTML = "<h4>Kursvergleich</h4><p>Keine Kursdaten verfügbar.</p>";
+        return;
+      }
+      const tableRows = rows.map(course => `
+        <tr>
+          <td class="mono">${escapeHtml(String(course.course_id || "-"))}</td>
+          <td>${escapeHtml(String(course.name || "-"))}</td>
+          <td class="mono">${escapeHtml(String(course.members_total ?? 0))}</td>
+          <td class="mono">${escapeHtml(String(course.active_homeworks ?? 0))}</td>
+          <td class="mono">${escapeHtml(String(course.submitted_window ?? 0))}/${escapeHtml(String(course.assigned_window ?? 0))}</td>
+          <td class="mono">${escapeHtml(String(course.completion_window_percent ?? 0))}%</td>
+          <td class="mono">${course.avg_score_window == null ? "-" : `${escapeHtml(String(course.avg_score_window))}/20`}</td>
+          <td class="mono">${escapeHtml(String(course.pending_reviews ?? 0))}</td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <h4>Kursvergleich</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Kurs</th>
+              <th>TN</th>
+              <th>Aktive HW</th>
+              <th>Abgaben</th>
+              <th>Quote</th>
+              <th>Ø Punkte</th>
+              <th>Offen</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      applyResponsiveTableLabels(wrap);
+    }
+
+    function renderProgressRecent(recentRows) {
+      const wrap = document.getElementById("progressRecentWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(recentRows) ? recentRows : [];
+      if (!rows.length) {
+        wrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Noch keine Freigaben im Zeitraum.</p>";
+        return;
+      }
+      wrap.innerHTML = `
+        <h4>Zuletzt freigegebene Korrekturen</h4>
+        <div class="progress-recent-list">
+          ${rows.map(item => `
+            <div class="progress-recent-item">
+              <div><strong>${escapeHtml(String(item.student_name || item.student_username || "-"))}</strong> · ${escapeHtml(String(item.task_title || "Ohne Titel"))}</div>
+              <div class="mono">${escapeHtml(formatDisplayDateTime(String(item.reviewed_at || "")))} · Punkte: ${item.score_total == null ? "-" : `${escapeHtml(String(item.score_total))}/20`} · Kurs: ${escapeHtml(String(item.course_id || "-"))}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    async function loadProgressOverview(silent = false) {
+      const courseId = String((document.getElementById("progressCourseFilter") || {}).value || "").trim();
+      const days = clamp((document.getElementById("progressDaysFilter") || {}).value, 1, 90, 7);
+      if (!silent) clearBox("progressStatus");
+      try {
+        const payload = await fetchAdminProgress({ course_id: courseId, days });
+        renderProgressSummary(payload.summary || {});
+        renderProgressCourses(payload.courses || []);
+        renderProgressRecent(payload.recent_approved || []);
+        setBox("progressStatus", "ok", "Fortschritt wurde aktualisiert.");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (!silent) setBox("progressStatus", "error", `Fortschritt konnte nicht geladen werden: ${message}`);
+        const coursesWrap = document.getElementById("progressCoursesWrap");
+        const recentWrap = document.getElementById("progressRecentWrap");
+        if (coursesWrap) coursesWrap.innerHTML = "<h4>Kursvergleich</h4><p>Keine Daten.</p>";
+        if (recentWrap) recentWrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Keine Daten.</p>";
+      }
     }
 
     async function listHomeworkAssignments() {
@@ -7880,6 +8144,9 @@
     });
     document.getElementById("createHomeworkBtn").addEventListener("click", createHomeworkAssignment);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
+    document.getElementById("refreshProgressBtn").addEventListener("click", () => loadProgressOverview(false));
+    document.getElementById("progressCourseFilter").addEventListener("change", () => loadProgressOverview(true));
+    document.getElementById("progressDaysFilter").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("hwSelectAllUsersBtn").addEventListener("click", () => setHomeworkUserSelection(true));
     document.getElementById("hwClearUsersBtn").addEventListener("click", () => setHomeworkUserSelection(false));
     document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
@@ -7991,6 +8258,10 @@
     document.getElementById("jumpHomeworkBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("homeworks");
+    });
+    document.getElementById("jumpProgressBtn").addEventListener("click", () => {
+      closeAdminMenu();
+      openAdminPane("progress");
     });
     document.getElementById("jumpAttendanceBtn").addEventListener("click", () => {
       closeAdminMenu();
