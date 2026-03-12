@@ -77,7 +77,59 @@ if ($windowDays < 1 || $windowDays > 90) {
     $windowDays = 7;
 }
 $nowTs = time();
+$windowEndTs = $nowTs;
 $windowStartTs = $nowTs - ($windowDays * 86400);
+
+$rangeFromRaw = trim((string)($_GET['from'] ?? ''));
+$rangeToRaw = trim((string)($_GET['to'] ?? ''));
+$rangeFromTs = $rangeFromRaw !== '' ? strtotime($rangeFromRaw . ' 00:00:00') : false;
+$rangeToTs = $rangeToRaw !== '' ? strtotime($rangeToRaw . ' 23:59:59') : false;
+if ($rangeFromTs !== false || $rangeToTs !== false) {
+    $effectiveFromTs = $rangeFromTs !== false ? (int)$rangeFromTs : (int)($nowTs - ($windowDays * 86400));
+    $effectiveToTs = $rangeToTs !== false ? (int)$rangeToTs : $nowTs;
+    if ($effectiveFromTs > $effectiveToTs) {
+        [$effectiveFromTs, $effectiveToTs] = [$effectiveToTs, $effectiveFromTs];
+    }
+    $windowStartTs = $effectiveFromTs;
+    $windowEndTs = $effectiveToTs;
+    $windowDays = max(1, (int)floor(($windowEndTs - $windowStartTs) / 86400) + 1);
+    $rangeFromRaw = gmdate('Y-m-d', $windowStartTs);
+    $rangeToRaw = gmdate('Y-m-d', $windowEndTs);
+} else {
+    $rangeFromRaw = '';
+    $rangeToRaw = '';
+}
+
+$trendEndOfDayTs = strtotime(gmdate('Y-m-d', $windowEndTs) . ' 23:59:59');
+$trendBuckets = [];
+for ($idx = 0; $idx < 4; $idx++) {
+    $weeksFromNewest = 3 - $idx;
+    $bucketEndTs = $trendEndOfDayTs - ($weeksFromNewest * 7 * 86400);
+    $bucketStartTs = $bucketEndTs - (7 * 86400) + 1;
+    $trendBuckets[$idx] = [
+        'index' => $idx,
+        'start_ts' => $bucketStartTs,
+        'end_ts' => $bucketEndTs,
+        'label' => gmdate('d.m', $bucketStartTs) . '–' . gmdate('d.m', $bucketEndTs),
+        'assigned' => 0,
+        'submitted' => 0,
+        'avg_score' => null,
+        '_score_sum' => 0,
+        '_score_count' => 0,
+    ];
+}
+
+$trendBucketIndexForTs = static function (int $eventTs) use ($trendBuckets): ?int {
+    if ($eventTs <= 0) {
+        return null;
+    }
+    foreach ($trendBuckets as $bucket) {
+        if ($eventTs >= (int)$bucket['start_ts'] && $eventTs <= (int)$bucket['end_ts']) {
+            return (int)$bucket['index'];
+        }
+    }
+    return null;
+};
 
 $allCourses = load_courses();
 $visibleCourses = [];
@@ -200,7 +252,7 @@ foreach ($visibleAssignments as $assignment) {
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
     $assignmentCourseId = trim((string)($assignment['course_id'] ?? ''));
     $createdTs = progress_iso_ts((string)($assignment['created_at'] ?? ''));
-    $createdInWindow = $createdTs > 0 && $createdTs >= $windowStartTs;
+    $createdInWindow = $createdTs > 0 && $createdTs >= $windowStartTs && $createdTs <= $windowEndTs;
     $assignmentIsActive = assignment_is_active_now($assignment, $nowTs);
 
     $impactCourseIds = [];
@@ -255,15 +307,31 @@ foreach ($visibleAssignments as $assignment) {
         if ($assignmentIsActive && $submittedAt === '') {
             $studentStats[$uname]['pending_homeworks']++;
         }
+        if ($createdTs > 0) {
+            $trendIdx = $trendBucketIndexForTs($createdTs);
+            if ($trendIdx !== null) {
+                $trendBuckets[$trendIdx]['assigned']++;
+            }
+        }
         if ($createdInWindow) {
             $studentStats[$uname]['assigned_window']++;
             if ($submittedAt !== '') {
                 $studentStats[$uname]['submitted_window']++;
                 $submittedTs = progress_iso_ts($submittedAt);
+                if ($submittedTs > 0) {
+                    $trendSubmittedIdx = $trendBucketIndexForTs($submittedTs);
+                    if ($trendSubmittedIdx !== null) {
+                        $trendBuckets[$trendSubmittedIdx]['submitted']++;
+                    }
+                }
                 if ($submittedTs > (int)$studentStats[$uname]['_last_submitted_ts']) {
                     $studentStats[$uname]['_last_submitted_ts'] = $submittedTs;
                     $studentStats[$uname]['last_submitted_at'] = $submittedAt;
                 }
+            }
+            $summaryAssignedWindow++;
+            if ($submittedAt !== '') {
+                $summarySubmittedWindow++;
             }
         }
         foreach (array_keys($belongs) as $cid) {
@@ -272,10 +340,8 @@ foreach ($visibleAssignments as $assignment) {
             }
             if ($createdInWindow) {
                 $courseStats[$cid]['assigned_window']++;
-                $summaryAssignedWindow++;
                 if ($submittedAt !== '') {
                     $courseStats[$cid]['submitted_window']++;
-                    $summarySubmittedWindow++;
                 }
             }
         }
@@ -344,13 +410,18 @@ foreach ($letterRows as $letter) {
         $reviewedTs = progress_iso_ts($reviewedAt);
         $score = progress_extract_score($review);
 
-        if ($reviewedTs >= $windowStartTs && $score !== null) {
+        if ($reviewedTs >= $windowStartTs && $reviewedTs <= $windowEndTs && $score !== null) {
             $summaryApprovedWindow++;
             $summaryScoreSumWindow += $score;
             $summaryScoreCountWindow++;
             if (isset($studentStats[$studentUsername])) {
                 $studentStats[$studentUsername]['_score_sum_window'] += $score;
                 $studentStats[$studentUsername]['_score_count_window']++;
+            }
+            $trendScoreIdx = $trendBucketIndexForTs($reviewedTs);
+            if ($trendScoreIdx !== null) {
+                $trendBuckets[$trendScoreIdx]['_score_sum'] += $score;
+                $trendBuckets[$trendScoreIdx]['_score_count']++;
             }
             foreach ($courseIds as $cid) {
                 if (!isset($courseStats[$cid])) {
@@ -421,6 +492,55 @@ usort($studentRows, static function (array $a, array $b): int {
 });
 $studentRows = array_slice($studentRows, 0, 200);
 
+$riskRows = [];
+foreach ($studentRows as $row) {
+    $assigned = (int)($row['assigned_window'] ?? 0);
+    if ($assigned <= 0) {
+        continue;
+    }
+    $completion = (int)($row['completion_window_percent'] ?? 0);
+    if ($completion >= 50) {
+        continue;
+    }
+    $riskRows[] = [
+        'student_username' => (string)($row['student_username'] ?? ''),
+        'student_name' => (string)($row['student_name'] ?? ''),
+        'assigned_window' => $assigned,
+        'submitted_window' => (int)($row['submitted_window'] ?? 0),
+        'completion_window_percent' => $completion,
+        'pending_homeworks' => (int)($row['pending_homeworks'] ?? 0),
+        'last_submitted_at' => (string)($row['last_submitted_at'] ?? ''),
+    ];
+}
+usort($riskRows, static function (array $a, array $b): int {
+    if ($a['completion_window_percent'] !== $b['completion_window_percent']) {
+        return $a['completion_window_percent'] <=> $b['completion_window_percent'];
+    }
+    if ($a['pending_homeworks'] !== $b['pending_homeworks']) {
+        return $b['pending_homeworks'] <=> $a['pending_homeworks'];
+    }
+    return strcmp((string)$a['student_username'], (string)$b['student_username']);
+});
+$riskRows = array_slice($riskRows, 0, 50);
+
+$trendRows = [];
+foreach ($trendBuckets as $bucket) {
+    $scoreCount = (int)$bucket['_score_count'];
+    $avgScore = $scoreCount > 0 ? round((float)$bucket['_score_sum'] / $scoreCount, 1) : null;
+    $assigned = (int)$bucket['assigned'];
+    $submitted = (int)$bucket['submitted'];
+    $completion = $assigned > 0 ? (int)round(($submitted / $assigned) * 100) : 0;
+    $trendRows[] = [
+        'label' => (string)$bucket['label'],
+        'start_date' => gmdate('Y-m-d', (int)$bucket['start_ts']),
+        'end_date' => gmdate('Y-m-d', (int)$bucket['end_ts']),
+        'assigned' => $assigned,
+        'submitted' => $submitted,
+        'completion_percent' => $completion,
+        'avg_score' => $avgScore,
+    ];
+}
+
 usort($recentApproved, static function (array $a, array $b): int {
     return strcmp((string)($b['reviewed_at'] ?? ''), (string)($a['reviewed_at'] ?? ''));
 });
@@ -432,16 +552,26 @@ $summary = [
     'students_total' => count($visibleStudents),
     'active_homeworks_total' => $summaryActiveHomeworks,
     'pending_reviews_total' => $summaryPendingReviews,
+    'risk_students_total' => count($riskRows),
     'assigned_window_total' => $summaryAssignedWindow,
     'submitted_window_total' => $summarySubmittedWindow,
     'completion_window_percent' => $summaryAssignedWindow > 0 ? (int)round(($summarySubmittedWindow / $summaryAssignedWindow) * 100) : 0,
     'approved_reviews_window_total' => $summaryApprovedWindow,
     'avg_score_window' => $summaryScoreCountWindow > 0 ? round($summaryScoreSumWindow / $summaryScoreCountWindow, 1) : null,
+    'range_from' => $rangeFromRaw,
+    'range_to' => $rangeToRaw,
+    'window_end' => gmdate('c', $windowEndTs),
 ];
 
 echo json_encode([
     'summary' => $summary,
     'courses' => $courseRows,
     'students' => $studentRows,
+    'risk_students' => $riskRows,
+    'trend_weeks' => $trendRows,
+    'selected_course' => $courseIdFilter !== '' && isset($visibleCourses[$courseIdFilter]) ? [
+        'course_id' => $courseIdFilter,
+        'name' => (string)($visibleCourses[$courseIdFilter]['name'] ?? $courseIdFilter),
+    ] : null,
     'recent_approved' => $recentApproved,
 ], JSON_UNESCAPED_UNICODE);

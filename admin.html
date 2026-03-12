@@ -756,6 +756,66 @@
       font-size: 0.82rem;
     }
 
+    .progress-risk-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .progress-risk-pill.kritisch {
+      background: #fff2f2;
+      color: #b52a2a;
+      border-color: #f6cdcd;
+    }
+
+    .progress-risk-pill.warnung {
+      background: #fff8eb;
+      color: #a56a00;
+      border-color: #f6e0b5;
+    }
+
+    .progress-trend-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      color: #55627b;
+    }
+
+    .progress-trend-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .progress-trend-line {
+      width: 14px;
+      height: 2px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .progress-trend-svg {
+      width: 100%;
+      min-height: 180px;
+      border: 1px solid #e0eaf5;
+      border-radius: 10px;
+      background: #fbfdff;
+      margin-bottom: 8px;
+    }
+
+    .progress-trend-table td,
+    .progress-trend-table th {
+      font-size: 0.85rem;
+    }
+
     .course-member-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -2518,8 +2578,18 @@
                   <option value="30">Letzte 30 Tage</option>
                 </select>
               </div>
+              <div>
+                <label for="progressDateFrom">Datum von</label>
+                <input id="progressDateFrom" type="date">
+              </div>
+              <div>
+                <label for="progressDateTo">Datum bis</label>
+                <input id="progressDateTo" type="date">
+              </div>
               <div class="actions">
                 <button id="refreshProgressBtn" type="button">Daten aktualisieren</button>
+                <button id="progressReportCsvBtn" type="button" class="ghost-btn">Bericht CSV</button>
+                <button id="progressReportPdfBtn" type="button" class="ghost-btn">Bericht PDF</button>
               </div>
             </div>
 
@@ -2527,6 +2597,8 @@
             <div id="progressSummaryWrap" class="progress-summary-grid"></div>
             <div id="progressCoursesWrap" class="progress-block"></div>
             <div id="progressStudentsWrap" class="progress-block"></div>
+            <div id="progressRiskWrap" class="progress-block"></div>
+            <div id="progressTrendWrap" class="progress-block"></div>
             <div id="progressRecentWrap" class="progress-block"></div>
           </div>
         </div>
@@ -2839,6 +2911,7 @@
     let currentAttendanceRequests = [];
     let currentRooms = [];
     let currentHomeworkAssignments = [];
+    let latestProgressPayload = null;
     let roomLiveTimerId = null;
     let roomLiveEnabled = false;
     let roomPendingOnly = false;
@@ -3152,6 +3225,27 @@
       const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
       if (m) return `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}`;
       return formatDisplayDate(raw);
+    }
+
+    function toIsoDateInput(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const dateOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (dateOnly) return `${dateOnly[1]}-${dateOnly[2]}-${dateOnly[3]}`;
+      const dt = new Date(raw);
+      if (!Number.isNaN(dt.getTime())) {
+        const y = dt.getFullYear();
+        const m = String(dt.getMonth() + 1).padStart(2, "0");
+        const d = String(dt.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
+      return "";
+    }
+
+    function shiftIsoDate(baseDate = new Date(), days = 0) {
+      const dt = new Date(baseDate);
+      dt.setDate(dt.getDate() + Number(days || 0));
+      return toIsoDateInput(dt.toISOString());
     }
 
     function isOwnerAdmin() {
@@ -5561,9 +5655,13 @@
     async function fetchAdminProgress(payload = {}) {
       const days = clamp(payload.days, 1, 90, 7);
       const courseId = String(payload.course_id || "").trim();
+      const dateFrom = toIsoDateInput(payload.date_from || "");
+      const dateTo = toIsoDateInput(payload.date_to || "");
       const query = new URLSearchParams();
       query.set("days", String(days));
       if (courseId) query.set("course_id", courseId);
+      if (dateFrom) query.set("from", dateFrom);
+      if (dateTo) query.set("to", dateTo);
       const queryString = query.toString();
       const candidates = [
         `./api/admin_progress.php?${queryString}`,
@@ -5589,6 +5687,28 @@
       throw new Error(errors.join(" | "));
     }
 
+    function getProgressFilterParams() {
+      const courseId = String((document.getElementById("progressCourseFilter") || {}).value || "").trim();
+      const days = clamp((document.getElementById("progressDaysFilter") || {}).value, 1, 90, 7);
+      const dateFrom = toIsoDateInput((document.getElementById("progressDateFrom") || {}).value || "");
+      const dateTo = toIsoDateInput((document.getElementById("progressDateTo") || {}).value || "");
+      return { courseId, days, dateFrom, dateTo };
+    }
+
+    function getProgressReportTitle(payload = latestProgressPayload || {}) {
+      const summary = payload.summary || {};
+      const selectedCourse = payload.selected_course || null;
+      const coursePart = selectedCourse && selectedCourse.name
+        ? `Kurs: ${selectedCourse.name}`
+        : "Kurs: Alle Kurse";
+      const fromPart = summary.range_from ? formatDisplayDate(summary.range_from) : "";
+      const toPart = summary.range_to ? formatDisplayDate(summary.range_to) : "";
+      const rangePart = (fromPart && toPart)
+        ? `${fromPart} bis ${toPart}`
+        : `${summary.window_days || 7} Tage`;
+      return `DTZ-LID Fortschrittsbericht (${coursePart}, Zeitraum: ${rangePart})`;
+    }
+
     function renderProgressSummary(summary) {
       const wrap = document.getElementById("progressSummaryWrap");
       if (!wrap) return;
@@ -5601,8 +5721,8 @@
         { label: "Ø Punkte", value: avgScore, meta: `${String(data.approved_reviews_window_total ?? 0)} freigegeben` },
         { label: "Offene Korrekturen", value: String(data.pending_reviews_total ?? 0), meta: "wartend" },
         { label: "Aktive Aufgaben", value: String(data.active_homeworks_total ?? 0), meta: "derzeit laufend" },
-        { label: "Fenster", value: `${String(data.window_days ?? 7)} Tage`, meta: "Auswertungszeitraum" },
-        { label: "Abgaben", value: String(data.submitted_window_total ?? 0), meta: "im Zeitraum" }
+        { label: "Risikogruppe", value: String(data.risk_students_total ?? 0), meta: "< 50% Wochenquote" },
+        { label: "Zeitraum", value: `${String(data.window_days ?? 7)} Tage`, meta: (data.range_from && data.range_to) ? `${formatDisplayDate(data.range_from)} bis ${formatDisplayDate(data.range_to)}` : "Auswertungsfenster" }
       ];
       wrap.innerHTML = cards.map(card => `
         <div class="progress-card">
@@ -5703,6 +5823,110 @@
       applyResponsiveTableLabels(wrap);
     }
 
+    function renderProgressRisk(riskRows) {
+      const wrap = document.getElementById("progressRiskWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(riskRows) ? riskRows : [];
+      if (!rows.length) {
+        wrap.innerHTML = "<h4>Risikogruppe (&lt; 50%)</h4><p>Aktuell keine Teilnehmenden unter 50% Wochenquote.</p>";
+        return;
+      }
+      const tableRows = rows.map(row => {
+        const quote = Number(row.completion_window_percent || 0);
+        const riskClass = quote < 30 ? "kritisch" : "warnung";
+        const riskText = quote < 30 ? "Kritisch" : "Warnung";
+        const name = String(row.student_name || "").trim() || String(row.student_username || "-");
+        return `
+          <tr>
+            <td>${escapeHtml(name)}</td>
+            <td class="mono">${escapeHtml(String(row.student_username || "-"))}</td>
+            <td class="mono">${escapeHtml(String(row.submitted_window || 0))}/${escapeHtml(String(row.assigned_window || 0))}</td>
+            <td class="mono">${escapeHtml(String(quote))}%</td>
+            <td class="mono">${escapeHtml(String(row.pending_homeworks || 0))}</td>
+            <td><span class="progress-risk-pill ${riskClass}">${riskText}</span></td>
+          </tr>
+        `;
+      }).join("");
+      wrap.innerHTML = `
+        <h4>Risikogruppe (&lt; 50%)</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Benutzername</th>
+              <th>Abgaben</th>
+              <th>Quote</th>
+              <th>Offene HW</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      `;
+      applyResponsiveTableLabels(wrap);
+    }
+
+    function renderProgressTrend(weeks) {
+      const wrap = document.getElementById("progressTrendWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(weeks) ? weeks : [];
+      if (!rows.length) {
+        wrap.innerHTML = "<h4>Trend (letzte 4 Wochen)</h4><p>Keine Trenddaten verfügbar.</p>";
+        return;
+      }
+      const width = 600;
+      const height = 180;
+      const padding = 24;
+      const step = rows.length > 1 ? (width - padding * 2) / (rows.length - 1) : 0;
+      const quotePoints = [];
+      const scorePoints = [];
+      rows.forEach((row, idx) => {
+        const x = padding + (idx * step);
+        const quote = Math.max(0, Math.min(100, Number(row.completion_percent || 0)));
+        const scorePercent = row.avg_score == null ? null : Math.max(0, Math.min(100, (Number(row.avg_score) / 20) * 100));
+        const yQuote = padding + ((100 - quote) / 100) * (height - padding * 2);
+        quotePoints.push(`${x},${yQuote}`);
+        if (scorePercent != null) {
+          const yScore = padding + ((100 - scorePercent) / 100) * (height - padding * 2);
+          scorePoints.push(`${x},${yScore}`);
+        }
+      });
+      const trendRows = rows.map(row => `
+        <tr>
+          <td class="mono">${escapeHtml(String(row.label || "-"))}</td>
+          <td class="mono">${escapeHtml(String(row.submitted || 0))}/${escapeHtml(String(row.assigned || 0))}</td>
+          <td class="mono">${escapeHtml(String(row.completion_percent || 0))}%</td>
+          <td class="mono">${row.avg_score == null ? "-" : `${escapeHtml(String(row.avg_score))}/20`}</td>
+        </tr>
+      `).join("");
+      wrap.innerHTML = `
+        <h4>Trend (letzte 4 Wochen)</h4>
+        <div class="progress-trend-legend">
+          <span><i class="progress-trend-line" style="background:#2f8f83;"></i>Abgabequote</span>
+          <span><i class="progress-trend-line" style="background:#da6fa1;"></i>Ø Punkte (auf % skaliert)</span>
+        </div>
+        <svg class="progress-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Trendlinien">
+          <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="#d5e4f2" stroke-width="1"></line>
+          <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="#d5e4f2" stroke-width="1"></line>
+          <polyline points="${quotePoints.join(" ")}" fill="none" stroke="#2f8f83" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          ${scorePoints.length > 1 ? `<polyline points="${scorePoints.join(" ")}" fill="none" stroke="#da6fa1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ""}
+        </svg>
+        <table class="progress-trend-table">
+          <thead>
+            <tr>
+              <th>Woche</th>
+              <th>Abgaben</th>
+              <th>Quote</th>
+              <th>Ø Punkte</th>
+            </tr>
+          </thead>
+          <tbody>${trendRows}</tbody>
+        </table>
+      `;
+      applyResponsiveTableLabels(wrap);
+    }
+
     function renderProgressRecent(recentRows) {
       const wrap = document.getElementById("progressRecentWrap");
       if (!wrap) return;
@@ -5724,25 +5948,164 @@
       `;
     }
 
+    function buildProgressReportCsv(payload = latestProgressPayload || {}) {
+      const students = Array.isArray(payload.students) ? payload.students : [];
+      const summary = payload.summary || {};
+      const selectedCourse = payload.selected_course || null;
+      const header = ["Kurs", "Name", "Benutzername", "Abgaben", "Quote (%)", "Offene HW", "Ø Punkte", "Letzte Abgabe", "Zeitraum von", "Zeitraum bis"];
+      const lines = [header.join(",")];
+      students.forEach(student => {
+        const name = String(student.student_name || "").trim() || String(student.student_username || "-");
+        lines.push([
+          toCsvCell(selectedCourse?.name || "Alle Kurse"),
+          toCsvCell(name),
+          toCsvCell(student.student_username || ""),
+          toCsvCell(`${student.submitted_window || 0}/${student.assigned_window || 0}`),
+          toCsvCell(String(student.completion_window_percent || 0)),
+          toCsvCell(String(student.pending_homeworks || 0)),
+          toCsvCell(student.avg_score_window == null ? "" : `${student.avg_score_window}/20`),
+          toCsvCell(formatDisplayDateTime(student.last_submitted_at || "")),
+          toCsvCell(summary.range_from ? formatDisplayDate(summary.range_from) : ""),
+          toCsvCell(summary.range_to ? formatDisplayDate(summary.range_to) : "")
+        ].join(","));
+      });
+      return lines.join("\n");
+    }
+
+    function downloadProgressReportCsv() {
+      if (!latestProgressPayload || !Array.isArray(latestProgressPayload.students) || !latestProgressPayload.students.length) {
+        setBox("progressStatus", "error", "Keine Fortschrittsdaten für CSV verfügbar.");
+        return;
+      }
+      const csv = buildProgressReportCsv(latestProgressPayload);
+      const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dtz-fortschritt-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBox("progressStatus", "ok", "Fortschrittsbericht (CSV) wurde heruntergeladen.");
+    }
+
+    function openProgressReportPdf() {
+      if (!latestProgressPayload || !Array.isArray(latestProgressPayload.students) || !latestProgressPayload.students.length) {
+        setBox("progressStatus", "error", "Keine Fortschrittsdaten für PDF verfügbar.");
+        return;
+      }
+      const payload = latestProgressPayload;
+      const title = getProgressReportTitle(payload);
+      const summary = payload.summary || {};
+      const rowsHtml = (payload.students || []).map(student => {
+        const name = String(student.student_name || "").trim() || String(student.student_username || "-");
+        return `
+          <tr>
+            <td>${escapeHtml(name)}</td>
+            <td>${escapeHtml(String(student.student_username || "-"))}</td>
+            <td>${escapeHtml(String(student.submitted_window || 0))}/${escapeHtml(String(student.assigned_window || 0))}</td>
+            <td>${escapeHtml(String(student.completion_window_percent || 0))}%</td>
+            <td>${escapeHtml(String(student.pending_homeworks || 0))}</td>
+            <td>${student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`}</td>
+          </tr>
+        `;
+      }).join("");
+
+      const html = `
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#2f3e57; margin:24px; }
+    h1 { font-size: 20px; margin: 0 0 6px; }
+    .meta { margin: 0 0 14px; color:#5a6172; font-size: 13px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid #d9e5f2; padding:6px 8px; font-size:12px; text-align:left; }
+    th { background:#f5f9ff; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <p class="meta">
+    Erstellt: ${escapeHtml(formatDisplayDateTime(new Date().toISOString()))}
+    · Zeitraum: ${summary.range_from ? escapeHtml(formatDisplayDate(summary.range_from)) : "-"} bis ${summary.range_to ? escapeHtml(formatDisplayDate(summary.range_to)) : "-"}
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Benutzername</th>
+        <th>Abgaben</th>
+        <th>Quote</th>
+        <th>Offene HW</th>
+        <th>Ø Punkte</th>
+      </tr>
+    </thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+</body>
+</html>`;
+
+      const win = window.open("", "_blank", "noopener,noreferrer");
+      if (!win) {
+        setBox("progressStatus", "error", "PDF-Ansicht konnte nicht geöffnet werden.");
+        return;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { try { win.print(); } catch (_) {} }, 180);
+      setBox("progressStatus", "ok", "PDF-Ansicht wurde geöffnet.");
+    }
+
+    function initProgressDateRangeDefaults() {
+      const fromInput = document.getElementById("progressDateFrom");
+      const toInput = document.getElementById("progressDateTo");
+      if (!fromInput || !toInput) return;
+      if (!toInput.value) toInput.value = shiftIsoDate(new Date(), 0);
+      if (!fromInput.value) fromInput.value = shiftIsoDate(new Date(), -6);
+    }
+
     async function loadProgressOverview(silent = false) {
-      const courseId = String((document.getElementById("progressCourseFilter") || {}).value || "").trim();
-      const days = clamp((document.getElementById("progressDaysFilter") || {}).value, 1, 90, 7);
+      const filters = getProgressFilterParams();
       if (!silent) clearBox("progressStatus");
       try {
-        const payload = await fetchAdminProgress({ course_id: courseId, days });
-        renderProgressSummary(payload.summary || {});
+        const payload = await fetchAdminProgress({
+          course_id: filters.courseId,
+          days: filters.days,
+          date_from: filters.dateFrom,
+          date_to: filters.dateTo
+        });
+        latestProgressPayload = payload;
+        const summary = payload.summary || {};
+        const fromInput = document.getElementById("progressDateFrom");
+        const toInput = document.getElementById("progressDateTo");
+        if (fromInput && summary.range_from) fromInput.value = toIsoDateInput(summary.range_from);
+        if (toInput && summary.range_to) toInput.value = toIsoDateInput(summary.range_to);
+        renderProgressSummary(summary);
         renderProgressCourses(payload.courses || []);
         renderProgressStudents(payload.students || []);
+        renderProgressRisk(payload.risk_students || []);
+        renderProgressTrend(payload.trend_weeks || []);
         renderProgressRecent(payload.recent_approved || []);
         setBox("progressStatus", "ok", "Fortschritt wurde aktualisiert.");
       } catch (err) {
+        latestProgressPayload = null;
         const message = err instanceof Error ? err.message : String(err);
         if (!silent) setBox("progressStatus", "error", `Fortschritt konnte nicht geladen werden: ${message}`);
         const coursesWrap = document.getElementById("progressCoursesWrap");
         const studentsWrap = document.getElementById("progressStudentsWrap");
+        const riskWrap = document.getElementById("progressRiskWrap");
+        const trendWrap = document.getElementById("progressTrendWrap");
         const recentWrap = document.getElementById("progressRecentWrap");
         if (coursesWrap) coursesWrap.innerHTML = "<h4>Kursvergleich</h4><p>Keine Daten.</p>";
         if (studentsWrap) studentsWrap.innerHTML = "<h4>Teilnehmende im Zeitraum</h4><p>Keine Daten.</p>";
+        if (riskWrap) riskWrap.innerHTML = "<h4>Risikogruppe (&lt; 50%)</h4><p>Keine Daten.</p>";
+        if (trendWrap) trendWrap.innerHTML = "<h4>Trend (letzte 4 Wochen)</h4><p>Keine Daten.</p>";
         if (recentWrap) recentWrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Keine Daten.</p>";
       }
     }
@@ -8200,6 +8563,10 @@
     document.getElementById("refreshProgressBtn").addEventListener("click", () => loadProgressOverview(false));
     document.getElementById("progressCourseFilter").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("progressDaysFilter").addEventListener("change", () => loadProgressOverview(true));
+    document.getElementById("progressDateFrom").addEventListener("change", () => loadProgressOverview(true));
+    document.getElementById("progressDateTo").addEventListener("change", () => loadProgressOverview(true));
+    document.getElementById("progressReportCsvBtn").addEventListener("click", downloadProgressReportCsv);
+    document.getElementById("progressReportPdfBtn").addEventListener("click", openProgressReportPdf);
     document.getElementById("hwSelectAllUsersBtn").addEventListener("click", () => setHomeworkUserSelection(true));
     document.getElementById("hwClearUsersBtn").addEventListener("click", () => setHomeworkUserSelection(false));
     document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
@@ -8396,6 +8763,7 @@
       if (event.key === "Enter") login();
     });
     ensureResponsiveTableObserver();
+    initProgressDateRangeDefaults();
     renderHomeworkTemplateOptions();
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
