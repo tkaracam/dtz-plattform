@@ -780,6 +780,12 @@
       border-color: #f6e0b5;
     }
 
+    .progress-risk-pill.ok {
+      background: #eefbf4;
+      color: #1f7a45;
+      border-color: #cdeedb;
+    }
+
     .progress-trend-legend {
       display: flex;
       flex-wrap: wrap;
@@ -2477,6 +2483,8 @@
               <div class="fold-section-content">
                 <div class="actions" style="margin-top: 0;">
                   <button id="kursRefreshProgressBtn" type="button" class="ghost-btn">Fortschritt aktualisieren</button>
+                  <button id="kursToggleRiskOnlyBtn" type="button" class="ghost-btn">Nur Risiko: Aus</button>
+                  <button id="kursProgressCsvBtn" type="button" class="ghost-btn">CSV</button>
                 </div>
                 <div id="kursProgressStatus" class="hidden" style="margin-top:10px;"></div>
                 <div id="kursProgressSummaryWrap" class="progress-summary-grid" style="margin-top:10px;"></div>
@@ -2924,6 +2932,8 @@
     let currentRooms = [];
     let currentHomeworkAssignments = [];
     let latestProgressPayload = null;
+    let latestKursProgressPayload = null;
+    let kursProgressRiskOnly = false;
     let roomLiveTimerId = null;
     let roomLiveEnabled = false;
     let roomPendingOnly = false;
@@ -4483,6 +4493,7 @@
       if (!courses.length) {
         wrap.innerHTML = "<p>Noch keine Kurse vorhanden.</p>";
         document.getElementById("courseAssignWrap").innerHTML = "";
+        latestKursProgressPayload = null;
         const progressSummary = document.getElementById("kursProgressSummaryWrap");
         const progressStudents = document.getElementById("kursProgressStudentsWrap");
         if (progressSummary) progressSummary.innerHTML = "";
@@ -6128,6 +6139,69 @@
       }
     }
 
+    function getKursProgressRiskMeta(completionPercent) {
+      const quote = Number(completionPercent || 0);
+      if (quote < 30) return { cls: "kritisch", label: "Kritisch" };
+      if (quote < 50) return { cls: "warnung", label: "Warnung" };
+      return { cls: "ok", label: "Stabil" };
+    }
+
+    function updateKursProgressRiskButton() {
+      const btn = document.getElementById("kursToggleRiskOnlyBtn");
+      if (!btn) return;
+      btn.textContent = `Nur Risiko: ${kursProgressRiskOnly ? "Ein" : "Aus"}`;
+    }
+
+    function toggleKursProgressRiskOnly() {
+      kursProgressRiskOnly = !kursProgressRiskOnly;
+      updateKursProgressRiskButton();
+      const students = Array.isArray((latestKursProgressPayload || {}).students)
+        ? latestKursProgressPayload.students
+        : [];
+      renderKursProgressStudents(students);
+    }
+
+    function buildKursProgressCsv(payload = latestKursProgressPayload || {}) {
+      const students = Array.isArray(payload.students) ? payload.students : [];
+      const course = getCourseById(selectedCourseId);
+      const courseName = course ? (course.name || selectedCourseId || "") : (selectedCourseId || "");
+      const header = ["Kurs", "Name", "Benutzername", "Abgaben", "Quote (%)", "Offene HW", "Ø Punkte", "Status"];
+      const lines = [header.join(",")];
+      students.forEach(student => {
+        const name = String(student.student_name || "").trim() || String(student.student_username || "-");
+        const risk = getKursProgressRiskMeta(student.completion_window_percent || 0);
+        lines.push([
+          toCsvCell(courseName),
+          toCsvCell(name),
+          toCsvCell(student.student_username || ""),
+          toCsvCell(`${student.submitted_window || 0}/${student.assigned_window || 0}`),
+          toCsvCell(String(student.completion_window_percent || 0)),
+          toCsvCell(String(student.pending_homeworks || 0)),
+          toCsvCell(student.avg_score_window == null ? "" : `${student.avg_score_window}/20`),
+          toCsvCell(risk.label)
+        ].join(","));
+      });
+      return lines.join("\n");
+    }
+
+    function downloadKursProgressCsv() {
+      if (!latestKursProgressPayload || !Array.isArray(latestKursProgressPayload.students) || !latestKursProgressPayload.students.length) {
+        setBox("kursProgressStatus", "error", "Keine Kurs-Fortschrittsdaten für CSV verfügbar.");
+        return;
+      }
+      const csv = buildKursProgressCsv(latestKursProgressPayload);
+      const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dtz-kurs-fortschritt-${selectedCourseId || "kurs"}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setBox("kursProgressStatus", "ok", "Kurs-Fortschritt (CSV) wurde heruntergeladen.");
+    }
+
     function renderKursProgressSummary(summary = {}) {
       const wrap = document.getElementById("kursProgressSummaryWrap");
       if (!wrap) return;
@@ -6150,14 +6224,21 @@
     function renderKursProgressStudents(students = []) {
       const wrap = document.getElementById("kursProgressStudentsWrap");
       if (!wrap) return;
-      const rows = Array.isArray(students) ? students.slice(0, 50) : [];
+      let rows = Array.isArray(students) ? students.slice() : [];
+      if (kursProgressRiskOnly) {
+        rows = rows.filter(student => Number(student.completion_window_percent || 0) < 50);
+      }
+      rows = rows.slice(0, 50);
       if (!rows.length) {
-        wrap.innerHTML = "<p>Keine Teilnehmenden-Daten im ausgewählten Zeitraum.</p>";
+        wrap.innerHTML = kursProgressRiskOnly
+          ? "<p>Keine Risiko-Teilnehmenden unter 50% im ausgewählten Zeitraum.</p>"
+          : "<p>Keine Teilnehmenden-Daten im ausgewählten Zeitraum.</p>";
         return;
       }
       const tableRows = rows.map(student => {
         const displayName = String(student.student_name || "").trim() || String(student.student_username || "-");
         const avgScore = student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`;
+        const risk = getKursProgressRiskMeta(student.completion_window_percent || 0);
         return `
           <tr>
             <td>${escapeHtml(displayName)}</td>
@@ -6166,6 +6247,7 @@
             <td class="mono">${escapeHtml(String(student.completion_window_percent || 0))}%</td>
             <td class="mono">${escapeHtml(String(student.pending_homeworks || 0))}</td>
             <td class="mono">${avgScore}</td>
+            <td><span class="progress-risk-pill ${escapeHtml(risk.cls)}">${escapeHtml(risk.label)}</span></td>
           </tr>
         `;
       }).join("");
@@ -6179,6 +6261,7 @@
               <th>Quote</th>
               <th>Offen</th>
               <th>Ø Punkte</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>${tableRows}</tbody>
@@ -6193,6 +6276,7 @@
       const studentsWrap = document.getElementById("kursProgressStudentsWrap");
       if (!selectedCourseId) {
         if (!silent) setBox(statusBoxId, "error", "Bitte zuerst einen Kurs auswählen.");
+        latestKursProgressPayload = null;
         if (summaryWrap) summaryWrap.innerHTML = "";
         if (studentsWrap) studentsWrap.innerHTML = "<p>Kein Kurs ausgewählt.</p>";
         return;
@@ -6200,10 +6284,12 @@
       if (!silent) clearBox(statusBoxId);
       try {
         const payload = await fetchAdminProgress({ course_id: selectedCourseId, days: 7 });
+        latestKursProgressPayload = payload;
         renderKursProgressSummary(payload.summary || {});
         renderKursProgressStudents(payload.students || []);
         if (!silent) setBox(statusBoxId, "ok", "Kurs-Fortschritt wurde aktualisiert.");
       } catch (err) {
+        latestKursProgressPayload = null;
         const message = err instanceof Error ? err.message : String(err);
         if (!silent) setBox(statusBoxId, "error", `Kurs-Fortschritt konnte nicht geladen werden: ${message}`);
         if (summaryWrap) summaryWrap.innerHTML = "";
@@ -8676,6 +8762,8 @@
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
     document.getElementById("kursRefreshHomeworkBtn").addEventListener("click", listKursHomeworkAssignments);
     document.getElementById("kursRefreshProgressBtn").addEventListener("click", () => loadKursProgressOverview(false));
+    document.getElementById("kursToggleRiskOnlyBtn").addEventListener("click", toggleKursProgressRiskOnly);
+    document.getElementById("kursProgressCsvBtn").addEventListener("click", downloadKursProgressCsv);
     document.getElementById("kursOpenPendingQueueBtn").addEventListener("click", () => loadKursCorrectionsView("pending"));
     document.getElementById("kursOpenArchiveEntriesBtn").addEventListener("click", () => loadKursCorrectionsView("entries"));
     document.getElementById("attendanceCourseId").addEventListener("change", () => {
@@ -8866,6 +8954,7 @@
     });
     ensureResponsiveTableObserver();
     initProgressDateRangeDefaults();
+    updateKursProgressRiskButton();
     renderHomeworkTemplateOptions();
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
