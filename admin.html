@@ -1929,6 +1929,67 @@
       line-height: 1.2;
     }
 
+    .course-shortcut-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .course-shortcut-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .course-shortcut-pill.none {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .course-shortcut-pill.ok {
+      background: rgba(24, 131, 98, 0.38);
+      border-color: rgba(184, 255, 220, 0.6);
+    }
+
+    .course-shortcut-pill.warnung {
+      background: rgba(200, 119, 36, 0.45);
+      border-color: rgba(255, 224, 181, 0.72);
+    }
+
+    .course-shortcut-pill.kritisch {
+      background: rgba(186, 76, 63, 0.52);
+      border-color: rgba(255, 202, 194, 0.8);
+    }
+
+    .course-shortcut-pill.sub {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.28);
+      font-weight: 600;
+    }
+
+    .course-shortcut-pill.quick {
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.52);
+      transition: transform 0.12s ease, background 0.12s ease;
+    }
+
+    .course-shortcut-pill.quick:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.26);
+    }
+
     .card {
       border: 1px solid var(--line);
       background: var(--paper);
@@ -2101,6 +2162,11 @@
 
       .course-shortcut-meta {
         font-size: 0.66rem;
+      }
+
+      .course-shortcut-pill {
+        font-size: 0.62rem;
+        padding: 2px 6px;
       }
 
       .row {
@@ -3069,6 +3135,7 @@
     let currentRooms = [];
     let currentHomeworkAssignments = [];
     let currentKursHomeworkAssignments = [];
+    let homeworkCourseReminderMap = {};
     let homeworkReminderFilter = "all";
     let kursHomeworkReminderFilter = "all";
     let latestProgressPayload = null;
@@ -4614,6 +4681,10 @@
         const name = String(course.name || courseId || "Kurs");
         const members = Array.isArray(course.members) ? course.members.length : 0;
         const isSelected = selectedCourseId && courseId === selectedCourseId;
+        const reminder = getCourseShortcutReminder(courseId);
+        const reminderDetail = reminder.detail
+          ? `<span class="course-shortcut-pill sub">${escapeHtml(reminder.detail)}</span>`
+          : "";
         return `
           <button
             type="button"
@@ -4621,7 +4692,12 @@
             data-course-shortcut="${escapeHtml(courseId)}"
           >
             <span class="course-shortcut-name">${escapeHtml(name)}</span>
-            <span class="course-shortcut-meta">TN: ${escapeHtml(String(members))}</span>
+            <span class="course-shortcut-meta">TN: ${escapeHtml(String(members))} · HW: ${escapeHtml(String(reminder.activeTotal || 0))}</span>
+            <span class="course-shortcut-badges">
+              <span class="course-shortcut-pill ${escapeHtml(reminder.cls)}">${escapeHtml(reminder.label)}</span>
+              ${reminderDetail}
+              <span class="course-shortcut-pill quick" data-course-shortcut-open-homework="${escapeHtml(courseId)}">Hausaufgaben öffnen</span>
+            </span>
           </button>
         `;
       }).join("");
@@ -4636,6 +4712,15 @@
           if (course) {
             setKursActionBox("ok", `Kurs geöffnet: ${getCourseLabel(course, false)}.`);
           }
+        });
+      });
+      wrap.querySelectorAll("[data-course-shortcut-open-homework]").forEach(el => {
+        el.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          const id = String(el.getAttribute("data-course-shortcut-open-homework") || "").trim();
+          if (!id) return;
+          openKursHomeworkForCourse(id);
         });
       });
     }
@@ -4668,9 +4753,20 @@
         setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
         return;
       }
+      openKursHomeworkForCourse(String(course.course_id || ""));
+    }
+
+    function openKursHomeworkForCourse(courseId) {
+      const id = String(courseId || "").trim();
+      if (!id) return;
+      const course = getCourseById(id);
+      if (!course) return;
       openAdminPane("kurs");
+      setSelectedCourse(id, true);
       const details = document.getElementById("kursHomeworkDetails");
       if (details) details.open = true;
+      const assigned = document.getElementById("kursAssignedHomeworkDetails");
+      if (assigned) assigned.open = true;
       setBox("kursHomeworkStatus", "ok", `Kurs gewählt: ${getCourseLabel(course, false)}.`);
     }
 
@@ -5768,6 +5864,81 @@
       return summary;
     }
 
+    function buildHomeworkCourseReminderMap(rows) {
+      const map = {};
+      (Array.isArray(rows) ? rows : []).forEach(item => {
+        const courseId = String(item?.course_id || "").trim();
+        if (!courseId) return;
+        const status = String(item?.status || "active").toLowerCase();
+        if (status !== "active") return;
+        if (!map[courseId]) {
+          map[courseId] = {
+            active_total: 0,
+            assigned_total: 0,
+            submitted_total: 0,
+            expired_total: 0,
+            warning2_total: 0,
+            warning24_total: 0
+          };
+        }
+        const entry = map[courseId];
+        entry.active_total += 1;
+        entry.assigned_total += Number(item?.assigned_total || 0);
+        entry.submitted_total += Number(item?.submitted_total || 0);
+        entry.expired_total += Number(item?.expired_total || 0);
+        entry.warning2_total += Number(item?.warning2_total || 0);
+        entry.warning24_total += Number(item?.warning24_total || 0);
+      });
+      return map;
+    }
+
+    function getCourseShortcutReminder(courseId) {
+      const key = String(courseId || "").trim();
+      const stats = (homeworkCourseReminderMap && homeworkCourseReminderMap[key]) || null;
+      if (!stats || Number(stats.active_total || 0) <= 0) {
+        return {
+          cls: "none",
+          label: "Keine aktive HW",
+          detail: "",
+          activeTotal: 0
+        };
+      }
+      const expired = Number(stats.expired_total || 0);
+      const warn2 = Number(stats.warning2_total || 0);
+      const warn24 = Number(stats.warning24_total || 0);
+      const pending = Math.max(0, Number(stats.assigned_total || 0) - Number(stats.submitted_total || 0));
+      if (expired > 0) {
+        return {
+          cls: "kritisch",
+          label: `Überfällig: ${expired}`,
+          detail: `Offen: ${pending}`,
+          activeTotal: Number(stats.active_total || 0)
+        };
+      }
+      if (warn2 > 0) {
+        return {
+          cls: "kritisch",
+          label: `< 2h: ${warn2}`,
+          detail: `Offen: ${pending}`,
+          activeTotal: Number(stats.active_total || 0)
+        };
+      }
+      if (warn24 > 0) {
+        return {
+          cls: "warnung",
+          label: `< 24h: ${warn24}`,
+          detail: `Offen: ${pending}`,
+          activeTotal: Number(stats.active_total || 0)
+        };
+      }
+      return {
+        cls: "ok",
+        label: "Im Plan",
+        detail: `Offen: ${pending}`,
+        activeTotal: Number(stats.active_total || 0)
+      };
+    }
+
     function filterHomeworkAssignmentsByReminder(rows, filterKey) {
       const key = String(filterKey || "all").toLowerCase();
       const list = Array.isArray(rows) ? rows.slice() : [];
@@ -6605,8 +6776,12 @@
     async function listHomeworkAssignments() {
       try {
         const assignments = await fetchHomeworkAssignments();
+        homeworkCourseReminderMap = buildHomeworkCourseReminderMap(assignments);
+        renderCourseShortcutButtons();
         renderHomeworkAssignments(assignments);
       } catch (err) {
+        homeworkCourseReminderMap = {};
+        renderCourseShortcutButtons();
         const wrap = document.getElementById("homeworkListWrap");
         if (wrap) wrap.innerHTML = `<p>Aufgaben konnten nicht geladen werden: ${escapeHtml(err.message)}</p>`;
       }
