@@ -140,21 +140,42 @@
       display: grid;
       gap: 8px;
     }
-    .topic-panel {
-      border: 1px solid #d8e3f4;
-      border-radius: 10px;
-      background: #f8fbff;
-      padding: 8px;
+    .topic-button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
-    .topic-panel h4 {
-      margin: 0 0 6px;
-      color: #2c476f;
-      font-size: 1.02rem;
+    .topic-level-btn {
+      border-radius: 16px;
+      border: 1px solid #d8b5c5;
+      background: linear-gradient(120deg, #e78fb0 0%, #6e83e8 100%);
+      color: #fff;
+      padding: 14px 12px;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-size: 0.96rem;
+      box-shadow: 0 10px 22px rgba(189, 91, 120, 0.26);
+      transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 116px;
+      text-decoration: none;
     }
-    .topic-panel p {
-      margin: 0;
-      color: #3a557d;
-      font-size: 1.02rem;
+    .topic-level-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(189, 91, 120, 0.32);
+      filter: brightness(1.02);
+    }
+    .topic-level-btn small {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
+      color: rgba(255, 236, 244, 0.94);
     }
     .flow-row {
       display: flex;
@@ -193,23 +214,6 @@
       font-size: .98rem;
     }
 
-    .topic-jump-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(90deg, #e78fb0 0%, #6e83e8 100%);
-      border: 1px solid #d8b5c5;
-      box-sizing: border-box;
-    }
-    .topic-jump-btn:hover {
-      filter: brightness(1.03);
-    }
     .perfekt-table {
       width: 100%;
       border-collapse: collapse;
@@ -446,70 +450,20 @@
     <section class="grid">
       <article class="card">
         <h3 class="subhead">Themen-Erklärungen (A2)</h3>
-        <div class="topic-explain">
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Perfekt</h4>
-            <a class="topic-jump-btn" href="./a2-perfekt.html">Perfekt-Detailseite öffnen</a>
-          </div>
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Nebensätze (weil, dass, wenn)</h4>
-            <a class="topic-jump-btn" href="./a2-nebensaetze.html">Nebensätze-Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Modalverben</h4>
-            <a class="topic-jump-btn" href="./a2-modalverben.html">Modalverben-Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Präpositionen (Zeit/Ort)</h4>
-            <a class="topic-jump-btn" href="./a2-praepositionen.html">Präpositionen-Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Trennbare Verben</h4>
-            <a class="topic-jump-btn" href="./a2-trennbare-verben.html">Trennbare-Verben-Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Kasus (Akkusativ und Dativ)</h4>
-            <a class="topic-jump-btn" href="./a2-kasus.html">Kasus-Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Partizipien ohne ge- + Possessivartikel</h4>
-            <a class="topic-jump-btn" href="./a2-partizip-possessiv.html">Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Wechselpräpositionen + ja/nein/doch</h4>
-            <a class="topic-jump-btn" href="./a2-wechselpraepositionen.html">Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Indirekte Fragen + höfliche Bitten</h4>
-            <a class="topic-jump-btn" href="./a2-indirekte-fragen-hoefliche-bitten.html">Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">lassen + reflexive Verben</h4>
-            <a class="topic-jump-btn" href="./a2-lassen-reflexive-verben.html">Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Relativsätze (Nom./Akk./Präp.)</h4>
-            <a class="topic-jump-btn" href="./a2-relativsaetze.html">Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Verben mit Präpositionen (wo-/da-)</h4>
-            <a class="topic-jump-btn" href="./a2-verben-mit-praepositionen.html">Detailseite öffnen</a>
-          </div>
-
-          <div class="topic-panel">
-            <h4 style="margin:0 0 8px;">Datum + dies- + Adjektivdeklination</h4>
-            <a class="topic-jump-btn" href="./a2-datum-dies-adjektivdeklination.html">Detailseite öffnen</a>
-          </div>
+        <div class="topic-button-grid">
+          <a class="topic-level-btn" href="./a2-perfekt.html">Perfekt<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-nebensaetze.html">Nebensätze<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-modalverben.html">Modalverben<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-praepositionen.html">Präpositionen<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-trennbare-verben.html">Trennbare Verben<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-kasus.html">Kasus (Akk./Dat.)<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-partizip-possessiv.html">Partizipien ohne ge-<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-wechselpraepositionen.html">Wechselpräpositionen<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-indirekte-fragen-hoefliche-bitten.html">Indirekte Fragen<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-lassen-reflexive-verben.html">lassen + reflexive Verben<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-relativsaetze.html">Relativsätze<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-verben-mit-praepositionen.html">Verben mit Präpositionen<small>Detailseite öffnen</small></a>
+          <a class="topic-level-btn" href="./a2-datum-dies-adjektivdeklination.html">Datum + dies- + Adjektive<small>Detailseite öffnen</small></a>
         </div>
       </article>
 
