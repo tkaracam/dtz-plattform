@@ -2779,6 +2779,40 @@
             </div>
           </details>
         </div>
+
+        <div id="trainingSetSection" class="bulk-wrap">
+          <h3 class="section-title" style="font-size: 1.2rem;">Lesen/Hören Sets</h3>
+          <details class="fold-section">
+            <summary>Set-Generator (telif-safe)</summary>
+            <div class="fold-section-content">
+              <p class="section-subtitle">Erzeugt zufällige Trainingssets aus der internen Vorlagenbank. Export als JSON möglich.</p>
+              <div class="grid">
+                <div>
+                  <label for="trainingSetCount">Anzahl Aufgaben</label>
+                  <input id="trainingSetCount" type="number" min="1" max="40" value="20">
+                </div>
+                <div>
+                  <label for="trainingSetIncludeExplanation">Erklärungen im Export</label>
+                  <select id="trainingSetIncludeExplanation">
+                    <option value="1" selected>Ja</option>
+                    <option value="0">Nein</option>
+                  </select>
+                </div>
+              </div>
+              <div class="actions">
+                <button id="generateLesenSetBtn" type="button">Lesen-Set generieren</button>
+                <button id="downloadLesenSetBtn" type="button" class="ghost-btn" disabled>Lesen-Set JSON</button>
+              </div>
+              <div class="actions" style="margin-top:8px;">
+                <button id="generateHoerenSetBtn" type="button">Hören-Set generieren</button>
+                <button id="downloadHoerenSetBtn" type="button" class="ghost-btn" disabled>Hören-Set JSON</button>
+              </div>
+              <div id="trainingSetStatus" class="hidden"></div>
+              <div id="trainingSetMeta" class="section-subtitle" style="margin-top:8px;"></div>
+              <textarea id="trainingSetPreview" class="bulk-preview" readonly placeholder="Hier erscheint eine Vorschau des zuletzt generierten Sets."></textarea>
+            </div>
+          </details>
+        </div>
         </div>
 
         <div id="paneProgress" class="admin-pane">
@@ -3135,6 +3169,10 @@
     let currentRooms = [];
     let currentHomeworkAssignments = [];
     let currentKursHomeworkAssignments = [];
+    let latestLesenTrainingSet = null;
+    let latestHoerenTrainingSet = null;
+    let latestLesenDownloadName = "";
+    let latestHoerenDownloadName = "";
     let homeworkCourseReminderMap = {};
     let homeworkReminderFilter = "all";
     let kursHomeworkReminderFilter = "all";
@@ -6155,6 +6193,149 @@
       }
 
       throw new Error(errors.join(" | "));
+    }
+
+    function getTrainingSetRequestOptions(module) {
+      const normalized = String(module || "").toLowerCase() === "hoeren" ? "hoeren" : "lesen";
+      const rawCount = clamp((document.getElementById("trainingSetCount") || {}).value, 1, normalized === "lesen" ? 40 : 30, normalized === "lesen" ? 20 : 15);
+      const includeExplanationValue = String((document.getElementById("trainingSetIncludeExplanation") || {}).value || "1");
+      return {
+        module: normalized,
+        count: rawCount,
+        include_explanation: includeExplanationValue !== "0",
+      };
+    }
+
+    function getTrainingSetApiCandidates(module) {
+      const normalized = String(module || "").toLowerCase() === "hoeren" ? "hoeren" : "lesen";
+      const endpoint = normalized === "hoeren" ? "hoeren_set_generate.php" : "lesen_set_generate.php";
+      return [
+        `./api/${endpoint}`,
+        `/api/${endpoint}`,
+        `${window.location.origin}/api/${endpoint}`,
+      ];
+    }
+
+    function buildTrainingSetPreviewText(setPayload) {
+      if (!setPayload || typeof setPayload !== "object" || !Array.isArray(setPayload.items)) {
+        return "";
+      }
+
+      const lines = [];
+      lines.push(`Modul: ${String(setPayload.module || "").toUpperCase()}`);
+      lines.push(`Anzahl: ${String(setPayload.count || 0)}`);
+      lines.push(`Erklärungen: ${setPayload.include_explanation ? "Ja" : "Nein"}`);
+      lines.push(`Erstellt: ${formatDisplayDateTime(String(setPayload.generated_at || "")) || String(setPayload.generated_at || "")}`);
+      lines.push("");
+
+      const previewItems = setPayload.items.slice(0, 10);
+      previewItems.forEach((item, index) => {
+        lines.push(`${index + 1}) ${String(item.title || "-")} [${String(item.task_type || "-")}]`);
+        if (String(item.question || "").trim()) {
+          lines.push(`Frage: ${String(item.question || "").trim()}`);
+        }
+        const options = item.options && typeof item.options === "object" ? item.options : {};
+        lines.push(`A) ${String(options.A || "")}`);
+        lines.push(`B) ${String(options.B || "")}`);
+        lines.push(`C) ${String(options.C || "")}`);
+        lines.push(`Lösung: ${String(item.correct || "-")}`);
+        if (String(item.explanation || "").trim()) {
+          lines.push(`Hinweis: ${String(item.explanation || "").trim()}`);
+        }
+        lines.push("");
+      });
+
+      if (setPayload.items.length > previewItems.length) {
+        lines.push(`... weitere ${setPayload.items.length - previewItems.length} Aufgaben im JSON enthalten.`);
+      }
+
+      return lines.join("\n");
+    }
+
+    function updateTrainingSetPreview(setPayload) {
+      const previewNode = document.getElementById("trainingSetPreview");
+      const metaNode = document.getElementById("trainingSetMeta");
+      if (previewNode) {
+        previewNode.value = buildTrainingSetPreviewText(setPayload);
+      }
+      if (metaNode) {
+        if (!setPayload || typeof setPayload !== "object") {
+          metaNode.textContent = "";
+        } else {
+          const moduleLabel = String(setPayload.module || "").toUpperCase();
+          const count = Number(setPayload.count || 0);
+          const generated = formatDisplayDateTime(String(setPayload.generated_at || "")) || String(setPayload.generated_at || "");
+          metaNode.textContent = `Zuletzt erzeugt: ${moduleLabel} | ${count} Aufgaben | ${generated}`;
+        }
+      }
+    }
+
+    async function generateTrainingSet(module) {
+      clearBox("trainingSetStatus");
+      const requestBody = getTrainingSetRequestOptions(module);
+      const candidates = getTrainingSetApiCandidates(requestBody.module);
+      const errors = [];
+
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) {
+            throw new Error(payload.error || `Fehler: ${response.status}`);
+          }
+          const setPayload = payload.set;
+          if (!setPayload || typeof setPayload !== "object" || !Array.isArray(setPayload.items)) {
+            throw new Error("Antwort enthält kein gültiges Set.");
+          }
+
+          if (requestBody.module === "lesen") {
+            latestLesenTrainingSet = setPayload;
+            latestLesenDownloadName = String(payload.download_name || "");
+            const btn = document.getElementById("downloadLesenSetBtn");
+            if (btn) btn.disabled = false;
+          } else {
+            latestHoerenTrainingSet = setPayload;
+            latestHoerenDownloadName = String(payload.download_name || "");
+            const btn = document.getElementById("downloadHoerenSetBtn");
+            if (btn) btn.disabled = false;
+          }
+
+          updateTrainingSetPreview(setPayload);
+          setBox("trainingSetStatus", "ok", `${requestBody.module === "lesen" ? "Lesen" : "Hören"}-Set erzeugt: ${setPayload.count || 0} Aufgaben.`);
+          return;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${url}: ${msg}`);
+        }
+      }
+
+      setBox("trainingSetStatus", "error", `Set konnte nicht erzeugt werden: ${errors.join(" | ")}`);
+    }
+
+    function downloadTrainingSet(module) {
+      const normalized = String(module || "").toLowerCase() === "hoeren" ? "hoeren" : "lesen";
+      const payload = normalized === "hoeren" ? latestHoerenTrainingSet : latestLesenTrainingSet;
+      const name = normalized === "hoeren" ? latestHoerenDownloadName : latestLesenDownloadName;
+      if (!payload || typeof payload !== "object") {
+        setBox("trainingSetStatus", "error", "Bitte zuerst ein Set generieren.");
+        return;
+      }
+
+      const pretty = JSON.stringify(payload, null, 2);
+      const blob = new Blob([`${pretty}\n`], { type: "application/json;charset=utf-8" });
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = name || `dtz_lid_${normalized}_set_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(href);
+      setBox("trainingSetStatus", "ok", `${normalized === "lesen" ? "Lesen" : "Hören"}-Set wurde als JSON heruntergeladen.`);
     }
 
     async function fetchAdminProgress(payload = {}) {
@@ -9253,6 +9434,10 @@
     });
     document.getElementById("createHomeworkBtn").addEventListener("click", createHomeworkAssignment);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
+    document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
+    document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
+    document.getElementById("downloadLesenSetBtn").addEventListener("click", () => downloadTrainingSet("lesen"));
+    document.getElementById("downloadHoerenSetBtn").addEventListener("click", () => downloadTrainingSet("hoeren"));
     document.getElementById("refreshProgressBtn").addEventListener("click", () => loadProgressOverview(false));
     document.getElementById("progressCourseFilter").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("progressDaysFilter").addEventListener("change", () => loadProgressOverview(true));
