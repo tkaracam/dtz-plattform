@@ -1429,6 +1429,34 @@
       font-weight: 700;
     }
 
+    .dtz-audio-actions {
+      margin: 6px 0 8px;
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .dtz-audio-btn {
+      min-width: 150px;
+      background: #f7fbff;
+      border: 1px solid #bcd0e8;
+      color: #1d446b;
+      box-shadow: none;
+      font-size: 0.84rem;
+      padding: 8px 11px;
+    }
+
+    .dtz-audio-btn:hover {
+      box-shadow: 0 9px 18px rgba(72, 110, 154, 0.13);
+    }
+
+    .dtz-audio-btn.is-playing {
+      background: linear-gradient(120deg, #f2849e, #f5a4bb);
+      border-color: #e9a3b8;
+      color: #fff;
+    }
+
     .dtz-eval-note {
       margin-top: 8px;
       font-size: 0.9rem;
@@ -2661,6 +2689,8 @@
     let currentDtzSet = [];
     let currentDtzAnswers = {};
     let currentDtzEvaluated = false;
+    let currentDtzSpeakingIndex = -1;
+    let currentDtzUtterance = null;
     let currentStudentLabel = "";
     let currentStudentUsername = "";
     let currentAssignedHomework = null;
@@ -4257,7 +4287,64 @@
       }
     }
 
+    function stopDtzAudio(keepStatus = false) {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      currentDtzSpeakingIndex = -1;
+      currentDtzUtterance = null;
+      if (!keepStatus) {
+        clearDtzTrainingStatus();
+      }
+    }
+
+    function playDtzAudioByIndex(index) {
+      if (!Number.isInteger(index) || index < 0 || index >= currentDtzSet.length) return;
+      if (!("speechSynthesis" in window)) {
+        setDtzTrainingStatus("error", "Audio im Browser nicht verfügbar.");
+        return;
+      }
+
+      const item = currentDtzSet[index] || {};
+      const script = String(item.audio_script || item.text || "").trim();
+      if (!script) {
+        setDtzTrainingStatus("error", "Für diese Aufgabe ist kein Audiotext verfügbar.");
+        return;
+      }
+
+      const synth = window.speechSynthesis;
+      if (currentDtzSpeakingIndex === index && synth.speaking) {
+        stopDtzAudio(true);
+        renderDtzTrainingSet();
+        return;
+      }
+
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(script);
+      utterance.lang = "de-DE";
+      utterance.rate = 0.94;
+      utterance.pitch = 1.0;
+      utterance.onend = () => {
+        currentDtzSpeakingIndex = -1;
+        currentDtzUtterance = null;
+        renderDtzTrainingSet();
+      };
+      utterance.onerror = () => {
+        currentDtzSpeakingIndex = -1;
+        currentDtzUtterance = null;
+        renderDtzTrainingSet();
+        setDtzTrainingStatus("error", "Audio konnte nicht abgespielt werden.");
+      };
+
+      currentDtzSpeakingIndex = index;
+      currentDtzUtterance = utterance;
+      synth.speak(utterance);
+      setDtzTrainingStatus("ok", `Audio läuft: Aufgabe ${index + 1}.`);
+      renderDtzTrainingSet();
+    }
+
     function setDtzModule(module) {
+      stopDtzAudio(true);
       currentDtzModule = module === "hoeren" ? "hoeren" : "lesen";
       const lesenBtn = document.getElementById("dtzModuleLesenBtn");
       const hoerenBtn = document.getElementById("dtzModuleHoerenBtn");
@@ -4319,11 +4406,21 @@
         const instructions = escapeHtml(String(item.instructions || "Wählen Sie A/B/C."));
         const text = escapeHtml(String(item.text || ""));
         const question = escapeHtml(String(item.question || "Was ist richtig?"));
+        const isHoeren = currentDtzModule === "hoeren";
+        const playing = isHoeren && currentDtzSpeakingIndex === idx;
+        const audioBtnClass = playing ? "dtz-audio-btn is-playing" : "dtz-audio-btn";
+        const audioLabel = playing ? "Audio stoppen" : "Audio abspielen";
+        const audioControls = isHoeren ? `
+            <div class="dtz-audio-actions">
+              <button type="button" class="${audioBtnClass}" data-dtz-audio-index="${idx}">${audioLabel}</button>
+            </div>
+          ` : "";
 
         return `
           <article class="${resultClass}">
             <h4>Frage ${headline}</h4>
             <p class="lid-stimulus"><strong>${taskType}</strong><br>${instructions}</p>
+            ${audioControls}
             <p class="lid-stimulus">${text}</p>
             <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${question}</p>
             <div class="lid-options">${optionsHtml}</div>
@@ -4343,6 +4440,16 @@
             renderDtzTrainingSet();
             evaluateDtzTrainingSet(false);
           }
+        });
+      });
+
+      wrap.querySelectorAll("button[data-dtz-audio-index]").forEach(button => {
+        button.addEventListener("click", event => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLButtonElement)) return;
+          const idx = Number(target.getAttribute("data-dtz-audio-index"));
+          if (!Number.isFinite(idx)) return;
+          playDtzAudioByIndex(idx);
         });
       });
     }
@@ -4389,6 +4496,7 @@
       const countSelect = document.getElementById("dtzQuestionCount");
       const countRaw = Number((countSelect && countSelect.value) || "20");
       const count = Number.isFinite(countRaw) ? Math.max(1, Math.min(40, countRaw)) : 20;
+      stopDtzAudio(true);
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Wird geladen...";
@@ -4507,6 +4615,7 @@
 
     function showStudentLogin() {
       setMainView("");
+      stopDtzAudio(true);
       const resultSection = document.getElementById("resultSection");
       if (resultSection) resultSection.classList.add("hidden");
       document.getElementById("memberPanel").classList.add("hidden");
