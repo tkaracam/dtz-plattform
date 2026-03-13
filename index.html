@@ -2656,14 +2656,13 @@
           <summary class="card-accordion-summary">
             <div class="title-wrap">
               <h2 class="section-title">DTZ Lesen/Hören Training</h2>
-              <p class="section-subtitle">g.a.s.t.-orientierte Aufgaben mit A/B/C-Einfachauswahl (eine richtige Antwort).</p>
             </div>
             <span class="card-accordion-icon">▾</span>
           </summary>
           <div class="card-accordion-body">
             <div class="dtz-training-modules">
-              <button id="dtzModuleLesenBtn" type="button" class="dtz-module-btn active">Lesen (Teil 1-5)</button>
               <button id="dtzModuleHoerenBtn" type="button" class="dtz-module-btn">Hören (Teil 1-4)</button>
+              <button id="dtzModuleLesenBtn" type="button" class="dtz-module-btn active">Lesen (Teil 1-5)</button>
             </div>
 
             <div class="dtz-meta-row">
@@ -4620,6 +4619,26 @@
 
       const total = currentDtzSet.length;
       const isHoerenModule = currentDtzModule === "hoeren";
+
+      const normalizeGermanUmlauts = (value) => {
+        if (typeof value !== "string" || !value) return value;
+        let text = value;
+        text = text
+          .replace(/AE/g, "Ä")
+          .replace(/OE/g, "Ö")
+          .replace(/UE/g, "Ü")
+          .replace(/Ae/g, "Ä")
+          .replace(/Oe/g, "Ö")
+          .replace(/Ue/g, "Ü")
+          .replace(/ae/g, "ä")
+          .replace(/oe/g, "ö");
+        text = text.replace(/ue/g, (match, offset, source) => {
+          const prev = offset > 0 ? source[offset - 1] : "";
+          return prev === "q" || prev === "Q" ? match : "ü";
+        });
+        return text;
+      };
+
       const extractPartOrder = (label) => {
         const hit = String(label || "").match(/(\d+)/);
         return hit ? Number(hit[1]) : 999;
@@ -4644,12 +4663,12 @@
 
           const explanation = String(item.explanation || "").trim();
           if (explanation) {
-            evalNote += `<div class="dtz-eval-note">${escapeHtml(explanation)}</div>`;
+            evalNote += `<div class="dtz-eval-note">${escapeHtml(normalizeGermanUmlauts(explanation))}</div>`;
           }
         }
 
         const optionsHtml = ["A", "B", "C"].map(letter => {
-          const optionText = String((item.options || {})[letter] || "");
+          const optionText = normalizeGermanUmlauts(String((item.options || {})[letter] || ""));
           const checked = selected === letter ? "checked" : "";
           return `
             <label class="lid-option">
@@ -4660,10 +4679,8 @@
         }).join("");
 
         const headline = `${idx + 1}/${total} · ${escapeHtml(String(item.dtz_part || ""))}`;
-        const taskType = escapeHtml(String(item.task_type || "Aufgabe"));
-        const instructions = escapeHtml(String(item.instructions || "Wählen Sie A/B/C."));
-        const text = escapeHtml(String(item.text || ""));
-        const question = escapeHtml(String(item.question || "Was ist richtig?"));
+        const text = escapeHtml(normalizeGermanUmlauts(String(item.text || "")));
+        const question = escapeHtml(normalizeGermanUmlauts(String(item.question || "Was ist richtig?")));
         const isHoeren = isHoerenModule;
         const playing = isHoeren && currentDtzSpeakingIndex === idx;
         const audioBtnClass = playing ? "dtz-audio-btn is-playing" : "dtz-audio-btn";
@@ -4678,7 +4695,6 @@
           return `
             <article class="${resultClass}">
               <h4>Frage ${headline}</h4>
-              <p class="lid-stimulus"><strong>${taskType}</strong><br>${instructions}</p>
               ${audioControls}
               <p class="lid-stimulus">${text}</p>
               <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${question}</p>
@@ -4695,7 +4711,6 @@
               <span class="dtz-lesen-label">${lesenPart}</span>
               <span>Aufgabe ${localNo}</span>
             </div>
-            <p class="dtz-lesen-instructions"><strong>${taskType}</strong> · ${instructions}</p>
             <div class="dtz-lesen-textbox">
               <p class="dtz-lesen-text-label">Text</p>
               <p class="dtz-lesen-text">${text}</p>
