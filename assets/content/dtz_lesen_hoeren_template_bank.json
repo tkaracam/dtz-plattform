@@ -1,0 +1,5173 @@
+{
+  "meta": {
+    "title": "DTZ-LID Telif-Safe Lesen/Hören Aufgabenbank",
+    "version": "2.0.0",
+    "created_at": "2026-03-13",
+    "locale": "de-DE",
+    "copyright_note": "Alle Inhalte sind neu formulierte, originale Trainingsvorlagen.",
+    "scoring": {
+      "points_per_item": 1,
+      "answer_mode": "single_choice_ABC"
+    }
+  },
+  "lesen_templates": [
+    {
+      "id": "LESEN_01",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Arztpraxis",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Arztpraxis)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_02",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Jobcenter",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Jobcenter)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_03",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Sprachschule",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Sprachschule)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_04",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Wohnung",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Wohnung)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_05",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Arbeit",
+      "title": "L5 Zuordnung: Folgerung prüfen (Arbeit)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Rezeption die Teilnehmenden im Jobcenter. Der Termin ist um 16:20. Eine Änderung gibt es wegen Krankheit. Alle sollen anschließend eine Rechnung klären.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 16:20 und die Änderung ist wegen Krankheit."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_06",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Kita",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Kita)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Teamleitung die Teilnehmenden im Kursraum 3. Der Termin ist um 18:10. Eine Änderung gibt es wegen einer Fahrplanänderung. Alle sollen anschließend eine Ersatzlösung anbieten.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 18:10 und die Änderung ist wegen einer Fahrplanänderung.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_07",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Bürgeramt",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Bürgeramt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_08",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Supermarkt",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Supermarkt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_09",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Bahnhof",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Bahnhof)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_10",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Verein",
+      "title": "L5 Zuordnung: Folgerung prüfen (Verein)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_11",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Arztpraxis",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Arztpraxis)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Rezeption die Teilnehmenden im Jobcenter. Der Termin ist um 16:20. Eine Änderung gibt es wegen Krankheit. Alle sollen anschließend eine Rechnung klären.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 16:20 und die Änderung ist wegen Krankheit."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_12",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Jobcenter",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Jobcenter)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Teamleitung die Teilnehmenden im Kursraum 3. Der Termin ist um 18:10. Eine Änderung gibt es wegen einer Fahrplanänderung. Alle sollen anschließend eine Ersatzlösung anbieten.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 18:10 und die Änderung ist wegen einer Fahrplanänderung.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_13",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Sprachschule",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Sprachschule)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_14",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Wohnung",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Wohnung)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_15",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Arbeit",
+      "title": "L5 Zuordnung: Folgerung prüfen (Arbeit)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_16",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Kita",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Kita)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_17",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Bürgeramt",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Bürgeramt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Rezeption die Teilnehmenden im Jobcenter. Der Termin ist um 16:20. Eine Änderung gibt es wegen Krankheit. Alle sollen anschließend eine Rechnung klären.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 16:20 und die Änderung ist wegen Krankheit."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_18",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Supermarkt",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Supermarkt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Teamleitung die Teilnehmenden im Kursraum 3. Der Termin ist um 18:10. Eine Änderung gibt es wegen einer Fahrplanänderung. Alle sollen anschließend eine Ersatzlösung anbieten.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 18:10 und die Änderung ist wegen einer Fahrplanänderung.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_19",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Bahnhof",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Bahnhof)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_20",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Verein",
+      "title": "L5 Zuordnung: Folgerung prüfen (Verein)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_21",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Arztpraxis",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Arztpraxis)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_22",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Jobcenter",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Jobcenter)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_23",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Sprachschule",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Sprachschule)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Rezeption die Teilnehmenden im Jobcenter. Der Termin ist um 16:20. Eine Änderung gibt es wegen Krankheit. Alle sollen anschließend eine Rechnung klären.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 16:20 und die Änderung ist wegen Krankheit."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_24",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Wohnung",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Wohnung)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Teamleitung die Teilnehmenden im Kursraum 3. Der Termin ist um 18:10. Eine Änderung gibt es wegen einer Fahrplanänderung. Alle sollen anschließend eine Ersatzlösung anbieten.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 18:10 und die Änderung ist wegen einer Fahrplanänderung.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_25",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Arbeit",
+      "title": "L5 Zuordnung: Folgerung prüfen (Arbeit)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_26",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Kita",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Kita)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_27",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Bürgeramt",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Bürgeramt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_28",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Supermarkt",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Supermarkt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_29",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Bahnhof",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Bahnhof)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Rezeption die Teilnehmenden im Jobcenter. Der Termin ist um 16:20. Eine Änderung gibt es wegen Krankheit. Alle sollen anschließend eine Rechnung klären.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 16:20 und die Änderung ist wegen Krankheit."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_30",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Verein",
+      "title": "L5 Zuordnung: Folgerung prüfen (Verein)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Teamleitung die Teilnehmenden im Kursraum 3. Der Termin ist um 18:10. Eine Änderung gibt es wegen einer Fahrplanänderung. Alle sollen anschließend eine Ersatzlösung anbieten.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 18:10 und die Änderung ist wegen einer Fahrplanänderung.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_31",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Arztpraxis",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Arztpraxis)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_32",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Jobcenter",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Jobcenter)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_33",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Sprachschule",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Sprachschule)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_34",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Wohnung",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Wohnung)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_35",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Arbeit",
+      "title": "L5 Zuordnung: Folgerung prüfen (Arbeit)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Rezeption die Teilnehmenden im Jobcenter. Der Termin ist um 16:20. Eine Änderung gibt es wegen Krankheit. Alle sollen anschließend eine Rechnung klären.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 16:20 und die Änderung ist wegen Krankheit."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_36",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L1 Kurznachrichten",
+      "task_type": "Hauptaussage erkennen",
+      "context": "Kita",
+      "title": "L1 Kurznachrichten: Hauptaussage erkennen (Kita)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Teamleitung die Teilnehmenden im Kursraum 3. Der Termin ist um 18:10. Eine Änderung gibt es wegen einer Fahrplanänderung. Alle sollen anschließend eine Ersatzlösung anbieten.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 18:10 und die Änderung ist wegen einer Fahrplanänderung.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_37",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L2 Informationsanzeigen",
+      "task_type": "Detailinformation finden",
+      "context": "Bürgeramt",
+      "title": "L2 Informationsanzeigen: Detailinformation finden (Bürgeramt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Kursleiterin die Teilnehmenden im Bürgerbüro. Der Termin ist um 08:15. Eine Änderung gibt es wegen eines Arzttermins. Alle sollen anschließend einen Termin verschieben.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 08:15 und die Änderung ist wegen eines Arzttermins.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_38",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L3 Formulare und Hinweise",
+      "task_type": "Absicht verstehen",
+      "context": "Supermarkt",
+      "title": "L3 Formulare und Hinweise: Absicht verstehen (Supermarkt)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Sachbearbeiter die Teilnehmenden in der Sprachschule. Der Termin ist um 09:30. Eine Änderung gibt es wegen einer Verspätung. Alle sollen anschließend eine Bescheinigung abholen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "B": "Es gibt keine Änderung; alle sollen nur warten.",
+          "C": "Der Termin ist um 09:30 und die Änderung ist wegen einer Verspätung."
+        },
+        "correct": "C",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_39",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L4 Längere Texte",
+      "task_type": "Zeit/Ort korrekt zuordnen",
+      "context": "Bahnhof",
+      "title": "L4 Längere Texte: Zeit/Ort korrekt zuordnen (Bahnhof)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert die Nachbarin die Teilnehmenden am Bahnhof. Der Termin ist um 11:45. Eine Änderung gibt es wegen eines Formularfehlers. Alle sollen anschließend eine Rückfrage stellen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Es gibt keine Änderung; alle sollen nur warten.",
+          "B": "Der Termin ist um 11:45 und die Änderung ist wegen eines Formularfehlers.",
+          "C": "Der Termin ist morgen und die Änderung ist ohne Grund."
+        },
+        "correct": "B",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "LESEN_40",
+      "module": "lesen",
+      "level": "A2-B1",
+      "dtz_part": "L5 Zuordnung",
+      "task_type": "Folgerung prüfen",
+      "context": "Verein",
+      "title": "L5 Zuordnung: Folgerung prüfen (Verein)",
+      "instructions": "Lesen Sie den Text und wählen Sie die richtige Antwort (A/B/C).",
+      "text_template": "Heute informiert {person} die Teilnehmenden {ort}. Der Termin ist um {zeit}. Eine Änderung gibt es {grund}. Alle sollen anschließend {handlung}.",
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Was ist laut Text korrekt?",
+      "sample_item": {
+        "text": "Heute informiert der Kollege die Teilnehmenden in der Apotheke. Der Termin ist um 14:00. Eine Änderung gibt es wegen einer Terminänderung. Alle sollen anschließend eine Anmeldung bestätigen.",
+        "question": "Was ist laut Text korrekt?",
+        "options": {
+          "A": "Der Termin ist um 14:00 und die Änderung ist wegen einer Terminänderung.",
+          "B": "Der Termin ist morgen und die Änderung ist ohne Grund.",
+          "C": "Es gibt keine Änderung; alle sollen nur warten."
+        },
+        "correct": "A",
+        "rationale": "Nur eine Option übernimmt Zeit + Grund exakt aus dem Text."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "option_length_balance": "max ±25%",
+        "distractors_thematic_but_false": true,
+        "copyright_safe": true
+      }
+    }
+  ],
+  "hoeren_templates": [
+    {
+      "id": "HOEREN_01",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Kerndetail hören",
+      "context": "Busbahnhof",
+      "title": "H1 Kurze Ansagen: Kerndetail hören (Busbahnhof)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Kursleiterin. Ich rufe im Bürgerbüro an. Unser Termin bleibt um 08:15. Wegen wegen eines Arzttermins bitten wir Sie, danach einen Termin verschieben. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 08:15."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_02",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Absicht erkennen",
+      "context": "Praxisanruf",
+      "title": "H2 Dialoge: Absicht erkennen (Praxisanruf)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Sachbearbeiter. Ich rufe in der Sprachschule an. Unser Termin bleibt um 09:30. Wegen wegen einer Verspätung bitten wir Sie, danach eine Bescheinigung abholen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 09:30.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_03",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Termin-/Zeitinfo verstehen",
+      "context": "Schulsekretariat",
+      "title": "H3 Informationsgespräche: Termin-/Zeitinfo verstehen (Schulsekretariat)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Nachbarin. Ich rufe am Bahnhof an. Unser Termin bleibt um 11:45. Wegen wegen eines Formularfehlers bitten wir Sie, danach eine Rückfrage stellen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 11:45.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_04",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Ort/Route verstehen",
+      "context": "Arbeitstelefonat",
+      "title": "H4 Meinungen/Absichten: Ort/Route verstehen (Arbeitstelefonat)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Kollege. Ich rufe in der Apotheke an. Unser Termin bleibt um 14:00. Wegen wegen einer Terminänderung bitten wir Sie, danach eine Anmeldung bestätigen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 14:00."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_05",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Problem-Lösung erkennen",
+      "context": "Hausverwaltung",
+      "title": "H1 Kurze Ansagen: Problem-Lösung erkennen (Hausverwaltung)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Rezeption. Ich rufe im Jobcenter an. Unser Termin bleibt um 16:20. Wegen wegen Krankheit bitten wir Sie, danach eine Rechnung klären. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 16:20.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_06",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Kerndetail hören",
+      "context": "Kursorganisation",
+      "title": "H2 Dialoge: Kerndetail hören (Kursorganisation)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Teamleitung. Ich rufe im Kursraum 3 an. Unser Termin bleibt um 18:10. Wegen wegen einer Fahrplanänderung bitten wir Sie, danach eine Ersatzlösung anbieten. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 18:10.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_07",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Absicht erkennen",
+      "context": "Bank",
+      "title": "H3 Informationsgespräche: Absicht erkennen (Bank)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Kursleiterin. Ich rufe im Bürgerbüro an. Unser Termin bleibt um 08:15. Wegen wegen eines Arzttermins bitten wir Sie, danach einen Termin verschieben. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 08:15."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_08",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Termin-/Zeitinfo verstehen",
+      "context": "Apotheke",
+      "title": "H4 Meinungen/Absichten: Termin-/Zeitinfo verstehen (Apotheke)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Sachbearbeiter. Ich rufe in der Sprachschule an. Unser Termin bleibt um 09:30. Wegen wegen einer Verspätung bitten wir Sie, danach eine Bescheinigung abholen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 09:30.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_09",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Ort/Route verstehen",
+      "context": "Bürgerbüro",
+      "title": "H1 Kurze Ansagen: Ort/Route verstehen (Bürgerbüro)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Nachbarin. Ich rufe am Bahnhof an. Unser Termin bleibt um 11:45. Wegen wegen eines Formularfehlers bitten wir Sie, danach eine Rückfrage stellen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 11:45.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_10",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Problem-Lösung erkennen",
+      "context": "Nachbarschaft",
+      "title": "H2 Dialoge: Problem-Lösung erkennen (Nachbarschaft)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Kollege. Ich rufe in der Apotheke an. Unser Termin bleibt um 14:00. Wegen wegen einer Terminänderung bitten wir Sie, danach eine Anmeldung bestätigen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 14:00."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_11",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Kerndetail hören",
+      "context": "Busbahnhof",
+      "title": "H3 Informationsgespräche: Kerndetail hören (Busbahnhof)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Rezeption. Ich rufe im Jobcenter an. Unser Termin bleibt um 16:20. Wegen wegen Krankheit bitten wir Sie, danach eine Rechnung klären. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 16:20.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_12",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Absicht erkennen",
+      "context": "Praxisanruf",
+      "title": "H4 Meinungen/Absichten: Absicht erkennen (Praxisanruf)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Teamleitung. Ich rufe im Kursraum 3 an. Unser Termin bleibt um 18:10. Wegen wegen einer Fahrplanänderung bitten wir Sie, danach eine Ersatzlösung anbieten. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 18:10.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_13",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Termin-/Zeitinfo verstehen",
+      "context": "Schulsekretariat",
+      "title": "H1 Kurze Ansagen: Termin-/Zeitinfo verstehen (Schulsekretariat)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Kursleiterin. Ich rufe im Bürgerbüro an. Unser Termin bleibt um 08:15. Wegen wegen eines Arzttermins bitten wir Sie, danach einen Termin verschieben. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 08:15."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_14",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Ort/Route verstehen",
+      "context": "Arbeitstelefonat",
+      "title": "H2 Dialoge: Ort/Route verstehen (Arbeitstelefonat)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Sachbearbeiter. Ich rufe in der Sprachschule an. Unser Termin bleibt um 09:30. Wegen wegen einer Verspätung bitten wir Sie, danach eine Bescheinigung abholen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 09:30.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_15",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Problem-Lösung erkennen",
+      "context": "Hausverwaltung",
+      "title": "H3 Informationsgespräche: Problem-Lösung erkennen (Hausverwaltung)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Nachbarin. Ich rufe am Bahnhof an. Unser Termin bleibt um 11:45. Wegen wegen eines Formularfehlers bitten wir Sie, danach eine Rückfrage stellen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 11:45.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_16",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Kerndetail hören",
+      "context": "Kursorganisation",
+      "title": "H4 Meinungen/Absichten: Kerndetail hören (Kursorganisation)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Kollege. Ich rufe in der Apotheke an. Unser Termin bleibt um 14:00. Wegen wegen einer Terminänderung bitten wir Sie, danach eine Anmeldung bestätigen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 14:00."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_17",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Absicht erkennen",
+      "context": "Bank",
+      "title": "H1 Kurze Ansagen: Absicht erkennen (Bank)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Rezeption. Ich rufe im Jobcenter an. Unser Termin bleibt um 16:20. Wegen wegen Krankheit bitten wir Sie, danach eine Rechnung klären. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 16:20.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_18",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Termin-/Zeitinfo verstehen",
+      "context": "Apotheke",
+      "title": "H2 Dialoge: Termin-/Zeitinfo verstehen (Apotheke)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Teamleitung. Ich rufe im Kursraum 3 an. Unser Termin bleibt um 18:10. Wegen wegen einer Fahrplanänderung bitten wir Sie, danach eine Ersatzlösung anbieten. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 18:10.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_19",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Ort/Route verstehen",
+      "context": "Bürgerbüro",
+      "title": "H3 Informationsgespräche: Ort/Route verstehen (Bürgerbüro)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Kursleiterin. Ich rufe im Bürgerbüro an. Unser Termin bleibt um 08:15. Wegen wegen eines Arzttermins bitten wir Sie, danach einen Termin verschieben. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 08:15."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_20",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Problem-Lösung erkennen",
+      "context": "Nachbarschaft",
+      "title": "H4 Meinungen/Absichten: Problem-Lösung erkennen (Nachbarschaft)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Sachbearbeiter. Ich rufe in der Sprachschule an. Unser Termin bleibt um 09:30. Wegen wegen einer Verspätung bitten wir Sie, danach eine Bescheinigung abholen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 09:30.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_21",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Kerndetail hören",
+      "context": "Busbahnhof",
+      "title": "H1 Kurze Ansagen: Kerndetail hören (Busbahnhof)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Nachbarin. Ich rufe am Bahnhof an. Unser Termin bleibt um 11:45. Wegen wegen eines Formularfehlers bitten wir Sie, danach eine Rückfrage stellen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 11:45.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_22",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Absicht erkennen",
+      "context": "Praxisanruf",
+      "title": "H2 Dialoge: Absicht erkennen (Praxisanruf)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Kollege. Ich rufe in der Apotheke an. Unser Termin bleibt um 14:00. Wegen wegen einer Terminänderung bitten wir Sie, danach eine Anmeldung bestätigen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 14:00."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_23",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Termin-/Zeitinfo verstehen",
+      "context": "Schulsekretariat",
+      "title": "H3 Informationsgespräche: Termin-/Zeitinfo verstehen (Schulsekretariat)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Rezeption. Ich rufe im Jobcenter an. Unser Termin bleibt um 16:20. Wegen wegen Krankheit bitten wir Sie, danach eine Rechnung klären. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 16:20.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_24",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Ort/Route verstehen",
+      "context": "Arbeitstelefonat",
+      "title": "H4 Meinungen/Absichten: Ort/Route verstehen (Arbeitstelefonat)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Teamleitung. Ich rufe im Kursraum 3 an. Unser Termin bleibt um 18:10. Wegen wegen einer Fahrplanänderung bitten wir Sie, danach eine Ersatzlösung anbieten. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 18:10.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_25",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Problem-Lösung erkennen",
+      "context": "Hausverwaltung",
+      "title": "H1 Kurze Ansagen: Problem-Lösung erkennen (Hausverwaltung)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Kursleiterin. Ich rufe im Bürgerbüro an. Unser Termin bleibt um 08:15. Wegen wegen eines Arzttermins bitten wir Sie, danach einen Termin verschieben. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 08:15."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_26",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Kerndetail hören",
+      "context": "Kursorganisation",
+      "title": "H2 Dialoge: Kerndetail hören (Kursorganisation)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Sachbearbeiter. Ich rufe in der Sprachschule an. Unser Termin bleibt um 09:30. Wegen wegen einer Verspätung bitten wir Sie, danach eine Bescheinigung abholen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 09:30.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_27",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H3 Informationsgespräche",
+      "task_type": "Absicht erkennen",
+      "context": "Bank",
+      "title": "H3 Informationsgespräche: Absicht erkennen (Bank)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Nachbarin. Ich rufe am Bahnhof an. Unser Termin bleibt um 11:45. Wegen wegen eines Formularfehlers bitten wir Sie, danach eine Rückfrage stellen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 11:45.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_28",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H4 Meinungen/Absichten",
+      "task_type": "Termin-/Zeitinfo verstehen",
+      "context": "Apotheke",
+      "title": "H4 Meinungen/Absichten: Termin-/Zeitinfo verstehen (Apotheke)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht der Kollege. Ich rufe in der Apotheke an. Unser Termin bleibt um 14:00. Wegen wegen einer Terminänderung bitten wir Sie, danach eine Anmeldung bestätigen. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin wurde komplett abgesagt.",
+          "B": "Der Termin ist erst morgen früh.",
+          "C": "Der Termin bleibt um 14:00."
+        },
+        "correct": "C",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_29",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H1 Kurze Ansagen",
+      "task_type": "Ort/Route verstehen",
+      "context": "Bürgerbüro",
+      "title": "H1 Kurze Ansagen: Ort/Route verstehen (Bürgerbüro)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Rezeption. Ich rufe im Jobcenter an. Unser Termin bleibt um 16:20. Wegen wegen Krankheit bitten wir Sie, danach eine Rechnung klären. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin ist erst morgen früh.",
+          "B": "Der Termin bleibt um 16:20.",
+          "C": "Der Termin wurde komplett abgesagt."
+        },
+        "correct": "B",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    },
+    {
+      "id": "HOEREN_30",
+      "module": "hoeren",
+      "level": "A2-B1",
+      "dtz_part": "H2 Dialoge",
+      "task_type": "Problem-Lösung erkennen",
+      "context": "Nachbarschaft",
+      "title": "H2 Dialoge: Problem-Lösung erkennen (Nachbarschaft)",
+      "instructions": "Hören Sie den Text (Audio) und wählen Sie die richtige Antwort (A/B/C).",
+      "audio_script_template": "Guten Tag, hier spricht {person}. Ich rufe {ort} an. Unser Termin bleibt um {zeit}. Wegen {grund} bitten wir Sie, danach {handlung}. Vielen Dank.",
+      "tts_guidance": {
+        "voice_style": "klar, neutral, alltagsnah",
+        "speed": "0.95-1.0",
+        "pause_between_sentences_ms": 280,
+        "repetitions": 1
+      },
+      "variables": {
+        "person": [
+          "die Kursleiterin",
+          "der Sachbearbeiter",
+          "die Nachbarin",
+          "der Kollege",
+          "die Rezeption",
+          "die Teamleitung"
+        ],
+        "ort": [
+          "im Bürgerbüro",
+          "in der Sprachschule",
+          "am Bahnhof",
+          "in der Apotheke",
+          "im Jobcenter",
+          "im Kursraum 3"
+        ],
+        "zeit": [
+          "08:15",
+          "09:30",
+          "11:45",
+          "14:00",
+          "16:20",
+          "18:10"
+        ],
+        "grund": [
+          "wegen eines Arzttermins",
+          "wegen einer Verspätung",
+          "wegen eines Formularfehlers",
+          "wegen einer Terminänderung",
+          "wegen Krankheit",
+          "wegen einer Fahrplanänderung"
+        ],
+        "handlung": [
+          "einen Termin verschieben",
+          "eine Bescheinigung abholen",
+          "eine Rückfrage stellen",
+          "eine Anmeldung bestätigen",
+          "eine Rechnung klären",
+          "eine Ersatzlösung anbieten"
+        ]
+      },
+      "question_template": "Welche Information hören Sie?",
+      "sample_item": {
+        "audio_script": "Guten Tag, hier spricht die Teamleitung. Ich rufe im Kursraum 3 an. Unser Termin bleibt um 18:10. Wegen wegen einer Fahrplanänderung bitten wir Sie, danach eine Ersatzlösung anbieten. Vielen Dank.",
+        "question": "Welche Information hören Sie?",
+        "options": {
+          "A": "Der Termin bleibt um 18:10.",
+          "B": "Der Termin wurde komplett abgesagt.",
+          "C": "Der Termin ist erst morgen früh."
+        },
+        "correct": "A",
+        "rationale": "Die korrekte Option wiederholt die eindeutige Zeitinformation aus dem Hörtext."
+      },
+      "quality_rules": {
+        "single_correct_answer": true,
+        "number_time_place_focus": true,
+        "distractors_near_miss": true,
+        "copyright_safe": true
+      }
+    }
+  ],
+  "implementation_hint": {
+    "lesen_count": 40,
+    "hoeren_count": 30,
+    "runtime_generation": "Wählen Sie pro Session zufällige Templates und füllen Sie Variablen ohne Wiederholung.",
+    "anti_memorization": "Pro Template mindestens 5 Variablenkombinationen verwenden."
+  }
+}
