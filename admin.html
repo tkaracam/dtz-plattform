@@ -850,6 +850,72 @@
       line-height: 1.2;
     }
 
+    .homework-reminder-toolbar {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #d6e3f0;
+      border-radius: 12px;
+      background: #fbfdff;
+    }
+
+    .homework-reminder-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .homework-reminder-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #d6e3f0;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.8rem;
+      color: #345170;
+      background: #ffffff;
+    }
+
+    .homework-reminder-chip strong {
+      font-size: 0.82rem;
+      color: #233e5e;
+    }
+
+    .homework-reminder-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .homework-reminder-filter-btn {
+      min-width: 0;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      line-height: 1.2;
+      border-radius: 999px;
+      border: 1px solid #d6e3f0;
+      background: #ffffff;
+      color: #345170;
+      box-shadow: none;
+    }
+
+    .homework-reminder-filter-btn .count {
+      font-weight: 700;
+      color: #1f3f66;
+    }
+
+    .homework-reminder-filter-btn.is-active {
+      background: linear-gradient(120deg, #179a87 0%, #3c8be8 100%);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    .homework-reminder-filter-btn.is-active .count {
+      color: #ffffff;
+    }
+
     .bulk-preview {
       margin-top: 10px;
       width: 100%;
@@ -2089,6 +2155,14 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .homework-reminder-summary {
+        gap: 6px;
+      }
+
+      .homework-reminder-filters {
+        gap: 6px;
+      }
+
       .course-member-row {
         grid-template-columns: 1fr;
       }
@@ -2994,6 +3068,9 @@
     let currentAttendanceRequests = [];
     let currentRooms = [];
     let currentHomeworkAssignments = [];
+    let currentKursHomeworkAssignments = [];
+    let homeworkReminderFilter = "all";
+    let kursHomeworkReminderFilter = "all";
     let latestProgressPayload = null;
     let latestKursProgressPayload = null;
     let kursProgressRiskOnly = false;
@@ -4566,6 +4643,7 @@
     function setSelectedCourse(courseId, openEditor = false) {
       const id = String(courseId || "").trim();
       selectedCourseId = id;
+      kursHomeworkReminderFilter = "all";
       setStoredPreference(ADMIN_LAST_COURSE_KEY, id || null);
       getCourseSwitcherSelects().forEach(select => {
         select.value = id;
@@ -5674,6 +5752,60 @@
       updateHomeworkTemplatePreview();
     }
 
+    function normalizeHomeworkReminderLevel(level) {
+      const key = String(level || "none").toLowerCase();
+      if (key === "warn24" || key === "warn2" || key === "expired" || key === "none") return key;
+      return "none";
+    }
+
+    function summarizeHomeworkReminder(rows) {
+      const summary = { all: 0, none: 0, warn24: 0, warn2: 0, expired: 0 };
+      (Array.isArray(rows) ? rows : []).forEach(item => {
+        const key = normalizeHomeworkReminderLevel(item?.reminder_level);
+        summary.all += 1;
+        summary[key] = Number(summary[key] || 0) + 1;
+      });
+      return summary;
+    }
+
+    function filterHomeworkAssignmentsByReminder(rows, filterKey) {
+      const key = String(filterKey || "all").toLowerCase();
+      const list = Array.isArray(rows) ? rows.slice() : [];
+      if (key === "all") return list;
+      return list.filter(item => normalizeHomeworkReminderLevel(item?.reminder_level) === key);
+    }
+
+    function buildHomeworkReminderToolbar(summary, activeFilter, attrName) {
+      const safeAttr = String(attrName || "data-hw-reminder-filter");
+      const activeKey = String(activeFilter || "all").toLowerCase();
+      const filters = [
+        { key: "all", label: "Alle" },
+        { key: "expired", label: "Überfällig" },
+        { key: "warn2", label: "< 2h" },
+        { key: "warn24", label: "< 24h" },
+        { key: "none", label: "Ohne Warnung" }
+      ];
+      return `
+        <div class="homework-reminder-toolbar">
+          <div class="homework-reminder-summary">
+            <span class="homework-reminder-chip"><strong>Alle:</strong> ${summary.all || 0}</span>
+            <span class="homework-reminder-chip"><strong>Überfällig:</strong> ${summary.expired || 0}</span>
+            <span class="homework-reminder-chip"><strong>&lt; 2h:</strong> ${summary.warn2 || 0}</span>
+            <span class="homework-reminder-chip"><strong>&lt; 24h:</strong> ${summary.warn24 || 0}</span>
+          </div>
+          <div class="homework-reminder-filters">
+            ${filters.map(item => `
+              <button type="button"
+                class="homework-reminder-filter-btn ${activeKey === item.key ? "is-active" : ""}"
+                ${safeAttr}="${item.key}">
+                ${escapeHtml(item.label)} <span class="count">${Number(summary[item.key] || 0)}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
     function buildHomeworkReminderMeta(item) {
       const level = String(item?.reminder_level || "none").toLowerCase();
       const label = String(item?.reminder_label || "Keine Fristwarnung").trim() || "Keine Fristwarnung";
@@ -5694,11 +5826,20 @@
       currentHomeworkAssignments = Array.isArray(rows) ? rows.slice() : [];
       const wrap = document.getElementById("homeworkListWrap");
       if (!wrap) return;
+      const summary = summarizeHomeworkReminder(currentHomeworkAssignments);
+      const filteredRows = filterHomeworkAssignmentsByReminder(currentHomeworkAssignments, homeworkReminderFilter);
+      const toolbarHtml = buildHomeworkReminderToolbar(summary, homeworkReminderFilter, "data-hw-reminder-filter");
       if (!currentHomeworkAssignments.length) {
-        wrap.innerHTML = "<p>Noch keine Aufgaben vorhanden.</p>";
+        wrap.innerHTML = `${toolbarHtml}<p>Noch keine Aufgaben vorhanden.</p>`;
+        wrap.querySelectorAll("button[data-hw-reminder-filter]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            homeworkReminderFilter = String(btn.getAttribute("data-hw-reminder-filter") || "all").toLowerCase();
+            renderHomeworkAssignments(currentHomeworkAssignments);
+          });
+        });
         return;
       }
-      const tableRows = currentHomeworkAssignments.map(item => {
+      const tableRows = filteredRows.map(item => {
         const assignmentId = String(item.id || "");
         const active = String(item.status || "active") === "active";
         const toggleText = active ? "Archivieren" : "Aktivieren";
@@ -5732,26 +5873,35 @@
           </tr>
         `;
       }).join("");
-      wrap.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Titel</th>
-              <th>Ziel</th>
-              <th>Dauer</th>
-              <th>Start</th>
-              <th>Erstellt</th>
-              <th>Status</th>
-              <th>Zugewiesen</th>
-              <th>Gestartet</th>
-              <th>Abgegeben</th>
-              <th>Erinnerung</th>
-              <th>Aktion</th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      `;
+      const tableHtml = filteredRows.length
+        ? `
+          <table>
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Ziel</th>
+                <th>Dauer</th>
+                <th>Start</th>
+                <th>Erstellt</th>
+                <th>Status</th>
+                <th>Zugewiesen</th>
+                <th>Gestartet</th>
+                <th>Abgegeben</th>
+                <th>Erinnerung</th>
+                <th>Aktion</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        `
+        : `<p>Für diesen Filter wurden keine Aufgaben gefunden.</p>`;
+      wrap.innerHTML = `${toolbarHtml}${tableHtml}`;
+      wrap.querySelectorAll("button[data-hw-reminder-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          homeworkReminderFilter = String(btn.getAttribute("data-hw-reminder-filter") || "all").toLowerCase();
+          renderHomeworkAssignments(currentHomeworkAssignments);
+        });
+      });
       wrap.querySelectorAll("button[data-hw-toggle]").forEach(btn => {
         const id = String(btn.getAttribute("data-hw-toggle") || "");
         const activeNow = btn.getAttribute("data-hw-active") === "1";
@@ -5761,6 +5911,7 @@
         const id = String(btn.getAttribute("data-hw-delete") || "");
         btn.addEventListener("click", () => deleteHomeworkAssignment(id));
       });
+      applyResponsiveTableLabels(wrap);
     }
 
     async function fetchHomeworkAssignments() {
@@ -6462,13 +6613,23 @@
     }
 
     function renderKursHomeworkAssignments(rows) {
+      currentKursHomeworkAssignments = Array.isArray(rows) ? rows.slice() : [];
       const wrap = document.getElementById("kursHomeworkListWrap");
       if (!wrap) return;
-      if (!Array.isArray(rows) || !rows.length) {
-        wrap.innerHTML = "<p>Für den ausgewählten Kurs sind noch keine Aufgaben vorhanden.</p>";
+      const summary = summarizeHomeworkReminder(currentKursHomeworkAssignments);
+      const filteredRows = filterHomeworkAssignmentsByReminder(currentKursHomeworkAssignments, kursHomeworkReminderFilter);
+      const toolbarHtml = buildHomeworkReminderToolbar(summary, kursHomeworkReminderFilter, "data-kurs-hw-reminder-filter");
+      if (!currentKursHomeworkAssignments.length) {
+        wrap.innerHTML = `${toolbarHtml}<p>Für den ausgewählten Kurs sind noch keine Aufgaben vorhanden.</p>`;
+        wrap.querySelectorAll("button[data-kurs-hw-reminder-filter]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            kursHomeworkReminderFilter = String(btn.getAttribute("data-kurs-hw-reminder-filter") || "all").toLowerCase();
+            renderKursHomeworkAssignments(currentKursHomeworkAssignments);
+          });
+        });
         return;
       }
-      const tableRows = rows.map(item => {
+      const tableRows = filteredRows.map(item => {
         const assignmentId = String(item.id || "");
         const active = String(item.status || "active") === "active";
         const toggleText = active ? "Archivieren" : "Aktivieren";
@@ -6500,25 +6661,34 @@
           </tr>
         `;
       }).join("");
-      wrap.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Titel</th>
-              <th>Dauer</th>
-              <th>Start</th>
-              <th>Erstellt</th>
-              <th>Status</th>
-              <th>Zugewiesen</th>
-              <th>Gestartet</th>
-              <th>Abgegeben</th>
-              <th>Erinnerung</th>
-              <th>Aktion</th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      `;
+      const tableHtml = filteredRows.length
+        ? `
+          <table>
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Dauer</th>
+                <th>Start</th>
+                <th>Erstellt</th>
+                <th>Status</th>
+                <th>Zugewiesen</th>
+                <th>Gestartet</th>
+                <th>Abgegeben</th>
+                <th>Erinnerung</th>
+                <th>Aktion</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        `
+        : "<p>Für diesen Filter wurden keine Aufgaben gefunden.</p>";
+      wrap.innerHTML = `${toolbarHtml}${tableHtml}`;
+      wrap.querySelectorAll("button[data-kurs-hw-reminder-filter]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          kursHomeworkReminderFilter = String(btn.getAttribute("data-kurs-hw-reminder-filter") || "all").toLowerCase();
+          renderKursHomeworkAssignments(currentKursHomeworkAssignments);
+        });
+      });
       wrap.querySelectorAll("button[data-kurs-hw-toggle]").forEach(btn => {
         const id = String(btn.getAttribute("data-kurs-hw-toggle") || "");
         const activeNow = btn.getAttribute("data-kurs-hw-active") === "1";
@@ -6528,6 +6698,7 @@
         const id = String(btn.getAttribute("data-kurs-hw-delete") || "");
         btn.addEventListener("click", () => deleteHomeworkAssignment(id, { statusBoxId: "kursHomeworkStatus", refresh: refreshAllHomeworkLists }));
       });
+      applyResponsiveTableLabels(wrap);
     }
 
     async function listKursHomeworkAssignments() {
