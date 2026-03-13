@@ -134,6 +134,17 @@
       color: #e4f1ff;
     }
 
+    .owner-role-hint {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 216, 226, 0.5);
+      background: rgba(255, 244, 248, 0.14);
+      color: #fdeef6;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
     .hero-course-switch {
       margin-top: 10px;
       display: grid;
@@ -1727,6 +1738,12 @@
       color: #fdeef6;
     }
 
+    .owner-role-hint {
+      border-color: rgba(246, 205, 220, 0.58);
+      background: rgba(255, 244, 248, 0.16);
+      color: #fdeef6;
+    }
+
     .hero-course-switch label {
       color: #7d6d79;
     }
@@ -2306,6 +2323,7 @@
         <div>Bereich: <span id="activePaneLabel">Anmeldung</span></div>
         <div id="adminIdentityLine" class="admin-identity-line">Nicht angemeldet</div>
       </div>
+      <div id="ownerOnlyHint" class="owner-role-hint hidden">Hinweis: Der Bereich „Lehrkräfte“ ist nur für Haupt-Admin sichtbar.</div>
     </section>
 
     <nav class="admin-topbar">
@@ -3569,6 +3587,13 @@
       node.textContent = `${roleLabel}: ${name}`;
     }
 
+    function updateOwnerOnlyHint() {
+      const node = document.getElementById("ownerOnlyHint");
+      if (!node) return;
+      const show = !!adminContext.role && !isOwnerAdmin();
+      node.classList.toggle("hidden", !show);
+    }
+
     function setAdminPane(paneName) {
       if (!adminPaneMap[paneName]) return;
       if (ARCHIVED_ADMIN_PANES.has(paneName)) {
@@ -3734,6 +3759,7 @@
       }
       applyAdminRoleUi();
       updateAdminIdentityLine();
+      updateOwnerOnlyHint();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
@@ -3783,6 +3809,7 @@
       accountsScopeCourseId = "";
       applyAdminRoleUi();
       updateAdminIdentityLine();
+      updateOwnerOnlyHint();
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
