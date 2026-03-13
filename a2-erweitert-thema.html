@@ -189,27 +189,6 @@
       white-space: pre-wrap;
     }
 
-    .topic-nav {
-      display: grid;
-      gap: 8px;
-    }
-    @media (min-width: 760px) {
-      .topic-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    .topic-nav a {
-      text-decoration: none;
-      border: 1px solid #cfdcf0;
-      background: #f8fbff;
-      border-radius: 10px;
-      padding: 8px 10px;
-      color: #2a466f;
-      font-weight: 700;
-      font-size: .95rem;
-    }
-    .topic-nav a.active {
-      border-color: #9bb8e5;
-      background: #eaf2ff;
-    }
   </style>
 </head>
 <body>
@@ -217,7 +196,6 @@
     <section class="hero">
       <h1 id="pageTitle">A2 Thema</h1>
       <a class="btn" href="./a2-themen.html">Zurück zu A2-Themen</a>
-      <nav class="topic-nav" id="topicNav"></nav>
     </section>
 
     <section class="card">
@@ -257,7 +235,6 @@
     const testTitle = document.getElementById("testTitle");
     const badgeTopic = document.getElementById("badgeTopic");
     const explanationWrap = document.getElementById("explanationWrap");
-    const topicNav = document.getElementById("topicNav");
 
     let questions = [];
 
@@ -688,32 +665,11 @@
       }
     };
 
-    const topicOrder = [
-      "partizip-possessiv",
-      "wechselpraepositionen",
-      "indirekte-fragen",
-      "reflexiv-lassen",
-      "relativsaetze",
-      "verben-praepositionen",
-      "dativ-akkusativ-plus"
-    ];
-
     const url = new URL(window.location.href);
-    const selectedTopic = topicOrder.includes(url.searchParams.get("topic"))
-      ? url.searchParams.get("topic")
-      : topicOrder[0];
-
-    function buildTopicNav() {
-      topicNav.innerHTML = "";
-      topicOrder.forEach((key) => {
-        const cfg = TOPICS[key];
-        const a = document.createElement("a");
-        a.href = `./a2-erweitert-thema.html?topic=${encodeURIComponent(key)}`;
-        a.textContent = cfg.title;
-        if (key === selectedTopic) a.classList.add("active");
-        topicNav.appendChild(a);
-      });
-    }
+    const requestedTopic = String(url.searchParams.get("topic") || "");
+    const selectedTopic = Object.prototype.hasOwnProperty.call(TOPICS, requestedTopic)
+      ? requestedTopic
+      : "partizip-possessiv";
 
     function generate50ForTopic(key) {
       const makers = TOPICS[key].makers;
@@ -813,7 +769,6 @@
       testTitle.textContent = `Nur ${cfg.title}-Test (50 Fragen)`;
       badgeTopic.textContent = `Thema: ${cfg.title}`;
       explanationWrap.innerHTML = cfg.explanation;
-      buildTopicNav();
       newTest();
     }
 
