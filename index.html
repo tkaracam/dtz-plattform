@@ -2801,6 +2801,9 @@
     let currentDtzSpeakingIndex = -1;
     let currentDtzUtterance = null;
     let currentDtzSpeechQueue = [];
+    let currentDtzServerAudioQueue = [];
+    let currentDtzServerAudioEl = null;
+    let currentDtzAudioBackendMode = "";
     let currentStudentLabel = "";
     let currentStudentUsername = "";
     let currentAssignedHomework = null;
@@ -4569,20 +4572,95 @@
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
+      if (currentDtzServerAudioEl) {
+        try {
+          currentDtzServerAudioEl.pause();
+          currentDtzServerAudioEl.src = "";
+        } catch (_err) {}
+      }
+      currentDtzServerAudioEl = null;
+      currentDtzServerAudioQueue = [];
       currentDtzSpeechQueue = [];
       currentDtzSpeakingIndex = -1;
       currentDtzUtterance = null;
+      currentDtzAudioBackendMode = "";
       if (!keepStatus) {
         clearDtzTrainingStatus();
       }
     }
 
+    async function requestServerDtzAudio(script) {
+      const response = await fetch("./api/tts_generate.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script })
+      });
+      const payload = await parseJsonOrThrow(response, "Server-Audio konnte nicht geladen werden");
+      if (!response.ok || !payload || payload.ok === false) {
+        throw new Error((payload && payload.error) || `Fehler: ${response.status}`);
+      }
+      const segments = Array.isArray(payload.segments)
+        ? payload.segments.filter(segment => segment && typeof segment.url === "string" && segment.url.trim() !== "")
+        : [];
+      if (!segments.length) {
+        throw new Error("Server-Audio enthält keine Segmente.");
+      }
+      return {
+        provider: String(payload.provider || "openai"),
+        model: String(payload.model || ""),
+        segments
+      };
+    }
+
+    function playServerDtzAudioSegments(segments, index) {
+      if (!Array.isArray(segments) || !segments.length) return;
+      currentDtzServerAudioQueue = segments.slice();
+      currentDtzSpeakingIndex = index;
+      currentDtzAudioBackendMode = "server";
+
+      const playNext = () => {
+        if (currentDtzSpeakingIndex !== index) return;
+        const segment = currentDtzServerAudioQueue.shift();
+        if (!segment) {
+          currentDtzSpeakingIndex = -1;
+          currentDtzServerAudioEl = null;
+          currentDtzAudioBackendMode = "";
+          renderDtzTrainingSet();
+          return;
+        }
+
+        const audio = new Audio(String(segment.url || ""));
+        audio.preload = "auto";
+        currentDtzServerAudioEl = audio;
+        audio.onended = () => {
+          currentDtzServerAudioEl = null;
+          const pauseMs = Number(segment.pause_ms || 130);
+          window.setTimeout(playNext, Number.isFinite(pauseMs) ? Math.max(40, pauseMs) : 130);
+        };
+        audio.onerror = () => {
+          currentDtzServerAudioQueue = [];
+          currentDtzSpeakingIndex = -1;
+          currentDtzServerAudioEl = null;
+          currentDtzAudioBackendMode = "";
+          renderDtzTrainingSet();
+          setDtzTrainingStatus("error", "Server-Audio konnte nicht abgespielt werden.");
+        };
+        audio.play().catch(() => {
+          currentDtzServerAudioQueue = [];
+          currentDtzSpeakingIndex = -1;
+          currentDtzServerAudioEl = null;
+          currentDtzAudioBackendMode = "";
+          renderDtzTrainingSet();
+          setDtzTrainingStatus("error", "Audio-Start wurde im Browser blockiert.");
+        });
+      };
+
+      playNext();
+      renderDtzTrainingSet();
+    }
+
     async function playDtzAudioByIndex(index) {
       if (!Number.isInteger(index) || index < 0 || index >= currentDtzSet.length) return;
-      if (!("speechSynthesis" in window)) {
-        setDtzTrainingStatus("error", "Audio im Browser nicht verfügbar.");
-        return;
-      }
 
       const item = currentDtzSet[index] || {};
       const script = String(item.audio_script || item.text || "").trim();
@@ -4591,14 +4669,37 @@
         return;
       }
 
-      const synth = window.speechSynthesis;
-      if (currentDtzSpeakingIndex === index && synth.speaking) {
+      const synth = ("speechSynthesis" in window) ? window.speechSynthesis : null;
+      if (currentDtzSpeakingIndex === index && ((synth && synth.speaking) || !!currentDtzServerAudioEl)) {
         stopDtzAudio(true);
         renderDtzTrainingSet();
         return;
       }
 
-      synth.cancel();
+      if (synth) synth.cancel();
+
+      try {
+        const cached = Array.isArray(item.__serverTtsSegments) ? item.__serverTtsSegments : [];
+        let serverSegments = cached;
+        if (!serverSegments.length) {
+          const serverAudio = await requestServerDtzAudio(script);
+          serverSegments = serverAudio.segments;
+          item.__serverTtsSegments = serverSegments;
+        }
+        if (serverSegments.length) {
+          setDtzTrainingStatus("ok", `Audio läuft (Server-TTS): Aufgabe ${index + 1}.`);
+          playServerDtzAudioSegments(serverSegments, index);
+          return;
+        }
+      } catch (_serverErr) {
+        // Bei Fehler automatisch auf Browser-TTS zurückfallen.
+      }
+
+      if (!synth) {
+        setDtzTrainingStatus("error", "Audio im Browser nicht verfügbar.");
+        return;
+      }
+
       const resolvedVoices = await resolveGermanVoices(synth);
       const rankedVoices = getRankedGermanVoices(resolvedVoices);
       const segments = splitDtzAudioSegments(script);
@@ -4646,7 +4747,7 @@
       };
 
       playNextSegment();
-      setDtzTrainingStatus("ok", `Audio läuft: Aufgabe ${index + 1}.`);
+      setDtzTrainingStatus("ok", `Audio läuft (Browser): Aufgabe ${index + 1}.`);
       renderDtzTrainingSet();
     }
 
