@@ -4223,10 +4223,10 @@
     }
 
     function openB1View() {
-      showCards(["workCard", "speakingCard", "dtzTrainingCard"]);
+      showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
       setAccordionOpen("workAccordion", false);
       setAccordionOpen("speakingAccordion", false);
-      setAccordionOpen("dtzTrainingAccordion", false);
+      setAccordionOpen("dtzTrainingAccordion", true);
       loadCurrentAssignedHomework();
       generateSpeakingSet();
       loadDtzTrainingSet();
@@ -4567,8 +4567,15 @@
         openB1View();
       }
 
-      const hero = document.querySelector(".hero");
-      if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (target === "b1") {
+        const dtzCard = document.getElementById("dtzTrainingCard");
+        if (dtzCard) {
+          dtzCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      } else {
+        const hero = document.querySelector(".hero");
+        if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       closeNavOnMobile();
     }
 
