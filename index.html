@@ -1419,6 +1419,114 @@
       font-size: 0.9rem;
     }
 
+    .dtz-lesen-groups {
+      margin-top: 10px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .dtz-lesen-group {
+      border: 1px solid #d3dfef;
+      border-radius: 12px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .dtz-lesen-group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #dbe6f4;
+      background: #f6f9ff;
+      color: #1d3f65;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .dtz-lesen-group-head h4 {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #17395d;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+    }
+
+    .dtz-lesen-group-body {
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .dtz-lesen-item {
+      border: 1px solid #d8e3f1;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 10px;
+    }
+
+    .dtz-lesen-topline {
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: #385577;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .dtz-lesen-label {
+      display: inline-block;
+      border-radius: 999px;
+      border: 1px solid #c6d7ef;
+      background: #f8fbff;
+      padding: 3px 9px;
+      color: #2a4b6e;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .dtz-lesen-instructions {
+      margin: 0 0 8px;
+      color: #355271;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .dtz-lesen-textbox {
+      margin: 0 0 8px;
+      border: 1px solid #d9e5f2;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 9px 10px;
+    }
+
+    .dtz-lesen-text-label {
+      margin: 0 0 6px;
+      color: #224364;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .dtz-lesen-text {
+      margin: 0;
+      color: #3b4e69;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .dtz-lesen-question {
+      margin: 0 0 8px;
+      color: #1d3f65;
+      font-weight: 700;
+      font-size: 0.97rem;
+    }
+
     .dtz-summary {
       margin-top: 10px;
       border: 1px solid #bfd4ea;
@@ -4511,7 +4619,13 @@
       }
 
       const total = currentDtzSet.length;
-      wrap.innerHTML = currentDtzSet.map((item, idx) => {
+      const isHoerenModule = currentDtzModule === "hoeren";
+      const extractPartOrder = (label) => {
+        const hit = String(label || "").match(/(\d+)/);
+        return hit ? Number(hit[1]) : 999;
+      };
+
+      const renderSingleItem = (item, idx, localNo = idx + 1, partLabel = "") => {
         const selected = String(currentDtzAnswers[idx] || "");
         const correct = String(item.correct || "");
         let resultClass = "lid-question";
@@ -4550,7 +4664,7 @@
         const instructions = escapeHtml(String(item.instructions || "Wählen Sie A/B/C."));
         const text = escapeHtml(String(item.text || ""));
         const question = escapeHtml(String(item.question || "Was ist richtig?"));
-        const isHoeren = currentDtzModule === "hoeren";
+        const isHoeren = isHoerenModule;
         const playing = isHoeren && currentDtzSpeakingIndex === idx;
         const audioBtnClass = playing ? "dtz-audio-btn is-playing" : "dtz-audio-btn";
         const audioLabel = playing ? "Audio stoppen" : "Audio abspielen";
@@ -4560,18 +4674,65 @@
             </div>
           ` : "";
 
+        if (isHoeren) {
+          return `
+            <article class="${resultClass}">
+              <h4>Frage ${headline}</h4>
+              <p class="lid-stimulus"><strong>${taskType}</strong><br>${instructions}</p>
+              ${audioControls}
+              <p class="lid-stimulus">${text}</p>
+              <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${question}</p>
+              <div class="lid-options">${optionsHtml}</div>
+              ${evalNote}
+            </article>
+          `;
+        }
+
+        const lesenPart = escapeHtml(String(partLabel || item.dtz_part || "Teil"));
         return `
-          <article class="${resultClass}">
-            <h4>Frage ${headline}</h4>
-            <p class="lid-stimulus"><strong>${taskType}</strong><br>${instructions}</p>
-            ${audioControls}
-            <p class="lid-stimulus">${text}</p>
-            <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${question}</p>
+          <article class="${resultClass} dtz-lesen-item">
+            <div class="dtz-lesen-topline">
+              <span class="dtz-lesen-label">${lesenPart}</span>
+              <span>Aufgabe ${localNo}</span>
+            </div>
+            <p class="dtz-lesen-instructions"><strong>${taskType}</strong> · ${instructions}</p>
+            <div class="dtz-lesen-textbox">
+              <p class="dtz-lesen-text-label">Text</p>
+              <p class="dtz-lesen-text">${text}</p>
+            </div>
+            <p class="dtz-lesen-question">${question}</p>
             <div class="lid-options">${optionsHtml}</div>
             ${evalNote}
           </article>
         `;
-      }).join("");
+      };
+
+      if (isHoerenModule) {
+        wrap.innerHTML = currentDtzSet.map((item, idx) => renderSingleItem(item, idx)).join("");
+      } else {
+        const grouped = new Map();
+        currentDtzSet.forEach((item, idx) => {
+          const label = String(item.dtz_part || "Teil").trim() || "Teil";
+          if (!grouped.has(label)) grouped.set(label, []);
+          grouped.get(label).push({ item, idx });
+        });
+        const orderedParts = Array.from(grouped.keys()).sort((a, b) => extractPartOrder(a) - extractPartOrder(b));
+        wrap.innerHTML = `<div class="dtz-lesen-groups">${
+          orderedParts.map(label => {
+            const rows = grouped.get(label) || [];
+            const itemsHtml = rows.map((row, position) => renderSingleItem(row.item, row.idx, position + 1, label)).join("");
+            return `
+              <section class="dtz-lesen-group">
+                <div class="dtz-lesen-group-head">
+                  <h4>${escapeHtml(label)}</h4>
+                  <span>${rows.length} Aufgabe${rows.length === 1 ? "" : "n"}</span>
+                </div>
+                <div class="dtz-lesen-group-body">${itemsHtml}</div>
+              </section>
+            `;
+          }).join("")
+        }</div>`;
+      }
 
       wrap.querySelectorAll("input[type='radio'][data-dtz-index]").forEach(input => {
         input.addEventListener("change", event => {
