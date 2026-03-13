@@ -2567,6 +2567,8 @@
                   <option value="20" selected>20</option>
                   <option value="25">25</option>
                   <option value="30">30</option>
+                  <option value="35">35</option>
+                  <option value="40">40</option>
                 </select>
               </div>
             </div>
@@ -2691,6 +2693,7 @@
     let currentDtzEvaluated = false;
     let currentDtzSpeakingIndex = -1;
     let currentDtzUtterance = null;
+    let currentDtzSpeechQueue = [];
     let currentStudentLabel = "";
     let currentStudentUsername = "";
     let currentAssignedHomework = null;
@@ -4287,10 +4290,128 @@
       }
     }
 
+    function normalizeGermanSpeechText(text) {
+      return String(text || "")
+        .replace(/Ae/g, "Ä")
+        .replace(/Oe/g, "Ö")
+        .replace(/Ue/g, "Ü")
+        .replace(/ae/g, "ä")
+        .replace(/oe/g, "ö")
+        .replace(/ue/g, "ü")
+        .replace(/(\d{1,2}):(\d{2})/g, "$1 Uhr $2")
+        .replace(/\bca\.\s*/gi, "circa ")
+        .replace(/\bu\.\s*a\.\b/gi, "unter anderem")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function pickBestGermanVoice(voices) {
+      if (!Array.isArray(voices) || !voices.length) return null;
+      const deVoices = voices.filter(v => String(v.lang || "").toLowerCase().startsWith("de"));
+      if (!deVoices.length) return voices[0] || null;
+
+      const preferred = [
+        "Siri",
+        "Natural",
+        "Siri Anna",
+        "Marlene",
+        "Anna",
+        "Petra",
+        "Markus",
+        "Katja",
+        "Stefan",
+        "Yannick",
+        "Google Deutsch"
+      ];
+
+      for (const name of preferred) {
+        const found = deVoices.find(v => String(v.name || "").toLowerCase().includes(name.toLowerCase()));
+        if (found) return found;
+      }
+      const deDe = deVoices.find(v => String(v.lang || "").toLowerCase().startsWith("de-de"));
+      if (deDe) return deDe;
+      const local = deVoices.find(v => v.localService);
+      return local || deVoices[0];
+    }
+
+    function resolveGermanVoice(synth) {
+      const immediate = pickBestGermanVoice(synth.getVoices());
+      if (immediate) return Promise.resolve(immediate);
+
+      return new Promise(resolve => {
+        let done = false;
+        const finish = (voice) => {
+          if (done) return;
+          done = true;
+          synth.removeEventListener("voiceschanged", onVoicesChanged);
+          window.clearTimeout(timer);
+          resolve(voice || pickBestGermanVoice(synth.getVoices()));
+        };
+        const onVoicesChanged = () => {
+          const voice = pickBestGermanVoice(synth.getVoices());
+          if (voice) finish(voice);
+        };
+        const timer = window.setTimeout(() => finish(null), 700);
+        synth.addEventListener("voiceschanged", onVoicesChanged);
+        synth.getVoices();
+      });
+    }
+
+    function splitDtzAudioSegments(script) {
+      const normalized = normalizeGermanSpeechText(script)
+        .replace(/\s+([AB]):/g, ". $1:")
+        .trim();
+      if (!normalized) return [];
+
+      const chunks = normalized
+        .split(/(?<=[.!?])\s+/)
+        .map(chunk => chunk.trim())
+        .filter(Boolean);
+      const fineChunks = [];
+
+      chunks.forEach((chunk) => {
+        if (chunk.length > 140 && chunk.includes(",")) {
+          const splitByComma = chunk
+            .split(",")
+            .map(part => part.trim())
+            .filter(Boolean);
+          splitByComma.forEach((part, idx) => {
+            fineChunks.push(idx < splitByComma.length - 1 ? `${part},` : part);
+          });
+          return;
+        }
+        fineChunks.push(chunk);
+      });
+
+      return fineChunks.map(chunk => {
+          let text = chunk;
+          let pitch = 1.0;
+          let pauseMs = 260;
+
+          if (/^A:\s*/.test(text)) {
+            text = text.replace(/^A:\s*/, "");
+            pitch = 0.95;
+            pauseMs = 300;
+          } else if (/^B:\s*/.test(text)) {
+            text = text.replace(/^B:\s*/, "");
+            pitch = 1.05;
+            pauseMs = 300;
+          }
+
+          const lengthFactor = Math.min(0.12, Math.max(0, (text.length - 70) / 520));
+          const rate = Math.max(0.84, 0.97 - lengthFactor);
+          if (/[!?]$/.test(text)) {
+            pauseMs += 60;
+          }
+          return { text, pitch, rate, pauseMs, volume: 1 };
+        });
+    }
+
     function stopDtzAudio(keepStatus = false) {
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
+      currentDtzSpeechQueue = [];
       currentDtzSpeakingIndex = -1;
       currentDtzUtterance = null;
       if (!keepStatus) {
@@ -4298,7 +4419,7 @@
       }
     }
 
-    function playDtzAudioByIndex(index) {
+    async function playDtzAudioByIndex(index) {
       if (!Number.isInteger(index) || index < 0 || index >= currentDtzSet.length) return;
       if (!("speechSynthesis" in window)) {
         setDtzTrainingStatus("error", "Audio im Browser nicht verfügbar.");
@@ -4320,25 +4441,48 @@
       }
 
       synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(script);
-      utterance.lang = "de-DE";
-      utterance.rate = 0.94;
-      utterance.pitch = 1.0;
-      utterance.onend = () => {
-        currentDtzSpeakingIndex = -1;
-        currentDtzUtterance = null;
-        renderDtzTrainingSet();
-      };
-      utterance.onerror = () => {
-        currentDtzSpeakingIndex = -1;
-        currentDtzUtterance = null;
-        renderDtzTrainingSet();
-        setDtzTrainingStatus("error", "Audio konnte nicht abgespielt werden.");
+      const voice = await resolveGermanVoice(synth);
+      const segments = splitDtzAudioSegments(script);
+      if (!segments.length) {
+        setDtzTrainingStatus("error", "Audiotext ist leer.");
+        return;
+      }
+
+      currentDtzSpeechQueue = segments.slice();
+      currentDtzSpeakingIndex = index;
+
+      const playNextSegment = () => {
+        if (currentDtzSpeakingIndex !== index) return;
+        const part = currentDtzSpeechQueue.shift();
+        if (!part) {
+          currentDtzSpeakingIndex = -1;
+          currentDtzUtterance = null;
+          renderDtzTrainingSet();
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(part.text);
+        utterance.lang = voice ? String(voice.lang || "de-DE") : "de-DE";
+        if (voice) utterance.voice = voice;
+        utterance.rate = part.rate;
+        utterance.pitch = part.pitch;
+        utterance.volume = part.volume || 1;
+        utterance.onend = () => {
+          currentDtzUtterance = null;
+          window.setTimeout(playNextSegment, part.pauseMs);
+        };
+        utterance.onerror = () => {
+          currentDtzSpeechQueue = [];
+          currentDtzSpeakingIndex = -1;
+          currentDtzUtterance = null;
+          renderDtzTrainingSet();
+          setDtzTrainingStatus("error", "Audio konnte nicht abgespielt werden.");
+        };
+        currentDtzUtterance = utterance;
+        synth.speak(utterance);
       };
 
-      currentDtzSpeakingIndex = index;
-      currentDtzUtterance = utterance;
-      synth.speak(utterance);
+      playNextSegment();
       setDtzTrainingStatus("ok", `Audio läuft: Aufgabe ${index + 1}.`);
       renderDtzTrainingSet();
     }
