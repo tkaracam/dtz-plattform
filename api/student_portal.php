@@ -176,6 +176,7 @@ foreach (load_homework_assignments() as $assignment) {
     $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
     $deadlineTs = (int)($state['deadline_ts'] ?? 0);
     $expired = ($submittedAt === '' && $deadlineTs > 0 && $nowTs >= $deadlineTs);
+    $reminder = homework_reminder_for_state($state, $nowTs);
 
     $status = 'offen';
     if ($submittedAt !== '') {
@@ -195,6 +196,10 @@ foreach (load_homework_assignments() as $assignment) {
         'duration_minutes' => (int)($assignment['duration_minutes'] ?? 0),
         'due_date' => $deadlineAt !== '' ? $deadlineAt : (string)($assignment['starts_at'] ?? ''),
         'status' => $status,
+        'reminder_level' => (string)($reminder['level'] ?? 'none'),
+        'reminder_label' => (string)($reminder['label'] ?? 'Keine Fristwarnung'),
+        'reminder_urgent' => !empty($reminder['urgent']),
+        'remaining_seconds' => (int)($reminder['remaining_seconds'] ?? 0),
     ];
 }
 usort($homeworks, static function (array $a, array $b): int {

@@ -42,33 +42,7 @@ if ($action === 'list') {
             continue;
         }
 
-        $assignees = is_array($item['assignees'] ?? null) ? $item['assignees'] : [];
-        $total = count($assignees);
-        $started = 0;
-        $submitted = 0;
-        $expired = 0;
-
-        foreach ($assignees as $state) {
-            if (!is_array($state)) {
-                continue;
-            }
-            $startedAt = trim((string)($state['started_at'] ?? ''));
-            $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
-            $submittedAt = trim((string)($state['submitted_at'] ?? ''));
-            if ($startedAt !== '') {
-                $started++;
-            }
-            if ($submittedAt !== '') {
-                $submitted++;
-                continue;
-            }
-            if ($deadlineAt !== '') {
-                $deadlineTs = strtotime($deadlineAt);
-                if ($deadlineTs !== false && $now >= (int)$deadlineTs) {
-                    $expired++;
-                }
-            }
-        }
+        $metrics = homework_assignment_metrics($item, $now);
 
         $out[] = [
             'id' => (string)($item['id'] ?? ''),
@@ -84,10 +58,14 @@ if ($action === 'list') {
             'teacher_username' => (string)($item['teacher_username'] ?? ''),
             'created_at' => (string)($item['created_at'] ?? ''),
             'updated_at' => (string)($item['updated_at'] ?? ''),
-            'assigned_total' => $total,
-            'started_total' => $started,
-            'submitted_total' => $submitted,
-            'expired_total' => $expired,
+            'assigned_total' => (int)($metrics['assigned_total'] ?? 0),
+            'started_total' => (int)($metrics['started_total'] ?? 0),
+            'submitted_total' => (int)($metrics['submitted_total'] ?? 0),
+            'expired_total' => (int)($metrics['expired_total'] ?? 0),
+            'warning24_total' => (int)($metrics['warning24_total'] ?? 0),
+            'warning2_total' => (int)($metrics['warning2_total'] ?? 0),
+            'reminder_level' => (string)($metrics['reminder_level'] ?? 'none'),
+            'reminder_label' => (string)($metrics['reminder_label'] ?? 'Keine Fristwarnung'),
         ];
     }
 

@@ -86,6 +86,7 @@ if ($deadlineTs > 0) {
 }
 $expired = ($submittedAt === '' && $deadlineTs > 0 && $now >= $deadlineTs);
 $locked = ($submittedAt !== '') || $expired || $notActiveYet;
+$reminder = homework_reminder_for_state($state, $now);
 
 $response = [
     'has_assignment' => true,
@@ -112,6 +113,9 @@ $response = [
         'planned_only' => $plannedOnly,
         'can_start' => (!$notActiveYet && $startedAt === '' && $submittedAt === ''),
         'can_submit' => (!$locked && $startedAt !== ''),
+        'reminder_level' => (string)($reminder['level'] ?? 'none'),
+        'reminder_label' => (string)($reminder['label'] ?? 'Keine Fristwarnung'),
+        'reminder_urgent' => !empty($reminder['urgent']),
     ],
 ];
 

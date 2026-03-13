@@ -1560,6 +1560,36 @@
       vertical-align: middle;
     }
 
+    .task-notify-badge.urgent {
+      background: #cf3c6a;
+      box-shadow: 0 0 0 2px rgba(207, 60, 106, 0.18);
+    }
+
+    .portal-reminder {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #d8e3f1;
+      background: #f7faff;
+      color: #375574;
+    }
+
+    .portal-reminder.warn24 {
+      background: #fff8e8;
+      border-color: #efce7a;
+      color: #855b00;
+    }
+
+    .portal-reminder.warn2,
+    .portal-reminder.expired {
+      background: #ffeef2;
+      border-color: #f2a6ba;
+      color: #9b2447;
+    }
+
     .progress-bar {
       margin-top: 5px;
       height: 8px;
@@ -5136,15 +5166,26 @@
     function updateTaskNotifyBadges(homeworks) {
       const rows = Array.isArray(homeworks) ? homeworks : [];
       const pendingCount = rows.filter(row => String(row?.status || "").toLowerCase() !== "abgegeben").length;
+      const urgentCount = rows.filter(row => {
+        if (String(row?.status || "").toLowerCase() === "abgegeben") return false;
+        const level = String(row?.reminder_level || "").toLowerCase();
+        return level === "warn2" || level === "expired";
+      }).length;
       ["workTaskNotifyBadge", "portalTaskNotifyBadge"].forEach(id => {
         const badge = document.getElementById(id);
         if (!badge) return;
         if (pendingCount > 0) {
           badge.textContent = String(pendingCount);
           badge.classList.remove("hidden");
+          badge.classList.toggle("urgent", urgentCount > 0);
+          badge.title = urgentCount > 0
+            ? `${urgentCount} Aufgabe(n) sind dringend oder überfällig.`
+            : `${pendingCount} offene Aufgabe(n).`;
         } else {
           badge.textContent = "0";
           badge.classList.add("hidden");
+          badge.classList.remove("urgent");
+          badge.title = "";
         }
       });
     }
@@ -5171,10 +5212,14 @@
           const statusRaw = String(row.status || "offen").toLowerCase();
           const isDone = statusRaw === "abgegeben";
           const stateClass = isDone ? "homework-done" : "homework-pending";
+          const reminderLevel = String(row.reminder_level || "none").toLowerCase();
+          const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
+          const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
           return `
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
+            <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
           </div>
         `;
         }

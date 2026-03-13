@@ -5674,6 +5674,22 @@
       updateHomeworkTemplatePreview();
     }
 
+    function buildHomeworkReminderMeta(item) {
+      const level = String(item?.reminder_level || "none").toLowerCase();
+      const label = String(item?.reminder_label || "Keine Fristwarnung").trim() || "Keine Fristwarnung";
+      const warn24 = Number(item?.warning24_total || 0);
+      const warn2 = Number(item?.warning2_total || 0);
+      const overdue = Number(item?.expired_total || 0);
+      let cls = "ok";
+      if (level === "warn24") cls = "warnung";
+      if (level === "warn2" || level === "expired") cls = "kritisch";
+      return {
+        cls,
+        label,
+        detail: `2h: ${warn2} · 24h: ${warn24} · Überfällig: ${overdue}`
+      };
+    }
+
     function renderHomeworkAssignments(rows) {
       currentHomeworkAssignments = Array.isArray(rows) ? rows.slice() : [];
       const wrap = document.getElementById("homeworkListWrap");
@@ -5689,6 +5705,7 @@
         const startsAt = formatDisplayDateTime(String(item.starts_at || ""));
         const createdAt = formatDisplayDateTime(String(item.created_at || ""));
         const targetLabel = String(item.target_label || item.course_id || "-");
+        const reminder = buildHomeworkReminderMeta(item);
         return `
           <tr>
             <td>${escapeHtml(String(item.title || "-"))}</td>
@@ -5700,6 +5717,10 @@
             <td class="mono">${escapeHtml(`${item.assigned_total || 0}`)}</td>
             <td class="mono">${escapeHtml(`${item.started_total || 0}`)}</td>
             <td class="mono">${escapeHtml(`${item.submitted_total || 0}`)}</td>
+            <td>
+              <span class="progress-risk-pill ${escapeHtml(reminder.cls)}">${escapeHtml(reminder.label)}</span>
+              <div class="muted" style="font-size:0.75rem; margin-top:4px;">${escapeHtml(reminder.detail)}</div>
+            </td>
             <td>
               <div class="course-row-actions">
                 <button type="button" data-hw-toggle="${escapeHtml(assignmentId)}" data-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
@@ -5724,6 +5745,7 @@
               <th>Zugewiesen</th>
               <th>Gestartet</th>
               <th>Abgegeben</th>
+              <th>Erinnerung</th>
               <th>Aktion</th>
             </tr>
           </thead>
@@ -6452,6 +6474,7 @@
         const toggleText = active ? "Archivieren" : "Aktivieren";
         const startsAt = formatDisplayDateTime(String(item.starts_at || ""));
         const createdAt = formatDisplayDateTime(String(item.created_at || ""));
+        const reminder = buildHomeworkReminderMeta(item);
         return `
           <tr>
             <td>${escapeHtml(String(item.title || "-"))}</td>
@@ -6462,6 +6485,10 @@
             <td class="mono">${escapeHtml(`${item.assigned_total || 0}`)}</td>
             <td class="mono">${escapeHtml(`${item.started_total || 0}`)}</td>
             <td class="mono">${escapeHtml(`${item.submitted_total || 0}`)}</td>
+            <td>
+              <span class="progress-risk-pill ${escapeHtml(reminder.cls)}">${escapeHtml(reminder.label)}</span>
+              <div class="muted" style="font-size:0.75rem; margin-top:4px;">${escapeHtml(reminder.detail)}</div>
+            </td>
             <td>
               <div class="course-row-actions">
                 <button type="button" data-kurs-hw-toggle="${escapeHtml(assignmentId)}" data-kurs-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
@@ -6485,6 +6512,7 @@
               <th>Zugewiesen</th>
               <th>Gestartet</th>
               <th>Abgegeben</th>
+              <th>Erinnerung</th>
               <th>Aktion</th>
             </tr>
           </thead>
