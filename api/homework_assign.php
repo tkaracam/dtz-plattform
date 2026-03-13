@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -24,7 +24,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -101,7 +101,7 @@ if ($action === 'create') {
     }
     if (strtotime($startsAt) === false) {
         http_response_code(400);
-        echo json_encode(['error' => 'Ungueltige Startzeit.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Ungültige Startzeit.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -111,7 +111,7 @@ if ($action === 'create') {
     if ($targetType === 'course') {
         if ($courseId === '') {
             http_response_code(400);
-            echo json_encode(['error' => 'Bitte einen Kurs waehlen.'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error' => 'Bitte einen Kurs wählen.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
         $course = find_course_by_id($courseId);
@@ -122,7 +122,7 @@ if ($action === 'create') {
         }
         if (!admin_can_access_course_record($course, $admin)) {
             http_response_code(403);
-            echo json_encode(['error' => 'Keine Berechtigung fuer diesen Kurs.'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error' => 'Keine Berechtigung für diesen Kurs.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
         $members = is_array($course['members'] ?? null) ? $course['members'] : [];
@@ -156,13 +156,13 @@ if ($action === 'create') {
         $targetLabel = 'Ausgewählte Schüler';
     } else {
         http_response_code(400);
-        echo json_encode(['error' => 'Ungueltiger Zuweisungstyp.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Ungültiger Zuweisungstyp.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
     if (!$targetUsers) {
         http_response_code(400);
-        echo json_encode(['error' => 'Keine gueltigen Ziel-Schueler gefunden.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Keine gültigen Ziel-Schüler gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -323,4 +323,4 @@ if ($action === 'delete') {
 }
 
 http_response_code(400);
-echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
+echo json_encode(['error' => 'Ungültige Aktion.'], JSON_UNESCAPED_UNICODE);

@@ -148,7 +148,7 @@ function require_owner_session_json(): array
     $ctx = require_admin_session_json();
     if (!admin_is_hauptadmin($ctx)) {
         http_response_code(403);
-        echo json_encode(['error' => 'Nur der Haupt-Admin darf diese Aktion ausfuehren.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Nur der Haupt-Admin darf diese Aktion ausführen.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     return $ctx;
@@ -171,14 +171,14 @@ function require_admin_role_json(array $allowedRoleKeys): array
     }
     if (!$allowed) {
         http_response_code(500);
-        echo json_encode(['error' => 'Konfigurationsfehler: keine gueltigen Rollen freigegeben.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Konfigurationsfehler: keine gültigen Rollen freigegeben.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
     $current = normalize_admin_role_key((string)($ctx['role_key'] ?? ''));
     if ($current === '' || empty($allowed[$current])) {
         http_response_code(403);
-        echo json_encode(['error' => 'Keine Berechtigung fuer diese Aktion.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Keine Berechtigung für diese Aktion.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -408,7 +408,7 @@ function check_rate_limit_json(string $bucket, int $maxAttempts, int $windowSeco
 
     if ((int)$entry['count'] >= $maxAttempts) {
         http_response_code(429);
-        echo json_encode(['error' => 'Zu viele Versuche. Bitte spaeter erneut versuchen.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Zu viele Versuche. Bitte später erneut versuchen.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 }

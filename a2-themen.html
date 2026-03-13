@@ -1388,7 +1388,7 @@
       const groups = [
         ["am", "um", "im", "nach", "zu", "zum", "bei", "mit", "aus", "von"],
         ["weil", "dass", "wenn", "denn"],
-        ["muss", "kann", "darf", "will", "soll", "moechte"],
+        ["muss", "kann", "darf", "will", "soll", "möchte"],
         ["habe", "hast", "hat", "haben", "habt", "bin", "bist", "ist", "sind", "seid"],
         ["der", "die", "das", "den", "dem", "des"],
         ["ein", "eine", "einen", "einem", "einer"]
@@ -1448,8 +1448,8 @@
         add(safe.replace(/\b(weil|dass|wenn)\b/i, "denn"));
       }
       if (topic === "Modalverben") {
-        add(safe.replace(/\b(muss|kann|darf|will|soll|moechte)\s+([a-zäöüß]+)\b/i, "$1 zu $2"));
-        add(safe.replace(/\b(muss|kann|darf|will|soll|moechte)\b/i, "gehen"));
+        add(safe.replace(/\b(muss|kann|darf|will|soll|möchte|moechte)\s+([a-zäöüß]+)\b/i, "$1 zu $2"));
+        add(safe.replace(/\b(muss|kann|darf|will|soll|möchte|moechte)\b/i, "gehen"));
       }
       if (topic === "Präpositionen") {
         add(safe.replace(/\b(am|um|im|nach|zu|zum|bei|mit|aus|von)\b/i, "zu"));
