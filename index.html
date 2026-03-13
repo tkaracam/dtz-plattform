@@ -345,7 +345,7 @@
       margin-top: 16px;
       display: grid;
       gap: 12px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .portal-wide {
@@ -1871,6 +1871,10 @@
         flex-direction: column;
       }
 
+      .level-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .hero-media {
         height: 210px;
       }
@@ -1964,7 +1968,8 @@
           </p>
           <div class="level-bar">
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
-            <button type="button" class="level-tile b1" id="levelB1Btn">A2-B1<small>DTZ Fokus</small></button>
+            <button type="button" class="level-tile b1" id="levelB1Btn">DTZ<small>DTZ Fokus</small></button>
+            <button type="button" class="level-tile b1" id="levelA2Btn">A2<small>A2 Themen</small></button>
             <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
           </div>
           <div class="hero-cta" aria-hidden="true"></div>
@@ -6589,6 +6594,12 @@
     });
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
     document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
+    const levelA2Btn = document.getElementById("levelA2Btn");
+    if (levelA2Btn) {
+      levelA2Btn.addEventListener("click", () => {
+        window.location.href = "./a2-themen.html";
+      });
+    }
     const levelPortalBtn = document.getElementById("levelPortalBtn");
     if (levelPortalBtn) levelPortalBtn.addEventListener("click", () => navigateToSection("portal"));
     removeArchivedBskFrontend();
