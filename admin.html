@@ -2799,7 +2799,7 @@
         </div>
 
         <div id="trainingSetSection" class="bulk-wrap">
-          <h3 class="section-title" style="font-size: 1.2rem;">Lesen/Hören Sets</h3>
+          <h3 class="section-title" style="font-size: 1.2rem;">AI Generator</h3>
           <details class="fold-section">
             <summary>Set-Generator (telif-safe)</summary>
             <div class="fold-section-content">
@@ -2818,6 +2818,19 @@
                 </div>
               </div>
               <div class="actions">
+                <button id="generateLesenTeil1Btn" type="button">Lesen Teil 1</button>
+                <button id="generateLesenTeil2Btn" type="button">Lesen Teil 2</button>
+                <button id="generateLesenTeil3Btn" type="button">Lesen Teil 3</button>
+                <button id="generateLesenTeil4Btn" type="button">Lesen Teil 4</button>
+                <button id="generateLesenTeil5Btn" type="button">Lesen Teil 5</button>
+              </div>
+              <div class="actions" style="margin-top:8px;">
+                <button id="generateHoerenTeil1Btn" type="button">Hören Teil 1</button>
+                <button id="generateHoerenTeil2Btn" type="button">Hören Teil 2</button>
+                <button id="generateHoerenTeil3Btn" type="button">Hören Teil 3</button>
+                <button id="generateHoerenTeil4Btn" type="button">Hören Teil 4</button>
+              </div>
+              <div class="actions" style="margin-top:8px;">
                 <button id="generateLesenSetBtn" type="button">Lesen-Set generieren</button>
                 <button id="downloadLesenSetBtn" type="button" class="ghost-btn" disabled>Lesen-Set JSON</button>
               </div>
@@ -6222,13 +6235,17 @@
       throw new Error(errors.join(" | "));
     }
 
-    function getTrainingSetRequestOptions(module) {
+    function getTrainingSetRequestOptions(module, teil = 0) {
       const normalized = String(module || "").toLowerCase() === "hoeren" ? "hoeren" : "lesen";
       const rawCount = clamp((document.getElementById("trainingSetCount") || {}).value, 1, normalized === "lesen" ? 40 : 30, normalized === "lesen" ? 20 : 15);
       const includeExplanationValue = String((document.getElementById("trainingSetIncludeExplanation") || {}).value || "1");
+      const parsedTeil = Number.isFinite(Number(teil)) ? Math.floor(Number(teil)) : 0;
+      const maxTeil = normalized === "lesen" ? 5 : 4;
+      const safeTeil = parsedTeil >= 1 && parsedTeil <= maxTeil ? parsedTeil : 0;
       return {
         module: normalized,
         count: rawCount,
+        teil: safeTeil,
         include_explanation: includeExplanationValue !== "0",
       };
     }
@@ -6250,6 +6267,9 @@
 
       const lines = [];
       lines.push(`Modul: ${String(setPayload.module || "").toUpperCase()}`);
+      if (Number(setPayload.teil || 0) > 0) {
+        lines.push(`Teil: ${String(setPayload.teil)}`);
+      }
       lines.push(`Anzahl: ${String(setPayload.count || 0)}`);
       lines.push(`Erklärungen: ${setPayload.include_explanation ? "Ja" : "Nein"}`);
       lines.push(`Erstellt: ${formatDisplayDateTime(String(setPayload.generated_at || "")) || String(setPayload.generated_at || "")}`);
@@ -6290,16 +6310,25 @@
           metaNode.textContent = "";
         } else {
           const moduleLabel = String(setPayload.module || "").toUpperCase();
+          const teilLabel = Number(setPayload.teil || 0) > 0 ? ` Teil ${Number(setPayload.teil)}` : "";
           const count = Number(setPayload.count || 0);
           const generated = formatDisplayDateTime(String(setPayload.generated_at || "")) || String(setPayload.generated_at || "");
-          metaNode.textContent = `Zuletzt erzeugt: ${moduleLabel} | ${count} Aufgaben | ${generated}`;
+          metaNode.textContent = `Zuletzt erzeugt: ${moduleLabel}${teilLabel} | ${count} Aufgaben | ${generated}`;
         }
       }
     }
 
-    async function generateTrainingSet(module) {
+    function getTrainingSetLabel(module, teil = 0) {
+      const normalized = String(module || "").toLowerCase() === "hoeren" ? "hoeren" : "lesen";
+      const base = normalized === "lesen" ? "Lesen" : "Hören";
+      const safeTeil = Number.isFinite(Number(teil)) ? Math.floor(Number(teil)) : 0;
+      return safeTeil >= 1 ? `${base} Teil ${safeTeil}` : `${base}-Set`;
+    }
+
+    async function generateTrainingSet(module, teil = 0) {
       clearBox("trainingSetStatus");
-      const requestBody = getTrainingSetRequestOptions(module);
+      const requestBody = getTrainingSetRequestOptions(module, teil);
+      const label = getTrainingSetLabel(requestBody.module, requestBody.teil);
       const candidates = getTrainingSetApiCandidates(requestBody.module);
       const errors = [];
 
@@ -6332,7 +6361,7 @@
           }
 
           updateTrainingSetPreview(setPayload);
-          setBox("trainingSetStatus", "ok", `${requestBody.module === "lesen" ? "Lesen" : "Hören"}-Set erzeugt: ${setPayload.count || 0} Aufgaben.`);
+          setBox("trainingSetStatus", "ok", `${label} erzeugt: ${setPayload.count || 0} Aufgaben.`);
           return;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
@@ -7170,7 +7199,7 @@
       }
       const ts = Date.parse(startsAtRaw);
       if (!Number.isFinite(ts)) {
-        setBox("homeworkStatus", "error", "Ungueltige Startzeit.");
+        setBox("homeworkStatus", "error", "Ungültige Startzeit.");
         return;
       }
       startsAt = new Date(ts).toISOString();
@@ -9463,6 +9492,15 @@
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
+    document.getElementById("generateLesenTeil1Btn").addEventListener("click", () => generateTrainingSet("lesen", 1));
+    document.getElementById("generateLesenTeil2Btn").addEventListener("click", () => generateTrainingSet("lesen", 2));
+    document.getElementById("generateLesenTeil3Btn").addEventListener("click", () => generateTrainingSet("lesen", 3));
+    document.getElementById("generateLesenTeil4Btn").addEventListener("click", () => generateTrainingSet("lesen", 4));
+    document.getElementById("generateLesenTeil5Btn").addEventListener("click", () => generateTrainingSet("lesen", 5));
+    document.getElementById("generateHoerenTeil1Btn").addEventListener("click", () => generateTrainingSet("hoeren", 1));
+    document.getElementById("generateHoerenTeil2Btn").addEventListener("click", () => generateTrainingSet("hoeren", 2));
+    document.getElementById("generateHoerenTeil3Btn").addEventListener("click", () => generateTrainingSet("hoeren", 3));
+    document.getElementById("generateHoerenTeil4Btn").addEventListener("click", () => generateTrainingSet("hoeren", 4));
     document.getElementById("downloadLesenSetBtn").addEventListener("click", () => downloadTrainingSet("lesen"));
     document.getElementById("downloadHoerenSetBtn").addEventListener("click", () => downloadTrainingSet("hoeren"));
     document.getElementById("refreshProgressBtn").addEventListener("click", () => loadProgressOverview(false));

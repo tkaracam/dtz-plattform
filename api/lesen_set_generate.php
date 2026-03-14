@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -28,17 +28,19 @@ if (trim($raw) !== '') {
     $decoded = json_decode($raw, true);
     if (!is_array($decoded)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     $body = $decoded;
 }
 
 $count = (int)($body['count'] ?? 40);
+$teil = (int)($body['teil'] ?? 0);
+$teil = $teil >= 1 && $teil <= 5 ? $teil : 0;
 $includeExplanation = !empty($body['include_explanation']);
 
 try {
-    $set = create_training_set('lesen', $count, $includeExplanation);
+    $set = create_training_set('lesen', $count, $includeExplanation, $teil);
     $downloadName = 'dtz_lid_lesen_set_' . gmdate('Ymd_His') . '.json';
 
     echo json_encode([
