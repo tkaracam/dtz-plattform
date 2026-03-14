@@ -30,6 +30,8 @@ jobs:
       WARMUP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.warmup_seconds || '180' }}
       MAX_ATTEMPTS: "8"
       RETRY_DELAY_SECONDS: "30"
+      HC_STUDENT_USERNAME: ${{ secrets.HC_STUDENT_USERNAME }}
+      HC_STUDENT_PASSWORD: ${{ secrets.HC_STUDENT_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
