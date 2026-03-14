@@ -1381,6 +1381,10 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .dtz-training-modules .dtz-module-btn {
+      width: 100%;
+    }
+
     .dtz-module-accordion {
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -2821,6 +2825,10 @@
       </section>
 
       <section id="dtzTrainingCard" class="card hidden">
+        <div class="dtz-training-modules">
+          <button id="dtzHoerenOpenBtn" type="button" class="dtz-module-btn">Hören (Teil 1-4)</button>
+          <button id="dtzLesenOpenBtn" type="button" class="dtz-module-btn">Lesen (Teil 1-5)</button>
+        </div>
         <details id="dtzHoerenAccordion" class="dtz-module-accordion">
           <summary class="dtz-module-summary">
             <div class="title-wrap">
@@ -4654,6 +4662,7 @@
       setAccordionOpen("speakingAccordion", false);
       setAccordionOpen("dtzHoerenAccordion", false);
       setAccordionOpen("dtzLesenAccordion", false);
+      setDtzModuleButtonActive("");
       loadCurrentAssignedHomework();
       generateSpeakingSet();
       setSpeakingTab(1);
@@ -4668,7 +4677,15 @@
       openB1View();
       setAccordionOpen(otherAccordion, false);
       setAccordionOpen(targetAccordion, true);
+      setDtzModuleButtonActive(normalized);
       renderDtzModule(normalized);
+    }
+
+    function setDtzModuleButtonActive(module) {
+      const hoerenBtn = document.getElementById("dtzHoerenOpenBtn");
+      const lesenBtn = document.getElementById("dtzLesenOpenBtn");
+      if (hoerenBtn) hoerenBtn.classList.toggle("active", module === "hoeren");
+      if (lesenBtn) lesenBtn.classList.toggle("active", module === "lesen");
     }
 
     function getDtzModuleState(module) {
@@ -8792,6 +8809,30 @@
     if (levelHoerenBtn) levelHoerenBtn.addEventListener("click", () => navigateToSection("dtz-hoeren"));
     const levelLesenBtn = document.getElementById("levelLesenBtn");
     if (levelLesenBtn) levelLesenBtn.addEventListener("click", () => navigateToSection("dtz-lesen"));
+    const dtzHoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
+    if (dtzHoerenOpenBtn) dtzHoerenOpenBtn.addEventListener("click", () => openDtzModuleView("hoeren"));
+    const dtzLesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
+    if (dtzLesenOpenBtn) dtzLesenOpenBtn.addEventListener("click", () => openDtzModuleView("lesen"));
+    const dtzHoerenAccordion = document.getElementById("dtzHoerenAccordion");
+    const dtzLesenAccordion = document.getElementById("dtzLesenAccordion");
+    if (dtzHoerenAccordion) {
+      dtzHoerenAccordion.addEventListener("toggle", () => {
+        if (dtzHoerenAccordion.open) {
+          setDtzModuleButtonActive("hoeren");
+        } else if (!dtzLesenAccordion || !dtzLesenAccordion.open) {
+          setDtzModuleButtonActive("");
+        }
+      });
+    }
+    if (dtzLesenAccordion) {
+      dtzLesenAccordion.addEventListener("toggle", () => {
+        if (dtzLesenAccordion.open) {
+          setDtzModuleButtonActive("lesen");
+        } else if (!dtzHoerenAccordion || !dtzHoerenAccordion.open) {
+          setDtzModuleButtonActive("");
+        }
+      });
+    }
     const levelA2Btn = document.getElementById("levelA2Btn");
     if (levelA2Btn) {
       levelA2Btn.addEventListener("click", () => {
