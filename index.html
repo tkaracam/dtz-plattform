@@ -1458,6 +1458,40 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 
+    .dtz-teil-btn-row {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .dtz-teil-btn {
+      border: 1px solid #c7d9ef;
+      border-radius: 10px;
+      background: #f7fbff;
+      color: #26486c;
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 9px 10px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .dtz-teil-btn:hover {
+      box-shadow: 0 10px 18px rgba(72, 110, 154, 0.14);
+    }
+
+    .dtz-teil-btn.active {
+      background: linear-gradient(120deg, #f2849e, #f5a4bb);
+      border-color: #e9a3b8;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(189, 91, 120, 0.24);
+    }
+
+    .dtz-meta-row-hidden {
+      display: none !important;
+    }
+
     .dtz-hint {
       margin-top: 10px;
       border: 1px dashed #c6d7ef;
@@ -2318,6 +2352,10 @@
         flex-direction: row;
         align-items: stretch;
       }
+
+      .dtz-teil-btn-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 480px) {
@@ -2862,7 +2900,13 @@
             <span class="card-accordion-icon">▾</span>
           </summary>
           <div class="dtz-module-body">
-            <div class="dtz-meta-row">
+            <div id="dtzHoerenTeilButtons" class="dtz-teil-btn-row">
+              <button type="button" class="dtz-teil-btn active" data-dtz-module="hoeren" data-dtz-teil="1">Teil 1</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="2">Teil 2</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="3">Teil 3</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="4">Teil 4</button>
+            </div>
+            <div class="dtz-meta-row dtz-meta-row-hidden">
               <div>
                 <label for="dtzHoerenTeilSelect">Teil auswählen</label>
                 <select id="dtzHoerenTeilSelect">
@@ -5309,6 +5353,16 @@
       );
     }
 
+    function updateDtzTeilButtons(module) {
+      const buttons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
+      if (!buttons.length) return;
+      const teil = syncDtzTeilFromSelect(module);
+      buttons.forEach((btn) => {
+        const btnTeil = Number(btn.getAttribute("data-dtz-teil") || "0");
+        btn.classList.toggle("active", btnTeil === teil);
+      });
+    }
+
     function resetDtzModuleResultUi(module, keepList = false) {
       const ui = getDtzUi(module);
       if (ui.summary) {
@@ -6853,6 +6907,7 @@
       if (!ui.teilSelect || !ui.actionBtn) return;
 
       syncDtzTeilFromSelect(module);
+      updateDtzTeilButtons(module);
       updateDtzPartMeta(module);
       resetDtzModuleResultUi(module, false);
       clearDtzModuleStatus(module);
@@ -6861,10 +6916,27 @@
       ui.teilSelect.addEventListener("change", () => {
         const teil = syncDtzTeilFromSelect(module);
         ensureDtzTeilState(module, teil);
+        updateDtzTeilButtons(module);
         updateDtzPartMeta(module);
         clearDtzModuleStatus(module);
         stopDtzAudio(true);
         renderDtzTrainingSet(module);
+      });
+
+      const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
+      teilButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetTeil = Number(btn.getAttribute("data-dtz-teil") || "0");
+          if (!Number.isFinite(targetTeil) || targetTeil < 1) return;
+          if (ui.teilSelect) ui.teilSelect.value = String(targetTeil);
+          const teil = syncDtzTeilFromSelect(module);
+          ensureDtzTeilState(module, teil);
+          updateDtzTeilButtons(module);
+          updateDtzPartMeta(module);
+          clearDtzModuleStatus(module);
+          stopDtzAudio(true);
+          renderDtzTrainingSet(module);
+        });
       });
 
       ui.actionBtn.addEventListener("click", () => onDtzAction(module));
