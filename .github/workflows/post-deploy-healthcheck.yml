@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "15 6 * * *"
   workflow_dispatch:
     inputs:
       base_url:
@@ -47,11 +49,20 @@ jobs:
       - name: Run healthcheck with retry
         run: |
           set -euo pipefail
+          LOG_FILE="${RUNNER_TEMP}/healthcheck.log"
+          : > "${LOG_FILE}"
           attempt=1
           while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
             echo "Attempt ${attempt}/${MAX_ATTEMPTS} -> ${BASE_URL}"
-            if ./tools/healthcheck.sh "${BASE_URL}"; then
+            if ./tools/healthcheck.sh "${BASE_URL}" 2>&1 | tee -a "${LOG_FILE}"; then
               echo "Healthcheck passed."
+              {
+                echo "## Post-Deploy Healthcheck"
+                echo ""
+                echo "- URL: \`${BASE_URL}\`"
+                echo "- Result: ✅ Passed"
+                echo "- Attempt: \`${attempt}/${MAX_ATTEMPTS}\`"
+              } >> "${GITHUB_STEP_SUMMARY}"
               exit 0
             fi
             if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
@@ -61,4 +72,23 @@ jobs:
             attempt=$((attempt + 1))
           done
           echo "Healthcheck failed after ${MAX_ATTEMPTS} attempts."
+          {
+            echo "## Post-Deploy Healthcheck"
+            echo ""
+            echo "- URL: \`${BASE_URL}\`"
+            echo "- Result: ❌ Failed"
+            echo "- Attempts: \`${MAX_ATTEMPTS}\`"
+            echo "- Last log lines:"
+            echo '```'
+            tail -n 80 "${LOG_FILE}" || true
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
           exit 1
+
+      - name: Upload healthcheck log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: healthcheck-log
+          path: ${{ runner.temp }}/healthcheck.log
+          if-no-files-found: ignore
