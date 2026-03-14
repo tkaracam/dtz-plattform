@@ -38,6 +38,31 @@ function normalize_training_module(string $module): string
     return '';
 }
 
+function normalize_training_teil(string $module, string $teilRaw): int
+{
+    $normalizedModule = normalize_training_module($module);
+    if ($normalizedModule === '') {
+        return -1;
+    }
+
+    $value = mb_strtolower(trim($teilRaw));
+    if ($value === '' || $value === '0' || $value === 'all' || $value === 'alle') {
+        return 0;
+    }
+
+    if (preg_match('/^[lh]?([1-9]\d*)$/u', $value, $m) !== 1) {
+        return -1;
+    }
+
+    $teil = (int)$m[1];
+    $maxTeil = $normalizedModule === 'lesen' ? 5 : 4;
+    if ($teil < 1 || $teil > $maxTeil) {
+        return -1;
+    }
+
+    return $teil;
+}
+
 function germanize_umlauts_text(string $text): string
 {
     if ($text === '') {
@@ -1078,23 +1103,223 @@ function build_clean_lesen_templates(): array
     return $templates;
 }
 
-function get_training_templates(string $module): array
+function build_lesen_teil1_text_templates(): array
+{
+    $sharedText = <<<TXT
+Mitteilung aus dem Kurszentrum:
+Nächste Woche findet im Kurszentrum eine Informationswoche statt. Am Montag gibt es um 17:30 Uhr eine kurze Einführung für neue Teilnehmende in Raum 2. Am Dienstag bleibt das Büro wegen einer Fortbildung geschlossen, aber E-Mails werden trotzdem beantwortet. Wer eine Kursbescheinigung braucht, kann das Formular bis Donnerstag um 12:00 Uhr online senden. Am Freitag ist das Sprachcafé nicht um 18:00 Uhr, sondern schon um 17:00 Uhr im Lernraum.
+TXT;
+
+    $items = [
+        [
+            'id' => 'l1_text_01',
+            'title' => 'Einführung für neue Teilnehmende',
+            'question' => 'Wann beginnt die Einführung am Montag?',
+            'options' => [
+                'A' => 'um 17:00 Uhr',
+                'B' => 'um 17:30 Uhr',
+                'C' => 'um 18:00 Uhr',
+            ],
+            'correct' => 'B',
+            'rationale' => 'Im Text steht: Am Montag gibt es um 17:30 Uhr eine Einführung.',
+        ],
+        [
+            'id' => 'l1_text_02',
+            'title' => 'Ort der Einführung',
+            'question' => 'Wo findet die Einführung statt?',
+            'options' => [
+                'A' => 'im Lernraum',
+                'B' => 'im Büro',
+                'C' => 'in Raum 2',
+            ],
+            'correct' => 'C',
+            'rationale' => 'Der Text nennt als Ort ausdrücklich Raum 2.',
+        ],
+        [
+            'id' => 'l1_text_03',
+            'title' => 'Büro am Dienstag',
+            'question' => 'Was stimmt zum Dienstag?',
+            'options' => [
+                'A' => 'Das Büro ist geschlossen.',
+                'B' => 'Das Büro ist bis 12:00 Uhr offen.',
+                'C' => 'Das Büro öffnet erst um 17:00 Uhr.',
+            ],
+            'correct' => 'A',
+            'rationale' => 'Dort steht: Am Dienstag bleibt das Büro geschlossen.',
+        ],
+        [
+            'id' => 'l1_text_04',
+            'title' => 'Kursbescheinigung',
+            'question' => 'Bis wann kann man das Formular für die Kursbescheinigung senden?',
+            'options' => [
+                'A' => 'bis Mittwoch um 12:00 Uhr',
+                'B' => 'bis Donnerstag um 12:00 Uhr',
+                'C' => 'bis Freitag um 17:00 Uhr',
+            ],
+            'correct' => 'B',
+            'rationale' => 'Im Text steht klar: bis Donnerstag um 12:00 Uhr.',
+        ],
+        [
+            'id' => 'l1_text_05',
+            'title' => 'Sprachcafé am Freitag',
+            'question' => 'Was hat sich beim Sprachcafé geändert?',
+            'options' => [
+                'A' => 'Es beginnt schon um 17:00 Uhr.',
+                'B' => 'Es ist am Freitag abgesagt.',
+                'C' => 'Es findet im Büro statt.',
+            ],
+            'correct' => 'A',
+            'rationale' => 'Das Sprachcafé ist nicht um 18:00 Uhr, sondern schon um 17:00 Uhr.',
+        ],
+    ];
+
+    $templates = [];
+    foreach ($items as $entry) {
+        $templates[] = [
+            'id' => (string)$entry['id'],
+            'module' => 'lesen',
+            'set_name' => 'DTZ Lesen Teil 1',
+            'dtz_part' => 'L1 Kurznachrichten und Mitteilungen',
+            'task_type' => 'Textverständnis',
+            'context' => 'Situationen 1-5',
+            'title' => (string)$entry['title'],
+            'instructions' => 'Lesen Sie den Text und beantworten Sie die Fragen 1-5.',
+            'sample_item' => [
+                'text' => $sharedText,
+                'question' => (string)$entry['question'],
+                'options' => [
+                    'A' => (string)$entry['options']['A'],
+                    'B' => (string)$entry['options']['B'],
+                    'C' => (string)$entry['options']['C'],
+                ],
+                'correct' => (string)$entry['correct'],
+                'rationale' => (string)$entry['rationale'],
+                'shuffle_options' => false,
+            ],
+        ];
+    }
+
+    return $templates;
+}
+
+function build_lesen_teil2_matching_templates(): array
+{
+    $anzeigen = [
+        'A' => 'Bäckerei Stern: Wir suchen Aushilfe samstags 6-12 Uhr. Erfahrung nicht nötig.',
+        'B' => 'Arztpraxis Weber: Termin nur mit Online-Anmeldung, keine telefonische Vergabe.',
+        'C' => 'Wohnungsanzeige: 1-Zimmer, 420 Euro warm, frei ab sofort, Nähe Innenstadt.',
+        'D' => 'Sprachschule Aktiv: B1-Abendkurs Mo/Mi 18:00-20:15, Start nächste Woche.',
+        'E' => 'Stadtbibliothek: Lernraum täglich 9-20 Uhr, kostenlos mit Bibliotheksausweis.',
+        'F' => 'Fahrschule Nord: Intensivkurs für Theorie in den Osterferien.',
+        'G' => 'Sportverein West: Schwimmkurs für Erwachsene, dienstags 19 Uhr.',
+        'H' => 'Reparaturdienst MobilFix: Handy-Reparatur am selben Tag, ohne Termin.',
+    ];
+
+    $anzeigenBlockLines = ["Anzeigen A-H:"];
+    foreach ($anzeigen as $key => $text) {
+        $anzeigenBlockLines[] = $key . ') ' . $text;
+    }
+    $anzeigenBlock = implode("\n", $anzeigenBlockLines);
+
+    $situationen = [
+        ['id' => 'l2_match_01', 'title' => 'Abendkurs Deutsch', 'text' => 'Sie arbeiten tagsüber und suchen einen Deutschkurs am Abend.', 'correct' => 'D'],
+        ['id' => 'l2_match_02', 'title' => 'Schnelle Handy-Reparatur', 'text' => 'Ihr Handy ist kaputt. Sie möchten es heute noch reparieren lassen.', 'correct' => 'H'],
+        ['id' => 'l2_match_03', 'title' => 'Samstagsjob', 'text' => 'Sie haben samstags frei und möchten ein paar Stunden arbeiten.', 'correct' => 'A'],
+        ['id' => 'l2_match_04', 'title' => 'Günstige Wohnung', 'text' => 'Sie suchen sofort eine kleine und günstige Wohnung in Stadtnähe.', 'correct' => 'C'],
+        ['id' => 'l2_match_05', 'title' => 'Lernort bis abends', 'text' => 'Sie brauchen einen ruhigen Platz zum Lernen, auch am Abend.', 'correct' => 'E'],
+        ['id' => 'l2_match_06', 'title' => 'Schwimmen lernen', 'text' => 'Sie möchten als Erwachsene in einem Kurs schwimmen lernen.', 'correct' => 'G'],
+        ['id' => 'l2_match_07', 'title' => 'Theorie schnell', 'text' => 'Sie wollen in den Ferien intensiv für die Führerschein-Theorie lernen.', 'correct' => 'F'],
+        ['id' => 'l2_match_08', 'title' => 'Arzttermin online', 'text' => 'Sie möchten einen Arzttermin buchen und können das online machen.', 'correct' => 'B'],
+        ['id' => 'l2_match_09', 'title' => 'Kinderkurs gesucht', 'text' => 'Sie suchen einen Schwimmkurs für Ihr 8-jähriges Kind.', 'correct' => 'X'],
+        ['id' => 'l2_match_10', 'title' => 'Wohnung auf dem Land', 'text' => 'Sie möchten eine 3-Zimmer-Wohnung außerhalb der Stadt finden.', 'correct' => 'X'],
+        ['id' => 'l2_match_11', 'title' => 'Nur Sonntags offen', 'text' => 'Sie brauchen einen Lernraum, der nur sonntags geöffnet ist.', 'correct' => 'X'],
+        ['id' => 'l2_match_12', 'title' => 'Deutschkurs am Vormittag', 'text' => 'Sie möchten einen B1-Kurs nur morgens besuchen.', 'correct' => 'X'],
+    ];
+
+    $options = [
+        'A' => 'Anzeige A',
+        'B' => 'Anzeige B',
+        'C' => 'Anzeige C',
+        'D' => 'Anzeige D',
+        'E' => 'Anzeige E',
+        'F' => 'Anzeige F',
+        'G' => 'Anzeige G',
+        'H' => 'Anzeige H',
+        'X' => 'keine passende Anzeige',
+    ];
+
+    $templates = [];
+    foreach ($situationen as $entry) {
+        $text = "Lesen Sie die Situationen und die Anzeigen A-H. Finden Sie die passende Anzeige.\n\n"
+            . $anzeigenBlock
+            . "\n\nSituation:\n"
+            . $entry['text'];
+
+        $templates[] = [
+            'id' => (string)$entry['id'],
+            'module' => 'lesen',
+            'set_name' => 'DTZ Lesen Teil 2',
+            'dtz_part' => 'L2 Situationen und Anzeigen',
+            'task_type' => 'Zuordnung',
+            'context' => 'Situationen 26-30',
+            'title' => (string)$entry['title'],
+            'instructions' => 'Lesen Sie die Situationen 26-30 und die Anzeigen A-H. Wählen Sie A-H oder X.',
+            'sample_item' => [
+                'text' => $text,
+                'question' => 'Welche Anzeige passt?',
+                'options' => $options,
+                'correct' => (string)$entry['correct'],
+                'rationale' => $entry['correct'] === 'X'
+                    ? 'Für diese Situation gibt es keine passende Anzeige.'
+                    : ('Passend ist Anzeige ' . $entry['correct'] . '.'),
+                'shuffle_options' => false,
+            ],
+        ];
+    }
+
+    return $templates;
+}
+
+function extract_dtz_part_number(string $partLabel, string $module): int
+{
+    $prefix = normalize_training_module($module) === 'hoeren' ? 'H' : 'L';
+    if (preg_match('/^' . preg_quote($prefix, '/') . '(\d+)/u', trim($partLabel), $m) !== 1) {
+        return 0;
+    }
+    return (int)$m[1];
+}
+
+function get_training_templates(string $module, int $teil = 0): array
 {
     $normalized = normalize_training_module($module);
     if ($normalized === '') {
         throw new RuntimeException('Ungültiges Modul angefordert.');
     }
 
-    if ($normalized === 'hoeren') {
-        return build_clean_hoeren_templates();
+    if ($normalized === 'lesen' && $teil === 1) {
+        return build_lesen_teil1_text_templates();
     }
-    return build_clean_lesen_templates();
+
+    if ($normalized === 'lesen' && $teil === 2) {
+        return build_lesen_teil2_matching_templates();
+    }
+
+    $templates = $normalized === 'hoeren'
+        ? build_clean_hoeren_templates()
+        : build_clean_lesen_templates();
+
+    if ($teil > 0) {
+        $templates = array_values(array_filter($templates, static function (array $tpl) use ($normalized, $teil): bool {
+            $partLabel = (string)($tpl['dtz_part'] ?? '');
+            return extract_dtz_part_number($partLabel, $normalized) === $teil;
+        }));
+    }
+
+    return $templates;
 }
 
-function clamp_training_count(string $module, int $count): int
+function clamp_training_count(int $max, int $count): int
 {
-    $normalized = normalize_training_module($module);
-    $max = count(get_training_templates($normalized));
     if ($count < 1) {
         $count = 1;
     }
@@ -1104,12 +1329,43 @@ function clamp_training_count(string $module, int $count): int
     return $count;
 }
 
-function shuffle_abc_options(array $options, string $correct): array
+function prepare_training_options(array $options, string $correct, bool $shuffleOptions = true): array
 {
+    $normalizedOptions = [];
+    foreach ($options as $key => $value) {
+        $label = strtoupper(trim((string)$key));
+        if ($label === '') {
+            continue;
+        }
+        $normalizedOptions[$label] = (string)$value;
+    }
+
+    if (!$normalizedOptions) {
+        $normalizedOptions = [
+            'A' => '',
+            'B' => '',
+            'C' => '',
+        ];
+    }
+
+    $normalizedCorrect = strtoupper(trim($correct));
+    if (!array_key_exists($normalizedCorrect, $normalizedOptions)) {
+        $normalizedCorrect = array_key_first($normalizedOptions) ?: 'A';
+    }
+
+    $keys = array_keys($normalizedOptions);
+    $isAbc = count($keys) === 3 && $keys === ['A', 'B', 'C'];
+    if (!$shuffleOptions || !$isAbc) {
+        return [
+            'options' => $normalizedOptions,
+            'correct' => $normalizedCorrect,
+        ];
+    }
+
     $pairs = [
-        ['label' => 'A', 'text' => (string)($options['A'] ?? '')],
-        ['label' => 'B', 'text' => (string)($options['B'] ?? '')],
-        ['label' => 'C', 'text' => (string)($options['C'] ?? '')],
+        ['label' => 'A', 'text' => (string)$normalizedOptions['A']],
+        ['label' => 'B', 'text' => (string)$normalizedOptions['B']],
+        ['label' => 'C', 'text' => (string)$normalizedOptions['C']],
     ];
 
     for ($i = count($pairs) - 1; $i > 0; $i--) {
@@ -1118,9 +1374,7 @@ function shuffle_abc_options(array $options, string $correct): array
         } catch (Throwable $e) {
             $j = mt_rand(0, $i);
         }
-        $tmp = $pairs[$i];
-        $pairs[$i] = $pairs[$j];
-        $pairs[$j] = $tmp;
+        [$pairs[$i], $pairs[$j]] = [$pairs[$j], $pairs[$i]];
     }
 
     $outOptions = [];
@@ -1140,14 +1394,443 @@ function shuffle_abc_options(array $options, string $correct): array
     ];
 }
 
-function create_training_set(string $module, int $count, bool $includeExplanation): array
+function pick_random_item(array $items): array
 {
-    $templates = get_training_templates($module);
+    if (!$items) {
+        throw new RuntimeException('Keine Daten für Zufallsauswahl vorhanden.');
+    }
+    $max = count($items) - 1;
+    try {
+        $index = random_int(0, $max);
+    } catch (Throwable $e) {
+        $index = mt_rand(0, $max);
+    }
+    return (array)$items[$index];
+}
+
+function build_hoeren_teil_structured_pools(): array
+{
+    return [
+        1 => [
+            [
+                'title' => 'Praxisansage: Terminänderung',
+                'instructions' => 'Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.',
+                'audio_script' => 'Guten Tag, hier spricht die Gemeinschaftspraxis West. Frau Karaca kann morgen leider nicht kommen. Ihr neuer Termin ist am Donnerstag um 10:40 Uhr in Zimmer 2. Bitte bringen Sie die Versichertenkarte und den aktuellen Medikamentenplan mit. Wenn Sie den Termin nicht wahrnehmen können, rufen Sie uns heute bis 18 Uhr an.',
+                'questions' => [
+                    [
+                        'question' => 'Wann ist der neue Termin?',
+                        'options' => ['A' => 'am Donnerstag um 10:40 Uhr', 'B' => 'am Donnerstag um 9:40 Uhr', 'C' => 'am Freitag um 10:40 Uhr'],
+                        'correct' => 'A',
+                        'rationale' => 'In der Ansage steht: Donnerstag um 10:40 Uhr.'
+                    ],
+                    [
+                        'question' => 'Wo findet der Termin statt?',
+                        'options' => ['A' => 'in Zimmer 1', 'B' => 'in Zimmer 2', 'C' => 'an der Rezeption'],
+                        'correct' => 'B',
+                        'rationale' => 'Genannt wird Zimmer 2.'
+                    ],
+                    [
+                        'question' => 'Was soll die Patientin mitbringen?',
+                        'options' => ['A' => 'nur den Ausweis', 'B' => 'Versichertenkarte und Medikamentenplan', 'C' => 'nur den Medikamentenplan'],
+                        'correct' => 'B',
+                        'rationale' => 'Beide Unterlagen werden explizit genannt.'
+                    ],
+                    [
+                        'question' => 'Bis wann soll sie anrufen, falls sie nicht kommen kann?',
+                        'options' => ['A' => 'bis 16 Uhr', 'B' => 'bis 17 Uhr', 'C' => 'bis 18 Uhr'],
+                        'correct' => 'C',
+                        'rationale' => 'Die Ansage nennt heute bis 18 Uhr.'
+                    ],
+                ],
+            ],
+            [
+                'title' => 'Kursansage: Raumwechsel',
+                'instructions' => 'Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.',
+                'audio_script' => 'Achtung, eine Information der Sprachschule Linden. Der B1-Abendkurs beginnt heute nicht in Raum 4, sondern in Raum 7 im zweiten Stock. Beginn bleibt 18:15 Uhr. Die Lehrerin Frau Duman ist heute krank, deshalb übernimmt Herr Klein den Unterricht. Das Arbeitsblatt erhalten Sie vor dem Kurs am Empfang.',
+                'questions' => [
+                    [
+                        'question' => 'Was hat sich geändert?',
+                        'options' => ['A' => 'die Uhrzeit', 'B' => 'der Raum', 'C' => 'das Kursniveau'],
+                        'correct' => 'B',
+                        'rationale' => 'Nur der Raum wurde geändert.'
+                    ],
+                    [
+                        'question' => 'Wo ist der neue Raum?',
+                        'options' => ['A' => 'Raum 7 im zweiten Stock', 'B' => 'Raum 7 im ersten Stock', 'C' => 'Raum 4 im zweiten Stock'],
+                        'correct' => 'A',
+                        'rationale' => 'So wird der neue Raum genannt.'
+                    ],
+                    [
+                        'question' => 'Wer unterrichtet heute?',
+                        'options' => ['A' => 'Frau Duman', 'B' => 'Herr Klein', 'C' => 'Herr Duman'],
+                        'correct' => 'B',
+                        'rationale' => 'Herr Klein übernimmt den Unterricht.'
+                    ],
+                    [
+                        'question' => 'Wo bekommt man das Arbeitsblatt?',
+                        'options' => ['A' => 'im Klassenzimmer', 'B' => 'am Empfang', 'C' => 'online'],
+                        'correct' => 'B',
+                        'rationale' => 'Das Arbeitsblatt gibt es am Empfang.'
+                    ],
+                ],
+            ],
+        ],
+        2 => [
+            [
+                'title' => 'Radiobeitrag: Stadtverkehr',
+                'instructions' => 'Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.',
+                'audio_script' => 'Hier ist Radio Süd mit den Verkehrsmeldungen für die Region. Auf der A5 zwischen Langen und Nordstadt gibt es wegen eines Unfalls eine Vollsperrung. Die Umleitung ist ausgeschildert. Im Zentrum fährt die Straßenbahnlinie 3 heute nur bis Marktplatz. Außerdem fallen zwischen 17 und 19 Uhr mehrere Regionalzüge Richtung Hafen aus. Reisende nach Hafen sollen den Bus 26 nehmen.',
+                'questions' => [
+                    [
+                        'question' => 'Warum ist die A5 gesperrt?',
+                        'options' => ['A' => 'wegen Bauarbeiten', 'B' => 'wegen eines Unfalls', 'C' => 'wegen einer Veranstaltung'],
+                        'correct' => 'B',
+                        'rationale' => 'Die Meldung nennt einen Unfall.'
+                    ],
+                    [
+                        'question' => 'Wie weit fährt die Linie 3?',
+                        'options' => ['A' => 'bis Marktplatz', 'B' => 'bis Hafen', 'C' => 'bis Hauptbahnhof'],
+                        'correct' => 'A',
+                        'rationale' => 'Linie 3 endet heute am Marktplatz.'
+                    ],
+                    [
+                        'question' => 'Wann fallen Regionalzüge Richtung Hafen aus?',
+                        'options' => ['A' => 'zwischen 16 und 18 Uhr', 'B' => 'zwischen 17 und 19 Uhr', 'C' => 'zwischen 18 und 20 Uhr'],
+                        'correct' => 'B',
+                        'rationale' => 'Genau dieses Zeitfenster wird genannt.'
+                    ],
+                    [
+                        'question' => 'Welche Alternative wird empfohlen?',
+                        'options' => ['A' => 'Bus 26', 'B' => 'Bus 6', 'C' => 'Straßenbahn 1'],
+                        'correct' => 'A',
+                        'rationale' => 'Für Hafen wird Bus 26 empfohlen.'
+                    ],
+                    [
+                        'question' => 'Wo gibt es eine Umleitung?',
+                        'options' => ['A' => 'im Zentrum', 'B' => 'auf der A5', 'C' => 'am Marktplatz'],
+                        'correct' => 'B',
+                        'rationale' => 'Die Umleitung gehört zur A5-Sperrung.'
+                    ],
+                ],
+            ],
+            [
+                'title' => 'Infokanal: Wetter und Veranstaltung',
+                'instructions' => 'Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.',
+                'audio_script' => 'Guten Abend. Morgen bleibt es vormittags trocken, ab 13 Uhr gibt es in vielen Stadtteilen Regen. Die Temperaturen liegen zwischen 9 und 14 Grad. Das Frühlingsfest im Stadtpark beginnt trotzdem wie geplant um 15 Uhr, aber das Konzert wird in die Sporthalle verlegt. Besucherinnen und Besucher sollen den Eingang Nord benutzen.',
+                'questions' => [
+                    [
+                        'question' => 'Ab wann wird Regen gemeldet?',
+                        'options' => ['A' => 'ab 11 Uhr', 'B' => 'ab 12 Uhr', 'C' => 'ab 13 Uhr'],
+                        'correct' => 'C',
+                        'rationale' => 'Regen ab 13 Uhr.'
+                    ],
+                    [
+                        'question' => 'Wie hoch sind die Temperaturen?',
+                        'options' => ['A' => 'zwischen 9 und 14 Grad', 'B' => 'zwischen 6 und 12 Grad', 'C' => 'zwischen 10 und 16 Grad'],
+                        'correct' => 'A',
+                        'rationale' => 'Die Spanne ist 9 bis 14 Grad.'
+                    ],
+                    [
+                        'question' => 'Was passiert mit dem Konzert?',
+                        'options' => ['A' => 'es fällt aus', 'B' => 'es wird verlegt', 'C' => 'es beginnt später im Park'],
+                        'correct' => 'B',
+                        'rationale' => 'Das Konzert wird in die Sporthalle verlegt.'
+                    ],
+                    [
+                        'question' => 'Wann beginnt das Frühlingsfest?',
+                        'options' => ['A' => 'um 14 Uhr', 'B' => 'um 15 Uhr', 'C' => 'um 16 Uhr'],
+                        'correct' => 'B',
+                        'rationale' => 'Beginn bleibt 15 Uhr.'
+                    ],
+                    [
+                        'question' => 'Welcher Eingang wird empfohlen?',
+                        'options' => ['A' => 'Eingang Süd', 'B' => 'Eingang West', 'C' => 'Eingang Nord'],
+                        'correct' => 'C',
+                        'rationale' => 'Genannt wird Eingang Nord.'
+                    ],
+                ],
+            ],
+        ],
+        3 => [
+            [
+                'title' => 'Alltagsdialoge',
+                'instructions' => 'Sie hören 4 kurze Dialoge. Entscheiden Sie zuerst Richtig/Falsch und beantworten Sie dann die Detailfrage.',
+                'dialogs' => [
+                    [
+                        'title' => 'Dialog 1',
+                        'audio_script' => 'WOMAN_1: Hallo Herr Becker, ich komme heute zehn Minuten später in den Kurs. MAN_1: Kein Problem, wir starten mit Wiederholung.',
+                        'speaker_meta' => ['woman_1', 'man_1'],
+                        'true_false' => [
+                            'statement' => 'Die Frau kommt pünktlich zum Kurs.',
+                            'correct' => 'B',
+                            'rationale' => 'Sie sagt, dass sie später kommt.'
+                        ],
+                        'detail' => [
+                            'question' => 'Womit startet der Kurs?',
+                            'options' => ['A' => 'mit einem Test', 'B' => 'mit Wiederholung', 'C' => 'mit Gruppenarbeit'],
+                            'correct' => 'B',
+                            'rationale' => 'Der Mann sagt: Wir starten mit Wiederholung.'
+                        ],
+                    ],
+                    [
+                        'title' => 'Dialog 2',
+                        'audio_script' => 'MAN_1: Guten Tag, ich habe für morgen einen Termin beim Jobcenter. WOMAN_2: Der Termin bleibt, aber bitte bringen Sie den Mietvertrag mit.',
+                        'speaker_meta' => ['man_1', 'woman_2'],
+                        'true_false' => [
+                            'statement' => 'Der Termin beim Jobcenter wird abgesagt.',
+                            'correct' => 'B',
+                            'rationale' => 'Der Termin bleibt bestehen.'
+                        ],
+                        'detail' => [
+                            'question' => 'Was soll der Mann mitbringen?',
+                            'options' => ['A' => 'den Arbeitsvertrag', 'B' => 'den Ausweis', 'C' => 'den Mietvertrag'],
+                            'correct' => 'C',
+                            'rationale' => 'Die Frau nennt den Mietvertrag.'
+                        ],
+                    ],
+                    [
+                        'title' => 'Dialog 3',
+                        'audio_script' => 'WOMAN_2: Entschuldigung, fährt dieser Bus zum Krankenhaus? MAN_1: Ja, aber Sie müssen am Rathaus umsteigen.',
+                        'speaker_meta' => ['woman_2', 'man_1'],
+                        'true_false' => [
+                            'statement' => 'Man fährt ohne Umsteigen zum Krankenhaus.',
+                            'correct' => 'B',
+                            'rationale' => 'Es ist ein Umstieg nötig.'
+                        ],
+                        'detail' => [
+                            'question' => 'Wo soll die Frau umsteigen?',
+                            'options' => ['A' => 'am Rathaus', 'B' => 'am Bahnhof', 'C' => 'am Marktplatz'],
+                            'correct' => 'A',
+                            'rationale' => 'Genannt wird das Rathaus.'
+                        ],
+                    ],
+                    [
+                        'title' => 'Dialog 4',
+                        'audio_script' => 'NARRATOR: Im Supermarkt fragt ein Kunde nach Brot. WOMAN_1: Frisches Brot gibt es wieder ab 17 Uhr.',
+                        'speaker_meta' => ['narrator', 'woman_1'],
+                        'true_false' => [
+                            'statement' => 'Frisches Brot gibt es sofort.',
+                            'correct' => 'B',
+                            'rationale' => 'Es gibt Brot erst ab 17 Uhr.'
+                        ],
+                        'detail' => [
+                            'question' => 'Ab wann gibt es frisches Brot?',
+                            'options' => ['A' => 'ab 16 Uhr', 'B' => 'ab 17 Uhr', 'C' => 'ab 18 Uhr'],
+                            'correct' => 'B',
+                            'rationale' => 'Die Verkäuferin nennt 17 Uhr.'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        4 => [
+            [
+                'title' => 'Meinungen zu Kurszeiten',
+                'instructions' => 'Sie hören kurze Aussagen. Ordnen Sie jeder Aussage die passende Antwort zu.',
+                'allow_reuse' => false,
+                'options' => [
+                    'A' => 'Sie arbeitet morgens und braucht einen Abendkurs.',
+                    'B' => 'Er möchte am Samstag lernen.',
+                    'C' => 'Sie lernt lieber online.',
+                    'D' => 'Er braucht einen Kurs in der Nähe.',
+                    'E' => 'Sie kann nur zweimal pro Woche kommen.',
+                ],
+                'statements' => [
+                    [
+                        'title' => 'Aussage 1',
+                        'audio_script' => 'WOMAN_1: Unter der Woche habe ich Frühschicht. Für mich ist ein Kurs ab 18 Uhr ideal.',
+                        'speaker' => 'woman_1',
+                        'correct' => 'A',
+                        'rationale' => 'Die Aussage passt zu einem Abendkurs.'
+                    ],
+                    [
+                        'title' => 'Aussage 2',
+                        'audio_script' => 'MAN_1: Ich wohne ohne Auto. Der Kurs darf nicht weit von meiner Wohnung sein.',
+                        'speaker' => 'man_1',
+                        'correct' => 'D',
+                        'rationale' => 'Er betont die Nähe.'
+                    ],
+                    [
+                        'title' => 'Aussage 3',
+                        'audio_script' => 'WOMAN_2: Ich habe Kinder und kann nur am Dienstag und Donnerstag teilnehmen.',
+                        'speaker' => 'woman_2',
+                        'correct' => 'E',
+                        'rationale' => 'Sie kann nur an zwei Tagen.'
+                    ],
+                    [
+                        'title' => 'Aussage 4',
+                        'audio_script' => 'MAN_1: Ich arbeite von Montag bis Freitag. Für mich kommt ein Kurs am Wochenende in Frage.',
+                        'speaker' => 'man_1',
+                        'correct' => 'B',
+                        'rationale' => 'Er möchte am Samstag lernen.'
+                    ],
+                    [
+                        'title' => 'Aussage 5',
+                        'audio_script' => 'WOMAN_1: Wegen der langen Anfahrt suche ich lieber einen digitalen Kurs am Laptop.',
+                        'speaker' => 'woman_1',
+                        'correct' => 'C',
+                        'rationale' => 'Sie bevorzugt online.'
+                    ],
+                ],
+            ],
+        ],
+    ];
+}
+
+function create_hoeren_structured_set(int $teil, bool $includeExplanation): array
+{
+    $pools = build_hoeren_teil_structured_pools();
+    $pool = (array)($pools[$teil] ?? []);
+    if (!$pool) {
+        throw new RuntimeException('Für diesen Hören-Teil sind keine strukturierten Aufgaben verfügbar.');
+    }
+
+    $picked = pick_random_item($pool);
+    $schemaMap = [
+        1 => 'hoeren_teil1_bundle',
+        2 => 'hoeren_teil2_bundle',
+        3 => 'hoeren_teil3_dialogcards',
+        4 => 'hoeren_teil4_matching',
+    ];
+    $dtzPartMap = [
+        1 => 'H1 Kurze Ansagen',
+        2 => 'H2 Informationen',
+        3 => 'H3 Dialoge',
+        4 => 'H4 Aussagen zuordnen',
+    ];
+    $schema = (string)($schemaMap[$teil] ?? 'hoeren_bundle');
+    $item = [
+        'set_index' => 1,
+        'template_id' => 'hoeren_structured_t' . $teil . '_' . substr(sha1((string)json_encode($picked)), 0, 8),
+        'dtz_schema' => $schema,
+        'dtz_part' => $dtzPartMap[$teil] ?? ('H' . $teil),
+        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Hören-Aufgabe')),
+        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+    ];
+    $expectedCounts = [
+        1 => 4, // Teil 1: 4 MC-Aufgaben
+        2 => 5, // Teil 2: 5 MC-Aufgaben
+        3 => 4, // Teil 3: 4 Dialogkarten (je 2 Items)
+        4 => 5, // Teil 4: 5 Zuordnungen
+    ];
+
+    if ($teil === 1 || $teil === 2) {
+        $item['audio_script'] = germanize_umlauts_text((string)($picked['audio_script'] ?? ''));
+        $item['speaker_meta'] = ['narrator'];
+        $questions = [];
+        $rawQuestions = array_values((array)($picked['questions'] ?? []));
+        $expected = (int)($expectedCounts[$teil] ?? 0);
+        if ($expected > 0) {
+            if (count($rawQuestions) < $expected) {
+                throw new RuntimeException('Für Hören Teil ' . $teil . ' sind weniger als ' . $expected . ' Fragen konfiguriert.');
+            }
+            $rawQuestions = array_slice($rawQuestions, 0, $expected);
+        }
+        foreach ($rawQuestions as $idx => $question) {
+            $prepared = prepare_training_options(
+                (array)($question['options'] ?? []),
+                (string)($question['correct'] ?? ''),
+                true
+            );
+            $questions[] = [
+                'id' => 'q_' . $idx,
+                'question' => germanize_umlauts_text((string)($question['question'] ?? '')),
+                'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
+                'correct' => (string)$prepared['correct'],
+                'explanation' => $includeExplanation ? germanize_umlauts_text((string)($question['rationale'] ?? '')) : '',
+            ];
+        }
+        $item['questions'] = $questions;
+    } elseif ($teil === 3) {
+        $dialogs = [];
+        $rawDialogs = array_values((array)($picked['dialogs'] ?? []));
+        $expected = (int)($expectedCounts[$teil] ?? 0);
+        if ($expected > 0) {
+            if (count($rawDialogs) < $expected) {
+                throw new RuntimeException('Für Hören Teil 3 sind weniger als ' . $expected . ' Dialoge konfiguriert.');
+            }
+            $rawDialogs = array_slice($rawDialogs, 0, $expected);
+        }
+        foreach ($rawDialogs as $idx => $dialog) {
+            $tf = (array)($dialog['true_false'] ?? []);
+            $detail = (array)($dialog['detail'] ?? []);
+            $preparedDetail = prepare_training_options(
+                (array)($detail['options'] ?? []),
+                (string)($detail['correct'] ?? ''),
+                true
+            );
+            $dialogs[] = [
+                'id' => 'd_' . ($idx + 1),
+                'title' => germanize_umlauts_text((string)($dialog['title'] ?? ('Dialog ' . ($idx + 1)))),
+                'audio_script' => germanize_umlauts_text((string)($dialog['audio_script'] ?? '')),
+                'speaker_meta' => array_values(array_map(static fn($v) => mb_strtolower(trim((string)$v)), (array)($dialog['speaker_meta'] ?? []))),
+                'true_false' => [
+                    'statement' => germanize_umlauts_text((string)($tf['statement'] ?? '')),
+                    'correct' => (string)($tf['correct'] ?? ''),
+                    'explanation' => $includeExplanation ? germanize_umlauts_text((string)($tf['rationale'] ?? '')) : '',
+                ],
+                'detail' => [
+                    'question' => germanize_umlauts_text((string)($detail['question'] ?? '')),
+                    'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$preparedDetail['options']),
+                    'correct' => (string)$preparedDetail['correct'],
+                    'explanation' => $includeExplanation ? germanize_umlauts_text((string)($detail['rationale'] ?? '')) : '',
+                ],
+            ];
+        }
+        $item['dialogs'] = $dialogs;
+    } elseif ($teil === 4) {
+        $options = [];
+        foreach ((array)($picked['options'] ?? []) as $label => $text) {
+            $options[strtoupper((string)$label)] = germanize_umlauts_text((string)$text);
+        }
+        $statements = [];
+        $rawStatements = array_values((array)($picked['statements'] ?? []));
+        $expected = (int)($expectedCounts[$teil] ?? 0);
+        if ($expected > 0) {
+            if (count($rawStatements) < $expected) {
+                throw new RuntimeException('Für Hören Teil 4 sind weniger als ' . $expected . ' Aussagen konfiguriert.');
+            }
+            $rawStatements = array_slice($rawStatements, 0, $expected);
+        }
+        foreach ($rawStatements as $idx => $statement) {
+            $statements[] = [
+                'id' => 's_' . ($idx + 1),
+                'title' => germanize_umlauts_text((string)($statement['title'] ?? ('Aussage ' . ($idx + 1)))),
+                'audio_script' => germanize_umlauts_text((string)($statement['audio_script'] ?? '')),
+                'speaker' => mb_strtolower(trim((string)($statement['speaker'] ?? 'narrator'))),
+                'question' => 'Welche Antwort passt?',
+                'correct' => strtoupper((string)($statement['correct'] ?? '')),
+                'explanation' => $includeExplanation ? germanize_umlauts_text((string)($statement['rationale'] ?? '')) : '',
+            ];
+        }
+        $item['allow_reuse'] = (bool)($picked['allow_reuse'] ?? false);
+        $item['options'] = $options;
+        $item['statements'] = $statements;
+    }
+
+    return [
+        'module' => 'hoeren',
+        'teil' => $teil,
+        'count' => 1,
+        'include_explanation' => $includeExplanation,
+        'generated_at' => gmdate('c'),
+        'items' => [$item],
+    ];
+}
+
+function create_training_set(string $module, int $count, bool $includeExplanation, int $teil = 0): array
+{
+    $normalizedModule = normalize_training_module($module);
+    if ($normalizedModule === 'hoeren' && $teil >= 1 && $teil <= 4) {
+        return create_hoeren_structured_set($teil, $includeExplanation);
+    }
+
+    $templates = get_training_templates($module, $teil);
     if (!$templates) {
         throw new RuntimeException('Keine gültigen Templates gefunden.');
     }
 
-    $count = clamp_training_count($module, $count);
+    $count = clamp_training_count(count($templates), $count);
     if ($count > count($templates)) {
         $count = count($templates);
     }
@@ -1168,7 +1851,11 @@ function create_training_set(string $module, int $count, bool $includeExplanatio
     $items = [];
     foreach ($picked as $index => $tpl) {
         $sample = $tpl['sample_item'];
-        $shuffled = shuffle_abc_options($sample['options'], (string)$sample['correct']);
+        $prepared = prepare_training_options(
+            (array)($sample['options'] ?? []),
+            (string)($sample['correct'] ?? ''),
+            (bool)($sample['shuffle_options'] ?? true)
+        );
         $items[] = [
             'set_index' => $index + 1,
             'template_id' => (string)($tpl['id'] ?? ''),
@@ -1180,19 +1867,20 @@ function create_training_set(string $module, int $count, bool $includeExplanatio
             'text' => germanize_umlauts_text((string)($sample['text'] ?? $sample['audio_script'] ?? '')),
             'audio_script' => germanize_umlauts_text((string)($sample['audio_script'] ?? $sample['text'] ?? '')),
             'question' => germanize_umlauts_text((string)($sample['question'] ?? '')),
-            'options' => $shuffled['options'],
-            'correct' => (string)$shuffled['correct'],
+            'options' => $prepared['options'],
+            'correct' => (string)$prepared['correct'],
             'explanation' => $includeExplanation ? germanize_umlauts_text((string)($sample['rationale'] ?? '')) : '',
         ];
-        $items[$index]['options'] = [
-            'A' => germanize_umlauts_text((string)($items[$index]['options']['A'] ?? '')),
-            'B' => germanize_umlauts_text((string)($items[$index]['options']['B'] ?? '')),
-            'C' => germanize_umlauts_text((string)($items[$index]['options']['C'] ?? '')),
-        ];
+        $germanizedOptions = [];
+        foreach ((array)$items[$index]['options'] as $label => $optText) {
+            $germanizedOptions[(string)$label] = germanize_umlauts_text((string)$optText);
+        }
+        $items[$index]['options'] = $germanizedOptions;
     }
 
     return [
         'module' => normalize_training_module($module),
+        'teil' => $teil > 0 ? $teil : null,
         'count' => count($items),
         'include_explanation' => $includeExplanation,
         'generated_at' => gmdate('c'),
