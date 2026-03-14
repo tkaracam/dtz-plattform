@@ -1804,6 +1804,92 @@
       padding: 2px 8px;
     }
 
+    .dtz-ads-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .dtz-ad-card {
+      border: 1px solid #d4e3f4;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 8px 9px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .dtz-ad-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+    }
+
+    .dtz-ad-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: #eef5ff;
+      border: 1px solid #c8daef;
+      color: #1f4670;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .dtz-ad-headline {
+      margin: 0;
+      color: #1c416b;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .dtz-ad-lines {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 3px;
+    }
+
+    .dtz-ad-line {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      color: #36597b;
+      font-size: 0.79rem;
+      line-height: 1.3;
+    }
+
+    .dtz-ad-key {
+      color: #203e63;
+      font-weight: 700;
+      min-width: 52px;
+    }
+
+    .dtz-ad-extra {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .dtz-ad-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid #c7d9ef;
+      background: #f8fbff;
+      color: #37597b;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+    }
+
     .dtz-cloze-text {
       margin: 0;
       color: #244668;
@@ -2475,6 +2561,10 @@
       .dtz-wegweiser-row {
         grid-template-columns: 1fr;
         gap: 6px;
+      }
+
+      .dtz-ads-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -5441,6 +5531,94 @@
       `;
     }
 
+    function parseClassifiedAd(rawText) {
+      const normalized = normalizeDtzGermanText(String(rawText || "")).trim();
+      if (!normalized) return { headline: "", lines: [], chips: [] };
+
+      const chunksPipe = normalized.split(/\s*\|\s*/).map((part) => part.trim()).filter(Boolean);
+      let headline = "";
+      let tailParts = [];
+
+      if (chunksPipe.length > 1) {
+        headline = chunksPipe[0];
+        tailParts = chunksPipe.slice(1);
+      } else {
+        const colonMatch = normalized.match(/^([^:]+):\s*(.+)$/);
+        if (colonMatch) {
+          headline = colonMatch[1].trim();
+          tailParts = colonMatch[2]
+            .split(/\s*;\s*|\s*,\s*/)
+            .map((part) => part.trim())
+            .filter(Boolean);
+        } else {
+          headline = normalized;
+        }
+      }
+
+      const lines = [];
+      const chips = [];
+      const pushLine = (key, value) => {
+        const val = String(value || "").trim();
+        if (!val) return;
+        lines.push({ key, value: val });
+      };
+
+      tailParts.forEach((part) => {
+        const explicit = part.match(/^([A-Za-zÄÖÜäöüß]+)\s*:\s*(.+)$/);
+        if (explicit) {
+          const k = explicit[1].trim();
+          const v = explicit[2].trim();
+          const keyLower = k.toLowerCase();
+          if (/(preis|kosten|beitrag|honorar|gehalt)/.test(keyLower)) pushLine("Preis", v);
+          else if (/(zeit|uhr|start|tage)/.test(keyLower)) pushLine("Zeit", v);
+          else if (/(ort|stadt|bereich|etage)/.test(keyLower)) pushLine("Ort", v);
+          else if (/(kontakt|tel|mail|email|web)/.test(keyLower)) pushLine("Kontakt", v);
+          else chips.push(`${k}: ${v}`);
+          return;
+        }
+
+        const lower = part.toLowerCase();
+        if (/(€|euro|eur|\/std|\/monat)/.test(lower)) pushLine("Preis", part);
+        else if (/\d{1,2}:\d{2}|mo|di|mi|do|fr|sa|so|uhr|ab sofort|täglich|werktags/.test(lower)) pushLine("Zeit", part);
+        else if (/@|www\.|https?:\/\/|\b0\d{2,}\b|tel|kontakt/.test(lower)) pushLine("Kontakt", part);
+        else if (/(ort|stadt|zentrum|park|straße|str\.|haus|kita|studio|verein)/.test(lower)) pushLine("Ort", part);
+        else chips.push(part);
+      });
+
+      if (!lines.length && chips.length) {
+        const first = chips.shift();
+        pushLine("Info", first);
+      }
+
+      return {
+        headline: headline || normalized,
+        lines: lines.slice(0, 4),
+        chips: chips.slice(0, 3)
+      };
+    }
+
+    function renderClassifiedAdCard(label, adText) {
+      const parsed = parseClassifiedAd(adText);
+      const linesHtml = parsed.lines.map((line) => `
+        <li class="dtz-ad-line">
+          <span class="dtz-ad-key">${escapeHtml(line.key)}:</span>
+          <span>${escapeHtml(line.value)}</span>
+        </li>
+      `).join("");
+      const chipsHtml = parsed.chips.map((chip) => `<span class="dtz-ad-chip">${escapeHtml(chip)}</span>`).join("");
+
+      return `
+        <article class="dtz-ad-card">
+          <div class="dtz-ad-top">
+            <span class="dtz-ad-label">${escapeHtml(String(label || ""))}</span>
+            <p class="dtz-ad-headline">${escapeHtml(parsed.headline)}</p>
+          </div>
+          ${linesHtml ? `<ul class="dtz-ad-lines">${linesHtml}</ul>` : ""}
+          ${chipsHtml ? `<div class="dtz-ad-extra">${chipsHtml}</div>` : ""}
+        </article>
+      `;
+    }
+
     function buildDtzTasks(module, teil, rawItems) {
       const items = Array.isArray(rawItems) ? rawItems : [];
       if (!items.length) return [];
@@ -6121,9 +6299,8 @@
       const labels = task.labels || sortDtzOptionLabels(Object.keys(task.ads || {}));
       const adsHtml = labels
         .filter(label => label !== "X")
-        .map(label => `
-          <li><strong>${escapeHtml(label)})</strong> ${escapeHtml(normalizeDtzGermanText(String((task.ads || {})[label] || "")))}</li>
-        `).join("");
+        .map((label) => renderClassifiedAdCard(label, String((task.ads || {})[label] || "")))
+        .join("");
 
       const situationsHtml = (task.situations || []).map((row) => {
         const selected = String(state.answers[row.key] || "");
@@ -6172,7 +6349,7 @@
           <div class="dtz-lesen-group-body">
             <article class="lid-question">
               ${TaskInstruction(task.instructions)}
-              <ul class="speak-list">${adsHtml}</ul>
+              <div class="dtz-ads-grid">${adsHtml}</div>
               <p class="section-subtitle" style="margin: 10px 0 0;">Wählen Sie A-H. Wenn nichts passt, wählen Sie X.</p>
             </article>
             ${situationsHtml}
