@@ -8,14 +8,26 @@ on:
     - cron: "15 6 * * *"
   workflow_dispatch:
     inputs:
+      target_urls:
+        description: "Birden fazla URL (boşlukla ayırın)"
+        required: false
+        default: ""
       base_url:
-        description: "Healthcheck URL (z. B. https://dtz-lid.com)"
+        description: "Tek URL (geriye dönük; target_urls boşsa kullanılır)"
         required: false
         default: "https://dtz-lid.com"
       warmup_seconds:
         description: "Deploy sonrası bekleme (saniye)"
         required: false
         default: "180"
+      max_attempts:
+        description: "Maksimum deneme sayısı"
+        required: false
+        default: "8"
+      retry_delay_seconds:
+        description: "Hata sonrası bekleme (saniye)"
+        required: false
+        default: "30"
 
 permissions:
   contents: read
@@ -29,15 +41,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      TARGET_URLS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url || 'https://dtz-lid.com https://www.dtz-lid.com' }}
+      TARGET_URLS: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.target_urls || github.event.inputs.base_url) || 'https://dtz-lid.com https://www.dtz-lid.com' }}
       WARMUP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.warmup_seconds || '180' }}
-      MAX_ATTEMPTS: "8"
-      RETRY_DELAY_SECONDS: "30"
+      MAX_ATTEMPTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.max_attempts || '8' }}
+      RETRY_DELAY_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.retry_delay_seconds || '30' }}
       HC_STUDENT_USERNAME: ${{ secrets.HC_STUDENT_USERNAME }}
       HC_STUDENT_PASSWORD: ${{ secrets.HC_STUDENT_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate numeric inputs
+        run: |
+          set -euo pipefail
+          case "${WARMUP_SECONDS}" in ''|*[!0-9]*) echo "WARMUP_SECONDS sayi olmali"; exit 1;; esac
+          case "${MAX_ATTEMPTS}" in ''|*[!0-9]*) echo "MAX_ATTEMPTS sayi olmali"; exit 1;; esac
+          case "${RETRY_DELAY_SECONDS}" in ''|*[!0-9]*) echo "RETRY_DELAY_SECONDS sayi olmali"; exit 1;; esac
+          [ "${MAX_ATTEMPTS}" -ge 1 ] || { echo "MAX_ATTEMPTS en az 1 olmali"; exit 1; }
 
       - name: Prepare healthcheck script
         run: chmod +x tools/healthcheck.sh
@@ -58,6 +78,8 @@ jobs:
             echo "## Post-Deploy Healthcheck"
             echo ""
             echo "- Targets: \`${TARGET_URLS}\`"
+            echo "- Trigger: \`${{ github.event_name }}\`"
+            echo "- Commit: \`${{ github.sha }}\`"
             echo ""
           } >> "${GITHUB_STEP_SUMMARY}"
 
@@ -104,6 +126,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: healthcheck-log
+          name: healthcheck-log-${{ github.run_id }}
           path: ${{ runner.temp }}/healthcheck.log
           if-no-files-found: ignore
