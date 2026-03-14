@@ -1689,6 +1689,121 @@
       font-size: 0.97rem;
     }
 
+    .dtz-wegweiser-board {
+      border: 1px solid #c9d9ee;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fafdff 0%, #f2f8ff 100%);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .dtz-wegweiser-head {
+      padding: 8px 10px;
+      border-bottom: 1px solid #d4e2f3;
+      background: #ecf4ff;
+      color: #183d67;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .dtz-wegweiser-table {
+      display: grid;
+      gap: 0;
+    }
+
+    .dtz-wegweiser-row {
+      display: grid;
+      grid-template-columns: 92px 98px minmax(0, 1fr) minmax(140px, 0.8fr);
+      gap: 8px;
+      align-items: start;
+      padding: 8px 10px;
+      border-bottom: 1px dashed #d3e2f4;
+    }
+
+    .dtz-wegweiser-row:last-child {
+      border-bottom: 0;
+    }
+
+    .dtz-wegweiser-col-label {
+      color: #496587;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
+    }
+
+    .dtz-wegweiser-level {
+      color: #173b63;
+      font-weight: 700;
+      font-size: 0.93rem;
+    }
+
+    .dtz-wegweiser-range {
+      color: #24486f;
+      font-weight: 700;
+      font-size: 0.86rem;
+      border: 1px solid #c7d7ec;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 4px 8px;
+      display: inline-block;
+      min-width: 68px;
+      text-align: center;
+    }
+
+    .dtz-wegweiser-offices {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 4px;
+    }
+
+    .dtz-wegweiser-office {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #1d3f65;
+      font-size: 0.89rem;
+      font-weight: 600;
+    }
+
+    .dtz-wegweiser-room {
+      display: inline-flex;
+      min-width: 40px;
+      justify-content: center;
+      align-items: center;
+      border-radius: 6px;
+      border: 1px solid #bfd3eb;
+      background: #ffffff;
+      color: #264b73;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .dtz-wegweiser-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .dtz-wegweiser-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid #c4d8ef;
+      background: #ffffff;
+      color: #335576;
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 2px 8px;
+    }
+
     .dtz-cloze-text {
       margin: 0;
       color: #244668;
@@ -2355,6 +2470,11 @@
 
       .dtz-teil-btn-row {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dtz-wegweiser-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
       }
     }
 
@@ -5234,6 +5354,93 @@
       };
     }
 
+    function wegweiserRoomPrefix(floorLabel) {
+      const floor = String(floorLabel || "").trim().toUpperCase();
+      if (floor.includes("UG")) return "U";
+      if (floor.includes("EG")) return "E";
+      const digit = floor.match(/\d+/);
+      if (digit) return digit[0].slice(0, 1);
+      const letter = floor.replace(/[^A-ZÄÖÜ]/g, "").slice(0, 1);
+      return letter || "R";
+    }
+
+    // Parse flat Wegweiser lines into a directory-board structure.
+    function buildWegweiserRows(wegweiserLines) {
+      return (Array.isArray(wegweiserLines) ? wegweiserLines : [])
+        .map((line, lineIndex) => {
+          const raw = normalizeDtzGermanText(String(line || "")).trim();
+          if (!raw) return null;
+
+          const match = raw.match(/^([^:|\\-]+)\s*[:|-]\s*(.+)$/);
+          const level = (match ? match[1] : `Ebene ${lineIndex + 1}`).trim();
+          const tail = (match ? match[2] : raw).trim();
+          const offices = tail
+            .split(/\s*,\s*|\s*;\s*/)
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+          const prefix = wegweiserRoomPrefix(level);
+          const officeEntries = (offices.length ? offices : [tail]).map((office, idx) => {
+            const room = `${prefix}${String(idx + 1).padStart(2, "0")}`;
+            return { room, office };
+          });
+          const roomRange = officeEntries.length
+            ? `${officeEntries[0].room}–${officeEntries[officeEntries.length - 1].room}`
+            : `${prefix}01`;
+
+          return {
+            level,
+            roomRange,
+            offices: officeEntries,
+            keywords: officeEntries.map((entry) => entry.office).slice(0, 4)
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function renderWegweiserBoard(title, wegweiserLines) {
+      const rows = buildWegweiserRows(wegweiserLines);
+      if (!rows.length) return "";
+      const rowsHtml = rows.map((row) => {
+        const officesHtml = row.offices.map((entry) => `
+          <li class="dtz-wegweiser-office">
+            <span class="dtz-wegweiser-room">${escapeHtml(entry.room)}</span>
+            <span>${escapeHtml(entry.office)}</span>
+          </li>
+        `).join("");
+        const tagsHtml = row.keywords.map((keyword) => `
+          <span class="dtz-wegweiser-tag">${escapeHtml(keyword)}</span>
+        `).join("");
+        return `
+          <div class="dtz-wegweiser-row">
+            <div>
+              <div class="dtz-wegweiser-col-label">Etage</div>
+              <div class="dtz-wegweiser-level">${escapeHtml(row.level)}</div>
+            </div>
+            <div>
+              <div class="dtz-wegweiser-col-label">Räume</div>
+              <div class="dtz-wegweiser-range">${escapeHtml(row.roomRange)}</div>
+            </div>
+            <div>
+              <div class="dtz-wegweiser-col-label">Stellen</div>
+              <ul class="dtz-wegweiser-offices">${officesHtml}</ul>
+            </div>
+            <div>
+              <div class="dtz-wegweiser-col-label">Schlagwörter</div>
+              <div class="dtz-wegweiser-tags">${tagsHtml}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="dtz-wegweiser-board">
+          <div class="dtz-wegweiser-head">${escapeHtml(String(title || "Wegweiser"))}</div>
+          <div class="dtz-wegweiser-table">${rowsHtml}</div>
+        </div>
+      `;
+    }
+
     function buildDtzTasks(module, teil, rawItems) {
       const items = Array.isArray(rawItems) ? rawItems : [];
       if (!items.length) return [];
@@ -5902,10 +6109,7 @@
           <div class="dtz-lesen-group-body">
             <article class="lid-question">
               ${TaskInstruction(task.instructions || "Lesen Sie die Aufgaben 21-25 und den Wegweiser.")}
-              <h4>${escapeHtml(task.wegweiserTitle || "Wegweiser")}</h4>
-              <ul class="speak-list">
-                ${wegweiserLines.map((line) => `<li>${escapeHtml(String(line || ""))}</li>`).join("")}
-              </ul>
+              ${renderWegweiserBoard(task.wegweiserTitle || "Wegweiser", wegweiserLines)}
             </article>
             ${situationsHtml}
           </div>
