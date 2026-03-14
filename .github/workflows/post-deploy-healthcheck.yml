@@ -72,18 +72,38 @@ jobs:
           set -euo pipefail
           LOG_FILE="${RUNNER_TEMP}/healthcheck.log"
           : > "${LOG_FILE}"
+          START_TS="$(date +%s)"
           overall_failed=0
+
+          normalized_targets="$(printf '%s' "${TARGET_URLS}" | tr ',\n\r\t' '    ' | xargs)"
+          if [ -z "${normalized_targets}" ]; then
+            normalized_targets="https://dtz-lid.com https://www.dtz-lid.com"
+          fi
+
+          # dedupe targets while preserving order
+          TARGETS=""
+          for candidate in ${normalized_targets}; do
+            case " ${TARGETS} " in
+              *" ${candidate} "*) ;;
+              *) TARGETS="${TARGETS} ${candidate}" ;;
+            esac
+          done
+          TARGETS="$(printf '%s' "${TARGETS}" | xargs)"
+          [ -n "${TARGETS}" ] || { echo "Hedef URL listesi bos olamaz"; exit 1; }
+
+          passed_targets=""
+          failed_targets=""
 
           {
             echo "## Post-Deploy Healthcheck"
             echo ""
-            echo "- Targets: \`${TARGET_URLS}\`"
+            echo "- Targets: \`${TARGETS}\`"
             echo "- Trigger: \`${{ github.event_name }}\`"
             echo "- Commit: \`${{ github.sha }}\`"
             echo ""
           } >> "${GITHUB_STEP_SUMMARY}"
 
-          for BASE_URL in ${TARGET_URLS}; do
+          for BASE_URL in ${TARGETS}; do
             attempt=1
             passed=0
             while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
@@ -100,16 +120,33 @@ jobs:
             done
 
             if [ "$passed" -eq 1 ]; then
+              passed_targets="${passed_targets} ${BASE_URL}"
               {
                 echo "- ✅ \`${BASE_URL}\` passed (\`${attempt}/${MAX_ATTEMPTS}\`)"
               } >> "${GITHUB_STEP_SUMMARY}"
             else
               overall_failed=1
+              failed_targets="${failed_targets} ${BASE_URL}"
               {
                 echo "- ❌ \`${BASE_URL}\` failed after \`${MAX_ATTEMPTS}\` attempts"
               } >> "${GITHUB_STEP_SUMMARY}"
             fi
           done
+
+          END_TS="$(date +%s)"
+          ELAPSED="$((END_TS - START_TS))"
+
+          {
+            echo ""
+            echo "### Summary"
+            echo "- Dauer: \`${ELAPSED}s\`"
+            echo "- Erfolgreich: \`$(printf '%s' "${passed_targets}" | xargs || true)\`"
+            if [ -n "$(printf '%s' "${failed_targets}" | xargs || true)" ]; then
+              echo "- Fehlgeschlagen: \`$(printf '%s' "${failed_targets}" | xargs)\`"
+            else
+              echo "- Fehlgeschlagen: \`keine\`"
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
 
           if [ "$overall_failed" -ne 0 ]; then
             {
