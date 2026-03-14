@@ -155,6 +155,68 @@ run_contains_warn() {
   fi
 }
 
+run_student_auth_dtz_checks() {
+  local student_user="${HC_STUDENT_USERNAME:-${STUDENT_USERNAME:-}}"
+  local student_pass="${HC_STUDENT_PASSWORD:-${STUDENT_PASSWORD:-}}"
+
+  if [[ -z "$student_user" || -z "$student_pass" ]]; then
+    print_warn "Auth-DTZ checks atlandı (HC_STUDENT_USERNAME / HC_STUDENT_PASSWORD yok)."
+    return
+  fi
+
+  local cookie_file
+  cookie_file="$(mktemp "/tmp/dtz_hc_cookie.XXXXXX")"
+  local login_payload
+  login_payload=$(printf '{"username":"%s","password":"%s"}' "$student_user" "$student_pass")
+
+  local login_response login_status login_ctype login_body
+  login_response="$(
+    curl -sS -m "$TIMEOUT_SECONDS" -c "$cookie_file" -b "$cookie_file" \
+      -H "Accept: */*" -H "Content-Type: application/json" \
+      -X POST --data "$login_payload" \
+      -w $'\n__STATUS__:%{http_code}\n__CTYPE__:%{content_type}\n' \
+      "${BASE_URL}/api/student_login.php"
+  )"
+  login_status="$(echo "$login_response" | sed -n 's/^__STATUS__://p' | tail -n 1)"
+  login_ctype="$(echo "$login_response" | sed -n 's/^__CTYPE__://p' | tail -n 1)"
+  login_body="$(echo "$login_response" | sed '/^__STATUS__:/,$d')"
+
+  if [[ "$login_status" != "200" || "$login_ctype" != application/json* || "$login_body" != *"\"ok\":true"* ]]; then
+    print_fail "Student login (auth check) başarısız -> HTTP ${login_status:-?}"
+    rm -f "$cookie_file"
+    return
+  fi
+  print_ok "Student login (auth check) -> HTTP 200"
+
+  local session_json
+  session_json="$(curl -sS -m "$TIMEOUT_SECONDS" -c "$cookie_file" -b "$cookie_file" -H "Accept: application/json" "${BASE_URL}/api/student_session.php")"
+  if [[ "$session_json" != *"\"authenticated\":true"* ]]; then
+    print_fail "Student session doğrulanamadı (cookie/session)."
+    rm -f "$cookie_file"
+    return
+  fi
+  print_ok "Student session authenticated=true"
+
+  local lesen_body hoeren_body
+  lesen_body="$(curl -sS -m "$TIMEOUT_SECONDS" -c "$cookie_file" -b "$cookie_file" -H "Accept: application/json" -H "Content-Type: application/json" -X POST --data '{"module":"lesen","teil":2,"count":5}' "${BASE_URL}/api/student_training_set.php")"
+  if [[ "$lesen_body" != *"\"ok\":true"* || "$lesen_body" != *"\"dtz_part\":\"L2"* ]]; then
+    print_fail "DTZ Lesen Teil 2 yükleme doğrulaması başarısız."
+    rm -f "$cookie_file"
+    return
+  fi
+  print_ok "DTZ Lesen Teil 2 set doğrulandı"
+
+  hoeren_body="$(curl -sS -m "$TIMEOUT_SECONDS" -c "$cookie_file" -b "$cookie_file" -H "Accept: application/json" -H "Content-Type: application/json" -X POST --data '{"module":"hoeren","teil":3,"count":5}' "${BASE_URL}/api/student_training_set.php")"
+  if [[ "$hoeren_body" != *"\"ok\":true"* || "$hoeren_body" != *"\"dtz_part\":\"H3"* ]]; then
+    print_fail "DTZ Hören Teil 3 yükleme doğrulaması başarısız."
+    rm -f "$cookie_file"
+    return
+  fi
+  print_ok "DTZ Hören Teil 3 set doğrulandı"
+
+  rm -f "$cookie_file"
+}
+
 echo -e "${YELLOW}DTZ-LID Post-Deploy Healthcheck${NC}"
 echo "Base URL: $BASE_URL"
 echo
@@ -179,6 +241,7 @@ run_contains_check "DTZ UI: Hören button" "/index.html" "Hören (Teil 1-4)"
 run_contains_check "DTZ UI: Lesen button" "/index.html" "Lesen (Teil 1-5)"
 run_contains_warn "DTZ UI: Teil select" "/index.html" "dtzTeilSelect"
 run_contains_warn "DTZ UI: Hören Exam toggle" "/index.html" "dtzHoerenExamMode"
+run_student_auth_dtz_checks
 
 echo
 if [[ "$FAIL_COUNT" -gt 0 ]]; then
