@@ -1655,6 +1655,31 @@
       font-size: 0.97rem;
     }
 
+    .dtz-cloze-text {
+      margin: 0;
+      color: #244668;
+      font-size: 1rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .dtz-cloze-gap-inline {
+      display: inline-block;
+      margin: 0 2px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px dashed #b8cbe3;
+      background: #f6f9ff;
+      color: #17395d;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .dtz-example-lock {
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
     .dtz-summary {
       margin-top: 10px;
       border: 1px solid #bfd4ea;
@@ -3077,9 +3102,9 @@
             count: 5
           },
           5: {
-            title: "Teil 5: Längere Texte",
-            description: "Lesen Sie längere E-Mails/Briefe und beantworten Sie die Aufgaben zum Inhalt.",
-            count: 5
+            title: "Teil 5: Formeller Lückentext",
+            description: "Lesen Sie einen formellen Text und schließen Sie die Lücken 40-45 mit A/B/C.",
+            count: 6
           }
         }
       }
@@ -5059,6 +5084,33 @@
       }));
     }
 
+    function mapLesenTeil5ClozeItem(first) {
+      const exampleRaw = first && typeof first.example === "object" ? first.example : {};
+      const exampleOptions = normalizeDtzOptionMap(exampleRaw.options || {});
+      const gaps = Array.isArray(first.gaps) ? first.gaps : [];
+      return {
+        id: "lesen_teil5_lueckentext",
+        type: "lesen_teil5_lueckentext",
+        dtzPart: normalizeDtzGermanText(String(first.dtz_part || "L5 Formeller Lückentext")),
+        title: normalizeDtzGermanText(String(first.title || "Lesen Teil 5")),
+        instructions: normalizeDtzGermanText(String(first.instructions || "Lesen Sie den Text und schließen Sie die Lücken 40-45.")),
+        textTemplate: normalizeDtzGermanText(String(first.text_template || first.text || "")),
+        example: {
+          no: Number(exampleRaw.no || 0),
+          options: exampleOptions,
+          correct: String(exampleRaw.correct || "").toUpperCase(),
+          explanation: normalizeDtzGermanText(String(exampleRaw.explanation || ""))
+        },
+        gaps: gaps.map((gap, idx) => ({
+          key: String(gap.id || `gap_${40 + idx}`),
+          no: Number(gap.no || (40 + idx)),
+          options: normalizeDtzOptionMap(gap.options || {}),
+          correct: String(gap.correct || "").toUpperCase(),
+          explanation: normalizeDtzGermanText(String(gap.explanation || ""))
+        }))
+      };
+    }
+
     function buildDtzTasks(module, teil, rawItems) {
       const items = Array.isArray(rawItems) ? rawItems : [];
       if (!items.length) return [];
@@ -5104,6 +5156,13 @@
           labels,
           situations
         }];
+      }
+
+      if (module === "lesen" && teil === 5) {
+        const first = items[0] || {};
+        if (String(first.dtz_schema || "").toLowerCase() === "lesen_teil5_lueckentext") {
+          return [mapLesenTeil5ClozeItem(first)];
+        }
       }
 
       return buildDtzLesenSingleChoiceTasksByTeil(teil, items);
@@ -5689,6 +5748,80 @@
       `;
     }
 
+    function renderLesenTeil5ClozeTask(module, state, task) {
+      const template = String(task.textTemplate || "");
+      const gapTokenRegex = /\[(0|4[0-5])\]/g;
+      const textHtml = escapeHtml(template).replace(gapTokenRegex, (_match, no) => {
+        return `<span class="dtz-cloze-gap-inline">(${escapeHtml(String(no))}) ____</span>`;
+      });
+
+      const example = task.example || {};
+      const exampleOptions = OptionGroup({
+        module,
+        inputName: "dtz_lesen_teil5_example",
+        dataKey: "gap_example",
+        optionsMap: example.options || {},
+        selected: String(example.correct || "")
+      });
+
+      const gapsHtml = (Array.isArray(task.gaps) ? task.gaps : []).map((gap, idx) => {
+        const selected = String(state.answers[gap.key] || "");
+        let feedback = "";
+        let rowClass = "lid-question";
+        if (state.evaluated) {
+          if (!selected) {
+            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(String(gap.correct || ""))}`);
+          } else if (selected === String(gap.correct || "")) {
+            rowClass += " correct";
+            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(String(gap.correct || ""))}`);
+          } else {
+            rowClass += " wrong";
+            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(String(gap.correct || ""))}`);
+          }
+          if (gap.explanation) {
+            feedback += ResultBox("", `${escapeHtml(String(gap.explanation || ""))}`);
+          }
+        }
+        return `
+          <article class="${rowClass}">
+            <h4>Lücke ${escapeHtml(String(gap.no || (40 + idx)))}</h4>
+            ${MultipleChoiceQuestion({
+              module,
+              inputName: `dtz_lesen_t5_${escapeHtml(String(gap.key || `gap_${idx}`))}`,
+              dataKey: String(gap.key || `gap_${idx}`),
+              optionsMap: gap.options || {},
+              selected
+            })}
+            ${feedback}
+          </article>
+        `;
+      }).join("");
+
+      const exampleInfo = Number.isFinite(Number(example.no)) ? `Beispiel ${Number(example.no)}` : "Beispiel";
+
+      return `
+        <section class="dtz-lesen-group">
+          <div class="dtz-lesen-group-head">
+            <h4>${escapeHtml(task.dtzPart || "L5 Formeller Lückentext")}</h4>
+            <span>${(Array.isArray(task.gaps) ? task.gaps.length : 0)} Lücken</span>
+          </div>
+          <div class="dtz-lesen-group-body">
+            <article class="lid-question">
+              ${TaskInstruction(task.instructions || "Lesen Sie den Text und schließen Sie die Lücken 40-45.")}
+              <p class="dtz-cloze-text">${textHtml}</p>
+            </article>
+            <article class="lid-question">
+              <h4>${escapeHtml(exampleInfo)} (nicht bewertet)</h4>
+              <div class="lid-options dtz-example-lock">${exampleOptions}</div>
+              ${example.explanation ? ResultBox("", escapeHtml(String(example.explanation || ""))) : ""}
+            </article>
+            ${gapsHtml}
+            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+          </div>
+        </section>
+      `;
+    }
+
     function renderHoerenBundleTask(module, state, task, teilNo) {
       const questions = Array.isArray(task.questions) ? task.questions : [];
       const isPlaying = currentDtzSpeakingIndex === "bundle_main";
@@ -6025,7 +6158,14 @@
     }
     function renderLesenTeil3(module, state) { return renderSingleChoiceTaskList(module, state); }
     function renderLesenTeil4(module, state) { return renderSingleChoiceTaskList(module, state); }
-    function renderLesenTeil5(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderLesenTeil5(module, state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask) return "";
+      if (firstTask.type === "lesen_teil5_lueckentext") {
+        return renderLesenTeil5ClozeTask(module, state, firstTask);
+      }
+      return renderSingleChoiceTaskList(module, state);
+    }
 
     const DTZ_RENDERERS = {
       hoeren: {
@@ -6126,6 +6266,21 @@
       return { total, correct, unanswered };
     }
 
+    function evaluateLesenTeil5Cloze(state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      const gaps = Array.isArray(firstTask && firstTask.gaps) ? firstTask.gaps : [];
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      gaps.forEach((gap) => {
+        total += 1;
+        const selected = String(state.answers[gap.key] || "");
+        if (!selected) unanswered += 1;
+        else if (selected === String(gap.correct || "")) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
     const DTZ_EVALUATORS = {
       hoeren: {
         1: evaluateHoerenBundleTeil,
@@ -6138,7 +6293,7 @@
         2: evaluateLesenTeil2,
         3: evaluateSingleChoiceTeil,
         4: evaluateSingleChoiceTeil,
-        5: evaluateSingleChoiceTeil
+        5: evaluateLesenTeil5Cloze
       }
     };
 
@@ -6212,6 +6367,9 @@
       }
       if (firstTask.type === "lesen_teil2_matching") {
         return Array.isArray(firstTask.situations) ? firstTask.situations.length : 0;
+      }
+      if (firstTask.type === "lesen_teil5_lueckentext") {
+        return Array.isArray(firstTask.gaps) ? firstTask.gaps.length : 0;
       }
       return state.tasks.length;
     }

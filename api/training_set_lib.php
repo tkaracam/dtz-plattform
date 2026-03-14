@@ -1818,11 +1818,157 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
     ];
 }
 
+function build_lesen_teil5_cloze_pools(): array
+{
+    return [
+        [
+            'title' => 'Beschwerde an die Hausverwaltung',
+            'instructions' => 'Lesen Sie den Text und schliessen Sie die Luecken 40-45. Welche Loesung (A, B oder C) passt am besten?',
+            'text_template' => 'Sehr geehrte Damen und Herren,\n\nich wohne seit zwei Jahren in der Gartenstrasse 12 und schreibe Ihnen [0] eines Problems in meiner Wohnung. Seit Montag funktioniert die Heizung nicht mehr, [40] es in den Raeumen sehr kalt ist. Ich habe bereits zweimal im Buero angerufen, [41] leider noch keinen Termin bekommen. Bitte schicken Sie [42] bald einen Techniker. Morgen bin ich von 8 bis 12 Uhr zu Hause, [43] am Nachmittag. Wenn dieser Termin nicht moeglich ist, teilen Sie mir bitte [44] neuen Vorschlag per E-Mail mit. Ich danke Ihnen [45] im Voraus fuer Ihre Rueckmeldung.\n\nMit freundlichen Gruessen\nSema Aydin',
+            'example' => [
+                'no' => 0,
+                'options' => ['A' => 'wegen', 'B' => 'aufgrund', 'C' => 'ueber'],
+                'correct' => 'C',
+                'rationale' => 'Man schreibt: ueber eines Problems schreiben.',
+            ],
+            'gaps' => [
+                ['no' => 40, 'options' => ['A' => 'obwohl', 'B' => 'weil', 'C' => 'dass'], 'correct' => 'B', 'rationale' => 'Kausalsatz: weil es kalt ist.'],
+                ['no' => 41, 'options' => ['A' => 'aber', 'B' => 'oder', 'C' => 'denn'], 'correct' => 'A', 'rationale' => 'Gegensatz: angerufen, aber keinen Termin bekommen.'],
+                ['no' => 42, 'options' => ['A' => 'mich', 'B' => 'mir', 'C' => 'ich'], 'correct' => 'B', 'rationale' => 'Dativobjekt: schicken Sie mir einen Techniker.'],
+                ['no' => 43, 'options' => ['A' => 'sondern', 'B' => 'und', 'C' => 'oder'], 'correct' => 'A', 'rationale' => 'Nicht ..., sondern ...'],
+                ['no' => 44, 'options' => ['A' => 'ein', 'B' => 'einen', 'C' => 'einem'], 'correct' => 'B', 'rationale' => 'Akkusativ maskulin: einen Vorschlag.'],
+                ['no' => 45, 'options' => ['A' => 'fuer', 'B' => 'an', 'C' => 'mit'], 'correct' => 'A', 'rationale' => 'Feste Verbindung: ich danke Ihnen im Voraus fuer ...'],
+            ],
+        ],
+        [
+            'title' => 'Anfrage wegen Kurswechsel',
+            'instructions' => 'Lesen Sie den Text und schliessen Sie die Luecken 40-45. Welche Loesung (A, B oder C) passt am besten?',
+            'text_template' => 'Sehr geehrte Frau Keller,\n\nich besuche seit September Ihren Abendkurs. Leider habe ich [0] neue Arbeitszeiten bekommen und kann dienstags nicht mehr teilnehmen. Mein Arbeitgeber hat mir mitgeteilt, [40] ich kuenftig bis 19 Uhr arbeite. Deshalb moechte ich fragen, [41] ein Wechsel in den Vormittagskurs moeglich ist. Ich lerne sehr gern in Ihrer Schule und moechte den Kurs [42] Fall fortsetzen. Falls ein Wechsel nur ab naechstem Monat geht, waere das [43] in Ordnung. Bitte geben Sie mir [44] kurze Rueckmeldung, welche Unterlagen ich dafuer brauche. Vielen Dank [45] Ihre Hilfe.\n\nMit freundlichen Gruessen\nMurat Demir',
+            'example' => [
+                'no' => 0,
+                'options' => ['A' => 'ein', 'B' => 'eine', 'C' => 'einer'],
+                'correct' => 'B',
+                'rationale' => 'Plural mit Artikel: neue Arbeitszeiten.',
+            ],
+            'gaps' => [
+                ['no' => 40, 'options' => ['A' => 'dass', 'B' => 'ob', 'C' => 'wenn'], 'correct' => 'A', 'rationale' => 'Mitgeteilt, dass ...'],
+                ['no' => 41, 'options' => ['A' => 'warum', 'B' => 'ob', 'C' => 'wann'], 'correct' => 'B', 'rationale' => 'Indirekte Frage: ob ein Wechsel moeglich ist.'],
+                ['no' => 42, 'options' => ['A' => 'in jedem', 'B' => 'an jedem', 'C' => 'bei jedem'], 'correct' => 'A', 'rationale' => 'Feste Verbindung: in jedem Fall.'],
+                ['no' => 43, 'options' => ['A' => 'trotzdem', 'B' => 'noch', 'C' => 'auch'], 'correct' => 'C', 'rationale' => 'Das waere auch in Ordnung.'],
+                ['no' => 44, 'options' => ['A' => 'eine', 'B' => 'einen', 'C' => 'einer'], 'correct' => 'A', 'rationale' => 'Akkusativ feminin: eine Rueckmeldung.'],
+                ['no' => 45, 'options' => ['A' => 'fuer', 'B' => 'ueber', 'C' => 'ohne'], 'correct' => 'A', 'rationale' => 'Vielen Dank fuer ...'],
+            ],
+        ],
+        [
+            'title' => 'Bewerbung um ein Praktikum',
+            'instructions' => 'Lesen Sie den Text und schliessen Sie die Luecken 40-45. Welche Loesung (A, B oder C) passt am besten?',
+            'text_template' => 'Sehr geehrte Damen und Herren,\n\nhiermit bewerbe ich mich [0] ein zweiwoechiges Praktikum in Ihrem Betrieb. Zurzeit besuche ich einen Deutschkurs auf Niveau B1 und suche eine Moeglichkeit, meine Sprachkenntnisse im Berufsalltag zu verbessern. In Ihrer Anzeige steht, [40] Sie Praktikanten im Bereich Lagerlogistik suchen. Besonders interessiert mich diese Stelle, [41] ich bereits in meinem Heimatland in einem kleinen Lager gearbeitet habe. Ich bin zuverlaessig, puenktlich und lerne schnell. Ab dem 15. Mai bin ich zeitlich flexibel und kann taeglich von 8 bis 16 Uhr arbeiten. Ueber [42] Einladung zu einem Gespraech wuerde ich mich sehr freuen. Meine Unterlagen sende ich Ihnen [43] im Anhang. Fuer Rueckfragen erreichen Sie mich [44] dieser E-Mail-Adresse. Vielen Dank [45] Ihre Zeit.\n\nMit freundlichen Gruessen\nAndrii Petrenko',
+            'example' => [
+                'no' => 0,
+                'options' => ['A' => 'um', 'B' => 'fuer', 'C' => 'bei'],
+                'correct' => 'A',
+                'rationale' => 'Man bewirbt sich um eine Stelle/ein Praktikum.',
+            ],
+            'gaps' => [
+                ['no' => 40, 'options' => ['A' => 'ob', 'B' => 'dass', 'C' => 'weil'], 'correct' => 'B', 'rationale' => 'In der Anzeige steht, dass ...'],
+                ['no' => 41, 'options' => ['A' => 'weil', 'B' => 'damit', 'C' => 'obwohl'], 'correct' => 'A', 'rationale' => 'Begruendung mit weil.'],
+                ['no' => 42, 'options' => ['A' => 'den', 'B' => 'dem', 'C' => 'eine'], 'correct' => 'C', 'rationale' => 'Akkusativ feminin: ueber eine Einladung.'],
+                ['no' => 43, 'options' => ['A' => 'mit', 'B' => 'bei', 'C' => 'von'], 'correct' => 'A', 'rationale' => 'etwas mit/als Anhang senden.'],
+                ['no' => 44, 'options' => ['A' => 'an', 'B' => 'unter', 'C' => 'nach'], 'correct' => 'B', 'rationale' => 'erreichen unter einer Adresse.'],
+                ['no' => 45, 'options' => ['A' => 'fuer', 'B' => 'auf', 'C' => 'gegen'], 'correct' => 'A', 'rationale' => 'Vielen Dank fuer Ihre Zeit.'],
+            ],
+        ],
+        [
+            'title' => 'E-Mail an ein Hotel',
+            'instructions' => 'Lesen Sie den Text und schliessen Sie die Luecken 40-45. Welche Loesung (A, B oder C) passt am besten?',
+            'text_template' => 'Sehr geehrte Damen und Herren,\n\nich moechte vom 8. bis 10. Juni ein Doppelzimmer in Ihrem Hotel reservieren und habe dazu [0] Fragen. In Ihrer Online-Anzeige habe ich gelesen, [40] das Fruehstueck im Preis enthalten ist. Koennen Sie mir bitte bestaetigen, ob es auch vegetarische Optionen gibt? Ausserdem reisen wir mit dem Zug an, [41] wir erst gegen 21 Uhr einchecken koennen. Ist ein spaeter Check-in [42] Problem moeglich? Falls Sie fuer die Reservierung eine Anzahlung brauchen, ueberweise ich den Betrag sofort. Bitte schicken Sie mir [43] kurze Bestaetigung mit dem Gesamtpreis. Sie erreichen mich tagsueber [44] Telefon oder per E-Mail. Vielen Dank [45] Ihre schnelle Rueckmeldung.\n\nMit freundlichen Gruessen\nLeyla Sahin',
+            'example' => [
+                'no' => 0,
+                'options' => ['A' => 'keinen', 'B' => 'einige', 'C' => 'jeden'],
+                'correct' => 'B',
+                'rationale' => 'Ich habe dazu einige Fragen.',
+            ],
+            'gaps' => [
+                ['no' => 40, 'options' => ['A' => 'dass', 'B' => 'ob', 'C' => 'wenn'], 'correct' => 'A', 'rationale' => 'gelesen, dass ...'],
+                ['no' => 41, 'options' => ['A' => 'denn', 'B' => 'deshalb', 'C' => 'weil'], 'correct' => 'C', 'rationale' => 'Grund fuer spaeten Check-in: weil ...'],
+                ['no' => 42, 'options' => ['A' => 'ohne', 'B' => 'mit', 'C' => 'an'], 'correct' => 'A', 'rationale' => 'ohne Problem moeglich.'],
+                ['no' => 43, 'options' => ['A' => 'einen', 'B' => 'eine', 'C' => 'einem'], 'correct' => 'B', 'rationale' => 'Akkusativ feminin: eine Bestaetigung.'],
+                ['no' => 44, 'options' => ['A' => 'mit', 'B' => 'bei', 'C' => 'unter'], 'correct' => 'C', 'rationale' => 'unter Telefon erreichbar sein.'],
+                ['no' => 45, 'options' => ['A' => 'fuer', 'B' => 'gegen', 'C' => 'ueber'], 'correct' => 'A', 'rationale' => 'Vielen Dank fuer ...'],
+            ],
+        ],
+    ];
+}
+
+function create_lesen_teil5_structured_set(bool $includeExplanation): array
+{
+    $pool = build_lesen_teil5_cloze_pools();
+    if (!$pool) {
+        throw new RuntimeException('Fuer Lesen Teil 5 sind keine strukturierten Aufgaben verfuegbar.');
+    }
+
+    $picked = pick_random_item($pool);
+    $gaps = [];
+    foreach ((array)($picked['gaps'] ?? []) as $idx => $gap) {
+        $prepared = prepare_training_options(
+            (array)($gap['options'] ?? []),
+            (string)($gap['correct'] ?? ''),
+            true
+        );
+        $no = (int)($gap['no'] ?? (40 + $idx));
+        $gaps[] = [
+            'id' => 'gap_' . $no,
+            'no' => $no,
+            'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
+            'correct' => (string)$prepared['correct'],
+            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($gap['rationale'] ?? '')) : '',
+        ];
+    }
+
+    $example = (array)($picked['example'] ?? []);
+    $examplePrepared = prepare_training_options(
+        (array)($example['options'] ?? []),
+        (string)($example['correct'] ?? ''),
+        false
+    );
+
+    $item = [
+        'set_index' => 1,
+        'template_id' => 'lesen_teil5_struct_' . substr(sha1((string)json_encode($picked)), 0, 8),
+        'dtz_schema' => 'lesen_teil5_lueckentext',
+        'dtz_part' => 'L5 Formeller Lueckentext',
+        'task_type' => 'Formeller Text mit Luecken',
+        'context' => 'Alltag A2-B1',
+        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 5')),
+        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+        'text_template' => germanize_umlauts_text((string)($picked['text_template'] ?? '')),
+        'example' => [
+            'no' => (int)($example['no'] ?? 0),
+            'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$examplePrepared['options']),
+            'correct' => (string)$examplePrepared['correct'],
+            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($example['rationale'] ?? '')) : '',
+        ],
+        'gaps' => $gaps,
+    ];
+
+    return [
+        'module' => 'lesen',
+        'teil' => 5,
+        'count' => 1,
+        'include_explanation' => $includeExplanation,
+        'generated_at' => gmdate('c'),
+        'items' => [$item],
+    ];
+}
+
 function create_training_set(string $module, int $count, bool $includeExplanation, int $teil = 0): array
 {
     $normalizedModule = normalize_training_module($module);
     if ($normalizedModule === 'hoeren' && $teil >= 1 && $teil <= 4) {
         return create_hoeren_structured_set($teil, $includeExplanation);
+    }
+    if ($normalizedModule === 'lesen' && $teil === 5) {
+        return create_lesen_teil5_structured_set($includeExplanation);
     }
 
     $templates = get_training_templates($module, $teil);
