@@ -28,6 +28,10 @@ on:
         description: "Hata sonrası bekleme (saniye)"
         required: false
         default: "30"
+      healthcheck_timeout_seconds:
+        description: "Tek deneme için timeout (saniye)"
+        required: false
+        default: "150"
 
 permissions:
   contents: read
@@ -45,6 +49,7 @@ jobs:
       WARMUP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.warmup_seconds || '180' }}
       MAX_ATTEMPTS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.max_attempts || '8' }}
       RETRY_DELAY_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.retry_delay_seconds || '30' }}
+      HC_TIMEOUT_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.healthcheck_timeout_seconds || '150' }}
       HC_STUDENT_USERNAME: ${{ secrets.HC_STUDENT_USERNAME }}
       HC_STUDENT_PASSWORD: ${{ secrets.HC_STUDENT_PASSWORD }}
     steps:
@@ -57,7 +62,9 @@ jobs:
           case "${WARMUP_SECONDS}" in ''|*[!0-9]*) echo "WARMUP_SECONDS sayi olmali"; exit 1;; esac
           case "${MAX_ATTEMPTS}" in ''|*[!0-9]*) echo "MAX_ATTEMPTS sayi olmali"; exit 1;; esac
           case "${RETRY_DELAY_SECONDS}" in ''|*[!0-9]*) echo "RETRY_DELAY_SECONDS sayi olmali"; exit 1;; esac
+          case "${HC_TIMEOUT_SECONDS}" in ''|*[!0-9]*) echo "HC_TIMEOUT_SECONDS sayi olmali"; exit 1;; esac
           [ "${MAX_ATTEMPTS}" -ge 1 ] || { echo "MAX_ATTEMPTS en az 1 olmali"; exit 1; }
+          [ "${HC_TIMEOUT_SECONDS}" -ge 10 ] || { echo "HC_TIMEOUT_SECONDS en az 10 olmali"; exit 1; }
 
       - name: Prepare healthcheck script
         run: chmod +x tools/healthcheck.sh
@@ -100,6 +107,7 @@ jobs:
             echo "- Targets: \`${TARGETS}\`"
             echo "- Trigger: \`${{ github.event_name }}\`"
             echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Attempt timeout: \`${HC_TIMEOUT_SECONDS}s\`"
             echo ""
           } >> "${GITHUB_STEP_SUMMARY}"
 
@@ -108,9 +116,14 @@ jobs:
             passed=0
             while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
               echo "Attempt ${attempt}/${MAX_ATTEMPTS} -> ${BASE_URL}"
-              if ./tools/healthcheck.sh "${BASE_URL}" 2>&1 | tee -a "${LOG_FILE}"; then
+              rc=0
+              timeout "${HC_TIMEOUT_SECONDS}" bash -o pipefail -c './tools/healthcheck.sh "$1" 2>&1 | tee -a "$2"' _ "${BASE_URL}" "${LOG_FILE}" || rc=$?
+              if [ "$rc" -eq 0 ]; then
                 passed=1
                 break
+              fi
+              if [ "$rc" -eq 124 ]; then
+                echo "Healthcheck timeout after ${HC_TIMEOUT_SECONDS}s for ${BASE_URL}" | tee -a "${LOG_FILE}"
               fi
               if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
                 echo "Healthcheck failed for ${BASE_URL}. Retrying in ${RETRY_DELAY_SECONDS}s..."
