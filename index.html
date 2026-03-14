@@ -1663,6 +1663,50 @@
       color: #8a3026;
     }
 
+    .dtz-inline-action-row {
+      margin-top: 8px;
+    }
+
+    .dtz-hoeren-group {
+      margin-top: 10px;
+    }
+
+    .dtz-dialog-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .dtz-dialog-card {
+      border: 1px solid #d8e3f1;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 10px;
+    }
+
+    .dtz-dialog-task {
+      margin-top: 8px;
+    }
+
+    .dtz-matching-item {
+      border: 1px solid #d8e3f1;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 10px;
+    }
+
+    .dtz-matching-label {
+      display: grid;
+      gap: 6px;
+      color: #1d3f65;
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+
+    .dtz-matching-label select {
+      width: 100%;
+    }
+
     .sim-timer-wrap {
       margin-top: 12px;
       border: 1px solid #cfd9ea;
@@ -2257,7 +2301,8 @@
           </p>
           <div class="level-bar">
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
-            <button type="button" class="level-tile b1" id="levelB1Btn">DTZ<small>DTZ Fokus</small></button>
+            <button type="button" class="level-tile b1" id="levelHoerenBtn">Hören<small>DTZ Training</small></button>
+            <button type="button" class="level-tile b1" id="levelLesenBtn">Lesen<small>DTZ Training</small></button>
             <button type="button" class="level-tile b1" id="levelA2Btn">A2<small>A2 Themen</small></button>
             <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
           </div>
@@ -2731,78 +2776,66 @@
       </section>
 
       <section id="dtzTrainingCard" class="card hidden">
-        <details id="dtzTrainingAccordion" class="card-accordion">
-          <summary class="card-accordion-summary">
+        <details id="dtzHoerenAccordion" class="dtz-module-accordion">
+          <summary class="dtz-module-summary">
             <div class="title-wrap">
-              <h2 class="section-title">DTZ Hören/Lesen Training</h2>
+              <h3 class="section-title">Hören (Teil 1-4)</h3>
             </div>
             <span class="card-accordion-icon">▾</span>
           </summary>
-          <div class="card-accordion-body">
-            <p class="dtz-hint">Wählen Sie ein Modul und einen Teil. Jede Teilaufgabe wird separat geladen und ausgewertet.</p>
-
-            <details id="dtzHoerenAccordion" class="dtz-module-accordion">
-              <summary class="dtz-module-summary">
-                <div class="title-wrap">
-                  <h3 class="section-title">Hören (Teil 1-4)</h3>
-                </div>
-                <span class="card-accordion-icon">▾</span>
-              </summary>
-              <div class="dtz-module-body">
-                <div class="dtz-meta-row">
-                  <div>
-                    <label for="dtzHoerenTeilSelect">Teil auswählen</label>
-                    <select id="dtzHoerenTeilSelect">
-                      <option value="1" selected>Teil 1</option>
-                      <option value="2">Teil 2</option>
-                      <option value="3">Teil 3</option>
-                      <option value="4">Teil 4</option>
-                    </select>
-                  </div>
-                </div>
-                <div id="dtzHoerenPartMeta" class="dtz-part-meta"></div>
-                <div id="dtzHoerenStatus" class="hidden"></div>
-                <div id="dtzHoerenSummary" class="dtz-summary hidden"></div>
-                <div id="dtzHoerenList" class="lid-list dtz-list"></div>
-                <div class="row-end dtz-action-row">
-                  <div class="btn-wrap">
-                    <button id="dtzHoerenActionBtn" type="button">NEUE AUFGABEN AUSWERTEN</button>
-                  </div>
-                </div>
+          <div class="dtz-module-body">
+            <div class="dtz-meta-row">
+              <div>
+                <label for="dtzHoerenTeilSelect">Teil auswählen</label>
+                <select id="dtzHoerenTeilSelect">
+                  <option value="1" selected>Teil 1</option>
+                  <option value="2">Teil 2</option>
+                  <option value="3">Teil 3</option>
+                  <option value="4">Teil 4</option>
+                </select>
               </div>
-            </details>
-
-            <details id="dtzLesenAccordion" class="dtz-module-accordion">
-              <summary class="dtz-module-summary">
-                <div class="title-wrap">
-                  <h3 class="section-title">Lesen (Teil 1-5)</h3>
-                </div>
-                <span class="card-accordion-icon">▾</span>
-              </summary>
-              <div class="dtz-module-body">
-                <div class="dtz-meta-row">
-                  <div>
-                    <label for="dtzLesenTeilSelect">Teil auswählen</label>
-                    <select id="dtzLesenTeilSelect">
-                      <option value="1" selected>Teil 1</option>
-                      <option value="2">Teil 2</option>
-                      <option value="3">Teil 3</option>
-                      <option value="4">Teil 4</option>
-                      <option value="5">Teil 5</option>
-                    </select>
-                  </div>
-                </div>
-                <div id="dtzLesenPartMeta" class="dtz-part-meta"></div>
-                <div id="dtzLesenStatus" class="hidden"></div>
-                <div id="dtzLesenSummary" class="dtz-summary hidden"></div>
-                <div id="dtzLesenList" class="lid-list dtz-list"></div>
-                <div class="row-end dtz-action-row">
-                  <div class="btn-wrap">
-                    <button id="dtzLesenActionBtn" type="button">NEUE AUFGABEN AUSWERTEN</button>
-                  </div>
-                </div>
+            </div>
+            <div id="dtzHoerenPartMeta" class="dtz-part-meta"></div>
+            <div id="dtzHoerenStatus" class="hidden"></div>
+            <div id="dtzHoerenSummary" class="dtz-summary hidden"></div>
+            <div id="dtzHoerenList" class="lid-list dtz-list"></div>
+            <div class="row-end dtz-action-row">
+              <div class="btn-wrap">
+                <button id="dtzHoerenActionBtn" type="button">NEUE AUFGABEN AUSWERTEN</button>
               </div>
-            </details>
+            </div>
+          </div>
+        </details>
+
+        <details id="dtzLesenAccordion" class="dtz-module-accordion">
+          <summary class="dtz-module-summary">
+            <div class="title-wrap">
+              <h3 class="section-title">Lesen (Teil 1-5)</h3>
+            </div>
+            <span class="card-accordion-icon">▾</span>
+          </summary>
+          <div class="dtz-module-body">
+            <div class="dtz-meta-row">
+              <div>
+                <label for="dtzLesenTeilSelect">Teil auswählen</label>
+                <select id="dtzLesenTeilSelect">
+                  <option value="1" selected>Teil 1</option>
+                  <option value="2">Teil 2</option>
+                  <option value="3">Teil 3</option>
+                  <option value="4">Teil 4</option>
+                  <option value="5">Teil 5</option>
+                </select>
+              </div>
+            </div>
+            <div id="dtzLesenPartMeta" class="dtz-part-meta"></div>
+            <div id="dtzLesenStatus" class="hidden"></div>
+            <div id="dtzLesenSummary" class="dtz-summary hidden"></div>
+            <div id="dtzLesenList" class="lid-list dtz-list"></div>
+            <div class="row-end dtz-action-row">
+              <div class="btn-wrap">
+                <button id="dtzLesenActionBtn" type="button">NEUE AUFGABEN AUSWERTEN</button>
+              </div>
+            </div>
           </div>
         </details>
       </section>
@@ -2908,7 +2941,9 @@
     // Böylece her Teil kendi cevapları ve değerlendirmesiyle bağımsız kalır.
     let currentDtzStates = null;
     let dtzUiInitialized = false;
-    let currentDtzSpeakingIndex = -1;
+    // Hinweis: Name historisch "Index", jetzt bewusst als eindeutiger Audio-Key genutzt.
+    // Beispiel-Keys: bundle_main, dialog:d_1, statement:s_3, q_0
+    let currentDtzSpeakingIndex = "";
     let currentDtzUtterance = null;
     let currentDtzSpeechQueue = [];
     let currentDtzServerAudioQueue = [];
@@ -2945,22 +2980,22 @@
         teils: {
           1: {
             title: "Teil 1: Kurze Ansagen",
-            description: "Sie hören kurze Mitteilungen (z. B. Praxis, Amt, Kurs). Wählen Sie pro Aufgabe eine richtige Antwort (A/B/C).",
-            count: 5
+            description: "Ein kurzer Ansagetext mit 4 Aufgaben (A/B/C).",
+            count: 4
           },
           2: {
-            title: "Teil 2: Dialoge",
-            description: "Sie hören kurze Dialoge aus dem Alltag. Achten Sie auf konkrete Informationen und wählen Sie A/B/C.",
+            title: "Teil 2: Informationen",
+            description: "Ein Informations-/Radiotext mit 5 Aufgaben (A/B/C).",
             count: 5
           },
           3: {
-            title: "Teil 3: Informationsgespräche",
-            description: "Sie hören Informationsgespräche (z. B. Bank, Jobcenter, Kurs). Pro Aufgabe gibt es genau eine richtige Antwort.",
-            count: 5
+            title: "Teil 3: Dialoge",
+            description: "4 Dialoge. Pro Dialog: Richtig/Falsch + 1 Detailfrage (A/B/C).",
+            count: 8
           },
           4: {
-            title: "Teil 4: Meinungen und Absichten",
-            description: "Sie hören Aussagen zu Meinung, Grund oder Absicht. Entscheiden Sie sich jeweils für A/B/C.",
+            title: "Teil 4: Aussagen zuordnen",
+            description: "Kurze Aussagen hören und passende Antwort zuordnen.",
             count: 5
           }
         }
@@ -4572,13 +4607,23 @@
       showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
       setAccordionOpen("workAccordion", false);
       setAccordionOpen("speakingAccordion", false);
-      setAccordionOpen("dtzTrainingAccordion", false);
       setAccordionOpen("dtzHoerenAccordion", false);
       setAccordionOpen("dtzLesenAccordion", false);
       loadCurrentAssignedHomework();
       generateSpeakingSet();
       setSpeakingTab(1);
       initDtzTrainingUi();
+    }
+
+    function openDtzModuleView(module) {
+      const normalized = module === "lesen" ? "lesen" : "hoeren";
+      const targetAccordion = normalized === "lesen" ? "dtzLesenAccordion" : "dtzHoerenAccordion";
+      const otherAccordion = normalized === "lesen" ? "dtzHoerenAccordion" : "dtzLesenAccordion";
+
+      openB1View();
+      setAccordionOpen(otherAccordion, false);
+      setAccordionOpen(targetAccordion, true);
+      renderDtzModule(normalized);
     }
 
     function getDtzModuleState(module) {
@@ -4638,10 +4683,10 @@
       return `<p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(text || "")}</p>`;
     }
 
-    function AudioPlayer(module, index, isPlaying) {
+    function AudioPlayer(module, audioKey, isPlaying) {
       return `
         <div class="dtz-audio-actions">
-          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-index="${index}" data-dtz-module="${module}">
+          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}">
             ${isPlaying ? "Audio stoppen" : "Audio abspielen"}
           </button>
         </div>
@@ -4691,8 +4736,16 @@
       return `<div class="dtz-eval-note ${cls}">${message || ""}</div>`;
     }
 
-    function EvaluateButton(buttonId, label) {
-      return `<button id="${escapeHtml(buttonId || "")}" type="button">${escapeHtml(label || "Auswerten")}</button>`;
+    function EvaluateButton(module, label) {
+      return `
+        <div class="row-end dtz-inline-action-row">
+          <div class="btn-wrap">
+            <button type="button" data-dtz-evaluate-inline="${escapeHtml(String(module || ""))}">
+              ${escapeHtml(label || "NEUE AUFGABEN AUSWERTEN")}
+            </button>
+          </div>
+        </div>
+      `;
     }
 
     function DtzAccordion(module) {
@@ -4791,8 +4844,112 @@
       };
     }
 
+    function normalizeDtzOptionMap(mapLike) {
+      const out = {};
+      Object.entries(mapLike || {}).forEach(([label, value]) => {
+        const key = String(label || "").trim().toUpperCase();
+        if (!key) return;
+        out[key] = normalizeDtzGermanText(String(value || ""));
+      });
+      return out;
+    }
+
+    function mapHoerenBundleItem(item, teil) {
+      const questions = Array.isArray(item.questions)
+        ? item.questions.map((q, idx) => ({
+            id: `q_${idx}`,
+            question: normalizeDtzGermanText(String(q.question || "Was ist richtig?")),
+            options: normalizeDtzOptionMap(q.options || {}),
+            correct: String(q.correct || "").toUpperCase(),
+            explanation: normalizeDtzGermanText(String(q.explanation || "")),
+          }))
+        : [];
+
+      return {
+        id: `hoeren_teil${teil}_bundle`,
+        type: `hoeren_teil${teil}_bundle`,
+        dtzPart: normalizeDtzGermanText(String(item.dtz_part || `H${teil}`)),
+        title: normalizeDtzGermanText(String(item.title || "")),
+        instructions: normalizeDtzGermanText(String(item.instructions || "")),
+        audio_script: normalizeDtzGermanText(String(item.audio_script || item.text || "")),
+        speakerMeta: Array.isArray(item.speaker_meta) ? item.speaker_meta.map((s) => String(s || "").trim().toLowerCase()).filter(Boolean) : ["narrator"],
+        questions
+      };
+    }
+
+    function mapHoerenDialogCardsItem(item) {
+      const dialogs = Array.isArray(item.dialogs)
+        ? item.dialogs.map((dialog, idx) => ({
+            id: String(dialog.id || `d_${idx + 1}`),
+            title: normalizeDtzGermanText(String(dialog.title || `Dialog ${idx + 1}`)),
+            audio_script: normalizeDtzGermanText(String(dialog.audio_script || "")),
+            speakerMeta: Array.isArray(dialog.speaker_meta) ? dialog.speaker_meta.map((s) => String(s || "").trim().toLowerCase()).filter(Boolean) : [],
+            trueFalse: {
+              statement: normalizeDtzGermanText(String(((dialog.true_false || {}).statement) || "")),
+              correct: String(((dialog.true_false || {}).correct) || "").toUpperCase(),
+              explanation: normalizeDtzGermanText(String(((dialog.true_false || {}).explanation) || "")),
+            },
+            detail: {
+              question: normalizeDtzGermanText(String(((dialog.detail || {}).question) || "Was ist richtig?")),
+              options: normalizeDtzOptionMap((dialog.detail || {}).options || {}),
+              correct: String(((dialog.detail || {}).correct) || "").toUpperCase(),
+              explanation: normalizeDtzGermanText(String(((dialog.detail || {}).explanation) || "")),
+            }
+          }))
+        : [];
+
+      return {
+        id: "hoeren_teil3_dialogcards",
+        type: "hoeren_teil3_dialogcards",
+        dtzPart: normalizeDtzGermanText(String(item.dtz_part || "H3 Dialoge")),
+        title: normalizeDtzGermanText(String(item.title || "")),
+        instructions: normalizeDtzGermanText(String(item.instructions || "")),
+        dialogs
+      };
+    }
+
+    function mapHoerenMatchingItem(item) {
+      const options = normalizeDtzOptionMap(item.options || {});
+      const statements = Array.isArray(item.statements)
+        ? item.statements.map((statement, idx) => ({
+            id: String(statement.id || `s_${idx + 1}`),
+            title: normalizeDtzGermanText(String(statement.title || `Aussage ${idx + 1}`)),
+            audio_script: normalizeDtzGermanText(String(statement.audio_script || "")),
+            speaker: String(statement.speaker || "narrator").trim().toLowerCase(),
+            question: normalizeDtzGermanText(String(statement.question || "Welche Antwort passt?")),
+            correct: String(statement.correct || "").toUpperCase(),
+            explanation: normalizeDtzGermanText(String(statement.explanation || "")),
+          }))
+        : [];
+
+      return {
+        id: "hoeren_teil4_matching",
+        type: "hoeren_teil4_matching",
+        dtzPart: normalizeDtzGermanText(String(item.dtz_part || "H4 Aussagen zuordnen")),
+        title: normalizeDtzGermanText(String(item.title || "")),
+        instructions: normalizeDtzGermanText(String(item.instructions || "")),
+        allowReuse: !!item.allow_reuse,
+        options,
+        statements
+      };
+    }
+
     // Teil-spezifische Task-Builder: jede Teil-Logik hat ein eigenes Schema.
     function buildDtzHoerenTasksByTeil(teil, items) {
+      const first = items[0] || {};
+      const schema = normalizeDtzGermanText(String(first.dtz_schema || "")).toLowerCase();
+
+      if (schema === "hoeren_teil1_bundle" || schema === "hoeren_teil2_bundle") {
+        return [mapHoerenBundleItem(first, teil)];
+      }
+      if (schema === "hoeren_teil3_dialogcards") {
+        return [mapHoerenDialogCardsItem(first)];
+      }
+      if (schema === "hoeren_teil4_matching") {
+        return [mapHoerenMatchingItem(first)];
+      }
+
+      // Fallback für alte Datensätze: weiterhin Single-Choice renderbar halten.
       const partMap = {
         1: "hoeren_teil1_single_choice",
         2: "hoeren_teil2_single_choice",
@@ -4810,7 +4967,7 @@
         instructions: normalizeDtzGermanText(String(item.instructions || "")),
         text: normalizeDtzGermanText(String(item.text || "")),
         question: normalizeDtzGermanText(String(item.question || "Was ist richtig?")),
-        options: item.options || {},
+        options: normalizeDtzOptionMap(item.options || {}),
         correct: String(item.correct || "").toUpperCase(),
         explanation: normalizeDtzGermanText(String(item.explanation || ""))
       }));
@@ -4946,7 +5103,7 @@
       currentDtzServerAudioEl = null;
       currentDtzServerAudioQueue = [];
       currentDtzSpeechQueue = [];
-      currentDtzSpeakingIndex = -1;
+      currentDtzSpeakingIndex = "";
       currentDtzUtterance = null;
       currentDtzAudioBackendMode = "";
       if (!keepStatus) {
@@ -5155,17 +5312,79 @@
       };
     }
 
-    function playServerDtzAudioSegments(segments, index, module) {
+    function getDtzAudioSourceByKey(module, state, audioKey) {
+      if (module !== "hoeren") return null;
+      const key = String(audioKey || "").trim();
+      if (!key) return null;
+      const firstTask = (Array.isArray(state.tasks) && state.tasks[0]) ? state.tasks[0] : null;
+      if (!firstTask) return null;
+
+      if ((firstTask.type === "hoeren_teil1_bundle" || firstTask.type === "hoeren_teil2_bundle") && key === "bundle_main") {
+        const script = String(firstTask.audio_script || "").trim();
+        if (!script) return null;
+        return {
+          key,
+          script,
+          label: String(firstTask.dtzPart || `Teil ${state.teil}`),
+          speakerMeta: Array.isArray(firstTask.speakerMeta) ? firstTask.speakerMeta : ["narrator"],
+          cacheTarget: firstTask
+        };
+      }
+
+      if (firstTask.type === "hoeren_teil3_dialogcards" && key.startsWith("dialog:")) {
+        const id = key.slice("dialog:".length);
+        const dialog = (Array.isArray(firstTask.dialogs) ? firstTask.dialogs : []).find(item => String(item.id || "") === id);
+        if (!dialog) return null;
+        const script = String(dialog.audio_script || "").trim();
+        if (!script) return null;
+        return {
+          key,
+          script,
+          label: String(dialog.title || "Dialog"),
+          speakerMeta: Array.isArray(dialog.speakerMeta) ? dialog.speakerMeta : [],
+          cacheTarget: dialog
+        };
+      }
+
+      if (firstTask.type === "hoeren_teil4_matching" && key.startsWith("statement:")) {
+        const id = key.slice("statement:".length);
+        const statement = (Array.isArray(firstTask.statements) ? firstTask.statements : []).find(item => String(item.id || "") === id);
+        if (!statement) return null;
+        const script = String(statement.audio_script || "").trim();
+        if (!script) return null;
+        return {
+          key,
+          script,
+          label: String(statement.title || "Aussage"),
+          speakerMeta: [String(statement.speaker || "narrator").trim().toLowerCase()],
+          cacheTarget: statement
+        };
+      }
+
+      const fallbackTask = (Array.isArray(state.tasks) ? state.tasks : []).find((task, idx) => `q_${idx}` === key);
+      if (!fallbackTask) return null;
+      const script = String(fallbackTask.audio_script || fallbackTask.text || "").trim();
+      if (!script) return null;
+      return {
+        key,
+        script,
+        label: String(fallbackTask.dtzPart || `Teil ${state.teil}`),
+        speakerMeta: Array.isArray(fallbackTask.speakerMeta) ? fallbackTask.speakerMeta : ["narrator"],
+        cacheTarget: fallbackTask
+      };
+    }
+
+    function playServerDtzAudioSegments(segments, audioKey, module) {
       if (!Array.isArray(segments) || !segments.length) return;
       currentDtzServerAudioQueue = segments.slice();
-      currentDtzSpeakingIndex = index;
+      currentDtzSpeakingIndex = String(audioKey || "");
       currentDtzAudioBackendMode = "server";
 
       const playNext = () => {
-        if (currentDtzSpeakingIndex !== index) return;
+        if (currentDtzSpeakingIndex !== String(audioKey || "")) return;
         const segment = currentDtzServerAudioQueue.shift();
         if (!segment) {
-          currentDtzSpeakingIndex = -1;
+          currentDtzSpeakingIndex = "";
           currentDtzServerAudioEl = null;
           currentDtzAudioBackendMode = "";
           renderDtzTrainingSet(module);
@@ -5182,7 +5401,7 @@
         };
         audio.onerror = () => {
           currentDtzServerAudioQueue = [];
-          currentDtzSpeakingIndex = -1;
+          currentDtzSpeakingIndex = "";
           currentDtzServerAudioEl = null;
           currentDtzAudioBackendMode = "";
           renderDtzTrainingSet(module);
@@ -5190,7 +5409,7 @@
         };
         audio.play().catch(() => {
           currentDtzServerAudioQueue = [];
-          currentDtzSpeakingIndex = -1;
+          currentDtzSpeakingIndex = "";
           currentDtzServerAudioEl = null;
           currentDtzAudioBackendMode = "";
           renderDtzTrainingSet(module);
@@ -5202,20 +5421,19 @@
       renderDtzTrainingSet(module);
     }
 
-    async function playDtzAudioByIndex(module, index) {
+    async function playDtzAudioByKey(module, audioKey) {
+      if (module !== "hoeren") return;
       const state = getDtzState(module);
-      if (!Number.isInteger(index) || index < 0 || index >= state.tasks.length) return;
-
-      const task = state.tasks[index] || {};
-      if (!String(task.type || "").includes("single_choice")) return;
-      const script = String(task.audio_script || task.text || "").trim();
-      if (!script) {
+      const source = getDtzAudioSourceByKey(module, state, audioKey);
+      if (!source || !source.script) {
         setDtzModuleStatus(module, "error", "Für diese Aufgabe ist kein Audiotext verfügbar.");
         return;
       }
+      const key = String(source.key || "");
+      const script = String(source.script || "");
 
       const synth = ("speechSynthesis" in window) ? window.speechSynthesis : null;
-      if (currentDtzSpeakingIndex === index && ((synth && synth.speaking) || !!currentDtzServerAudioEl)) {
+      if (currentDtzSpeakingIndex === key && ((synth && synth.speaking) || !!currentDtzServerAudioEl)) {
         stopDtzAudio(true);
         renderDtzTrainingSet(module);
         return;
@@ -5224,16 +5442,20 @@
       if (synth) synth.cancel();
 
       try {
-        const cached = Array.isArray(task.__serverTtsSegments) ? task.__serverTtsSegments : [];
+        const cached = Array.isArray(source.cacheTarget && source.cacheTarget.__serverTtsSegments)
+          ? source.cacheTarget.__serverTtsSegments
+          : [];
         let serverSegments = cached;
         if (!serverSegments.length) {
           const serverAudio = await requestServerDtzAudio(script);
           serverSegments = serverAudio.segments;
-          task.__serverTtsSegments = serverSegments;
+          if (source.cacheTarget) {
+            source.cacheTarget.__serverTtsSegments = serverSegments;
+          }
         }
         if (serverSegments.length) {
-          setDtzModuleStatus(module, "ok", `Audio läuft (Server-TTS): Aufgabe ${index + 1}.`);
-          playServerDtzAudioSegments(serverSegments, index, module);
+          setDtzModuleStatus(module, "ok", `Audio läuft (Server-TTS): ${source.label}.`);
+          playServerDtzAudioSegments(serverSegments, key, module);
           return;
         }
       } catch (_serverErr) {
@@ -5253,17 +5475,24 @@
         return;
       }
       const speakers = segments.map(segment => segment.speaker || "NARRATOR");
+      const preferredSpeakers = Array.isArray(source.speakerMeta)
+        ? source.speakerMeta.map(s => String(s || "").trim().toUpperCase()).filter(Boolean)
+        : [];
       const voiceMap = buildSpeakerVoiceMap(rankedVoices, speakers);
+      if (preferredSpeakers.length) {
+        const preferredMap = buildSpeakerVoiceMap(rankedVoices, preferredSpeakers);
+        Object.assign(voiceMap, preferredMap);
+      }
       const fallbackVoice = voiceMap.NARRATOR || pickBestGermanVoice(rankedVoices) || pickBestGermanVoice(resolvedVoices);
 
       currentDtzSpeechQueue = segments.slice();
-      currentDtzSpeakingIndex = index;
+      currentDtzSpeakingIndex = key;
 
       const playNextSegment = () => {
-        if (currentDtzSpeakingIndex !== index) return;
+        if (currentDtzSpeakingIndex !== key) return;
         const part = currentDtzSpeechQueue.shift();
         if (!part) {
-          currentDtzSpeakingIndex = -1;
+          currentDtzSpeakingIndex = "";
           currentDtzUtterance = null;
           renderDtzTrainingSet(module);
           return;
@@ -5282,7 +5511,7 @@
         };
         utterance.onerror = () => {
           currentDtzSpeechQueue = [];
-          currentDtzSpeakingIndex = -1;
+          currentDtzSpeakingIndex = "";
           currentDtzUtterance = null;
           renderDtzTrainingSet(module);
           setDtzModuleStatus(module, "error", "Audio konnte nicht abgespielt werden.");
@@ -5292,7 +5521,7 @@
       };
 
       playNextSegment();
-      setDtzModuleStatus(module, "ok", `Audio läuft (Browser): Aufgabe ${index + 1}.`);
+      setDtzModuleStatus(module, "ok", `Audio läuft (Browser): ${source.label}.`);
       renderDtzTrainingSet(module);
     }
 
@@ -5300,7 +5529,8 @@
       const selected = String(state.answers[`q_${index}`] || "");
       const correct = String(task.correct || "");
       const isHoeren = module === "hoeren";
-      const isPlaying = isHoeren && currentDtzSpeakingIndex === index;
+      const audioKey = `q_${index}`;
+      const isPlaying = isHoeren && currentDtzSpeakingIndex === audioKey;
       let resultClass = "lid-question";
       let feedback = "";
 
@@ -5319,7 +5549,7 @@
         }
       }
 
-      const audioControls = isHoeren ? AudioPlayer(module, index, isPlaying) : "";
+      const audioControls = isHoeren ? AudioPlayer(module, audioKey, isPlaying) : "";
 
       return `
         <article class="${resultClass}">
@@ -5397,6 +5627,226 @@
       `;
     }
 
+    function renderHoerenBundleTask(module, state, task, teilNo) {
+      const questions = Array.isArray(task.questions) ? task.questions : [];
+      const isPlaying = currentDtzSpeakingIndex === "bundle_main";
+      const questionsHtml = questions.map((question, idx) => {
+        const key = String(question.id || `q_${idx}`);
+        const selected = String(state.answers[key] || "");
+        const correct = String(question.correct || "");
+        let rowClass = "lid-question";
+        let feedback = "";
+        if (state.evaluated) {
+          if (!selected) {
+            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(correct)}`);
+          } else if (selected === correct) {
+            rowClass += " correct";
+            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(correct)}`);
+          } else {
+            rowClass += " wrong";
+            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(correct)}`);
+          }
+          if (question.explanation) {
+            feedback += ResultBox("", `${escapeHtml(question.explanation)}`);
+          }
+        }
+        return `
+          <article class="${rowClass}">
+            <h4>Frage ${idx + 1}/${questions.length}</h4>
+            ${TaskInstruction(question.question || "Was ist richtig?")}
+            ${MultipleChoiceQuestion({
+              module,
+              inputName: `dtz_${module}_${teilNo}_${key}`,
+              dataKey: key,
+              optionsMap: question.options || {},
+              selected
+            })}
+            ${feedback}
+          </article>
+        `;
+      }).join("");
+
+      return `
+        <section class="dtz-lesen-group dtz-hoeren-group">
+          <div class="dtz-lesen-group-head">
+            <h4>${escapeHtml(task.dtzPart || `Hören Teil ${teilNo}`)}</h4>
+            <span>${questions.length} Aufgaben</span>
+          </div>
+          <div class="dtz-lesen-group-body">
+            <article class="lid-question">
+              ${TaskInstruction(task.instructions || "Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.")}
+              ${AudioPlayer(module, "bundle_main", isPlaying)}
+            </article>
+            ${questionsHtml}
+            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderHoerenTeil3Task(module, state, task) {
+      const dialogs = Array.isArray(task.dialogs) ? task.dialogs : [];
+      const dialogsHtml = dialogs.map((dialog, idx) => {
+        const dialogId = String(dialog.id || `d_${idx + 1}`);
+        const tfKey = `${dialogId}_tf`;
+        const detailKey = `${dialogId}_detail`;
+        const tfSelected = String(state.answers[tfKey] || "");
+        const detailSelected = String(state.answers[detailKey] || "");
+        const tfCorrect = String((dialog.trueFalse || {}).correct || "");
+        const detailCorrect = String((dialog.detail || {}).correct || "");
+        const isPlaying = currentDtzSpeakingIndex === `dialog:${dialogId}`;
+        let tfFeedback = "";
+        let detailFeedback = "";
+
+        if (state.evaluated) {
+          if (!tfSelected) {
+            tfFeedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(tfCorrect)}`);
+          } else if (tfSelected === tfCorrect) {
+            tfFeedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(tfCorrect)}`);
+          } else {
+            tfFeedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(tfSelected)} | Richtige Lösung: ${escapeHtml(tfCorrect)}`);
+          }
+          if (dialog.trueFalse && dialog.trueFalse.explanation) {
+            tfFeedback += ResultBox("", `${escapeHtml(dialog.trueFalse.explanation)}`);
+          }
+
+          if (!detailSelected) {
+            detailFeedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(detailCorrect)}`);
+          } else if (detailSelected === detailCorrect) {
+            detailFeedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(detailCorrect)}`);
+          } else {
+            detailFeedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(detailSelected)} | Richtige Lösung: ${escapeHtml(detailCorrect)}`);
+          }
+          if (dialog.detail && dialog.detail.explanation) {
+            detailFeedback += ResultBox("", `${escapeHtml(dialog.detail.explanation)}`);
+          }
+        }
+
+        return `
+          <article class="lid-question dtz-dialog-card">
+            <h4>${escapeHtml(dialog.title || `Dialog ${idx + 1}`)}</h4>
+            ${AudioPlayer(module, `dialog:${dialogId}`, isPlaying)}
+            <div class="dtz-dialog-task">
+              ${TaskInstruction((dialog.trueFalse || {}).statement || "Richtig oder falsch?")}
+              ${TrueFalseQuestion({
+                module,
+                inputName: `dtz_${module}_${dialogId}_tf`,
+                dataKey: tfKey,
+                optionsMap: { A: "Richtig", B: "Falsch" },
+                selected: tfSelected
+              })}
+              ${tfFeedback}
+            </div>
+            <div class="dtz-dialog-task">
+              ${TaskInstruction((dialog.detail || {}).question || "Was ist richtig?")}
+              ${MultipleChoiceQuestion({
+                module,
+                inputName: `dtz_${module}_${dialogId}_detail`,
+                dataKey: detailKey,
+                optionsMap: (dialog.detail || {}).options || {},
+                selected: detailSelected
+              })}
+              ${detailFeedback}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      return `
+        <section class="dtz-lesen-group dtz-hoeren-group">
+          <div class="dtz-lesen-group-head">
+            <h4>${escapeHtml(task.dtzPart || "H3 Dialoge")}</h4>
+            <span>${dialogs.length * 2} Aufgaben</span>
+          </div>
+          <div class="dtz-lesen-group-body">
+            <article class="lid-question">
+              ${TaskInstruction(task.instructions || "Sie hören 4 kurze Dialoge. Entscheiden Sie Richtig/Falsch und lösen Sie die Detailfrage.")}
+            </article>
+            <div class="dtz-dialog-grid">${dialogsHtml}</div>
+            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderHoerenTeil4Task(module, state, task) {
+      const options = normalizeDtzOptionMap(task.options || {});
+      const labels = sortDtzOptionLabels(Object.keys(options));
+      const statements = Array.isArray(task.statements) ? task.statements : [];
+      const optionsListHtml = labels.map((label) => `
+        <li><strong>${escapeHtml(label)})</strong> ${escapeHtml(options[label] || "")}</li>
+      `).join("");
+
+      const statementRows = statements.map((statement, idx) => {
+        const key = String(statement.id || `s_${idx + 1}`);
+        const selected = String(state.answers[key] || "");
+        const correct = String(statement.correct || "");
+        const isPlaying = currentDtzSpeakingIndex === `statement:${key}`;
+        let feedback = "";
+        if (state.evaluated) {
+          if (!selected) {
+            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(correct)}`);
+          } else if (selected === correct) {
+            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(correct)}`);
+          } else {
+            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(correct)}`);
+          }
+          if (statement.explanation) {
+            feedback += ResultBox("", `${escapeHtml(statement.explanation)}`);
+          }
+        }
+        const optionItems = labels.map((label) => {
+          const sel = selected === label ? "selected" : "";
+          return `<option value="${escapeHtml(label)}" ${sel}>${escapeHtml(label)}</option>`;
+        }).join("");
+        return `
+          <article class="lid-question dtz-matching-item">
+            <h4>${escapeHtml(statement.title || `Aussage ${idx + 1}`)}</h4>
+            ${AudioPlayer(module, `statement:${key}`, isPlaying)}
+            <label class="dtz-matching-label">
+              ${escapeHtml(statement.question || "Welche Antwort passt?")}
+              <select data-dtz-module="${module}" data-dtz-key="${escapeHtml(key)}" data-dtz-matching="${task.allowReuse ? "reuse" : "unique"}">
+                <option value="">Bitte wählen</option>
+                ${optionItems}
+              </select>
+            </label>
+            ${feedback}
+          </article>
+        `;
+      }).join("");
+
+      return `
+        <section class="dtz-lesen-group dtz-hoeren-group">
+          <div class="dtz-lesen-group-head">
+            <h4>${escapeHtml(task.dtzPart || "H4 Aussagen zuordnen")}</h4>
+            <span>${statements.length} Zuordnungen</span>
+          </div>
+          <div class="dtz-lesen-group-body">
+            <article class="lid-question">
+              ${TaskInstruction(task.instructions || "Sie hören kurze Aussagen. Ordnen Sie jeder Aussage die passende Antwort zu.")}
+              <ul class="speak-list">${optionsListHtml}</ul>
+            </article>
+            ${statementRows}
+            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+          </div>
+        </section>
+      `;
+    }
+
+    function enforceMatchingNoReuse(state, sourceKey, selectedValue) {
+      if (!selectedValue) return;
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask || firstTask.type !== "hoeren_teil4_matching" || firstTask.allowReuse) return;
+      const statements = Array.isArray(firstTask.statements) ? firstTask.statements : [];
+      statements.forEach((statement) => {
+        const key = String(statement.id || "");
+        if (!key || key === sourceKey) return;
+        if (String(state.answers[key] || "") === selectedValue) {
+          state.answers[key] = "";
+        }
+      });
+    }
+
     function attachDtzAnswerListeners(module) {
       const ui = getDtzUi(module);
       const state = getDtzState(module);
@@ -5415,14 +5865,39 @@
         });
       });
 
+      ui.list.querySelectorAll("select[data-dtz-key]").forEach((select) => {
+        select.addEventListener("change", (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLSelectElement)) return;
+          const key = String(target.getAttribute("data-dtz-key") || "").trim();
+          if (!key) return;
+          const value = String(target.value || "");
+          state.answers[key] = value;
+          enforceMatchingNoReuse(state, key, value);
+          renderDtzTrainingSet(module);
+          if (state.evaluated) {
+            evaluateDtzTrainingSet(module, false);
+          }
+        });
+      });
+
+      ui.list.querySelectorAll("button[data-dtz-evaluate-inline]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLButtonElement)) return;
+          const targetModule = String(target.getAttribute("data-dtz-evaluate-inline") || module);
+          evaluateDtzTrainingSet(targetModule, true);
+        });
+      });
+
       if (module === "hoeren") {
-        ui.list.querySelectorAll("button[data-dtz-audio-index]").forEach((button) => {
+        ui.list.querySelectorAll("button[data-dtz-audio-key]").forEach((button) => {
           button.addEventListener("click", (event) => {
             const target = event.currentTarget;
             if (!(target instanceof HTMLButtonElement)) return;
-            const idx = Number(target.getAttribute("data-dtz-audio-index"));
-            if (!Number.isFinite(idx)) return;
-            playDtzAudioByIndex("hoeren", idx);
+            const key = String(target.getAttribute("data-dtz-audio-key") || "").trim();
+            if (!key) return;
+            playDtzAudioByKey("hoeren", key);
           });
         });
       }
@@ -5452,10 +5927,35 @@
       return html;
     }
 
-    function renderHoerenTeil1(module, state) { return renderSingleChoiceTaskList(module, state); }
-    function renderHoerenTeil2(module, state) { return renderSingleChoiceTaskList(module, state); }
-    function renderHoerenTeil3(module, state) { return renderSingleChoiceTaskList(module, state); }
-    function renderHoerenTeil4(module, state) { return renderSingleChoiceTaskList(module, state); }
+    // DTZ-Refactor-Audit (Kurz):
+    // Altzustand: alle Hören-Teile wurden wie generische single_choice-Listen gerendert/ausgewertet.
+    // Problem: passt nicht zu DTZ-Aufgabentypen (Bundle, Dialogkarten, Zuordnung).
+    // Neuer Zustand: teil-spezifische Renderer + Evaluatoren (Teil 1/2 Bundle, Teil 3 Dialoge, Teil 4 Matching),
+    // dabei bleibt der alte single_choice-Renderer als Legacy-Fallback erhalten.
+    function renderHoerenTeil1(module, state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask) return "";
+      if (firstTask.type === "hoeren_teil1_bundle") return renderHoerenBundleTask(module, state, firstTask, 1);
+      return renderSingleChoiceTaskList(module, state);
+    }
+    function renderHoerenTeil2(module, state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask) return "";
+      if (firstTask.type === "hoeren_teil2_bundle") return renderHoerenBundleTask(module, state, firstTask, 2);
+      return renderSingleChoiceTaskList(module, state);
+    }
+    function renderHoerenTeil3(module, state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask) return "";
+      if (firstTask.type === "hoeren_teil3_dialogcards") return renderHoerenTeil3Task(module, state, firstTask);
+      return renderSingleChoiceTaskList(module, state);
+    }
+    function renderHoerenTeil4(module, state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask) return "";
+      if (firstTask.type === "hoeren_teil4_matching") return renderHoerenTeil4Task(module, state, firstTask);
+      return renderSingleChoiceTaskList(module, state);
+    }
     function renderLesenTeil1(module, state) { return renderSingleChoiceTaskList(module, state); }
     function renderLesenTeil2(_module, state) {
       if (!state.tasks[0]) return "";
@@ -5495,6 +5995,62 @@
       return { total, correct, unanswered };
     }
 
+    function evaluateHoerenBundleTeil(state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      const questions = Array.isArray(firstTask && firstTask.questions) ? firstTask.questions : [];
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      questions.forEach((question, idx) => {
+        const key = String(question.id || `q_${idx}`);
+        const selected = String(state.answers[key] || "");
+        total += 1;
+        if (!selected) unanswered += 1;
+        else if (selected === String(question.correct || "")) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
+    function evaluateHoerenTeil3Dialogs(state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      const dialogs = Array.isArray(firstTask && firstTask.dialogs) ? firstTask.dialogs : [];
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      dialogs.forEach((dialog, idx) => {
+        const dialogId = String(dialog.id || `d_${idx + 1}`);
+        const tfKey = `${dialogId}_tf`;
+        const detailKey = `${dialogId}_detail`;
+        const tfSelected = String(state.answers[tfKey] || "");
+        const detailSelected = String(state.answers[detailKey] || "");
+        const tfCorrect = String((dialog.trueFalse || {}).correct || "");
+        const detailCorrect = String((dialog.detail || {}).correct || "");
+        total += 2;
+        if (!tfSelected) unanswered += 1;
+        else if (tfSelected === tfCorrect) correct += 1;
+        if (!detailSelected) unanswered += 1;
+        else if (detailSelected === detailCorrect) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
+    function evaluateHoerenTeil4Matching(state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      const statements = Array.isArray(firstTask && firstTask.statements) ? firstTask.statements : [];
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      statements.forEach((statement, idx) => {
+        const key = String(statement.id || `s_${idx + 1}`);
+        const selected = String(state.answers[key] || "");
+        const expected = String(statement.correct || "");
+        total += 1;
+        if (!selected) unanswered += 1;
+        else if (selected === expected) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
     function evaluateLesenTeil2(state) {
       let total = 0;
       let correct = 0;
@@ -5510,10 +6066,10 @@
 
     const DTZ_EVALUATORS = {
       hoeren: {
-        1: evaluateSingleChoiceTeil,
-        2: evaluateSingleChoiceTeil,
-        3: evaluateSingleChoiceTeil,
-        4: evaluateSingleChoiceTeil
+        1: evaluateHoerenBundleTeil,
+        2: evaluateHoerenBundleTeil,
+        3: evaluateHoerenTeil3Dialogs,
+        4: evaluateHoerenTeil4Matching
       },
       lesen: {
         1: evaluateSingleChoiceTeil,
@@ -5563,14 +6119,39 @@
       const points = correct * 2;
       const maxPoints = total * 2;
       state.evaluated = true;
+      const isPartial = module === "hoeren" && unanswered > 0;
 
       if (ui.summary) {
         const label = module === "hoeren" ? "Hören" : "Lesen";
-        ui.summary.textContent = `${label} Teil ${state.teil}: ${correct}/${total} richtig | Falsch: ${wrong} | Offen: ${unanswered} | Punkte: ${points}/${maxPoints}`;
+        ui.summary.textContent = `${label} Teil ${state.teil}: ${correct}/${total} richtig | Falsch: ${wrong} | Offen: ${unanswered} | Punkte: ${points}/${maxPoints}${isPartial ? " | Teilweise Auswertung (offene Antworten vorhanden)" : ""}`;
         ui.summary.classList.remove("hidden");
       }
       renderDtzTrainingSet(module);
-      if (showStatus) setDtzModuleStatus(module, "ok", "Auswertung abgeschlossen.");
+      if (showStatus) {
+        if (isPartial) {
+          setDtzModuleStatus(module, "error", "Teilweise Auswertung: Bitte beantworten Sie alle offenen Fragen für eine vollständige Bewertung.");
+        } else {
+          setDtzModuleStatus(module, "ok", "Auswertung abgeschlossen.");
+        }
+      }
+    }
+
+    function getDtzResolvedTaskCount(state) {
+      if (!state || !Array.isArray(state.tasks) || !state.tasks.length) return 0;
+      const firstTask = state.tasks[0] || {};
+      if (firstTask.type === "hoeren_teil1_bundle" || firstTask.type === "hoeren_teil2_bundle") {
+        return Array.isArray(firstTask.questions) ? firstTask.questions.length : 0;
+      }
+      if (firstTask.type === "hoeren_teil3_dialogcards") {
+        return Array.isArray(firstTask.dialogs) ? firstTask.dialogs.length * 2 : 0;
+      }
+      if (firstTask.type === "hoeren_teil4_matching") {
+        return Array.isArray(firstTask.statements) ? firstTask.statements.length : 0;
+      }
+      if (firstTask.type === "lesen_teil2_matching") {
+        return Array.isArray(firstTask.situations) ? firstTask.situations.length : 0;
+      }
+      return state.tasks.length;
     }
 
     async function loadDtzTrainingSet(module) {
@@ -5608,7 +6189,8 @@
 
         resetDtzModuleResultUi(module, true);
         renderDtzTrainingSet(module);
-        setDtzModuleStatus(module, "ok", `${state.tasks.length} Aufgaben geladen (${module === "hoeren" ? "Hören" : "Lesen"} Teil ${teil}).`);
+        const resolvedCount = getDtzResolvedTaskCount(state);
+        setDtzModuleStatus(module, "ok", `${resolvedCount} Aufgaben geladen (${module === "hoeren" ? "Hören" : "Lesen"} Teil ${teil}).`);
       } catch (err) {
         state.set = [];
         state.tasks = [];
@@ -5788,9 +6370,13 @@
         openSpeakingView();
       } else if (target === "b1") {
         openB1View();
+      } else if (target === "dtz-hoeren") {
+        openDtzModuleView("hoeren");
+      } else if (target === "dtz-lesen") {
+        openDtzModuleView("lesen");
       }
 
-      if (target === "b1") {
+      if (target === "b1" || target === "dtz-hoeren" || target === "dtz-lesen") {
         const dtzCard = document.getElementById("dtzTrainingCard");
         if (dtzCard) {
           dtzCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -8157,7 +8743,10 @@
       window.location.href = "./admin.html";
     });
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
-    document.getElementById("levelB1Btn").addEventListener("click", () => navigateToSection("b1"));
+    const levelHoerenBtn = document.getElementById("levelHoerenBtn");
+    if (levelHoerenBtn) levelHoerenBtn.addEventListener("click", () => navigateToSection("dtz-hoeren"));
+    const levelLesenBtn = document.getElementById("levelLesenBtn");
+    if (levelLesenBtn) levelLesenBtn.addEventListener("click", () => navigateToSection("dtz-lesen"));
     const levelA2Btn = document.getElementById("levelA2Btn");
     if (levelA2Btn) {
       levelA2Btn.addEventListener("click", () => {
