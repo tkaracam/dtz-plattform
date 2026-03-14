@@ -27,8 +27,9 @@ concurrency:
 jobs:
   healthcheck:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     env:
-      BASE_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url || 'https://dtz-lid.com' }}
+      TARGET_URLS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url || 'https://dtz-lid.com https://www.dtz-lid.com' }}
       WARMUP_SECONDS: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.warmup_seconds || '180' }}
       MAX_ATTEMPTS: "8"
       RETRY_DELAY_SECONDS: "30"
@@ -51,39 +52,53 @@ jobs:
           set -euo pipefail
           LOG_FILE="${RUNNER_TEMP}/healthcheck.log"
           : > "${LOG_FILE}"
-          attempt=1
-          while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
-            echo "Attempt ${attempt}/${MAX_ATTEMPTS} -> ${BASE_URL}"
-            if ./tools/healthcheck.sh "${BASE_URL}" 2>&1 | tee -a "${LOG_FILE}"; then
-              echo "Healthcheck passed."
-              {
-                echo "## Post-Deploy Healthcheck"
-                echo ""
-                echo "- URL: \`${BASE_URL}\`"
-                echo "- Result: ✅ Passed"
-                echo "- Attempt: \`${attempt}/${MAX_ATTEMPTS}\`"
-              } >> "${GITHUB_STEP_SUMMARY}"
-              exit 0
-            fi
-            if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
-              echo "Healthcheck failed. Retrying in ${RETRY_DELAY_SECONDS}s..."
-              sleep "${RETRY_DELAY_SECONDS}"
-            fi
-            attempt=$((attempt + 1))
-          done
-          echo "Healthcheck failed after ${MAX_ATTEMPTS} attempts."
+          overall_failed=0
+
           {
             echo "## Post-Deploy Healthcheck"
             echo ""
-            echo "- URL: \`${BASE_URL}\`"
-            echo "- Result: ❌ Failed"
-            echo "- Attempts: \`${MAX_ATTEMPTS}\`"
-            echo "- Last log lines:"
-            echo '```'
-            tail -n 80 "${LOG_FILE}" || true
-            echo '```'
+            echo "- Targets: \`${TARGET_URLS}\`"
+            echo ""
           } >> "${GITHUB_STEP_SUMMARY}"
-          exit 1
+
+          for BASE_URL in ${TARGET_URLS}; do
+            attempt=1
+            passed=0
+            while [ "$attempt" -le "$MAX_ATTEMPTS" ]; do
+              echo "Attempt ${attempt}/${MAX_ATTEMPTS} -> ${BASE_URL}"
+              if ./tools/healthcheck.sh "${BASE_URL}" 2>&1 | tee -a "${LOG_FILE}"; then
+                passed=1
+                break
+              fi
+              if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+                echo "Healthcheck failed for ${BASE_URL}. Retrying in ${RETRY_DELAY_SECONDS}s..."
+                sleep "${RETRY_DELAY_SECONDS}"
+              fi
+              attempt=$((attempt + 1))
+            done
+
+            if [ "$passed" -eq 1 ]; then
+              {
+                echo "- ✅ \`${BASE_URL}\` passed (\`${attempt}/${MAX_ATTEMPTS}\`)"
+              } >> "${GITHUB_STEP_SUMMARY}"
+            else
+              overall_failed=1
+              {
+                echo "- ❌ \`${BASE_URL}\` failed after \`${MAX_ATTEMPTS}\` attempts"
+              } >> "${GITHUB_STEP_SUMMARY}"
+            fi
+          done
+
+          if [ "$overall_failed" -ne 0 ]; then
+            {
+              echo ""
+              echo "### Last log lines"
+              echo '```'
+              tail -n 120 "${LOG_FILE}" || true
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+            exit 1
+          fi
 
       - name: Upload healthcheck log artifact
         if: always()
