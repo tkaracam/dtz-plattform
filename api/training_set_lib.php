@@ -1474,6 +1474,37 @@ function build_hoeren_teil_structured_pools(): array
                     ],
                 ],
             ],
+            [
+                'title' => 'Telefonansage: Wohnungsbesichtigung',
+                'instructions' => 'Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.',
+                'audio_script' => 'Guten Tag, hier ist die Hausverwaltung Nord. Wegen eines Wasserschadens kann die Besichtigung am Montag nicht stattfinden. Der neue Termin ist am Mittwoch um 17:30 Uhr in der Lindenstraße 22. Bitte melden Sie sich am Haupteingang bei Herrn Alkan. Falls Sie nicht kommen können, schicken Sie uns bis Dienstag 12 Uhr eine E-Mail.',
+                'questions' => [
+                    [
+                        'question' => 'Warum wird der erste Termin geändert?',
+                        'options' => ['A' => 'wegen Krankheit', 'B' => 'wegen eines Wasserschadens', 'C' => 'wegen Urlaub'],
+                        'correct' => 'B',
+                        'rationale' => 'In der Ansage wird ein Wasserschaden als Grund genannt.'
+                    ],
+                    [
+                        'question' => 'Wann ist der neue Termin?',
+                        'options' => ['A' => 'am Mittwoch um 17:30 Uhr', 'B' => 'am Dienstag um 17:30 Uhr', 'C' => 'am Mittwoch um 18:30 Uhr'],
+                        'correct' => 'A',
+                        'rationale' => 'Genannt wird Mittwoch, 17:30 Uhr.'
+                    ],
+                    [
+                        'question' => 'Bei wem soll man sich melden?',
+                        'options' => ['A' => 'bei Frau Duman', 'B' => 'bei Herrn Alkan', 'C' => 'beim Hausmeister ohne Namen'],
+                        'correct' => 'B',
+                        'rationale' => 'Die Ansage sagt ausdrücklich: bei Herrn Alkan.'
+                    ],
+                    [
+                        'question' => 'Bis wann soll man absagen?',
+                        'options' => ['A' => 'bis Dienstag 12 Uhr', 'B' => 'bis Mittwoch 12 Uhr', 'C' => 'bis Montag 12 Uhr'],
+                        'correct' => 'A',
+                        'rationale' => 'Absagefrist ist Dienstag, 12 Uhr.'
+                    ],
+                ],
+            ],
         ],
         2 => [
             [
@@ -1550,6 +1581,43 @@ function build_hoeren_teil_structured_pools(): array
                     ],
                 ],
             ],
+            [
+                'title' => 'Serviceinformation: Bürgeramt und Bibliothek',
+                'instructions' => 'Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.',
+                'audio_script' => 'Guten Morgen, hier sind die Servicehinweise der Stadt. Das Bürgeramt am Rathaus öffnet heute erst um 10 Uhr, weil das Computersystem gewartet wird. Bereits vereinbarte Termine bleiben gültig. Die Stadtbibliothek ist wegen Inventur von Montag bis Mittwoch geschlossen. Rückgaben sind in dieser Zeit nur am Automaten neben dem Haupteingang möglich. Am Donnerstag sind beide Einrichtungen wieder normal geöffnet.',
+                'questions' => [
+                    [
+                        'question' => 'Warum öffnet das Bürgeramt später?',
+                        'options' => ['A' => 'wegen Personalmangel', 'B' => 'wegen einer Systemwartung', 'C' => 'wegen eines Streiks'],
+                        'correct' => 'B',
+                        'rationale' => 'Grund ist die Wartung des Computersystems.'
+                    ],
+                    [
+                        'question' => 'Was passiert mit bereits vereinbarten Terminen?',
+                        'options' => ['A' => 'Sie werden abgesagt.', 'B' => 'Sie bleiben gültig.', 'C' => 'Sie werden auf Donnerstag verschoben.'],
+                        'correct' => 'B',
+                        'rationale' => 'In der Meldung steht, dass sie gültig bleiben.'
+                    ],
+                    [
+                        'question' => 'Wann ist die Bibliothek geschlossen?',
+                        'options' => ['A' => 'Montag bis Mittwoch', 'B' => 'Dienstag bis Donnerstag', 'C' => 'nur am Montag'],
+                        'correct' => 'A',
+                        'rationale' => 'Die Schließung gilt von Montag bis Mittwoch.'
+                    ],
+                    [
+                        'question' => 'Wie kann man Medien trotzdem zurückgeben?',
+                        'options' => ['A' => 'nur per Post', 'B' => 'am Rückgabeautomaten', 'C' => 'gar nicht'],
+                        'correct' => 'B',
+                        'rationale' => 'Rückgaben sind am Automaten möglich.'
+                    ],
+                    [
+                        'question' => 'Ab wann ist wieder normal geöffnet?',
+                        'options' => ['A' => 'ab Mittwoch', 'B' => 'ab Donnerstag', 'C' => 'ab Freitag'],
+                        'correct' => 'B',
+                        'rationale' => 'Am Donnerstag öffnen beide normal.'
+                    ],
+                ],
+            ],
         ],
         3 => [
             [
@@ -1622,6 +1690,76 @@ function build_hoeren_teil_structured_pools(): array
                     ],
                 ],
             ],
+            [
+                'title' => 'Dialoge aus Alltag und Kurs',
+                'instructions' => 'Sie hören 4 kurze Dialoge. Entscheiden Sie zuerst Richtig/Falsch und beantworten Sie dann die Detailfrage.',
+                'dialogs' => [
+                    [
+                        'title' => 'Dialog 1',
+                        'audio_script' => 'WOMAN_1: Entschuldigung, fährt die Bahn zum Hauptbahnhof? MAN_1: Ja, aber heute nur bis Berliner Platz. Dort müssen Sie in die Linie 8 umsteigen.',
+                        'speaker_meta' => ['woman_1', 'man_1'],
+                        'true_false' => [
+                            'statement' => 'Die Frau kann ohne Umsteigen bis zum Hauptbahnhof fahren.',
+                            'correct' => 'B',
+                            'rationale' => 'Ein Umstieg am Berliner Platz ist nötig.'
+                        ],
+                        'detail' => [
+                            'question' => 'In welche Linie soll die Frau umsteigen?',
+                            'options' => ['A' => 'Linie 6', 'B' => 'Linie 7', 'C' => 'Linie 8'],
+                            'correct' => 'C',
+                            'rationale' => 'Der Mann nennt Linie 8.'
+                        ],
+                    ],
+                    [
+                        'title' => 'Dialog 2',
+                        'audio_script' => 'MAN_1: Guten Tag, ich rufe wegen meiner Bewerbung an. WOMAN_2: Ja, wir haben Ihre Unterlagen erhalten. Das Vorstellungsgespräch ist am Freitag um 9 Uhr.',
+                        'speaker_meta' => ['man_1', 'woman_2'],
+                        'true_false' => [
+                            'statement' => 'Die Unterlagen des Mannes sind nicht angekommen.',
+                            'correct' => 'B',
+                            'rationale' => 'Die Frau bestätigt den Eingang der Unterlagen.'
+                        ],
+                        'detail' => [
+                            'question' => 'Wann ist das Vorstellungsgespräch?',
+                            'options' => ['A' => 'am Freitag um 9 Uhr', 'B' => 'am Freitag um 10 Uhr', 'C' => 'am Donnerstag um 9 Uhr'],
+                            'correct' => 'A',
+                            'rationale' => 'Termin ist Freitag, 9 Uhr.'
+                        ],
+                    ],
+                    [
+                        'title' => 'Dialog 3',
+                        'audio_script' => 'WOMAN_2: Herr Demir, Ihr Deutschkurs beginnt nächste Woche schon um 8:30 Uhr. MAN_1: Danke. Dann komme ich mit dem früheren Bus.',
+                        'speaker_meta' => ['woman_2', 'man_1'],
+                        'true_false' => [
+                            'statement' => 'Der Kurs beginnt nächste Woche später als bisher.',
+                            'correct' => 'B',
+                            'rationale' => 'Der Kurs beginnt früher, nicht später.'
+                        ],
+                        'detail' => [
+                            'question' => 'Wie will Herr Demir kommen?',
+                            'options' => ['A' => 'zu Fuß', 'B' => 'mit dem früheren Bus', 'C' => 'mit dem Taxi'],
+                            'correct' => 'B',
+                            'rationale' => 'Er sagt: mit dem früheren Bus.'
+                        ],
+                    ],
+                    [
+                        'title' => 'Dialog 4',
+                        'audio_script' => 'NARRATOR: In der Apotheke fragt eine Kundin nach Medikamenten. WOMAN_1: Dieses Mittel ist heute ausverkauft. Wir bekommen morgen Vormittag eine neue Lieferung.',
+                        'speaker_meta' => ['narrator', 'woman_1'],
+                        'true_false' => [
+                            'statement' => 'Das Medikament ist heute noch verfügbar.',
+                            'correct' => 'B',
+                            'rationale' => 'Es ist heute ausverkauft.'
+                        ],
+                        'detail' => [
+                            'question' => 'Wann kommt die neue Lieferung?',
+                            'options' => ['A' => 'morgen Vormittag', 'B' => 'heute Abend', 'C' => 'nächste Woche'],
+                            'correct' => 'A',
+                            'rationale' => 'Die Lieferung kommt morgen Vormittag.'
+                        ],
+                    ],
+                ],
+            ],
         ],
         4 => [
             [
@@ -1670,6 +1808,55 @@ function build_hoeren_teil_structured_pools(): array
                         'speaker' => 'woman_1',
                         'correct' => 'C',
                         'rationale' => 'Sie bevorzugt online.'
+                    ],
+                ],
+            ],
+            [
+                'title' => 'Aussagen zu Arbeit und Terminen',
+                'instructions' => 'Sie hören kurze Aussagen. Ordnen Sie jeder Aussage die passende Antwort zu.',
+                'allow_reuse' => false,
+                'options' => [
+                    'A' => 'Sie braucht einen Termin am frühen Morgen.',
+                    'B' => 'Er sucht eine Stelle in Teilzeit.',
+                    'C' => 'Sie kann nur digital an Besprechungen teilnehmen.',
+                    'D' => 'Er möchte näher an seinem Arbeitsplatz wohnen.',
+                    'E' => 'Sie braucht Unterstützung bei Formularen.'
+                ],
+                'statements' => [
+                    [
+                        'title' => 'Aussage 1',
+                        'audio_script' => 'WOMAN_1: Ich beginne um sieben Uhr mit der Arbeit. Deshalb brauche ich den Termin möglichst vor acht Uhr.',
+                        'speaker' => 'woman_1',
+                        'correct' => 'A',
+                        'rationale' => 'Sie sucht einen sehr frühen Termin.'
+                    ],
+                    [
+                        'title' => 'Aussage 2',
+                        'audio_script' => 'MAN_1: Vollzeit ist für mich aktuell nicht möglich. Ich suche einen Job mit etwa zwanzig Stunden pro Woche.',
+                        'speaker' => 'man_1',
+                        'correct' => 'B',
+                        'rationale' => 'Er beschreibt ausdrücklich eine Teilzeitstelle.'
+                    ],
+                    [
+                        'title' => 'Aussage 3',
+                        'audio_script' => 'WOMAN_2: Wegen meines kleinen Kindes kann ich nicht ins Büro fahren. Online-Termine passen für mich am besten.',
+                        'speaker' => 'woman_2',
+                        'correct' => 'C',
+                        'rationale' => 'Sie bevorzugt digitale Termine.'
+                    ],
+                    [
+                        'title' => 'Aussage 4',
+                        'audio_script' => 'MAN_1: Jeden Tag fahre ich fast eine Stunde zur Firma. Ich suche deshalb eine Wohnung in der Nähe.',
+                        'speaker' => 'man_1',
+                        'correct' => 'D',
+                        'rationale' => 'Er möchte näher am Arbeitsplatz wohnen.'
+                    ],
+                    [
+                        'title' => 'Aussage 5',
+                        'audio_script' => 'WOMAN_1: Ich habe den Antrag gelesen, aber ich verstehe viele Felder nicht. Ich brauche Hilfe beim Ausfüllen.',
+                        'speaker' => 'woman_1',
+                        'correct' => 'E',
+                        'rationale' => 'Sie braucht Hilfe mit Formularen.'
                     ],
                 ],
             ],
