@@ -2903,10 +2903,10 @@
     let currentSpeakingSet = null;
     let currentBskPack = null;
     let currentBskResult = null;
-    let currentDtzStates = {
-      hoeren: { teil: 1, set: [], tasks: [], answers: {}, evaluated: false },
-      lesen: { teil: 1, set: [], tasks: [], answers: {}, evaluated: false }
-    };
+    // DTZ Audit (Phase 2): Eski yapı tek modül-state'e bağlıydı (hoeren/lesen),
+    // Teil değişince state sıfırlanıyordu. Yeni yapı Teil-bazlı state registry kullanır.
+    // Böylece her Teil kendi cevapları ve değerlendirmesiyle bağımsız kalır.
+    let currentDtzStates = null;
     let dtzUiInitialized = false;
     let currentDtzSpeakingIndex = -1;
     let currentDtzUtterance = null;
@@ -2996,6 +2996,41 @@
         }
       }
     };
+
+    function getDtzMaxTeil(module) {
+      return module === "hoeren" ? 4 : 5;
+    }
+
+    function createEmptyDtzTeilState(teilNo) {
+      return {
+        teil: teilNo,
+        set: [],
+        tasks: [],
+        answers: {},
+        evaluated: false,
+        lastLoadedAt: ""
+      };
+    }
+
+    function createInitialDtzStateRegistry() {
+      const buildModuleState = (module) => {
+        const teils = {};
+        const maxTeil = getDtzMaxTeil(module);
+        for (let teil = 1; teil <= maxTeil; teil += 1) {
+          teils[teil] = createEmptyDtzTeilState(teil);
+        }
+        return {
+          selectedTeil: 1,
+          teils
+        };
+      };
+      return {
+        hoeren: buildModuleState("hoeren"),
+        lesen: buildModuleState("lesen")
+      };
+    }
+
+    currentDtzStates = createInitialDtzStateRegistry();
 
     function markLetterWritingStarted() {
       if (!letterWritingStartedAtMs) {
@@ -4546,8 +4581,26 @@
       initDtzTrainingUi();
     }
 
-    function getDtzState(module) {
+    function getDtzModuleState(module) {
       return module === "lesen" ? currentDtzStates.lesen : currentDtzStates.hoeren;
+    }
+
+    function ensureDtzTeilState(module, teil) {
+      const moduleState = getDtzModuleState(module);
+      const maxTeil = getDtzMaxTeil(module);
+      const safeTeil = Number.isFinite(Number(teil))
+        ? Math.max(1, Math.min(maxTeil, Math.floor(Number(teil))))
+        : 1;
+      if (!moduleState.teils[safeTeil]) {
+        moduleState.teils[safeTeil] = createEmptyDtzTeilState(safeTeil);
+      }
+      return moduleState.teils[safeTeil];
+    }
+
+    // Backward-compatible accessor: returns active Teil state of module.
+    function getDtzState(module) {
+      const moduleState = getDtzModuleState(module);
+      return ensureDtzTeilState(module, moduleState.selectedTeil);
     }
 
     function getDtzPartConfig(module, teil) {
@@ -4566,6 +4619,92 @@
         actionBtn: document.getElementById(`${prefix}ActionBtn`),
         accordion: document.getElementById(`${prefix}Accordion`)
       };
+    }
+
+    // ===== DTZ "Component" helpers (Teil-basiert, framework-frei) =====
+    function SectionHeader(title, subtitle, badgeText) {
+      const subtitleHtml = subtitle ? `<div style="margin-top:4px;">${escapeHtml(subtitle)}</div>` : "";
+      const badgeHtml = badgeText ? `<div style="margin-top:6px;font-weight:700;color:#1f466f;">${escapeHtml(badgeText)}</div>` : "";
+      return `
+        <div class="archive-empty" style="border-style:solid;">
+          <strong>${escapeHtml(title || "")}</strong>
+          ${subtitleHtml}
+          ${badgeHtml}
+        </div>
+      `;
+    }
+
+    function TaskInstruction(text) {
+      return `<p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(text || "")}</p>`;
+    }
+
+    function AudioPlayer(module, index, isPlaying) {
+      return `
+        <div class="dtz-audio-actions">
+          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-index="${index}" data-dtz-module="${module}">
+            ${isPlaying ? "Audio stoppen" : "Audio abspielen"}
+          </button>
+        </div>
+      `;
+    }
+
+    function OptionGroup(params) {
+      const {
+        module,
+        inputName,
+        dataKey,
+        optionsMap,
+        selected
+      } = params || {};
+      const optionLabels = sortDtzOptionLabels(Object.keys(optionsMap || {}));
+      return optionLabels.map((label) => {
+        const text = normalizeDtzGermanText(String((optionsMap || {})[label] || ""));
+        const checked = String(selected || "") === label ? "checked" : "";
+        return `
+          <label class="lid-option">
+            <input type="radio" name="${escapeHtml(inputName || "")}" data-dtz-module="${module}" data-dtz-key="${escapeHtml(dataKey || "")}" value="${label}" ${checked}>
+            <span><strong>${escapeHtml(label)})</strong> ${escapeHtml(text)}</span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function MultipleChoiceQuestion(params) {
+      return `<div class="lid-options">${OptionGroup(params)}</div>`;
+    }
+
+    function TrueFalseQuestion(params) {
+      const opt = params && params.optionsMap ? params.optionsMap : { A: "Richtig", B: "Falsch" };
+      return `<div class="lid-options">${OptionGroup({ ...(params || {}), optionsMap: opt })}</div>`;
+    }
+
+    function MatchingTask(innerHtml) {
+      return `<div class="dtz-lesen-groups">${innerHtml || ""}</div>`;
+    }
+
+    function ClozeTask(contentHtml) {
+      return `<div class="lid-question">${contentHtml || ""}</div>`;
+    }
+
+    function ResultBox(type, message) {
+      const cls = type === "good" ? "good" : (type === "bad" ? "bad" : "");
+      return `<div class="dtz-eval-note ${cls}">${message || ""}</div>`;
+    }
+
+    function EvaluateButton(buttonId, label) {
+      return `<button id="${escapeHtml(buttonId || "")}" type="button">${escapeHtml(label || "Auswerten")}</button>`;
+    }
+
+    function DtzAccordion(module) {
+      return getDtzUi(module);
+    }
+
+    function HoerenSection() {
+      return DtzAccordion("hoeren");
+    }
+
+    function LesenSection() {
+      return DtzAccordion("lesen");
     }
 
     function normalizeDtzGermanText(value) {
@@ -4603,11 +4742,12 @@
 
     function syncDtzTeilFromSelect(module) {
       const ui = getDtzUi(module);
-      const state = getDtzState(module);
-      const raw = Number(ui.teilSelect ? ui.teilSelect.value : state.teil);
-      const maxTeil = module === "hoeren" ? 4 : 5;
+      const moduleState = getDtzModuleState(module);
+      const raw = Number(ui.teilSelect ? ui.teilSelect.value : moduleState.selectedTeil);
+      const maxTeil = getDtzMaxTeil(module);
       const safe = Number.isFinite(raw) ? Math.max(1, Math.min(maxTeil, Math.floor(raw))) : 1;
-      state.teil = safe;
+      moduleState.selectedTeil = safe;
+      ensureDtzTeilState(module, safe);
       if (ui.teilSelect) ui.teilSelect.value = String(safe);
       return safe;
     }
@@ -4750,6 +4890,16 @@
       return buildDtzLesenSingleChoiceTasksByTeil(teil, items);
     }
 
+    function HoerenTeil1() { return getDtzPartConfig("hoeren", 1); }
+    function HoerenTeil2() { return getDtzPartConfig("hoeren", 2); }
+    function HoerenTeil3() { return getDtzPartConfig("hoeren", 3); }
+    function HoerenTeil4() { return getDtzPartConfig("hoeren", 4); }
+    function LesenTeil1() { return getDtzPartConfig("lesen", 1); }
+    function LesenTeil2() { return getDtzPartConfig("lesen", 2); }
+    function LesenTeil3() { return getDtzPartConfig("lesen", 3); }
+    function LesenTeil4() { return getDtzPartConfig("lesen", 4); }
+    function LesenTeil5() { return getDtzPartConfig("lesen", 5); }
+
     function getDtzQuestionCount(module, teil) {
       const part = getDtzPartConfig(module, teil);
       return part && Number.isFinite(part.count) ? part.count : 5;
@@ -4765,13 +4915,11 @@
         return;
       }
       const count = getDtzQuestionCount(module, teil);
-      ui.partMeta.innerHTML = `
-        <div class="archive-empty" style="border-style:solid;">
-          <strong>${escapeHtml(part.title)}</strong>
-          <div style="margin-top:4px;">${escapeHtml(part.description)}</div>
-          <div style="margin-top:6px;font-weight:700;color:#1f466f;">${count} Aufgaben in diesem Teil.</div>
-        </div>
-      `;
+      ui.partMeta.innerHTML = SectionHeader(
+        part.title,
+        part.description,
+        `${count} Aufgaben in diesem Teil.`
+      );
     }
 
     function resetDtzModuleResultUi(module, keepList = false) {
@@ -5148,20 +5296,6 @@
       renderDtzTrainingSet(module);
     }
 
-    function buildDtzSingleChoiceOptionsHtml(module, state, taskIndex, optionsMap) {
-      const optionLabels = sortDtzOptionLabels(Object.keys(optionsMap || {}));
-      return optionLabels.map((label) => {
-        const text = normalizeDtzGermanText(String((optionsMap || {})[label] || ""));
-        const checked = String(state.answers[`q_${taskIndex}`] || "") === label ? "checked" : "";
-        return `
-          <label class="lid-option">
-            <input type="radio" name="dtz_${module}_q_${taskIndex}" data-dtz-module="${module}" data-dtz-key="q_${taskIndex}" value="${label}" ${checked}>
-            <span><strong>${escapeHtml(label)})</strong> ${escapeHtml(text)}</span>
-          </label>
-        `;
-      }).join("");
-    }
-
     function renderDtzSingleChoiceTask(module, state, task, index) {
       const selected = String(state.answers[`q_${index}`] || "");
       const correct = String(task.correct || "");
@@ -5172,35 +5306,28 @@
 
       if (state.evaluated) {
         if (!selected) {
-          feedback = `<div class="dtz-eval-note bad"><strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(correct)}</div>`;
+          feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(correct)}`);
         } else if (selected === correct) {
           resultClass += " correct";
-          feedback = `<div class="dtz-eval-note good"><strong>Richtig.</strong> Lösung: ${escapeHtml(correct)}</div>`;
+          feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(correct)}`);
         } else {
           resultClass += " wrong";
-          feedback = `<div class="dtz-eval-note bad"><strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(correct)}</div>`;
+          feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(correct)}`);
         }
         if (task.explanation) {
-          feedback += `<div class="dtz-eval-note">${escapeHtml(task.explanation)}</div>`;
+          feedback += ResultBox("", `${escapeHtml(task.explanation)}`);
         }
       }
 
-      const optionsHtml = buildDtzSingleChoiceOptionsHtml(module, state, index, task.options || {});
-      const audioControls = isHoeren ? `
-        <div class="dtz-audio-actions">
-          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-index="${index}" data-dtz-module="${module}">
-            ${isPlaying ? "Audio stoppen" : "Audio abspielen"}
-          </button>
-        </div>
-      ` : "";
+      const audioControls = isHoeren ? AudioPlayer(module, index, isPlaying) : "";
 
       return `
         <article class="${resultClass}">
           <h4>Frage ${index + 1}/${state.tasks.length} · ${escapeHtml(task.dtzPart || `Teil ${state.teil}`)}</h4>
           ${audioControls}
           <p class="lid-stimulus">${escapeHtml(task.text || "")}</p>
-          <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(task.question || "Was ist richtig?")}</p>
-          <div class="lid-options">${optionsHtml}</div>
+          ${TaskInstruction(task.question || "Was ist richtig?")}
+          ${MultipleChoiceQuestion({ module, inputName: `dtz_${module}_q_${index}`, dataKey: `q_${index}`, optionsMap: task.options || {}, selected: state.answers[`q_${index}`] })}
           ${feedback}
         </article>
       `;
@@ -5220,29 +5347,32 @@
         let rowClass = "lid-question";
         if (state.evaluated) {
           if (!selected) {
-            feedback = `<div class="dtz-eval-note bad"><strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(row.correct)}</div>`;
+            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(row.correct)}`);
           } else if (selected === row.correct) {
             rowClass += " correct";
-            feedback = `<div class="dtz-eval-note good"><strong>Richtig.</strong> Lösung: ${escapeHtml(row.correct)}</div>`;
+            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(row.correct)}`);
           } else {
             rowClass += " wrong";
-            feedback = `<div class="dtz-eval-note bad"><strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(row.correct)}</div>`;
+            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(row.correct)}`);
           }
           if (row.explanation) {
-            feedback += `<div class="dtz-eval-note">${escapeHtml(row.explanation)}</div>`;
+            feedback += ResultBox("", `${escapeHtml(row.explanation)}`);
           }
         }
-        const optionHtml = labels.map((label) => `
-          <label class="lid-option">
-            <input type="radio" name="dtz_lesen_t2_${row.key}" data-dtz-module="lesen" data-dtz-key="${escapeHtml(row.key)}" value="${label}" ${selected === label ? "checked" : ""}>
-            <span><strong>${escapeHtml(label)})</strong></span>
-          </label>
-        `).join("");
+        const optionMap = {};
+        labels.forEach((label) => { optionMap[label] = ""; });
+        const optionHtml = OptionGroup({
+          module: "lesen",
+          inputName: `dtz_lesen_t2_${row.key}`,
+          dataKey: row.key,
+          optionsMap: optionMap,
+          selected
+        });
         return `
           <article class="${rowClass}">
             <h4>Situation ${row.no}</h4>
             <p class="lid-stimulus">${escapeHtml(row.prompt)}</p>
-            <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(row.question)}</p>
+            ${TaskInstruction(row.question)}
             <div class="lid-options">${optionHtml}</div>
             ${feedback}
           </article>
@@ -5257,7 +5387,7 @@
           </div>
           <div class="dtz-lesen-group-body">
             <article class="lid-question">
-              <p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(task.instructions)}</p>
+              ${TaskInstruction(task.instructions)}
               <ul class="speak-list">${adsHtml}</ul>
               <p class="section-subtitle" style="margin: 10px 0 0;">Wählen Sie A-H. Wenn nichts passt, wählen Sie X.</p>
             </article>
@@ -5302,6 +5432,98 @@
       return String(task && task.type ? task.type : "").includes("single_choice");
     }
 
+    function renderSingleChoiceTaskList(module, state) {
+      const html = state.tasks
+        .map((task, idx) => isDtzSingleChoiceTask(task) ? renderDtzSingleChoiceTask(module, state, task, idx) : "")
+        .join("");
+      if (module === "lesen") {
+        return `
+          <div class="dtz-lesen-groups">
+            <section class="dtz-lesen-group">
+              <div class="dtz-lesen-group-head">
+                <h4>${escapeHtml((state.tasks[0] && state.tasks[0].dtzPart) || `Teil ${state.teil}`)}</h4>
+                <span>${state.tasks.length} Aufgaben</span>
+              </div>
+              <div class="dtz-lesen-group-body">${html}</div>
+            </section>
+          </div>
+        `;
+      }
+      return html;
+    }
+
+    function renderHoerenTeil1(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderHoerenTeil2(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderHoerenTeil3(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderHoerenTeil4(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderLesenTeil1(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderLesenTeil2(_module, state) {
+      if (!state.tasks[0]) return "";
+      return MatchingTask(renderDtzLesenTeil2Task(state, state.tasks[0]));
+    }
+    function renderLesenTeil3(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderLesenTeil4(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderLesenTeil5(module, state) { return renderSingleChoiceTaskList(module, state); }
+
+    const DTZ_RENDERERS = {
+      hoeren: {
+        1: renderHoerenTeil1,
+        2: renderHoerenTeil2,
+        3: renderHoerenTeil3,
+        4: renderHoerenTeil4
+      },
+      lesen: {
+        1: renderLesenTeil1,
+        2: renderLesenTeil2,
+        3: renderLesenTeil3,
+        4: renderLesenTeil4,
+        5: renderLesenTeil5
+      }
+    };
+
+    function evaluateSingleChoiceTeil(state) {
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      state.tasks.forEach((task, idx) => {
+        if (!isDtzSingleChoiceTask(task)) return;
+        total += 1;
+        const selected = String(state.answers[`q_${idx}`] || "");
+        if (!selected) unanswered += 1;
+        else if (selected === String(task.correct || "")) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
+    function evaluateLesenTeil2(state) {
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      (state.tasks[0] && state.tasks[0].situations ? state.tasks[0].situations : []).forEach((row) => {
+        total += 1;
+        const selected = String(state.answers[row.key] || "");
+        if (!selected) unanswered += 1;
+        else if (selected === row.correct) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
+    const DTZ_EVALUATORS = {
+      hoeren: {
+        1: evaluateSingleChoiceTeil,
+        2: evaluateSingleChoiceTeil,
+        3: evaluateSingleChoiceTeil,
+        4: evaluateSingleChoiceTeil
+      },
+      lesen: {
+        1: evaluateSingleChoiceTeil,
+        2: evaluateLesenTeil2,
+        3: evaluateSingleChoiceTeil,
+        4: evaluateSingleChoiceTeil,
+        5: evaluateSingleChoiceTeil
+      }
+    };
+
     function renderDtzTrainingSet(module) {
       const ui = getDtzUi(module);
       const state = getDtzState(module);
@@ -5312,19 +5534,12 @@
         return;
       }
 
-      // Teil-spezifischer Renderer: Lesen Teil 2 (Matching) wird separat gezeichnet.
-      if (module === "lesen" && state.teil === 2 && state.tasks[0] && state.tasks[0].type === "lesen_teil2_matching") {
-        ui.list.innerHTML = `<div class="dtz-lesen-groups">${renderDtzLesenTeil2Task(state, state.tasks[0])}</div>`;
-      } else {
-        const html = state.tasks
-          .map((task, idx) => isDtzSingleChoiceTask(task) ? renderDtzSingleChoiceTask(module, state, task, idx) : "")
-          .join("");
-        if (module === "lesen") {
-          ui.list.innerHTML = `<div class="dtz-lesen-groups"><section class="dtz-lesen-group"><div class="dtz-lesen-group-head"><h4>${escapeHtml((state.tasks[0] && state.tasks[0].dtzPart) || `Teil ${state.teil}`)}</h4><span>${state.tasks.length} Aufgaben</span></div><div class="dtz-lesen-group-body">${html}</div></section></div>`;
-        } else {
-          ui.list.innerHTML = html;
-        }
+      const renderer = (DTZ_RENDERERS[module] || {})[state.teil];
+      if (typeof renderer !== "function") {
+        ui.list.innerHTML = `<div class="archive-empty">Für diesen Teil ist kein Renderer verfügbar.</div>`;
+        return;
       }
+      ui.list.innerHTML = renderer(module, state);
 
       attachDtzAnswerListeners(module);
     }
@@ -5337,33 +5552,12 @@
         return;
       }
 
-      let total = 0;
-      let correct = 0;
-      let unanswered = 0;
-
-      // Teil-spezifische Auswertung: Lesen Teil 2 (A-H/X-Zuordnung).
-      if (module === "lesen" && state.teil === 2 && state.tasks[0] && state.tasks[0].type === "lesen_teil2_matching") {
-        (state.tasks[0].situations || []).forEach((row) => {
-          total += 1;
-          const selected = String(state.answers[row.key] || "");
-          if (!selected) {
-            unanswered += 1;
-          } else if (selected === row.correct) {
-            correct += 1;
-          }
-        });
-      } else {
-        state.tasks.forEach((task, idx) => {
-          if (!isDtzSingleChoiceTask(task)) return;
-          total += 1;
-          const selected = String(state.answers[`q_${idx}`] || "");
-          if (!selected) {
-            unanswered += 1;
-          } else if (selected === String(task.correct || "")) {
-            correct += 1;
-          }
-        });
+      const evaluator = (DTZ_EVALUATORS[module] || {})[state.teil];
+      if (typeof evaluator !== "function") {
+        if (showStatus) setDtzModuleStatus(module, "error", "Für diesen Teil ist keine Auswertung verfügbar.");
+        return;
       }
+      const { total, correct, unanswered } = evaluator(state);
 
       const wrong = Math.max(0, total - correct - unanswered);
       const points = correct * 2;
@@ -5380,9 +5574,9 @@
     }
 
     async function loadDtzTrainingSet(module) {
-      const state = getDtzState(module);
       const ui = getDtzUi(module);
       const teil = syncDtzTeilFromSelect(module);
+      const state = ensureDtzTeilState(module, teil);
       const count = getDtzQuestionCount(module, teil);
 
       stopDtzAudio(true);
@@ -5406,11 +5600,11 @@
         const items = Array.isArray(set.items) ? set.items : [];
         if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
 
-        state.teil = teil;
         state.set = items;
         state.tasks = buildDtzTasks(module, teil, items);
         state.answers = {};
         state.evaluated = false;
+        state.lastLoadedAt = new Date().toISOString();
 
         resetDtzModuleResultUi(module, true);
         renderDtzTrainingSet(module);
@@ -5420,6 +5614,7 @@
         state.tasks = [];
         state.answers = {};
         state.evaluated = false;
+        state.lastLoadedAt = "";
         resetDtzModuleResultUi(module, false);
         setDtzModuleStatus(module, "error", err.message || "DTZ-Aufgaben konnten nicht geladen werden.");
       } finally {
@@ -5437,33 +5632,34 @@
     }
 
     function initDtzModule(module) {
-      const ui = getDtzUi(module);
+      const ui = module === "hoeren" ? HoerenSection() : LesenSection();
       if (!ui.teilSelect || !ui.actionBtn) return;
 
       syncDtzTeilFromSelect(module);
       updateDtzPartMeta(module);
       resetDtzModuleResultUi(module, false);
       clearDtzModuleStatus(module);
+      renderDtzTrainingSet(module);
 
       ui.teilSelect.addEventListener("change", () => {
-        syncDtzTeilFromSelect(module);
-        const state = getDtzState(module);
-        state.set = [];
-        state.tasks = [];
-        state.answers = {};
-        state.evaluated = false;
+        const teil = syncDtzTeilFromSelect(module);
+        ensureDtzTeilState(module, teil);
         updateDtzPartMeta(module);
-        resetDtzModuleResultUi(module, false);
         clearDtzModuleStatus(module);
         stopDtzAudio(true);
+        renderDtzTrainingSet(module);
       });
 
       ui.actionBtn.addEventListener("click", () => onDtzAction(module));
     }
 
+    function DtzTrainingPage() {
+      ["hoeren", "lesen"].forEach(initDtzModule);
+    }
+
     function initDtzTrainingUi() {
       if (dtzUiInitialized) return;
-      ["hoeren", "lesen"].forEach(initDtzModule);
+      DtzTrainingPage();
       dtzUiInitialized = true;
     }
 
