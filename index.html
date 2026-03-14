@@ -5778,16 +5778,31 @@
       const template = String(task.textTemplate || "");
       const gapTokenRegex = /\[(0|4[0-5])\]/g;
       const textHtml = escapeHtml(template).replace(gapTokenRegex, (_match, no) => {
-        return `<span class="dtz-cloze-gap-inline">(${escapeHtml(String(no))}) ____</span>`;
+        return `<span class="dtz-cloze-gap-inline">${escapeHtml(String(no))} ____</span>`;
       });
 
       const example = task.example || {};
-      const exampleOptions = OptionGroup({
-        module,
+      const renderAbcOptions = ({ inputName, dataKey, optionsMap, selected, disabled = false }) => {
+        const labels = sortDtzOptionLabels(Object.keys(optionsMap || {})).filter((l) => /^[ABC]$/.test(String(l || "")));
+        return labels.map((label) => {
+          const value = normalizeDtzGermanText(String((optionsMap || {})[label] || ""));
+          const checked = String(selected || "") === String(label) ? "checked" : "";
+          const disabledAttr = disabled ? "disabled" : "";
+          return `
+            <label class="lid-option">
+              <input type="radio" name="${escapeHtml(String(inputName || ""))}" data-dtz-module="${module}" data-dtz-key="${escapeHtml(String(dataKey || ""))}" value="${escapeHtml(String(label))}" ${checked} ${disabledAttr}>
+              <span><strong>${escapeHtml(String(label).toLowerCase())})</strong> ${escapeHtml(value)}</span>
+            </label>
+          `;
+        }).join("");
+      };
+
+      const exampleOptions = renderAbcOptions({
         inputName: "dtz_lesen_teil5_example",
         dataKey: "gap_example",
         optionsMap: example.options || {},
-        selected: String(example.correct || "")
+        selected: String(example.correct || ""),
+        disabled: true
       });
 
       const gapsHtml = (Array.isArray(task.gaps) ? task.gaps : []).map((gap, idx) => {
@@ -5810,35 +5825,40 @@
         }
         return `
           <article class="${rowClass}">
-            <h4>Lücke ${escapeHtml(String(gap.no || (40 + idx)))}</h4>
-            ${MultipleChoiceQuestion({
-              module,
-              inputName: `dtz_lesen_t5_${escapeHtml(String(gap.key || `gap_${idx}`))}`,
-              dataKey: String(gap.key || `gap_${idx}`),
-              optionsMap: gap.options || {},
-              selected
-            })}
+            <h4>${escapeHtml(String(gap.no || (40 + idx)))}</h4>
+            <div class="lid-options">
+              ${renderAbcOptions({
+                inputName: `dtz_lesen_t5_${String(gap.key || `gap_${idx}`)}`,
+                dataKey: String(gap.key || `gap_${idx}`),
+                optionsMap: gap.options || {},
+                selected
+              })}
+            </div>
             ${feedback}
           </article>
         `;
       }).join("");
 
       const exampleInfo = Number.isFinite(Number(example.no)) ? `Beispiel ${Number(example.no)}` : "Beispiel";
+      const introInstruction = "Lesen Sie den Text und schließen Sie die Lücken 40-45. Welche Lösung (a, b oder c) passt am besten?";
+      const answerSheetInstruction = "Markieren Sie Ihre Lösungen für die Aufgaben 40-45.";
 
       return `
         <section class="dtz-lesen-group">
           <div class="dtz-lesen-group-head">
-            <h4>${escapeHtml(task.dtzPart || "L5 Formeller Lückentext")}</h4>
+            <h4>Lesen Teil 5</h4>
             <span>${(Array.isArray(task.gaps) ? task.gaps.length : 0)} Lücken</span>
           </div>
           <div class="dtz-lesen-group-body">
             <article class="lid-question">
-              ${TaskInstruction(task.instructions || "Lesen Sie den Text und schließen Sie die Lücken 40-45.")}
+              ${TaskInstruction(introInstruction)}
+              <p class="section-subtitle" style="margin: 0 0 10px;">${escapeHtml(answerSheetInstruction)}</p>
               <p class="dtz-cloze-text">${textHtml}</p>
             </article>
             <article class="lid-question">
               <h4>${escapeHtml(exampleInfo)} (nicht bewertet)</h4>
               <div class="lid-options dtz-example-lock">${exampleOptions}</div>
+              ${example.correct ? `<p class="section-subtitle" style="margin-top:8px;">X: ${escapeHtml(String(example.correct).toLowerCase())}</p>` : ""}
               ${example.explanation ? ResultBox("", escapeHtml(String(example.explanation || ""))) : ""}
             </article>
             ${gapsHtml}
