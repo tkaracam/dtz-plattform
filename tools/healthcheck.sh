@@ -44,6 +44,11 @@ print_fail() {
   FAIL_COUNT=$((FAIL_COUNT + 1))
 }
 
+print_warn() {
+  local msg="$1"
+  echo -e "${YELLOW}WARN${NC} $msg"
+}
+
 run_check() {
   local label="$1"
   local method="$2"
@@ -120,6 +125,36 @@ run_check() {
   print_ok "$label -> HTTP $status ($url)"
 }
 
+run_contains_check() {
+  local label="$1"
+  local path="$2"
+  local needle="$3"
+  local url="${BASE_URL}${path}"
+  local body
+
+  body="$(curl -sS -m "$TIMEOUT_SECONDS" -H "Accept: text/html,*/*" "$url")"
+  if [[ "$body" == *"$needle"* ]]; then
+    print_ok "$label -> bulundu: $needle ($url)"
+  else
+    print_fail "$label -> bulunamadı: $needle ($url)"
+  fi
+}
+
+run_contains_warn() {
+  local label="$1"
+  local path="$2"
+  local needle="$3"
+  local url="${BASE_URL}${path}"
+  local body
+
+  body="$(curl -sS -m "$TIMEOUT_SECONDS" -H "Accept: text/html,*/*" "$url")"
+  if [[ "$body" == *"$needle"* ]]; then
+    print_ok "$label -> bulundu: $needle ($url)"
+  else
+    print_warn "$label -> bulunamadı: $needle ($url)"
+  fi
+}
+
 echo -e "${YELLOW}DTZ-LID Post-Deploy Healthcheck${NC}"
 echo "Base URL: $BASE_URL"
 echo
@@ -131,11 +166,19 @@ run_check "Lehrerbereich" "GET" "/admin.html" "200" "html"
 # Session/status endpoints (should always be JSON)
 run_check "Admin Session API" "GET" "/api/admin_session.php" "200" "json"
 run_check "Student Session API" "GET" "/api/student_session.php" "200" "json"
+run_check "DTZ Training API GET (method block)" "GET" "/api/student_training_set.php" "405" "json"
+run_check "DTZ Training API POST (anon block)" "POST" "/api/student_training_set.php" "401" "json" "{\"module\":\"hoeren\",\"teil\":1,\"count\":5}"
 
 # Protected endpoints should reject anonymous calls with JSON (not HTML)
 run_check "Hausaufgabe speichern (anon blok)" "POST" "/api/homework_assign.php" "401" "json" "{}"
 run_check "Mail-Liste laden (anon blok)" "POST" "/api/list_letters.php" "401" "json" "{\"limit\":1}"
 run_check "Korrektur API (anon blok)" "POST" "/api/correct.php" "401" "json" "{\"message\":\"test\"}"
+
+# UI smoke: DTZ controls should be present on start page
+run_contains_check "DTZ UI: Hören button" "/index.html" "Hören (Teil 1-4)"
+run_contains_check "DTZ UI: Lesen button" "/index.html" "Lesen (Teil 1-5)"
+run_contains_warn "DTZ UI: Teil select" "/index.html" "dtzTeilSelect"
+run_contains_warn "DTZ UI: Hören Exam toggle" "/index.html" "dtzHoerenExamMode"
 
 echo
 if [[ "$FAIL_COUNT" -gt 0 ]]; then
