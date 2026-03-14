@@ -1818,6 +1818,159 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
     ];
 }
 
+function build_lesen_teil4_richtig_falsch_pools(): array
+{
+    return [
+        [
+            'title' => 'Kundendienst: Filmplattform',
+            'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
+            'text' => 'ViewNow - Mitgliedschaft\n\nBei ViewNow können Sie Filme, Serien und Sportübertragungen live oder später ansehen. Das Angebot ist ab 14 Jahren nutzbar. Jugendliche unter 18 Jahren dürfen den Dienst nur mit Zustimmung der Erziehungsberechtigten nutzen. \n\nEin Basis-Abo kostet 7,99 Euro pro Monat und enthält Werbung. Das Plus-Abo kostet 13,99 Euro und ist ohne Werbung auf zwei Geräten gleichzeitig nutzbar.\n\nDie Zahlung ist jeweils am Tag des Vertragsabschlusses für den nächsten Monat fällig. Geht das Geld nicht rechtzeitig ein, wird der Zugang vorübergehend gesperrt.\n\nDas Abo ist monatlich kündbar. Die Kündigung ist über das Kundenkonto oder per E-Mail möglich.',
+            'statements' => [
+                [
+                    'no' => 37,
+                    'statement' => 'Bei ViewNow kann man auch Sportübertragungen sehen.',
+                    'correct' => 'A',
+                    'rationale' => 'Im Text werden Sportübertragungen ausdrücklich genannt.',
+                ],
+                [
+                    'no' => 38,
+                    'statement' => 'Das Plus-Abo kann man auf sechs Geräten gleichzeitig nutzen.',
+                    'correct' => 'B',
+                    'rationale' => 'Im Text steht: auf zwei Geräten gleichzeitig.',
+                ],
+                [
+                    'no' => 39,
+                    'statement' => 'Man kann das Abo auch per E-Mail kündigen.',
+                    'correct' => 'A',
+                    'rationale' => 'Kündigung über Kundenkonto oder per E-Mail ist möglich.',
+                ],
+            ],
+        ],
+        [
+            'title' => 'Information vom Wohnungsservice',
+            'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
+            'text' => 'WohnService Nord - Mieterinformation\n\nUnser Reparaturdienst ist montags bis freitags zwischen 8:00 und 17:00 Uhr erreichbar. Notfälle (zum Beispiel ein Rohrbruch) melden Sie bitte sofort über die Notfallnummer.\n\nFür normale Reparaturen können Sie online einen Termin buchen. Geben Sie dabei bitte Ihre Wohnungsnummer und eine aktuelle Telefonnummer an.\n\nDie jährliche Wartung der Heizungen findet zwischen Oktober und November statt. Sie erhalten den genauen Termin mindestens sieben Tage vorher per E-Mail.\n\nWenn Sie den Termin nicht wahrnehmen können, melden Sie sich bitte spätestens 24 Stunden vorher. Sonst kann eine Servicegebühr von 25 Euro entstehen.',
+            'statements' => [
+                [
+                    'no' => 37,
+                    'statement' => 'Notfälle soll man über eine spezielle Nummer melden.',
+                    'correct' => 'A',
+                    'rationale' => 'Der Text nennt ausdrücklich eine Notfallnummer.',
+                ],
+                [
+                    'no' => 38,
+                    'statement' => 'Den Termin für die Heizungswartung bekommt man erst am selben Tag.',
+                    'correct' => 'B',
+                    'rationale' => 'Der genaue Termin kommt mindestens sieben Tage vorher.',
+                ],
+                [
+                    'no' => 39,
+                    'statement' => 'Bei sehr später Absage kann eine Gebühr entstehen.',
+                    'correct' => 'A',
+                    'rationale' => 'Bei Absage später als 24 Stunden vorher sind 25 Euro möglich.',
+                ],
+            ],
+        ],
+        [
+            'title' => 'Hinweis vom Integrationskurs',
+            'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
+            'text' => 'Bildungszentrum am Park - Kursregelung\n\nDer Deutschkurs B1 findet montags, mittwochs und freitags von 9:00 bis 12:15 Uhr statt. Bitte kommen Sie pünktlich, weil wichtige Informationen immer am Anfang gegeben werden.\n\nWenn Sie krank sind, informieren Sie das Sekretariat bis 8:30 Uhr telefonisch oder per E-Mail. Bei längerer Krankheit ab drei Tagen brauchen wir eine ärztliche Bescheinigung.\n\nHausaufgaben werden jeden Freitag im Online-Portal veröffentlicht und sollen bis Montagabend hochgeladen werden. Wer technische Probleme hat, meldet sich bitte direkt bei der Lehrkraft.\n\nFehlende Unterlagen können im Sekretariat zwischen 13:00 und 15:00 Uhr abgegeben werden.',
+            'statements' => [
+                [
+                    'no' => 37,
+                    'statement' => 'Der Kurs findet dreimal pro Woche statt.',
+                    'correct' => 'A',
+                    'rationale' => 'Montag, Mittwoch und Freitag bedeuten drei Kurstage.',
+                ],
+                [
+                    'no' => 38,
+                    'statement' => 'Bei Krankheit reicht eine Nachricht bis 10:00 Uhr.',
+                    'correct' => 'B',
+                    'rationale' => 'Im Text steht als Frist 8:30 Uhr.',
+                ],
+                [
+                    'no' => 39,
+                    'statement' => 'Hausaufgaben sollen bis Montagabend im Portal hochgeladen werden.',
+                    'correct' => 'A',
+                    'rationale' => 'Genau diese Frist wird genannt.',
+                ],
+            ],
+        ],
+        [
+            'title' => 'Serviceinfo einer Bank',
+            'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
+            'text' => 'StadtBank - Aktuelle Servicezeiten\n\nUnsere Filiale am Rathausplatz ist montags bis freitags von 9:00 bis 16:00 Uhr geöffnet. Am Donnerstag bieten wir zusätzlich eine Abendberatung bis 18:30 Uhr an.\n\nFür Überweisungen und Kontoauszüge können Sie auch die Automaten im Eingangsbereich nutzen. Dieser Bereich ist täglich von 6:00 bis 22:00 Uhr zugänglich.\n\nWenn Sie eine neue Bankkarte bestellen möchten, können Sie das online im Kundenportal erledigen. Die Karte wird in der Regel innerhalb von fünf Werktagen per Post zugestellt.\n\nBei Verlust der Karte rufen Sie bitte sofort unsere Sperrhotline an, damit keine unberechtigten Zahlungen erfolgen.',
+            'statements' => [
+                [
+                    'no' => 37,
+                    'statement' => 'Am Donnerstag gibt es längere Beratungszeiten.',
+                    'correct' => 'A',
+                    'rationale' => 'Donnerstags ist Beratung bis 18:30 Uhr möglich.',
+                ],
+                [
+                    'no' => 38,
+                    'statement' => 'Die Automaten kann man nur während der Filialzeiten benutzen.',
+                    'correct' => 'B',
+                    'rationale' => 'Der Automatenbereich ist täglich von 6:00 bis 22:00 Uhr offen.',
+                ],
+                [
+                    'no' => 39,
+                    'statement' => 'Bei Kartenverlust soll man zuerst auf die neue Karte warten.',
+                    'correct' => 'B',
+                    'rationale' => 'Man soll sofort die Sperrhotline anrufen.',
+                ],
+            ],
+        ],
+    ];
+}
+
+function create_lesen_teil4_structured_set(bool $includeExplanation): array
+{
+    $pool = build_lesen_teil4_richtig_falsch_pools();
+    if (!$pool) {
+        throw new RuntimeException('Für Lesen Teil 4 sind keine strukturierten Aufgaben verfügbar.');
+    }
+
+    $picked = pick_random_item($pool);
+    $statements = [];
+    foreach (array_values((array)($picked['statements'] ?? [])) as $idx => $row) {
+        $no = (int)($row['no'] ?? (37 + $idx));
+        $correct = strtoupper((string)($row['correct'] ?? ''));
+        if (!in_array($correct, ['A', 'B'], true)) {
+            $correct = 'A';
+        }
+        $statements[] = [
+            'id' => 's_' . $no,
+            'no' => $no,
+            'statement' => germanize_umlauts_text((string)($row['statement'] ?? '')),
+            'correct' => $correct,
+            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($row['rationale'] ?? '')) : '',
+        ];
+    }
+
+    $item = [
+        'set_index' => 1,
+        'template_id' => 'lesen_teil4_struct_' . substr(sha1((string)json_encode($picked)), 0, 8),
+        'dtz_schema' => 'lesen_teil4_richtig_falsch_text',
+        'dtz_part' => 'L4 Richtig/Falsch',
+        'task_type' => 'Textverständnis',
+        'context' => 'Alltag A2-B1',
+        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 4')),
+        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+        'text' => germanize_umlauts_text((string)($picked['text'] ?? '')),
+        'statements' => $statements,
+    ];
+
+    return [
+        'module' => 'lesen',
+        'teil' => 4,
+        'count' => 1,
+        'include_explanation' => $includeExplanation,
+        'generated_at' => gmdate('c'),
+        'items' => [$item],
+    ];
+}
+
 function build_lesen_teil5_cloze_pools(): array
 {
     return [
@@ -1966,6 +2119,9 @@ function create_training_set(string $module, int $count, bool $includeExplanatio
     $normalizedModule = normalize_training_module($module);
     if ($normalizedModule === 'hoeren' && $teil >= 1 && $teil <= 4) {
         return create_hoeren_structured_set($teil, $includeExplanation);
+    }
+    if ($normalizedModule === 'lesen' && $teil === 4) {
+        return create_lesen_teil4_structured_set($includeExplanation);
     }
     if ($normalizedModule === 'lesen' && $teil === 5) {
         return create_lesen_teil5_structured_set($includeExplanation);

@@ -3097,9 +3097,9 @@
             count: 5
           },
           4: {
-            title: "Teil 4: Meinungen und Absichten",
-            description: "Lesen Sie kurze Aussagen zu Meinungen/Absichten und entscheiden Sie sich für A/B/C.",
-            count: 5
+            title: "Teil 4: Richtig/Falsch zum Text",
+            description: "Lesen Sie den Text und entscheiden Sie bei 37-39: richtig oder falsch.",
+            count: 3
           },
           5: {
             title: "Teil 5: Formeller Lückentext",
@@ -5111,6 +5111,25 @@
       };
     }
 
+    function mapLesenTeil4RichtigFalschItem(first) {
+      const statements = Array.isArray(first.statements) ? first.statements : [];
+      return {
+        id: "lesen_teil4_richtig_falsch_text",
+        type: "lesen_teil4_richtig_falsch_text",
+        dtzPart: normalizeDtzGermanText(String(first.dtz_part || "L4 Richtig/Falsch")),
+        title: normalizeDtzGermanText(String(first.title || "Lesen Teil 4")),
+        instructions: normalizeDtzGermanText(String(first.instructions || "Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind.")),
+        text: normalizeDtzGermanText(String(first.text || "")),
+        statements: statements.map((row, idx) => ({
+          key: String(row.id || `s_${37 + idx}`),
+          no: Number(row.no || (37 + idx)),
+          statement: normalizeDtzGermanText(String(row.statement || "")),
+          correct: String(row.correct || "").toUpperCase(),
+          explanation: normalizeDtzGermanText(String(row.explanation || ""))
+        }))
+      };
+    }
+
     function buildDtzTasks(module, teil, rawItems) {
       const items = Array.isArray(rawItems) ? rawItems : [];
       if (!items.length) return [];
@@ -5162,6 +5181,13 @@
         const first = items[0] || {};
         if (String(first.dtz_schema || "").toLowerCase() === "lesen_teil5_lueckentext") {
           return [mapLesenTeil5ClozeItem(first)];
+        }
+      }
+
+      if (module === "lesen" && teil === 4) {
+        const first = items[0] || {};
+        if (String(first.dtz_schema || "").toLowerCase() === "lesen_teil4_richtig_falsch_text") {
+          return [mapLesenTeil4RichtigFalschItem(first)];
         }
       }
 
@@ -5822,6 +5848,61 @@
       `;
     }
 
+    function renderLesenTeil4Task(module, state, task) {
+      const rows = Array.isArray(task.statements) ? task.statements : [];
+      const rowsHtml = rows.map((row) => {
+        const selected = String(state.answers[row.key] || "");
+        const correct = String(row.correct || "");
+        let feedback = "";
+        let rowClass = "lid-question";
+        if (state.evaluated) {
+          if (!selected) {
+            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(correct === "A" ? "richtig" : "falsch")}`);
+          } else if (selected === correct) {
+            rowClass += " correct";
+            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(correct === "A" ? "richtig" : "falsch")}`);
+          } else {
+            rowClass += " wrong";
+            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected === "A" ? "richtig" : "falsch")} | Richtige Lösung: ${escapeHtml(correct === "A" ? "richtig" : "falsch")}`);
+          }
+          if (row.explanation) {
+            feedback += ResultBox("", `${escapeHtml(row.explanation)}`);
+          }
+        }
+        return `
+          <article class="${rowClass}">
+            <h4>${escapeHtml(String(row.no || ""))}</h4>
+            ${TaskInstruction(row.statement || "")}
+            ${TrueFalseQuestion({
+              module,
+              inputName: `dtz_${module}_teil4_${row.key}`,
+              dataKey: row.key,
+              optionsMap: { A: "richtig", B: "falsch" },
+              selected
+            })}
+            ${feedback}
+          </article>
+        `;
+      }).join("");
+
+      return `
+        <section class="dtz-lesen-group">
+          <div class="dtz-lesen-group-head">
+            <h4>${escapeHtml(task.title || "Lesen Teil 4")}</h4>
+            <span>${rows.length} Aussagen</span>
+          </div>
+          <div class="dtz-lesen-group-body">
+            <article class="lid-question">
+              ${TaskInstruction(task.instructions || "Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind.")}
+              <p class="lid-stimulus">${escapeHtml(task.text || "")}</p>
+            </article>
+            ${rowsHtml}
+            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+          </div>
+        </section>
+      `;
+    }
+
     function renderHoerenBundleTask(module, state, task, teilNo) {
       const questions = Array.isArray(task.questions) ? task.questions : [];
       const isPlaying = currentDtzSpeakingIndex === "bundle_main";
@@ -6157,7 +6238,14 @@
       return MatchingTask(renderDtzLesenTeil2Task(state, state.tasks[0]));
     }
     function renderLesenTeil3(module, state) { return renderSingleChoiceTaskList(module, state); }
-    function renderLesenTeil4(module, state) { return renderSingleChoiceTaskList(module, state); }
+    function renderLesenTeil4(module, state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      if (!firstTask) return "";
+      if (firstTask.type === "lesen_teil4_richtig_falsch_text") {
+        return renderLesenTeil4Task(module, state, firstTask);
+      }
+      return renderSingleChoiceTaskList(module, state);
+    }
     function renderLesenTeil5(module, state) {
       const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
       if (!firstTask) return "";
@@ -6281,6 +6369,22 @@
       return { total, correct, unanswered };
     }
 
+    function evaluateLesenTeil4RichtigFalsch(state) {
+      const firstTask = Array.isArray(state.tasks) ? state.tasks[0] : null;
+      const rows = Array.isArray(firstTask && firstTask.statements) ? firstTask.statements : [];
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      rows.forEach((row) => {
+        total += 1;
+        const selected = String(state.answers[row.key] || "");
+        const expected = String(row.correct || "");
+        if (!selected) unanswered += 1;
+        else if (selected === expected) correct += 1;
+      });
+      return { total, correct, unanswered };
+    }
+
     const DTZ_EVALUATORS = {
       hoeren: {
         1: evaluateHoerenBundleTeil,
@@ -6292,7 +6396,7 @@
         1: evaluateSingleChoiceTeil,
         2: evaluateLesenTeil2,
         3: evaluateSingleChoiceTeil,
-        4: evaluateSingleChoiceTeil,
+        4: evaluateLesenTeil4RichtigFalsch,
         5: evaluateLesenTeil5Cloze
       }
     };
