@@ -71,8 +71,17 @@ jobs:
 
       - name: Warmup (wait for Render deploy)
         run: |
-          echo "Waiting ${WARMUP_SECONDS}s for deployment propagation..."
-          sleep "${WARMUP_SECONDS}"
+          set -euo pipefail
+          warmup="${WARMUP_SECONDS}"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            warmup="0"
+          fi
+          if [ "${warmup}" -gt 0 ]; then
+            echo "Waiting ${warmup}s for deployment propagation..."
+            sleep "${warmup}"
+          else
+            echo "Warmup skipped."
+          fi
 
       - name: Run healthcheck with retry
         run: |
@@ -97,9 +106,23 @@ jobs:
           done
           TARGETS="$(printf '%s' "${TARGETS}" | xargs)"
           [ -n "${TARGETS}" ] || { echo "Hedef URL listesi bos olamaz"; exit 1; }
+          for candidate in ${TARGETS}; do
+            case "${candidate}" in
+              http://*|https://*) ;;
+              *)
+                echo "Gecersiz URL: ${candidate} (http:// veya https:// ile baslamali)"
+                exit 1
+                ;;
+            esac
+          done
 
           passed_targets=""
           failed_targets=""
+          RESULTS_TABLE="${RUNNER_TEMP}/healthcheck-results.md"
+          {
+            echo "| Ziel | Status | Versuch |"
+            echo "|---|---|---|"
+          } > "${RESULTS_TABLE}"
 
           {
             echo "## Post-Deploy Healthcheck"
@@ -134,12 +157,18 @@ jobs:
 
             if [ "$passed" -eq 1 ]; then
               passed_targets="${passed_targets} ${BASE_URL}"
+              echo "| \`${BASE_URL}\` | ✅ Passed | \`${attempt}/${MAX_ATTEMPTS}\` |" >> "${RESULTS_TABLE}"
               {
                 echo "- ✅ \`${BASE_URL}\` passed (\`${attempt}/${MAX_ATTEMPTS}\`)"
               } >> "${GITHUB_STEP_SUMMARY}"
             else
               overall_failed=1
               failed_targets="${failed_targets} ${BASE_URL}"
+              if [ "${rc}" -eq 124 ]; then
+                echo "| \`${BASE_URL}\` | ❌ Timeout | \`${MAX_ATTEMPTS}/${MAX_ATTEMPTS}\` |" >> "${RESULTS_TABLE}"
+              else
+                echo "| \`${BASE_URL}\` | ❌ Failed | \`${MAX_ATTEMPTS}/${MAX_ATTEMPTS}\` |" >> "${RESULTS_TABLE}"
+              fi
               {
                 echo "- ❌ \`${BASE_URL}\` failed after \`${MAX_ATTEMPTS}\` attempts"
               } >> "${GITHUB_STEP_SUMMARY}"
@@ -159,6 +188,9 @@ jobs:
             else
               echo "- Fehlgeschlagen: \`keine\`"
             fi
+            echo ""
+            echo "### Ziel-Übersicht"
+            cat "${RESULTS_TABLE}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
           if [ "$overall_failed" -ne 0 ]; then
