@@ -2324,11 +2324,336 @@ function create_lesen_teil5_structured_set(bool $includeExplanation): array
     ];
 }
 
+function build_lesen_teil1_wegweiser_pools(): array
+{
+    return [
+        [
+            'title' => 'Lesen Teil 1',
+            'instructions' => 'Sie sind in einem Einkaufszentrum. Wohin gehen Sie? Lesen Sie die Aufgaben 21-25 und den Wegweiser. Welche Kategorie (a, b oder c) passt am besten?',
+            'wegweiser_title' => 'Wegweiser',
+            'wegweiser' => [
+                'UG: Lebensmittel, Obst & Gemüse, Drogerie',
+                'EG: Bäckerei, Apotheke, Geschenkartikel',
+                '1. Stock: Damenmode, Kindermode, Schuhe',
+                '2. Stock: Elektronik, Handy-Service, Drucker',
+                '3. Stock: Friseur, Kosmetik, Sportstudio',
+                '4. Stock: Verwaltung, Sprachschule, Büroservice',
+            ],
+            'situations' => [
+                [
+                    'no' => 21,
+                    'prompt' => 'Sie möchten Ihrer Nachbarin ein Geschenk kaufen. Sie mag Tee.',
+                    'options' => ['A' => '2. Stock', 'B' => 'EG', 'C' => 'anderer Stock'],
+                    'correct' => 'B',
+                    'rationale' => 'Geschenkartikel finden Sie im EG.',
+                ],
+                [
+                    'no' => 22,
+                    'prompt' => 'Sie möchten sich die Haare schneiden lassen.',
+                    'options' => ['A' => '3. Stock', 'B' => '1. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Der Friseur ist im 3. Stock.',
+                ],
+                [
+                    'no' => 23,
+                    'prompt' => 'Ihr Sohn braucht neue Turnschuhe für die Schule.',
+                    'options' => ['A' => '1. Stock', 'B' => 'UG', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Schuhe sind im 1. Stock.',
+                ],
+                [
+                    'no' => 24,
+                    'prompt' => 'Sie wollen für Ihre Familie frisches Gemüse kaufen.',
+                    'options' => ['A' => '4. Stock', 'B' => 'EG', 'C' => 'anderer Stock'],
+                    'correct' => 'C',
+                    'rationale' => 'Obst und Gemüse gibt es im UG.',
+                ],
+                [
+                    'no' => 25,
+                    'prompt' => 'Sie suchen Hosen für Ihre Tochter (11 Monate).',
+                    'options' => ['A' => '2. Stock', 'B' => '1. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'B',
+                    'rationale' => 'Kindermode ist im 1. Stock.',
+                ],
+            ],
+        ],
+        [
+            'title' => 'Lesen Teil 1',
+            'instructions' => 'Sie sind in einem Kaufhaus. Wohin gehen Sie? Lesen Sie die Aufgaben 21-25 und den Wegweiser. Welche Kategorie (a, b oder c) passt am besten?',
+            'wegweiser_title' => 'Wegweiser',
+            'wegweiser' => [
+                'UG: Supermarkt, Getränke, Tierbedarf',
+                'EG: Blumen, Postfiliale, Schlüsseldienst',
+                '1. Stock: Kinderabteilung, Schuhe, Spielwaren',
+                '2. Stock: Computer, TV, Haushaltsgeräte',
+                '3. Stock: Fitness, Tanzschule, Änderungsschneiderei',
+                '4. Stock: Reisebüro, Sprachkurse, Verwaltung',
+            ],
+            'situations' => [
+                [
+                    'no' => 21,
+                    'prompt' => 'Sie müssen ein Paket verschicken.',
+                    'options' => ['A' => 'EG', 'B' => '2. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Die Postfiliale befindet sich im EG.',
+                ],
+                [
+                    'no' => 22,
+                    'prompt' => 'Ihr Sohn möchte ein neues Brettspiel.',
+                    'options' => ['A' => 'UG', 'B' => '1. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'B',
+                    'rationale' => 'Spielwaren sind im 1. Stock.',
+                ],
+                [
+                    'no' => 23,
+                    'prompt' => 'Sie möchten einen neuen Laptop kaufen.',
+                    'options' => ['A' => '2. Stock', 'B' => '4. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Computer finden Sie im 2. Stock.',
+                ],
+                [
+                    'no' => 24,
+                    'prompt' => 'Sie brauchen Futter für Ihren Hund.',
+                    'options' => ['A' => 'EG', 'B' => 'UG', 'C' => 'anderer Stock'],
+                    'correct' => 'B',
+                    'rationale' => 'Tierbedarf gibt es im UG.',
+                ],
+                [
+                    'no' => 25,
+                    'prompt' => 'Sie möchten Ihre Hose kürzen lassen.',
+                    'options' => ['A' => '3. Stock', 'B' => '1. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Die Änderungsschneiderei ist im 3. Stock.',
+                ],
+            ],
+        ],
+        [
+            'title' => 'Lesen Teil 1',
+            'instructions' => 'Sie sind in einem Einkaufszentrum. Wohin gehen Sie? Lesen Sie die Aufgaben 21-25 und den Wegweiser. Welche Kategorie (a, b oder c) passt am besten?',
+            'wegweiser_title' => 'Wegweiser',
+            'wegweiser' => [
+                'UG: Bio-Markt, Getränke, Fahrradservice',
+                'EG: Bäckerei, Café, Buchhandlung',
+                '1. Stock: Baby- und Kinderkleidung, Schuhe',
+                '2. Stock: Mobilfunk, Foto, Elektronik',
+                '3. Stock: Friseur, Kosmetik, Nagelstudio',
+                '4. Stock: Sprachschule, Nachhilfe, Verwaltung',
+            ],
+            'situations' => [
+                [
+                    'no' => 21,
+                    'prompt' => 'Sie möchten ein Buch als Geschenk kaufen.',
+                    'options' => ['A' => 'EG', 'B' => '2. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Die Buchhandlung liegt im EG.',
+                ],
+                [
+                    'no' => 22,
+                    'prompt' => 'Ihr Handy-Display ist kaputt.',
+                    'options' => ['A' => '2. Stock', 'B' => '3. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Mobilfunk finden Sie im 2. Stock.',
+                ],
+                [
+                    'no' => 23,
+                    'prompt' => 'Sie suchen Schuhe für Ihr Kleinkind.',
+                    'options' => ['A' => '1. Stock', 'B' => 'UG', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Kinderkleidung und Schuhe sind im 1. Stock.',
+                ],
+                [
+                    'no' => 24,
+                    'prompt' => 'Sie möchten Ihre Haare färben lassen.',
+                    'options' => ['A' => 'EG', 'B' => '3. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'B',
+                    'rationale' => 'Friseur und Kosmetik sind im 3. Stock.',
+                ],
+                [
+                    'no' => 25,
+                    'prompt' => 'Sie brauchen einen Deutschkurs am Abend.',
+                    'options' => ['A' => '4. Stock', 'B' => '1. Stock', 'C' => 'anderer Stock'],
+                    'correct' => 'A',
+                    'rationale' => 'Sprachschule ist im 4. Stock.',
+                ],
+            ],
+        ],
+    ];
+}
+
+function create_lesen_teil1_structured_set(bool $includeExplanation): array
+{
+    $pool = build_lesen_teil1_wegweiser_pools();
+    if (!$pool) {
+        throw new RuntimeException('Keine Lesen-Teil-1-Pools verfügbar.');
+    }
+    $poolCount = count($pool);
+    $pickIndex = 0;
+    if ($poolCount > 1) {
+        try {
+            $pickIndex = random_int(0, $poolCount - 1);
+        } catch (Throwable $e) {
+            $pickIndex = mt_rand(0, $poolCount - 1);
+        }
+    }
+    $picked = (array)$pool[$pickIndex];
+    $situationsRaw = array_values((array)($picked['situations'] ?? []));
+    $situations = [];
+    foreach ($situationsRaw as $idx => $s) {
+        $options = prepare_training_options(
+            (array)($s['options'] ?? []),
+            (string)($s['correct'] ?? ''),
+            false
+        );
+        $situations[] = [
+            'id' => 's_' . (21 + $idx),
+            'no' => (int)($s['no'] ?? (21 + $idx)),
+            'prompt' => germanize_umlauts_text((string)($s['prompt'] ?? '')),
+            'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$options['options']),
+            'correct' => (string)$options['correct'],
+            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($s['rationale'] ?? '')) : '',
+        ];
+    }
+
+    $item = [
+        'set_index' => 1,
+        'template_id' => 'lesen_teil1_struct_' . substr(sha1((string)json_encode($picked)), 0, 8),
+        'dtz_schema' => 'lesen_teil1_wegweiser',
+        'dtz_part' => 'L1 Kurznachrichten und Mitteilungen',
+        'task_type' => 'Wegweiser',
+        'context' => 'Aufgaben 21-25',
+        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 1')),
+        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+        'wegweiser_title' => germanize_umlauts_text((string)($picked['wegweiser_title'] ?? 'Wegweiser')),
+        'wegweiser' => array_map(static fn($line) => germanize_umlauts_text((string)$line), (array)($picked['wegweiser'] ?? [])),
+        'situations' => $situations,
+    ];
+
+    return [
+        'module' => 'lesen',
+        'teil' => 1,
+        'count' => 1,
+        'include_explanation' => $includeExplanation,
+        'generated_at' => gmdate('c'),
+        'items' => [$item],
+    ];
+}
+
+function build_lesen_teil2_matching_pools(): array
+{
+    return [
+        [
+            'title' => 'Lesen Teil 2',
+            'instructions' => 'Lesen Sie die Situationen 26-30 und die Anzeigen a-h. Finden Sie für jede Situation die passende Anzeige. Für eine Aufgabe gibt es keine Lösung. Markieren Sie in diesem Fall ein x.',
+            'anzeigen' => [
+                'A' => 'Pflegedienst Sonnengruß: Wir suchen Haushaltshilfe für Seniorinnen und Senioren (vormittags).',
+                'B' => 'Kindergarten Regenbogen: Vollzeit-Erzieher/in ab sofort gesucht.',
+                'C' => 'Möbelhaus City: Esszimmerstühle im Set, 6 Stück zum Sonderpreis.',
+                'D' => 'Nachhilfezentrum Lernpunkt: Englisch-Nachhilfe werktags 18:00-21:00 Uhr.',
+                'E' => 'Küchenstudio Platzwunder: Klapp- und Ausziehtische für kleine Küchen.',
+                'F' => 'Deutschkurs B1 intensiv, täglich 8:00-12:00 Uhr.',
+                'G' => 'Reinigungsservice Blitz: Büroreinigung nur nachts.',
+                'H' => 'Sportverein Nord: Yoga für Jugendliche.',
+            ],
+            'situations' => [
+                ['no' => 26, 'prompt' => 'Ihre Mutter ist Rentnerin und braucht Hilfe im Haushalt.', 'correct' => 'A'],
+                ['no' => 27, 'prompt' => 'Ein Bekannter ist Erzieher und sucht eine neue Vollzeitstelle.', 'correct' => 'B'],
+                ['no' => 28, 'prompt' => 'Sie brauchen für Ihren Tisch im Esszimmer möglichst viele Stühle.', 'correct' => 'C'],
+                ['no' => 29, 'prompt' => 'Frau Hilani ist Englischlehrerin und hat abends Zeit, um zu arbeiten.', 'correct' => 'D'],
+                ['no' => 30, 'prompt' => 'Ihr Bruder sucht einen Tisch für seine Küche, in der nicht viel Platz ist.', 'correct' => 'E'],
+            ],
+        ],
+        [
+            'title' => 'Lesen Teil 2',
+            'instructions' => 'Lesen Sie die Situationen 26-30 und die Anzeigen a-h. Finden Sie für jede Situation die passende Anzeige. Für eine Aufgabe gibt es keine Lösung. Markieren Sie in diesem Fall ein x.',
+            'anzeigen' => [
+                'A' => 'Seniorenservice Aktiv: Unterstützung im Haushalt, Montag bis Freitag.',
+                'B' => 'Kinderhaus Pusteblume: Pädagogische Fachkraft in Vollzeit gesucht.',
+                'C' => 'Möbel Discount: 8 Esszimmerstühle im Paketangebot.',
+                'D' => 'Privatschule Delta: Englisch-Unterricht am Abend (19:00-22:00 Uhr).',
+                'E' => 'Möbel nach Maß: schmale Küchentische für kleine Räume.',
+                'F' => 'Kochkurs für Anfänger am Wochenende.',
+                'G' => 'Bäckerei Morgenrot: Verkaufskraft ab 5:00 Uhr.',
+                'H' => 'Schwimmkurs für Kinder (6-8 Jahre).',
+            ],
+            'situations' => [
+                ['no' => 26, 'prompt' => 'Ihre Mutter ist Rentnerin und braucht Hilfe im Haushalt.', 'correct' => 'A'],
+                ['no' => 27, 'prompt' => 'Ein Bekannter ist Erzieher und sucht eine neue Vollzeitstelle.', 'correct' => 'B'],
+                ['no' => 28, 'prompt' => 'Sie brauchen für Ihren Tisch im Esszimmer möglichst viele Stühle.', 'correct' => 'C'],
+                ['no' => 29, 'prompt' => 'Frau Hilani ist Englischlehrerin und hat abends Zeit, um zu arbeiten.', 'correct' => 'D'],
+                ['no' => 30, 'prompt' => 'Ihr Bruder sucht einen Tisch für seine Küche, in der nicht viel Platz ist.', 'correct' => 'E'],
+            ],
+        ],
+    ];
+}
+
+function create_lesen_teil2_structured_set(bool $includeExplanation): array
+{
+    $pool = build_lesen_teil2_matching_pools();
+    if (!$pool) {
+        throw new RuntimeException('Keine Lesen-Teil-2-Pools verfügbar.');
+    }
+    $poolCount = count($pool);
+    $pickIndex = 0;
+    if ($poolCount > 1) {
+        try {
+            $pickIndex = random_int(0, $poolCount - 1);
+        } catch (Throwable $e) {
+            $pickIndex = mt_rand(0, $poolCount - 1);
+        }
+    }
+    $picked = (array)$pool[$pickIndex];
+    $anzeigen = [];
+    foreach ((array)($picked['anzeigen'] ?? []) as $label => $text) {
+        $anzeigen[strtoupper((string)$label)] = germanize_umlauts_text((string)$text);
+    }
+    $situations = [];
+    foreach (array_values((array)($picked['situations'] ?? [])) as $idx => $row) {
+        $situations[] = [
+            'id' => 's_' . (26 + $idx),
+            'no' => (int)($row['no'] ?? (26 + $idx)),
+            'prompt' => germanize_umlauts_text((string)($row['prompt'] ?? '')),
+            'correct' => strtoupper((string)($row['correct'] ?? 'X')),
+            'explanation' => $includeExplanation
+                ? germanize_umlauts_text((string)($row['rationale'] ?? ('Passend ist Anzeige ' . strtoupper((string)($row['correct'] ?? 'X')) . '.')))
+                : '',
+        ];
+    }
+
+    $item = [
+        'set_index' => 1,
+        'template_id' => 'lesen_teil2_struct_' . substr(sha1((string)json_encode($picked)), 0, 8),
+        'dtz_schema' => 'lesen_teil2_matching',
+        'dtz_part' => 'L2 Situationen und Anzeigen',
+        'task_type' => 'Zuordnung',
+        'context' => 'Aufgaben 26-30',
+        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 2')),
+        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+        'ads' => $anzeigen,
+        'situations' => $situations,
+        'labels' => ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'X'],
+    ];
+
+    return [
+        'module' => 'lesen',
+        'teil' => 2,
+        'count' => 1,
+        'include_explanation' => $includeExplanation,
+        'generated_at' => gmdate('c'),
+        'items' => [$item],
+    ];
+}
+
 function create_training_set(string $module, int $count, bool $includeExplanation, int $teil = 0): array
 {
     $normalizedModule = normalize_training_module($module);
     if ($normalizedModule === 'hoeren' && $teil >= 1 && $teil <= 4) {
         return create_hoeren_structured_set($teil, $includeExplanation);
+    }
+    if ($normalizedModule === 'lesen' && $teil === 1) {
+        return create_lesen_teil1_structured_set($includeExplanation);
+    }
+    if ($normalizedModule === 'lesen' && $teil === 2) {
+        return create_lesen_teil2_structured_set($includeExplanation);
     }
     if ($normalizedModule === 'lesen' && $teil === 4) {
         return create_lesen_teil4_structured_set($includeExplanation);
