@@ -1818,6 +1818,216 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
     ];
 }
 
+/**
+ * DTZ-Audit (Lesen Teil 3):
+ * Alt: generische Single-Choice-Liste ohne Textblock-Logik.
+ * Neu: drei Textblöcke, pro Text genau 2 Aufgaben (richtig/falsch + A/B/C),
+ * Nummerierung 31-36 im DTZ-Stil.
+ */
+function build_lesen_teil3_textblock_pools(): array
+{
+    return [
+        [
+            'title' => 'Freizeit im Jugendzentrum',
+            'instructions' => 'Lesen Sie die drei Texte. Zu jedem Text gibt es zwei Aufgaben. Entscheiden Sie bei jedem Text, ob die Aussage richtig oder falsch ist und welche Antwort (a, b oder c) am besten passt. Markieren Sie Ihre Lösungen für die Aufgaben 31-36.',
+            'blocks' => [
+                [
+                    'text' => 'Lust auf Spiele? Das Jugendzentrum Pelikan lädt Jugendliche ab zehn Jahren jeden Mittwoch und Freitag von 15 bis 18 Uhr zum „Spieltreff“ ein. In den Sommerferien startet das Angebot täglich ab 10 Uhr. Es gibt Brett- und Kartenspiele sowie bei gutem Wetter Ballspiele im Garten. Ein Quiz findet nur freitags im Computerraum statt. Geld kann man dabei nicht gewinnen, aber man lernt viel und hat Spaß. Wer mitmachen möchte, meldet sich per E-Mail oder telefonisch an.',
+                    'true_false' => [
+                        'no' => 31,
+                        'statement' => 'Das Quiz gibt es jeden Tag im Jugendzentrum.',
+                        'correct' => 'B',
+                        'rationale' => 'Im Text steht: Das Quiz findet nur freitags statt.',
+                    ],
+                    'mc' => [
+                        'no' => 32,
+                        'question' => 'Was ist beim Spieltreff richtig?',
+                        'options' => [
+                            'A' => 'Man gewinnt dort Geldpreise.',
+                            'B' => 'Man kann bei gutem Wetter draußen spielen.',
+                            'C' => 'Mitmachen ist erst ab 16 Jahren möglich.',
+                        ],
+                        'correct' => 'B',
+                        'rationale' => 'Bei gutem Wetter finden Ballspiele im Garten statt.',
+                    ],
+                ],
+                [
+                    'text' => 'Liebe Eltern, die Klassenfahrt der 5a, die im Herbst ausgefallen ist, wird vom 12. bis 17. Mai nachgeholt. Zusammen mit der 5c fährt die Klasse in den Naturpark Bayerischer Wald. Die Kinder übernachten in einer Jugendherberge und machen Ausflüge. Am 20.2. um 18 Uhr gibt es einen Informationsabend über das Schulportal. Dort werden Packliste, Regeln und Organisation besprochen. Bitte schreiben Sie kurz per E-Mail, ob Sie teilnehmen können.',
+                    'true_false' => [
+                        'no' => 33,
+                        'statement' => 'Die Klassenfahrt wurde endgültig abgesagt.',
+                        'correct' => 'B',
+                        'rationale' => 'Die Fahrt wird nachgeholt, nicht abgesagt.',
+                    ],
+                    'mc' => [
+                        'no' => 34,
+                        'question' => 'Was sollen die Eltern tun?',
+                        'options' => [
+                            'A' => 'Sie sollen am 20.2. in der Schule erscheinen.',
+                            'B' => 'Sie sollen den Kindern neue Handys kaufen.',
+                            'C' => 'Sie sollen online am Informationsabend teilnehmen.',
+                        ],
+                        'correct' => 'C',
+                        'rationale' => 'Der Informationsabend findet online über das Schulportal statt.',
+                    ],
+                ],
+                [
+                    'text' => 'Sehr geehrter Herr Ronin, vielen Dank für Ihre Anmeldung zu unserem Gesundheits-Plus-Service. Mit der Karte erhalten Sie 2 % Sofortrabatt auf Einkäufe (außer rezeptpflichtige Medikamente), kostenlosen Versand bei Online-Bestellungen und Erinnerungen für Folgerezepte. Zusätzlich bieten wir Serviceleistungen wie Blutdruck- und Blutzuckermessung an. Ein Kundenmagazin und ein monatlicher Newsletter kommen per E-Mail. Der Service ist kostenlos und kann jederzeit schriftlich gekündigt werden.',
+                    'true_false' => [
+                        'no' => 35,
+                        'statement' => 'Die Nachricht kommt vom Apothekenverbund.',
+                        'correct' => 'A',
+                        'rationale' => 'Es handelt sich um einen Gesundheitsservice einer Apotheke.',
+                    ],
+                    'mc' => [
+                        'no' => 36,
+                        'question' => 'Welchen Vorteil nennt der Text?',
+                        'options' => [
+                            'A' => 'Alle verschreibungspflichtigen Medikamente sind gratis.',
+                            'B' => 'Online-Bestellungen werden kostenlos versendet.',
+                            'C' => 'Die Karte gilt nur in einer Filiale.',
+                        ],
+                        'correct' => 'B',
+                        'rationale' => 'Kostenloser Versand bei Online-Bestellungen wird ausdrücklich genannt.',
+                    ],
+                ],
+            ],
+        ],
+        [
+            'title' => 'Alltag: Termin, Schule und Service',
+            'instructions' => 'Lesen Sie die drei Texte. Zu jedem Text gibt es zwei Aufgaben. Entscheiden Sie bei jedem Text, ob die Aussage richtig oder falsch ist und welche Antwort (a, b oder c) am besten passt. Markieren Sie Ihre Lösungen für die Aufgaben 31-36.',
+            'blocks' => [
+                [
+                    'text' => 'Die Stadtbibliothek erweitert ab Mai ihre Öffnungszeiten. Von Montag bis Freitag ist jetzt von 8 bis 20 Uhr geöffnet, samstags von 10 bis 16 Uhr. Die Rückgabe am Automaten bleibt rund um die Uhr möglich. Für neue Nutzerinnen und Nutzer ist ein Ausweis nötig; die Ausstellung kostet einmalig 10 Euro. Wer den Ausweis online verlängern möchte, kann dies im Kundenkonto machen und die Gebühr per Lastschrift bezahlen.',
+                    'true_false' => [
+                        'no' => 31,
+                        'statement' => 'Samstags ist die Bibliothek bis 20 Uhr geöffnet.',
+                        'correct' => 'B',
+                        'rationale' => 'Samstags gilt 10 bis 16 Uhr.',
+                    ],
+                    'mc' => [
+                        'no' => 32,
+                        'question' => 'Was ist laut Text richtig?',
+                        'options' => [
+                            'A' => 'Die Rückgabe ist nur während der Öffnungszeit möglich.',
+                            'B' => 'Ein neuer Ausweis kostet einmalig 10 Euro.',
+                            'C' => 'Die Online-Verlängerung ist nicht erlaubt.',
+                        ],
+                        'correct' => 'B',
+                        'rationale' => 'Die Ausstellung kostet einmalig 10 Euro.',
+                    ],
+                ],
+                [
+                    'text' => 'Liebe Eltern, unser Elternabend findet am Donnerstag, den 14. März, um 19 Uhr statt. Wir sprechen über den Lernstand der Klasse und die Vorbereitung auf die Projektwoche. Der Abend findet in Raum 2 der Schule statt; ein Online-Zugang ist diesmal nicht vorgesehen. Wenn Sie nicht teilnehmen können, schreiben Sie bitte bis Mittwochmittag eine kurze Nachricht an das Sekretariat.',
+                    'true_false' => [
+                        'no' => 33,
+                        'statement' => 'Der Elternabend findet online statt.',
+                        'correct' => 'B',
+                        'rationale' => 'Im Text steht: in Raum 2 der Schule.',
+                    ],
+                    'mc' => [
+                        'no' => 34,
+                        'question' => 'Was sollen Eltern bei Verhinderung tun?',
+                        'options' => [
+                            'A' => 'Bis Mittwochmittag eine Nachricht senden.',
+                            'B' => 'Am Freitag im Sekretariat anrufen.',
+                            'C' => 'Ohne Entschuldigung fehlen.',
+                        ],
+                        'correct' => 'A',
+                        'rationale' => 'Die Frist ist Mittwochmittag mit kurzer Nachricht.',
+                    ],
+                ],
+                [
+                    'text' => 'Sehr geehrte Kundin, sehr geehrter Kunde, unser Fitnessstudio bietet ab April neue Tarife an. Der Basic-Tarif kostet 24 Euro monatlich und beinhaltet die Nutzung von Montag bis Freitag. Im Plus-Tarif für 34 Euro ist zusätzlich der Wochenendzugang enthalten. Bei Abschluss bis 30. April entfällt die Aufnahmegebühr. Verträge können jeweils zum Monatsende mit einer Frist von vier Wochen gekündigt werden.',
+                    'true_false' => [
+                        'no' => 35,
+                        'statement' => 'Im Basic-Tarif kann man auch am Wochenende trainieren.',
+                        'correct' => 'B',
+                        'rationale' => 'Wochenende ist nur im Plus-Tarif enthalten.',
+                    ],
+                    'mc' => [
+                        'no' => 36,
+                        'question' => 'Was gilt für die Kündigung?',
+                        'options' => [
+                            'A' => 'Nur zum Jahresende möglich.',
+                            'B' => 'Mit vier Wochen Frist zum Monatsende.',
+                            'C' => 'Jederzeit ohne Frist.',
+                        ],
+                        'correct' => 'B',
+                        'rationale' => 'Der Text nennt vier Wochen Frist zum Monatsende.',
+                    ],
+                ],
+            ],
+        ],
+    ];
+}
+
+function create_lesen_teil3_structured_set(bool $includeExplanation): array
+{
+    $pool = build_lesen_teil3_textblock_pools();
+    if (!$pool) {
+        throw new RuntimeException('Für Lesen Teil 3 sind keine strukturierten Aufgaben verfügbar.');
+    }
+
+    $picked = pick_random_item($pool);
+    $rawBlocks = array_values((array)($picked['blocks'] ?? []));
+    if (count($rawBlocks) < 3) {
+        throw new RuntimeException('Für Lesen Teil 3 sind weniger als 3 Textblöcke konfiguriert.');
+    }
+    $rawBlocks = array_slice($rawBlocks, 0, 3);
+
+    $blocks = [];
+    foreach ($rawBlocks as $idx => $block) {
+        $blockNo = $idx + 1;
+        $tf = (array)($block['true_false'] ?? []);
+        $mc = (array)($block['mc'] ?? []);
+        $prepared = prepare_training_options(
+            (array)($mc['options'] ?? []),
+            (string)($mc['correct'] ?? ''),
+            true
+        );
+        $blocks[] = [
+            'id' => 'b_' . $blockNo,
+            'title' => 'Text ' . $blockNo,
+            'text' => germanize_umlauts_text((string)($block['text'] ?? '')),
+            'true_false' => [
+                'no' => (int)($tf['no'] ?? (31 + ($idx * 2))),
+                'statement' => germanize_umlauts_text((string)($tf['statement'] ?? '')),
+                'correct' => strtoupper((string)($tf['correct'] ?? 'B')),
+                'explanation' => $includeExplanation ? germanize_umlauts_text((string)($tf['rationale'] ?? '')) : '',
+            ],
+            'mc' => [
+                'no' => (int)($mc['no'] ?? (32 + ($idx * 2))),
+                'question' => germanize_umlauts_text((string)($mc['question'] ?? 'Welche Antwort passt?')),
+                'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
+                'correct' => strtoupper((string)$prepared['correct']),
+                'explanation' => $includeExplanation ? germanize_umlauts_text((string)($mc['rationale'] ?? '')) : '',
+            ],
+        ];
+    }
+
+    $item = [
+        'set_index' => 1,
+        'template_id' => 'lesen_teil3_struct_' . substr(sha1((string)json_encode($picked)), 0, 8),
+        'dtz_schema' => 'lesen_teil3_textblock_mix',
+        'dtz_part' => 'L3 Drei Texte',
+        'task_type' => 'Richtig/Falsch + A/B/C',
+        'context' => 'Alltag A2-B1',
+        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 3')),
+        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+        'blocks' => $blocks,
+    ];
+
+    return [
+        'module' => 'lesen',
+        'teil' => 3,
+        'count' => 1,
+        'include_explanation' => $includeExplanation,
+        'generated_at' => gmdate('c'),
+        'items' => [$item],
+    ];
+}
+
 function build_lesen_teil4_richtig_falsch_pools(): array
 {
     return [
@@ -2122,6 +2332,9 @@ function create_training_set(string $module, int $count, bool $includeExplanatio
     }
     if ($normalizedModule === 'lesen' && $teil === 4) {
         return create_lesen_teil4_structured_set($includeExplanation);
+    }
+    if ($normalizedModule === 'lesen' && $teil === 3) {
+        return create_lesen_teil3_structured_set($includeExplanation);
     }
     if ($normalizedModule === 'lesen' && $teil === 5) {
         return create_lesen_teil5_structured_set($includeExplanation);
