@@ -3138,7 +3138,10 @@
             <div id="dtzHoerenList" class="lid-list dtz-list"></div>
             <div class="row-end dtz-action-row">
               <div class="btn-wrap">
-                <button id="dtzHoerenActionBtn" type="button">NEUE AUFGABEN AUSWERTEN</button>
+                <button id="dtzHoerenEvaluateBtn" type="button">AUSWERTEN</button>
+              </div>
+              <div class="btn-wrap">
+                <button id="dtzHoerenNewBtn" type="button">NEUE AUFGABEN</button>
               </div>
             </div>
           </div>
@@ -3177,7 +3180,10 @@
             <div id="dtzLesenList" class="lid-list dtz-list"></div>
             <div class="row-end dtz-action-row">
               <div class="btn-wrap">
-                <button id="dtzLesenActionBtn" type="button">NEUE AUFGABEN AUSWERTEN</button>
+                <button id="dtzLesenEvaluateBtn" type="button">AUSWERTEN</button>
+              </div>
+              <div class="btn-wrap">
+                <button id="dtzLesenNewBtn" type="button">NEUE AUFGABEN</button>
               </div>
             </div>
           </div>
@@ -5013,7 +5019,8 @@
         status: document.getElementById(`${prefix}Status`),
         summary: document.getElementById(`${prefix}Summary`),
         list: document.getElementById(`${prefix}List`),
-        actionBtn: document.getElementById(`${prefix}ActionBtn`),
+        evaluateBtn: document.getElementById(`${prefix}EvaluateBtn`),
+        newBtn: document.getElementById(`${prefix}NewBtn`),
         accordion: document.getElementById(`${prefix}Accordion`)
       };
     }
@@ -5089,12 +5096,17 @@
       return `<div class="dtz-eval-note ${cls}">${message || ""}</div>`;
     }
 
-    function EvaluateButton(module, label) {
+    function EvaluateButton(module) {
       return `
         <div class="row-end dtz-inline-action-row">
           <div class="btn-wrap">
             <button type="button" data-dtz-evaluate-inline="${escapeHtml(String(module || ""))}">
-              ${escapeHtml(label || "NEUE AUFGABEN AUSWERTEN")}
+              AUSWERTEN
+            </button>
+          </div>
+          <div class="btn-wrap">
+            <button type="button" data-dtz-reload-inline="${escapeHtml(String(module || ""))}">
+              NEUE AUFGABEN
             </button>
           </div>
         </div>
@@ -5769,7 +5781,7 @@
         ui.summary.textContent = "";
       }
       if (!keepList && ui.list) {
-        ui.list.innerHTML = `<div class="archive-empty">Noch keine Aufgaben geladen. Klicken Sie auf „NEUE AUFGABEN AUSWERTEN“.</div>`;
+        ui.list.innerHTML = `<div class="archive-empty">Noch keine Aufgaben geladen. Klicken Sie auf „NEUE AUFGABEN“.</div>`;
       }
     }
 
@@ -6464,7 +6476,7 @@
               ${example.explanation ? ResultBox("", escapeHtml(String(example.explanation || ""))) : ""}
             </article>
             ${gapsHtml}
-            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6519,7 +6531,7 @@
               <p class="lid-stimulus">${escapeHtml(task.text || "")}</p>
             </article>
             ${rowsHtml}
-            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6606,7 +6618,7 @@
               ${TaskInstruction(task.instructions || "Lesen Sie die drei Texte. Zu jedem Text gibt es zwei Aufgaben.")}
             </article>
             ${blocksHtml}
-            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6663,7 +6675,7 @@
               ${AudioPlayer(module, "bundle_main", isPlaying, task.audio_script || task.text || "")}
             </article>
             ${questionsHtml}
-            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6748,7 +6760,7 @@
               ${TaskInstruction(task.instructions || "Sie hören 4 kurze Dialoge. Entscheiden Sie Richtig/Falsch und lösen Sie die Detailfrage.")}
             </article>
             <div class="dtz-dialog-grid">${dialogsHtml}</div>
-            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6812,7 +6824,7 @@
               <ul class="speak-list">${optionsListHtml}</ul>
             </article>
             ${statementRows}
-            ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
+            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6872,6 +6884,15 @@
           if (!(target instanceof HTMLButtonElement)) return;
           const targetModule = String(target.getAttribute("data-dtz-evaluate-inline") || module);
           evaluateDtzTrainingSet(targetModule, true);
+        });
+      });
+
+      ui.list.querySelectorAll("button[data-dtz-reload-inline]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLButtonElement)) return;
+          const targetModule = String(target.getAttribute("data-dtz-reload-inline") || module);
+          loadDtzTrainingSet(targetModule);
         });
       });
 
@@ -7172,7 +7193,7 @@
       if (!ui.list) return;
 
       if (!Array.isArray(state.tasks) || !state.tasks.length) {
-        ui.list.innerHTML = `<div class="archive-empty">Noch keine Aufgaben geladen. Klicken Sie auf „NEUE AUFGABEN AUSWERTEN“.</div>`;
+        ui.list.innerHTML = `<div class="archive-empty">Noch keine Aufgaben geladen. Klicken Sie auf „NEUE AUFGABEN“.</div>`;
         return;
       }
 
@@ -7257,7 +7278,8 @@
 
       stopDtzAudio(true);
       clearDtzModuleStatus(module);
-      if (ui.actionBtn) ui.actionBtn.disabled = true;
+      if (ui.evaluateBtn) ui.evaluateBtn.disabled = true;
+      if (ui.newBtn) ui.newBtn.disabled = true;
 
       try {
         const response = await fetch("./api/student_training_set.php", {
@@ -7295,7 +7317,8 @@
         resetDtzModuleResultUi(module, false);
         setDtzModuleStatus(module, "error", err.message || "DTZ-Aufgaben konnten nicht geladen werden.");
       } finally {
-        if (ui.actionBtn) ui.actionBtn.disabled = false;
+        if (ui.evaluateBtn) ui.evaluateBtn.disabled = false;
+        if (ui.newBtn) ui.newBtn.disabled = false;
       }
     }
 
@@ -7310,7 +7333,7 @@
 
     function initDtzModule(module) {
       const ui = module === "hoeren" ? HoerenSection() : LesenSection();
-      if (!ui.teilSelect || !ui.actionBtn) return;
+      if (!ui.teilSelect || !ui.evaluateBtn || !ui.newBtn) return;
 
       syncDtzTeilFromSelect(module);
       updateDtzTeilButtons(module);
@@ -7353,7 +7376,8 @@
         });
       });
 
-      ui.actionBtn.addEventListener("click", () => onDtzAction(module));
+      ui.evaluateBtn.addEventListener("click", () => evaluateDtzTrainingSet(module, true));
+      ui.newBtn.addEventListener("click", () => loadDtzTrainingSet(module));
     }
 
     function DtzTrainingPage() {
