@@ -1,6 +1,18 @@
 <?php
 declare(strict_types=1);
 
+function lower_text(string $value): string
+{
+    $trimmed = trim($value);
+    if ($trimmed === '') {
+        return '';
+    }
+    if (function_exists('mb_strtolower')) {
+        return mb_strtolower($trimmed, 'UTF-8');
+    }
+    return strtolower($trimmed);
+}
+
 function training_template_bank_file(): string
 {
     return dirname(__DIR__) . '/assets/content/dtz_lesen_hoeren_template_bank.json';
@@ -28,7 +40,7 @@ function load_training_template_bank(): array
 
 function normalize_training_module(string $module): string
 {
-    $value = mb_strtolower(trim($module));
+    $value = lower_text($module);
     if ($value === 'lesen') {
         return 'lesen';
     }
@@ -45,7 +57,7 @@ function normalize_training_teil(string $module, string $teilRaw): int
         return -1;
     }
 
-    $value = mb_strtolower(trim($teilRaw));
+    $value = lower_text($teilRaw);
     if ($value === '' || $value === '0' || $value === 'all' || $value === 'alle') {
         return 0;
     }
@@ -1950,7 +1962,7 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
                 'id' => 'd_' . ($idx + 1),
                 'title' => germanize_umlauts_text((string)($dialog['title'] ?? ('Dialog ' . ($idx + 1)))),
                 'audio_script' => germanize_umlauts_text((string)($dialog['audio_script'] ?? '')),
-                'speaker_meta' => array_values(array_map(static fn($v) => mb_strtolower(trim((string)$v)), (array)($dialog['speaker_meta'] ?? []))),
+                'speaker_meta' => array_values(array_map(static fn($v) => lower_text((string)$v), (array)($dialog['speaker_meta'] ?? []))),
                 'true_false' => [
                     'statement' => germanize_umlauts_text((string)($tf['statement'] ?? '')),
                     'correct' => (string)($tf['correct'] ?? ''),
@@ -1984,7 +1996,7 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
                 'id' => 's_' . ($idx + 1),
                 'title' => germanize_umlauts_text((string)($statement['title'] ?? ('Aussage ' . ($idx + 1)))),
                 'audio_script' => germanize_umlauts_text((string)($statement['audio_script'] ?? '')),
-                'speaker' => mb_strtolower(trim((string)($statement['speaker'] ?? 'narrator'))),
+                'speaker' => lower_text((string)($statement['speaker'] ?? 'narrator')),
                 'question' => 'Welche Antwort passt?',
                 'correct' => strtoupper((string)($statement['correct'] ?? '')),
                 'explanation' => $includeExplanation ? germanize_umlauts_text((string)($statement['rationale'] ?? '')) : '',

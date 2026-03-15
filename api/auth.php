@@ -1,6 +1,18 @@
 <?php
 declare(strict_types=1);
 
+function auth_lower_text(string $value): string
+{
+    $trimmed = trim($value);
+    if ($trimmed === '') {
+        return '';
+    }
+    if (function_exists('mb_strtolower')) {
+        return mb_strtolower($trimmed, 'UTF-8');
+    }
+    return strtolower($trimmed);
+}
+
 function start_secure_session(): void
 {
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
@@ -35,7 +47,7 @@ function bsk_module_enabled(): bool
     if (($value === false || trim((string)$value) === '') && defined('BSK_MODULE_ENABLED')) {
         $value = (string)BSK_MODULE_ENABLED;
     }
-    $normalized = mb_strtolower(trim((string)$value));
+    $normalized = auth_lower_text((string)$value);
     if ($normalized === '') {
         return false;
     }
@@ -44,7 +56,7 @@ function bsk_module_enabled(): bool
 
 function archived_module_enabled(string $module): bool
 {
-    $normalizedModule = mb_strtolower(trim($module));
+    $normalizedModule = auth_lower_text($module);
     $defaults = [
         'attendance' => false,
         'notify' => false,
@@ -58,7 +70,7 @@ function archived_module_enabled(string $module): bool
         $value = constant($envName);
     }
 
-    $normalized = mb_strtolower(trim((string)$value));
+    $normalized = auth_lower_text((string)$value);
     if ($normalized === '') {
         return $default;
     }
@@ -87,7 +99,7 @@ function require_bsk_module_enabled_json(): void
 
 function normalize_admin_role_key(string $role): string
 {
-    $normalized = mb_strtolower(trim($role));
+    $normalized = auth_lower_text($role);
     if (in_array($normalized, ['owner', 'hauptadmin', 'haupt-admin', 'mainadmin'], true)) {
         return 'hauptadmin';
     }
@@ -108,7 +120,7 @@ function admin_is_hauptadmin(array $adminCtx): bool
     if ($roleKey !== '') {
         return $roleKey === 'hauptadmin';
     }
-    return mb_strtolower(trim((string)($adminCtx['role'] ?? ''))) === 'owner';
+    return auth_lower_text((string)($adminCtx['role'] ?? '')) === 'owner';
 }
 
 function require_admin_session_json(): array
@@ -128,7 +140,7 @@ function require_admin_session_json(): array
         $roleKey = 'hauptadmin';
     }
     $role = admin_role_key_to_legacy($roleKey);
-    $username = mb_strtolower(trim((string)($_SESSION['admin_username'] ?? '')));
+    $username = auth_lower_text((string)($_SESSION['admin_username'] ?? ''));
     if ($username === '' && $roleKey === 'hauptadmin') {
         $username = 'admin';
     }
@@ -200,7 +212,7 @@ function require_student_session_json(): array
         'role_key' => 'schueler',
         'username' => (string)$_SESSION['student_username'],
         'display_name' => (string)($_SESSION['student_display_name'] ?? ''),
-        'teacher_username' => mb_strtolower(trim((string)($_SESSION['student_teacher_username'] ?? ''))),
+        'teacher_username' => auth_lower_text((string)($_SESSION['student_teacher_username'] ?? '')),
     ];
 }
 
@@ -276,7 +288,7 @@ function write_teacher_users(array $users): bool
 
 function find_student_user_by_username(string $username): ?array
 {
-    $needle = mb_strtolower(trim($username));
+    $needle = auth_lower_text($username);
     if ($needle === '') {
         return null;
     }
@@ -284,7 +296,7 @@ function find_student_user_by_username(string $username): ?array
         if (!is_array($user)) {
             continue;
         }
-        $uname = mb_strtolower(trim((string)($user['username'] ?? '')));
+        $uname = auth_lower_text((string)($user['username'] ?? ''));
         if ($uname === $needle) {
             return $user;
         }
@@ -297,9 +309,9 @@ function admin_can_access_student_record(array $student, array $adminCtx): bool
     if (admin_is_hauptadmin($adminCtx)) {
         return true;
     }
-    $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));
+    $adminUsername = auth_lower_text((string)($adminCtx['username'] ?? ''));
 
-    $studentTeacher = mb_strtolower(trim((string)($student['teacher_username'] ?? '')));
+    $studentTeacher = auth_lower_text((string)($student['teacher_username'] ?? ''));
     if ($adminUsername !== '' && $studentTeacher !== '' && hash_equals($studentTeacher, $adminUsername)) {
         return true;
     }
@@ -324,8 +336,8 @@ function admin_can_access_course_record(array $course, array $adminCtx): bool
     if (admin_is_hauptadmin($adminCtx)) {
         return true;
     }
-    $adminUsername = mb_strtolower(trim((string)($adminCtx['username'] ?? '')));
-    $courseTeacher = mb_strtolower(trim((string)($course['teacher_username'] ?? '')));
+    $adminUsername = auth_lower_text((string)($adminCtx['username'] ?? ''));
+    $courseTeacher = auth_lower_text((string)($course['teacher_username'] ?? ''));
     if ($adminUsername !== '' && $courseTeacher !== '' && hash_equals($courseTeacher, $adminUsername)) {
         return true;
     }
