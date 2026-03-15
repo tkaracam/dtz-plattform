@@ -29,60 +29,60 @@ final class APIClient {
         return data
     }
 
-    func memberSession() async throws -> MemberSession {
-        let data = try await request(path: "api/member_session.php")
-        return try JSONDecoder().decode(MemberSession.self, from: data)
+    func studentSession() async throws -> StudentSession {
+        let data = try await request(path: "api/student_session.php")
+        return try JSONDecoder().decode(StudentSession.self, from: data)
     }
 
-    func register(username: String, password: String, displayName: String, email: String) async throws -> APIBasicResponse {
-        let payload = ["username": username, "password": password, "display_name": displayName, "email": email]
-        let data = try await request(path: "api/member_register.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
-        return try JSONDecoder().decode(APIBasicResponse.self, from: data)
-    }
-
-    func login(username: String, password: String) async throws -> MemberSession {
+    func studentLogin(username: String, password: String) async throws -> StudentSession {
         let payload = ["username": username, "password": password]
-        let data = try await request(path: "api/member_login.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
-        return try JSONDecoder().decode(MemberSession.self, from: data)
+        let data = try await request(path: "api/student_login.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
+        return try JSONDecoder().decode(StudentSession.self, from: data)
     }
 
-    func logout() async throws {
-        _ = try await request(path: "api/member_logout.php", method: "POST", body: Data("{}".utf8))
+    func studentLogout() async throws -> APIBasicResponse {
+        let data = try await request(path: "api/student_logout.php", method: "POST", body: Data("{}".utf8))
+        return try JSONDecoder().decode(APIBasicResponse.self, from: data)
     }
 
-    func saveLetter(name: String, letter: String, prompt: String, points: [String]) async throws -> APIBasicResponse {
+    func trainingSet(module: String, teil: Int) async throws -> TrainingSetResponse {
+        let payload: [String: Any] = ["module": module, "teil": teil]
+        let data = try await request(path: "api/student_training_set.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
+        return try JSONDecoder().decode(TrainingSetResponse.self, from: data)
+    }
+
+    func currentHomework() async throws -> HomeworkCurrentResponse {
+        let data = try await request(path: "api/student_homework_current.php")
+        return try JSONDecoder().decode(HomeworkCurrentResponse.self, from: data)
+    }
+
+    func startHomework(assignmentId: String) async throws -> HomeworkStartResponse {
+        let payload = ["assignment_id": assignmentId]
+        let data = try await request(path: "api/student_homework_start.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
+        return try JSONDecoder().decode(HomeworkStartResponse.self, from: data)
+    }
+
+    func submitLetter(assignmentId: String, prompt: String, text: String, startedAt: String?, durationSeconds: Int) async throws -> APIBasicResponse {
         let payload: [String: Any] = [
-            "student_name": name,
-            "letter_text": letter,
+            "assignment_id": assignmentId,
             "task_prompt": prompt,
-            "required_points": points
+            "letter_text": text,
+            "student_name": "",
+            "required_points": [],
+            "writing_started_at": startedAt ?? "",
+            "writing_duration_seconds": durationSeconds,
+            "auto_submit_on_expiry": true
         ]
-        let data = try await request(path: "api/member_save_letter.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
+        let data = try await request(path: "api/save_letter.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
         return try JSONDecoder().decode(APIBasicResponse.self, from: data)
     }
 
-    func portal() async throws -> MemberPortalResponse {
-        let data = try await request(path: "api/member_portal.php")
-        return try JSONDecoder().decode(MemberPortalResponse.self, from: data)
-    }
-
-    func updateProfile(displayName: String, email: String, currentPassword: String, newPassword: String) async throws -> APIBasicResponse {
-        let payload = [
-            "display_name": displayName,
-            "email": email,
-            "current_password": currentPassword,
-            "new_password": newPassword
-        ]
-        let data = try await request(path: "api/member_update.php", method: "POST", body: try JSONSerialization.data(withJSONObject: payload))
-        return try JSONDecoder().decode(APIBasicResponse.self, from: data)
+    func studentPortal() async throws -> StudentPortalResponse {
+        let data = try await request(path: "api/student_portal.php")
+        return try JSONDecoder().decode(StudentPortalResponse.self, from: data)
     }
 }
 
 enum APIError: Error {
     case server(String)
-}
-
-struct APIBasicResponse: Codable {
-    let ok: Bool
-    let error: String?
 }
