@@ -4967,7 +4967,12 @@
       openB1View();
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
-      renderDtzModule(normalized);
+      const state = getDtzState(normalized);
+      if (!state.tasks || !state.tasks.length) {
+        loadDtzTrainingSet(normalized);
+      } else {
+        renderDtzModule(normalized);
+      }
     }
 
     function setDtzModuleButtonActive(module) {
@@ -5034,11 +5039,12 @@
       return `<p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(text || "")}</p>`;
     }
 
-    function AudioPlayer(module, audioKey, isPlaying) {
+    function AudioPlayer(module, audioKey, isPlaying, audioScript) {
+      const scriptAttr = escapeHtml(String(audioScript || ""));
       return `
         <div class="dtz-audio-actions">
-          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}">
-            ${isPlaying ? "Audio stoppen" : "Audio abspielen"}
+          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
+            ${isPlaying ? "⏹️" : "▶️"}
           </button>
         </div>
       `;
@@ -6001,7 +6007,7 @@
       if (!firstTask) return null;
 
       if ((firstTask.type === "hoeren_teil1_bundle" || firstTask.type === "hoeren_teil2_bundle") && key === "bundle_main") {
-        const script = String(firstTask.audio_script || "").trim();
+        const script = String(firstTask.audio_script || firstTask.text || "").trim();
         if (!script) return null;
         return {
           key,
@@ -6016,7 +6022,7 @@
         const id = key.slice("dialog:".length);
         const dialog = (Array.isArray(firstTask.dialogs) ? firstTask.dialogs : []).find(item => String(item.id || "") === id);
         if (!dialog) return null;
-        const script = String(dialog.audio_script || "").trim();
+        const script = String(dialog.audio_script || (dialog.detail && dialog.detail.question) || "").trim();
         if (!script) return null;
         return {
           key,
@@ -6031,7 +6037,7 @@
         const id = key.slice("statement:".length);
         const statement = (Array.isArray(firstTask.statements) ? firstTask.statements : []).find(item => String(item.id || "") === id);
         if (!statement) return null;
-        const script = String(statement.audio_script || "").trim();
+        const script = String(statement.audio_script || statement.question || "").trim();
         if (!script) return null;
         return {
           key,
@@ -6043,8 +6049,19 @@
       }
 
       const fallbackTask = (Array.isArray(state.tasks) ? state.tasks : []).find((task, idx) => `q_${idx}` === key);
-      if (!fallbackTask) return null;
-      const script = String(fallbackTask.audio_script || fallbackTask.text || "").trim();
+      const fallbackTaskScript = fallbackTask
+        ? String(fallbackTask.audio_script || fallbackTask.text || "").trim()
+        : "";
+      let script = fallbackTaskScript;
+      if (!script) {
+        const btns = document.querySelectorAll('button[data-dtz-audio-key][data-dtz-module="hoeren"]');
+        for (const btn of btns) {
+          if (!(btn instanceof HTMLButtonElement)) continue;
+          if (String(btn.getAttribute("data-dtz-audio-key") || "") !== key) continue;
+          script = String(btn.getAttribute("data-dtz-audio-script") || "").trim();
+          if (script) break;
+        }
+      }
       if (!script) return null;
       return {
         key,
@@ -6230,7 +6247,7 @@
         }
       }
 
-      const audioControls = isHoeren ? AudioPlayer(module, audioKey, isPlaying) : "";
+      const audioControls = isHoeren ? AudioPlayer(module, audioKey, isPlaying, task.audio_script || task.text || "") : "";
 
       return `
         <article class="${resultClass}">
@@ -6647,7 +6664,7 @@
           <div class="dtz-lesen-group-body">
             <article class="lid-question">
               ${TaskInstruction(task.instructions || "Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.")}
-              ${AudioPlayer(module, "bundle_main", isPlaying)}
+              ${AudioPlayer(module, "bundle_main", isPlaying, task.audio_script || task.text || "")}
             </article>
             ${questionsHtml}
             ${EvaluateButton(module, "NEUE AUFGABEN AUSWERTEN")}
@@ -6697,7 +6714,7 @@
         return `
           <article class="lid-question dtz-dialog-card">
             <h4>${escapeHtml(dialog.title || `Dialog ${idx + 1}`)}</h4>
-            ${AudioPlayer(module, `dialog:${dialogId}`, isPlaying)}
+            ${AudioPlayer(module, `dialog:${dialogId}`, isPlaying, dialog.audio_script || "")}
             <div class="dtz-dialog-task">
               ${TaskInstruction((dialog.trueFalse || {}).statement || "Richtig oder falsch?")}
               ${TrueFalseQuestion({
@@ -6774,7 +6791,7 @@
         return `
           <article class="lid-question dtz-matching-item">
             <h4>${escapeHtml(statement.title || `Aussage ${idx + 1}`)}</h4>
-            ${AudioPlayer(module, `statement:${key}`, isPlaying)}
+            ${AudioPlayer(module, `statement:${key}`, isPlaying, statement.audio_script || statement.question || "")}
             <label class="dtz-matching-label">
               ${escapeHtml(statement.question || "Welche Antwort passt?")}
               <select data-dtz-module="${module}" data-dtz-key="${escapeHtml(key)}" data-dtz-matching="${task.allowReuse ? "reuse" : "unique"}">
@@ -7308,12 +7325,16 @@
 
       ui.teilSelect.addEventListener("change", () => {
         const teil = syncDtzTeilFromSelect(module);
-        ensureDtzTeilState(module, teil);
+        const teilState = ensureDtzTeilState(module, teil);
         updateDtzTeilButtons(module);
         updateDtzPartMeta(module);
         clearDtzModuleStatus(module);
         stopDtzAudio(true);
-        renderDtzTrainingSet(module);
+        if (!teilState.tasks || !teilState.tasks.length) {
+          loadDtzTrainingSet(module);
+        } else {
+          renderDtzTrainingSet(module);
+        }
       });
 
       const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
@@ -7323,12 +7344,16 @@
           if (!Number.isFinite(targetTeil) || targetTeil < 1) return;
           if (ui.teilSelect) ui.teilSelect.value = String(targetTeil);
           const teil = syncDtzTeilFromSelect(module);
-          ensureDtzTeilState(module, teil);
+          const teilState = ensureDtzTeilState(module, teil);
           updateDtzTeilButtons(module);
           updateDtzPartMeta(module);
           clearDtzModuleStatus(module);
           stopDtzAudio(true);
-          renderDtzTrainingSet(module);
+          if (!teilState.tasks || !teilState.tasks.length) {
+            loadDtzTrainingSet(module);
+          } else {
+            renderDtzTrainingSet(module);
+          }
         });
       });
 
