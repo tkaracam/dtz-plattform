@@ -4967,12 +4967,8 @@
       openB1View();
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
-      const state = getDtzState(normalized);
-      if (!state.tasks || !state.tasks.length) {
-        loadDtzTrainingSet(normalized);
-      } else {
-        renderDtzModule(normalized);
-      }
+      // Her açılışta yeniden yükle: "boş state / stale state" sorunlarını önler.
+      loadDtzTrainingSet(normalized);
     }
 
     function setDtzModuleButtonActive(module) {
@@ -9882,6 +9878,10 @@
       dtzHoerenAccordion.addEventListener("toggle", () => {
         if (dtzHoerenAccordion.open) {
           setDtzModuleButtonActive("hoeren");
+          const state = getDtzState("hoeren");
+          if (!state.tasks || !state.tasks.length) {
+            loadDtzTrainingSet("hoeren");
+          }
         } else if (!dtzLesenAccordion || !dtzLesenAccordion.open) {
           setDtzModuleButtonActive("");
         }
@@ -9891,6 +9891,10 @@
       dtzLesenAccordion.addEventListener("toggle", () => {
         if (dtzLesenAccordion.open) {
           setDtzModuleButtonActive("lesen");
+          const state = getDtzState("lesen");
+          if (!state.tasks || !state.tasks.length) {
+            loadDtzTrainingSet("lesen");
+          }
         } else if (!dtzHoerenAccordion || !dtzHoerenAccordion.open) {
           setDtzModuleButtonActive("");
         }
