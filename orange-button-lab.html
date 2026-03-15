@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Orange Button Lab</title>
+  <style>
+    :root {
+      --bg-0: #fff8f2;
+      --bg-1: #ffe7d3;
+      --ink: #2b1f15;
+      --line: #ffd1a6;
+      --o-1: #ff7a00;
+      --o-2: #ff8f1f;
+      --o-3: #ff9f3a;
+      --o-4: #ffb65f;
+      --o-5: #ffcb8a;
+      --danger: #e05a2b;
+      --success: #1f9f5f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 500px at -10% -20%, #fff1e4 0%, transparent 70%),
+                  radial-gradient(900px 400px at 110% 120%, #ffdcb8 0%, transparent 65%),
+                  linear-gradient(180deg, var(--bg-0) 0%, #fff 100%);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      padding: 24px;
+      box-shadow: 0 18px 48px rgba(120, 62, 15, 0.12);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+      letter-spacing: 0.2px;
+    }
+
+    .sub {
+      margin: 0 0 22px;
+      color: #6d4f35;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff 0%, #fffaf5 100%);
+      padding: 14px;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: #7a4b24;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease, background .16s ease;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .btn:hover { transform: translateY(-1px); filter: saturate(1.05); }
+    .btn:active { transform: translateY(0); }
+
+    .solid-1 { background: var(--o-1); box-shadow: 0 10px 22px rgba(255, 122, 0, .28); }
+    .solid-2 { background: var(--o-2); box-shadow: 0 10px 22px rgba(255, 143, 31, .28); }
+    .solid-3 { background: var(--o-3); box-shadow: 0 10px 22px rgba(255, 159, 58, .28); }
+
+    .grad-1 {
+      background: linear-gradient(135deg, #ff6e00 0%, #ff9f3a 55%, #ffc06e 100%);
+      box-shadow: 0 12px 26px rgba(255, 127, 20, .32);
+    }
+    .grad-2 {
+      background: linear-gradient(135deg, #f36f21 0%, #ff9a44 45%, #ffbc70 100%);
+      box-shadow: 0 12px 26px rgba(243, 111, 33, .30);
+    }
+
+    .outline {
+      background: transparent;
+      color: #cb6b1f;
+      border: 2px solid #ffb773;
+      box-shadow: none;
+    }
+
+    .ghost {
+      background: rgba(255, 151, 62, 0.13);
+      color: #b9621f;
+      border: 1px solid #ffc085;
+      box-shadow: none;
+    }
+
+    .glass {
+      background: linear-gradient(140deg, rgba(255, 170, 90, .34), rgba(255, 120, 15, .54));
+      border: 1px solid rgba(255, 228, 197, .55);
+      box-shadow: 0 10px 24px rgba(255, 127, 20, .22), inset 0 1px 0 rgba(255,255,255,.35);
+    }
+
+    .wide { min-width: 260px; }
+    .pill { border-radius: 999px; }
+
+    .state-warning { background: #ffb03a; }
+    .state-danger { background: var(--danger); }
+    .state-success { background: var(--success); }
+
+    .tiny-note {
+      margin-top: 18px;
+      color: #7d5a3a;
+      font-size: .95rem;
+      border-top: 1px dashed #ffd8b7;
+      padding-top: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      .btn { min-width: 100%; }
+      .wide { min-width: 100%; }
+      body { padding: 14px; }
+      .wrap { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Modern Orange Button Beispiele</h1>
+    <p class="sub">Unabhängige Demo-Seite mit verschiedenen Orangetönen, nur über Direktlink erreichbar.</p>
+
+    <section class="grid">
+      <article class="card">
+        <h3>Solid</h3>
+        <div class="row">
+          <button class="btn solid-1">Primär</button>
+          <button class="btn solid-2">Aktion</button>
+          <button class="btn solid-3">Weiter</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Verläufe</h3>
+        <div class="row">
+          <button class="btn grad-1">Jetzt starten</button>
+          <button class="btn grad-2">Ergebnis prüfen</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Outline / Ghost / Glass</h3>
+        <div class="row">
+          <button class="btn outline">Sekundär</button>
+          <button class="btn ghost">Leicht</button>
+          <button class="btn glass">Glas-Effekt</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Status-Buttons</h3>
+        <div class="row">
+          <button class="btn state-warning pill">Wird bearbeitet</button>
+          <button class="btn state-success pill">Freigegeben</button>
+          <button class="btn state-danger pill">Abgelehnt</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Breite CTA Buttons</h3>
+        <div class="row">
+          <button class="btn grad-1 wide">Kurs erstellen</button>
+          <button class="btn solid-1 wide">Hausaufgabe veröffentlichen</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Pill Varianten</h3>
+        <div class="row">
+          <button class="btn solid-2 pill">Anmelden</button>
+          <button class="btn outline pill">Mehr lesen</button>
+          <button class="btn ghost pill">Zurück</button>
+        </div>
+      </article>
+    </section>
+
+    <p class="tiny-note">Hinweis: Diese Seite ist absichtlich nicht im Menü verlinkt und dient nur als Design-Referenz.</p>
+  </main>
+</body>
+</html>
