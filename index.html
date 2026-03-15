@@ -5308,10 +5308,20 @@
       };
     }
 
+    function normalizeDtzSchemaKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/ä/g, "ae")
+        .replace(/ö/g, "oe")
+        .replace(/ü/g, "ue")
+        .replace(/ß/g, "ss");
+    }
+
     // Teil-spezifische Task-Builder: jede Teil-Logik hat ein eigenes Schema.
     function buildDtzHoerenTasksByTeil(teil, items) {
       const first = items[0] || {};
-      const schema = normalizeDtzGermanText(String(first.dtz_schema || "")).toLowerCase();
+      const schema = normalizeDtzSchemaKey(first.dtz_schema || "");
 
       if (schema === "hoeren_teil1_bundle" || schema === "hoeren_teil2_bundle") {
         return [mapHoerenBundleItem(first, teil)];
