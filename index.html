@@ -1948,6 +1948,13 @@
       padding: 8px 11px;
     }
 
+    .dtz-audio-icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
     .dtz-audio-btn:hover {
       box-shadow: 0 9px 18px rgba(72, 110, 154, 0.13);
     }
@@ -5047,7 +5054,9 @@
       return `
         <div class="dtz-audio-actions">
           <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
-            ${isPlaying ? "⏹️" : "▶️"}
+            ${isPlaying
+              ? "STOP"
+              : '<img src="./assets/play.png" class="dtz-audio-icon" alt="Play" />'}
           </button>
         </div>
       `;
