@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Arbeitsblatt | Sonntag 15.03.26</title>
+  <title>Arbeitsblatt MOD6 | Sonntag 15.03.26</title>
   <style>
     :root {
-      --bg: #f4f6fb;
-      --card: #ffffff;
       --line: #c8d4ea;
       --ink: #1f355a;
       --muted: #4e6286;
       --accent: #2e7dd1;
+      --card: #fff;
+      --ok: #0f8c5a;
+      --err: #c43d4f;
     }
     * { box-sizing: border-box; }
     body {
@@ -21,49 +22,29 @@
       color: var(--ink);
       line-height: 1.5;
     }
-    .wrap {
-      max-width: 980px;
-      margin: 24px auto 40px;
-      padding: 0 16px;
-    }
+    .wrap { max-width: 980px; margin: 24px auto 40px; padding: 0 16px; }
     .head {
       background: linear-gradient(130deg, #1c3e68, #355e93 70%);
       color: #fff;
       border-radius: 18px;
       padding: 20px;
-      box-shadow: 0 10px 26px rgba(18, 36, 66, 0.18);
       margin-bottom: 14px;
+      box-shadow: 0 10px 26px rgba(18,36,66,.18);
     }
-    .head h1 {
-      margin: 0;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-    }
-    .head p {
-      margin: 8px 0 0;
-      opacity: 0.94;
-      font-size: 1rem;
-    }
+    .head h1 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); }
+    .head p { margin: 8px 0 0; opacity: .94; }
     .block {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 16px;
       margin-bottom: 12px;
-      box-shadow: 0 8px 20px rgba(26, 52, 94, 0.06);
+      box-shadow: 0 8px 20px rgba(26,52,94,.06);
     }
-    h2 {
-      margin: 0 0 10px;
-      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
-      color: var(--ink);
-    }
+    h2 { margin: 0 0 10px; font-size: clamp(1.05rem, 2.5vw, 1.35rem); }
     .sub { margin: 0 0 10px; color: var(--muted); }
     ul, ol { margin: 8px 0 0 20px; }
     li { margin: 6px 0; }
-    .line {
-      border-bottom: 2px dashed #d8e1f2;
-      min-height: 24px;
-      margin-top: 8px;
-    }
     .q {
       margin-top: 8px;
       padding: 10px 12px;
@@ -72,6 +53,63 @@
       background: #f9fbff;
       color: #28456f;
     }
+    label {
+      display: block;
+      margin: 10px 0 6px;
+      font-weight: 700;
+      color: #2b4672;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      border: 1px solid #c8d7ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      color: #1c345b;
+      background: #fff;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #cfe0fa;
+      background: #eaf2ff;
+      margin-top: 10px;
+    }
+    .video-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      border: 1px solid #1f67c7;
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #2c88f2, #1d6fda);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #fff;
+      color: #295389;
+      border-color: #b8cce9;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: none;
+    }
+    .status.ok { display: block; background: #eaf8f1; border: 1px solid #9ed4be; color: #126c49; }
+    .status.error { display: block; background: #feeff2; border: 1px solid #efb4c0; color: #9f2741; }
     .hint {
       margin-top: 8px;
       font-size: .95rem;
@@ -80,11 +118,6 @@
       border-left: 4px solid var(--accent);
       padding: 10px;
       border-radius: 8px;
-    }
-    @media print {
-      body { background: #fff; }
-      .wrap { margin: 0; max-width: 100%; }
-      .head, .block { box-shadow: none; }
     }
   </style>
 </head>
@@ -96,64 +129,166 @@
     </section>
 
     <section class="block">
+      <label for="mod6Name">Name</label>
+      <input id="mod6Name" type="text" placeholder="Bitte Namen eingeben" maxlength="120" autocomplete="name" />
+      <div class="video-wrap">
+        <iframe
+          src="https://www.youtube.com/embed/0lkkXNfod58"
+          title="MOD6 Video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
+      </div>
+      <p class="hint">Bitte sehen Sie das Video zuerst vollständig an und beantworten Sie danach alle Aufgaben.</p>
+    </section>
+
+    <section class="block">
       <h2>Teil 1 – Beobachtungsauftrag</h2>
       <p class="sub">Sehen Sie das Video und beantworten Sie die Fragen.</p>
-      <ul>
-        <li>Notieren Sie <strong>zwei übertriebene Situationen</strong> im Video.</li>
-      </ul>
-      <div class="line"></div>
-      <div class="line"></div>
-      <ul>
-        <li>Welche <strong>Botschaft</strong> hat das Video?</li>
-      </ul>
-      <div class="line"></div>
-      <div class="line"></div>
+      <label for="video_over_1">Notieren Sie eine übertriebene Situation (1)</label>
+      <textarea id="video_over_1"></textarea>
+      <label for="video_over_2">Notieren Sie eine übertriebene Situation (2)</label>
+      <textarea id="video_over_2"></textarea>
+      <label for="video_message">Welche Botschaft hat das Video?</label>
+      <textarea id="video_message"></textarea>
     </section>
 
     <section class="block">
       <h2>Teil 2 – Verständnisfragen</h2>
-      <p class="sub">Beantworten Sie die Fragen.</p>
       <div class="q">Wie werden Pflegekräfte im Video dargestellt?</div>
-      <div class="line"></div>
+      <textarea id="v_question_1"></textarea>
       <div class="q">Warum ist diese Darstellung ironisch oder übertrieben?</div>
-      <div class="line"></div>
+      <textarea id="v_question_2"></textarea>
       <div class="q">Welche Kritik äußert das Video an der Gesellschaft?</div>
-      <div class="line"></div>
+      <textarea id="v_question_3"></textarea>
     </section>
 
     <section class="block">
-      <h2>Gruppendiskussion</h2>
-      <p class="sub">Diskutieren Sie in Gruppen.</p>
-      <ul>
-        <li>Ist der Pflegeberuf in der Gesellschaft genug anerkannt?</li>
-        <li>Warum verdienen Fußballspieler oft mehr Geld als Pflegekräfte?</li>
-        <li>Welche Rolle spielen Medien bei der Wahrnehmung von Berufen?</li>
-        <li>Was müsste sich ändern, damit Pflegekräfte mehr Anerkennung bekommen?</li>
-        <li>Würden mehr Menschen Pflege lernen, wenn die Arbeitsbedingungen besser wären?</li>
-      </ul>
+      <h2>Gruppendiskussion (schriftliche Kurzantworten)</h2>
+      <label for="group_1">Ist der Pflegeberuf in der Gesellschaft genug anerkannt?</label>
+      <textarea id="group_1"></textarea>
+      <label for="group_2">Warum verdienen Fußballspieler oft mehr Geld als Pflegekräfte?</label>
+      <textarea id="group_2"></textarea>
+      <label for="group_3">Welche Rolle spielen Medien bei der Wahrnehmung von Berufen?</label>
+      <textarea id="group_3"></textarea>
+      <label for="group_4">Was müsste sich ändern, damit Pflegekräfte mehr Anerkennung bekommen?</label>
+      <textarea id="group_4"></textarea>
+      <label for="group_5">Würden mehr Menschen Pflege lernen, wenn die Arbeitsbedingungen besser wären?</label>
+      <textarea id="group_5"></textarea>
     </section>
 
     <section class="block">
       <h2>Konjunktiv II – Aktivität</h2>
-      <p class="sub">Ergänzen Sie die Sätze.</p>
       <ol>
         <li>Wenn Pflegekräfte mehr Anerkennung <strong>__________</strong>, würden mehr Menschen diesen Beruf wählen.</li>
         <li>Wenn Krankenhäuser mehr Personal <strong>__________</strong>, müssten Pflegekräfte weniger Überstunden machen.</li>
         <li>Wenn Pflegekräfte besser bezahlt <strong>__________</strong>, wäre der Beruf attraktiver.</li>
       </ol>
+      <label for="konj_1">Lücke 1</label>
+      <input id="konj_1" type="text" maxlength="120" />
+      <label for="konj_2">Lücke 2</label>
+      <input id="konj_2" type="text" maxlength="120" />
+      <label for="konj_3">Lücke 3</label>
+      <input id="konj_3" type="text" maxlength="120" />
     </section>
 
     <section class="block">
       <h2>Produktionsaufgabe</h2>
-      <p class="sub">Diskutieren Sie: <strong>Wie könnte der Pflegeberuf attraktiver werden?</strong></p>
-      <ul>
-        <li>Arbeitsbedingungen</li>
-        <li>Gehalt</li>
-        <li>gesellschaftliche Anerkennung</li>
-        <li>Arbeitszeiten</li>
-      </ul>
-      <div class="hint">Versuchen Sie, in Ihrer Diskussion möglichst oft den <strong>Konjunktiv II</strong> zu verwenden.</div>
+      <p class="sub">Wie könnte der Pflegeberuf attraktiver werden? (Arbeitsbedingungen, Gehalt, Anerkennung, Arbeitszeiten)</p>
+      <textarea id="produktion" style="min-height: 160px;"></textarea>
+      <div class="hint">Verwenden Sie möglichst oft Konjunktiv II.</div>
+
+      <div class="actions">
+        <button id="mod6SubmitBtn" type="button">Antworten senden</button>
+        <button id="mod6ClearBtn" class="secondary" type="button">Formular leeren</button>
+      </div>
+      <div id="mod6Status" class="status"></div>
     </section>
   </main>
+
+  <script>
+    const blockedEvents = ["copy", "paste", "cut", "contextmenu"];
+    blockedEvents.forEach(eventName => {
+      document.addEventListener(eventName, event => {
+        event.preventDefault();
+      }, { capture: true });
+    });
+
+    const answerKeys = [
+      "video_over_1", "video_over_2", "video_message",
+      "v_question_1", "v_question_2", "v_question_3",
+      "group_1", "group_2", "group_3", "group_4", "group_5",
+      "konj_1", "konj_2", "konj_3", "produktion"
+    ];
+
+    function setStatus(type, message) {
+      const box = document.getElementById("mod6Status");
+      if (!box) return;
+      box.className = `status ${type}`;
+      box.textContent = message;
+    }
+
+    function collectAnswers() {
+      const answers = {};
+      answerKeys.forEach(key => {
+        const node = document.getElementById(key);
+        answers[key] = node ? String(node.value || "").trim() : "";
+      });
+      return answers;
+    }
+
+    async function submitMod6Answers() {
+      const name = String((document.getElementById("mod6Name") || {}).value || "").trim();
+      if (!name) {
+        setStatus("error", "Bitte zuerst Ihren Namen eingeben.");
+        return;
+      }
+
+      const answers = collectAnswers();
+      const filled = Object.values(answers).filter(value => String(value).trim() !== "").length;
+      if (filled === 0) {
+        setStatus("error", "Bitte mindestens eine Antwort eingeben.");
+        return;
+      }
+
+      const btn = document.getElementById("mod6SubmitBtn");
+      if (btn) btn.disabled = true;
+
+      try {
+        const response = await fetch("./api/mod6_submit.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, answers })
+        });
+        const raw = await response.text();
+        let payload = {};
+        try {
+          payload = raw ? JSON.parse(raw) : {};
+        } catch (_) {
+          throw new Error("Serverantwort ist kein gültiges JSON.");
+        }
+        if (!response.ok) {
+          throw new Error(payload.error || `Fehler ${response.status}`);
+        }
+        setStatus("ok", `Erfolgreich gesendet. ID: ${payload.submission_id || "-"}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setStatus("error", `Senden fehlgeschlagen: ${msg}`);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function clearMod6Form() {
+      document.getElementById("mod6Name").value = "";
+      answerKeys.forEach(key => {
+        const node = document.getElementById(key);
+        if (node) node.value = "";
+      });
+      setStatus("ok", "Formular geleert.");
+    }
+
+    document.getElementById("mod6SubmitBtn").addEventListener("click", submitMod6Answers);
+    document.getElementById("mod6ClearBtn").addEventListener("click", clearMod6Form);
+  </script>
 </body>
 </html>

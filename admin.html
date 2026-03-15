@@ -2338,6 +2338,7 @@
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
           <button id="jumpProgressBtn" class="admin-menu-item" type="button">Fortschritt</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
+          <button id="jumpMod6Btn" class="admin-menu-item owner-only hidden" type="button">MOD6</button>
           <button id="jumpJessBtn" class="admin-menu-item" type="button">Jess</button>
           <button id="toggleAndereBtn" class="admin-menu-item is-toggle" type="button" aria-expanded="false">ANDERE</button>
           <div id="adminAndereGroup" class="admin-menu-subgroup hidden">
@@ -2385,6 +2386,7 @@
             <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen</button>
+            <button id="fastMod6Btn" type="button" class="admin-fastlane-btn owner-only hidden">MOD6</button>
           </div>
         </div>
 
@@ -3163,6 +3165,30 @@
           </div>
         </details>
         </div>
+
+        <div id="paneMod6" class="admin-pane owner-only hidden">
+          <div class="bulk-wrap">
+            <h2 class="section-title" style="margin-top: 18px;">MOD6</h2>
+            <p class="section-subtitle">Eingereichte Antworten aus dem Arbeitsblatt (Name + Antworten).</p>
+
+            <div class="grid">
+              <div>
+                <label for="mod6SearchQuery">Name suchen</label>
+                <input id="mod6SearchQuery" type="text" placeholder="z. B. Ayşe / Ali">
+              </div>
+              <div>
+                <label for="mod6ListLimit">Eintragslimit</label>
+                <input id="mod6ListLimit" type="number" min="1" max="1000" value="200">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="loadMod6Btn" type="button">MOD6 laden</button>
+            </div>
+            <div id="mod6Status" class="hidden"></div>
+            <div id="mod6ListWrap" style="margin-top:10px;"></div>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -3222,6 +3248,7 @@
     let pendingLastCritical = 0;
     let kursCorrectionsMode = "";
     let kursCorrectionsRecords = [];
+    let mod6Records = [];
     let assignTeacherTargetUsername = "";
     let currentRoomDetail = { room: null, participants: [] };
     let activeAdminPane = "coursebuilder";
@@ -3237,7 +3264,7 @@
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
-    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpJessBtn"];
+    const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
 
     const adminPaneMap = {
       coursebuilder: "paneCourseBuilder",
@@ -3248,7 +3275,8 @@
       homeworks: "paneHomeworks",
       progress: "paneProgress",
       audit: "paneAudit",
-      archive: "paneArchive"
+      archive: "paneArchive",
+      mod6: "paneMod6"
     };
 
     const adminPaneLabels = {
@@ -3260,7 +3288,8 @@
       homeworks: "Hausaufgaben",
       progress: "Fortschritt",
       audit: "Audit",
-      archive: "Mail Korrekturen"
+      archive: "Mail Korrekturen",
+      mod6: "MOD6"
     };
 
     function getStoredPreference(key) {
@@ -3583,7 +3612,7 @@
       if (ARCHIVED_ADMIN_PANES.has(activeAdminPane)) {
         activeAdminPane = "accounts";
       }
-      if (!owner && (activeAdminPane === "teachers" || activeAdminPane === "audit")) {
+      if (!owner && (activeAdminPane === "teachers" || activeAdminPane === "audit" || activeAdminPane === "mod6")) {
         activeAdminPane = "accounts";
       }
     }
@@ -3613,7 +3642,7 @@
         setBox("panelStatus", "error", "Dieses Modul ist archiviert und nicht mehr verfügbar.");
         return;
       }
-      if ((paneName === "teachers" || paneName === "audit") && !isOwnerAdmin()) return;
+      if ((paneName === "teachers" || paneName === "audit" || paneName === "mod6") && !isOwnerAdmin()) return;
       activeAdminPane = paneName;
       setStoredPreference(ADMIN_LAST_PANE_KEY, paneName);
       Object.values(adminPaneMap).forEach(id => {
@@ -3639,6 +3668,8 @@
         loadKursProgressOverview(true);
       } else if (paneName === "progress") {
         loadProgressOverview(true);
+      } else if (paneName === "mod6") {
+        loadMod6Submissions(true);
       }
 
       const checklist = document.querySelector("#panelCard .start-checklist");
@@ -8008,6 +8039,87 @@
       }
     }
 
+    function renderMod6Submissions(records) {
+      const wrap = document.getElementById("mod6ListWrap");
+      if (!wrap) return;
+
+      const query = String((document.getElementById("mod6SearchQuery") || {}).value || "").trim().toLowerCase();
+      const rows = Array.isArray(records) ? records : [];
+      const filtered = query
+        ? rows.filter(item => {
+            const name = String(item.name || "").toLowerCase();
+            const user = String(item.student_username || "").toLowerCase();
+            return name.includes(query) || user.includes(query);
+          })
+        : rows;
+
+      if (!filtered.length) {
+        wrap.innerHTML = "<p>Keine MOD6-Einträge gefunden.</p>";
+        return;
+      }
+
+      const answerLabels = {
+        video_over_1: "Übertriebene Situation 1",
+        video_over_2: "Übertriebene Situation 2",
+        video_message: "Botschaft",
+        v_question_1: "Darstellung Pflegekräfte",
+        v_question_2: "Ironie/Übertreibung",
+        v_question_3: "Kritik an der Gesellschaft",
+        group_1: "Diskussion 1",
+        group_2: "Diskussion 2",
+        group_3: "Diskussion 3",
+        group_4: "Diskussion 4",
+        group_5: "Diskussion 5",
+        konj_1: "Konjunktiv Lücke 1",
+        konj_2: "Konjunktiv Lücke 2",
+        konj_3: "Konjunktiv Lücke 3",
+        produktion: "Produktionsaufgabe",
+      };
+
+      wrap.innerHTML = filtered.map(item => {
+        const answers = (item && typeof item.answers === "object" && item.answers) ? item.answers : {};
+        const answerRows = Object.keys(answerLabels).map(key => {
+          const val = String(answers[key] || "").trim();
+          if (!val) return "";
+          return `<tr><td>${escapeHtml(answerLabels[key])}</td><td>${escapeHtml(val)}</td></tr>`;
+        }).join("");
+        const author = String(item.student_username || "").trim() ? `${escapeHtml(String(item.name || "-"))} <span class=\"muted\">(${escapeHtml(String(item.student_username || ""))})</span>` : escapeHtml(String(item.name || "-"));
+        return `
+          <details class="fold-section">
+            <summary>${author} · ${escapeHtml(formatDisplayDateTime(String(item.submitted_at || "")) || "-")}</summary>
+            <div class="fold-section-content">
+              <p class="section-subtitle">ID: <span class="mono">${escapeHtml(String(item.id || "-"))}</span></p>
+              <table>
+                <thead><tr><th>Frage</th><th>Antwort</th></tr></thead>
+                <tbody>${answerRows || "<tr><td colspan=\"2\">Keine Antworten vorhanden.</td></tr>"}</tbody>
+              </table>
+            </div>
+          </details>
+        `;
+      }).join("");
+      applyResponsiveTableLabels(wrap);
+    }
+
+    async function loadMod6Submissions(silent = false) {
+      const limitInput = document.getElementById("mod6ListLimit");
+      const limit = clamp((limitInput || {}).value, 1, 1000, 200);
+      const statusId = "mod6Status";
+      if (!silent) clearBox(statusId);
+      try {
+        const response = await fetch(`./api/mod6_list.php?limit=${encodeURIComponent(String(limit))}`, { method: "GET" });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) {
+          throw new Error(payload.error || `Fehler: ${response.status}`);
+        }
+        mod6Records = Array.isArray(payload.records) ? payload.records : [];
+        renderMod6Submissions(mod6Records);
+        setBox(statusId, "ok", `${mod6Records.length} MOD6-Einträge geladen.`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setBox(statusId, "error", `MOD6-Laden fehlgeschlagen: ${msg}`);
+      }
+    }
+
     async function createTeacher() {
       clearBox("teacherStatus");
       if (!isOwnerAdmin()) return;
@@ -9655,10 +9767,20 @@
       closeAdminMenu();
       openAdminPane("archive");
     });
+    document.getElementById("jumpMod6Btn").addEventListener("click", () => {
+      closeAdminMenu();
+      openAdminPane("mod6");
+    });
     document.getElementById("jumpJessBtn").addEventListener("click", () => {
       closeAdminMenu();
       window.location.href = "./jess.html";
     });
+    const fastMod6Btn = document.getElementById("fastMod6Btn");
+    if (fastMod6Btn) {
+      fastMod6Btn.addEventListener("click", () => openAdminPane("mod6"));
+    }
+    document.getElementById("loadMod6Btn").addEventListener("click", () => loadMod6Submissions(false));
+    document.getElementById("mod6SearchQuery").addEventListener("input", () => renderMod6Submissions(mod6Records));
     document.getElementById("openOpsChecklistBtn").addEventListener("click", () => {
       closeAdminMenu();
       window.open("./docs/BETRIEB-CHECKLISTE.md", "_blank", "noopener,noreferrer");
