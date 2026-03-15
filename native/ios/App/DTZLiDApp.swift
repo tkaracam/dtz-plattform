@@ -1,13 +1,10 @@
 import SwiftUI
 
 @main
-struct DTZLiDApp: App {
-    @StateObject private var session = MemberSessionStore()
-
+struct DTZLiDEduApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environmentObject(session)
         }
     }
 }

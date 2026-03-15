@@ -1,4 +1,4 @@
-# DTZ-LiD Native Apps
+# DTZ-LID edu Native Apps
 
 Bu klasör iki **tam native** uygulama için başlangıç iskeletlerini içerir.
 

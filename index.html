@@ -228,48 +228,6 @@
       max-width: 100%;
     }
 
-    .entry-card {
-      border: 1px solid rgba(255, 214, 226, 0.28);
-      border-radius: var(--radius-lg);
-      padding: 22px;
-      background: #ffffff;
-      box-shadow: 0 12px 26px rgba(59, 52, 66, 0.12);
-      margin-bottom: 14px;
-    }
-
-    .entry-card h2 {
-      margin: 0 0 6px;
-      font-size: 1.25rem;
-      color: #253b5a;
-    }
-
-    .entry-card p {
-      margin: 0 0 12px;
-      color: #5f6f88;
-    }
-
-    .entry-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .entry-actions .ghost-btn {
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-weight: 700;
-    }
-
-    .entry-actions .primary-btn {
-      background: #f08aa8;
-      color: #fff;
-      border-color: #f08aa8;
-    }
-
-    #internContent {
-      display: none;
-    }
-
     .hero::before,
     .hero::after {
       content: "";
@@ -2680,17 +2638,7 @@
       <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
     </nav>
 
-    <section class="entry-card">
-      <h2>Willkommen</h2>
-      <p>Bitte wählen Sie, ob Sie als Mitglied (öffentlich) oder intern (Kurs/Lehrkraft) starten möchten.</p>
-      <div class="entry-actions">
-        <a class="ghost-btn primary-btn" href="./member.html">Mitgliedsbereich (Login)</a>
-        <button id="openInternBtn" type="button" class="ghost-btn">Intern (Kurs/Lehrkraft)</button>
-      </div>
-    </section>
-
-    <div id="internContent">
-      <section id="internArea" class="hero">
+    <section id="internArea" class="hero">
       <div class="hero-top">
         <div>
           <h1>Willkommen im DTZ Training</h1>
@@ -2708,8 +2656,7 @@
         </div>
       </div>
       </section>
-
-      <div class="shell">
+    <div class="shell">
       <section id="studentAuthCard" class="card auth-card">
         <h2 class="section-title">Schüler-Login</h2>
         <p class="section-subtitle">Zugangsdaten von der Lehrkraft eingeben.</p>
@@ -3292,8 +3239,6 @@
           </div>
         </div>
       </section>
-
-    </div>
 
     <footer class="site-footer">
       <div class="footer-links">
@@ -9959,15 +9904,6 @@
     document.getElementById("navToggleBtn").addEventListener("click", () => {
       document.getElementById("topNav").classList.toggle("open");
     });
-    const openInternBtn = document.getElementById("openInternBtn");
-    if (openInternBtn) {
-      openInternBtn.addEventListener("click", () => {
-        const intern = document.getElementById("internContent");
-        if (intern) intern.style.display = "block";
-        const target = document.getElementById("internArea");
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
     document.addEventListener("click", event => {
       const nav = document.getElementById("topNav");
       if (!nav || !nav.classList.contains("open")) return;

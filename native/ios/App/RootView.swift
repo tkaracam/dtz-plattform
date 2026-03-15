@@ -2,32 +2,9 @@ import SwiftUI
 import WebKit
 
 struct RootView: View {
-    @EnvironmentObject var session: MemberSessionStore
-    @State private var loading = true
-    @State private var showInternal = false
-
     var body: some View {
-        NavigationView {
-            if loading {
-                ProgressView("Laden...")
-                    .onAppear {
-                        Task {
-                            if let s = try? await APIClient.shared.memberSession() {
-                                session.apply(s)
-                            }
-                            loading = false
-                        }
-                    }
-            } else {
-                if showInternal {
-                    InternalWebView(url: URL(string: "https://dtz-lid.com/index.html#internArea")!)
-                        .ignoresSafeArea()
-                } else {
-                    WelcomeView(showInternal: $showInternal)
-                }
-            }
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
+        InternalWebView(url: URL(string: "https://dtz-lid.com/index.html")!)
+            .ignoresSafeArea()
     }
 }
 
@@ -38,7 +15,7 @@ struct WelcomeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Text("DTZ-LiD")
+                Text("DTZ-LID edu")
                     .font(.largeTitle).bold()
                 Text("Bitte wählen Sie den Bereich")
                     .foregroundColor(.secondary)

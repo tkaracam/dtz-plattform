@@ -32,24 +32,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppRoot() {
-    var showInternal by remember { mutableStateOf(false) }
-    if (showInternal) {
-        AndroidView(factory = { ctx ->
-            WebView(ctx).apply {
-                webViewClient = WebViewClient()
-                loadUrl("https://dtz-lid.com/index.html#internArea")
-            }
-        })
-    } else {
-        WelcomeScreen(onMember = {}, onInternal = { showInternal = true })
-    }
+    AndroidView(factory = { ctx ->
+        WebView(ctx).apply {
+            webViewClient = WebViewClient()
+            loadUrl("https://dtz-lid.com/index.html")
+        }
+    })
 }
 
 @Composable
 fun WelcomeScreen(onMember: () -> Unit, onInternal: () -> Unit) {
     Scaffold { pad ->
         Column(modifier = Modifier.padding(pad).padding(16.dp)) {
-            Text("DTZ-LiD", style = MaterialTheme.typography.headlineMedium)
+            Text("DTZ-LID edu", style = MaterialTheme.typography.headlineMedium)
             Text("Bitte wählen Sie den Bereich", style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(16.dp))
             Button(onClick = onMember, modifier = Modifier.fillMaxWidth()) { Text("Mitgliedsbereich") }
