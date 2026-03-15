@@ -1378,7 +1378,7 @@
       margin-top: 4px;
       display: grid;
       gap: 8px;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .dtz-training-modules .dtz-module-btn {
@@ -1395,6 +1395,11 @@
 
     .dtz-module-accordion + .dtz-module-accordion {
       margin-top: 12px;
+    }
+
+    #dtzHoerenAccordion > .dtz-module-summary,
+    #dtzLesenAccordion > .dtz-module-summary {
+      display: none;
     }
 
     .dtz-module-summary {
@@ -3098,6 +3103,10 @@
       </section>
 
       <section id="dtzTrainingCard" class="card hidden">
+        <div class="dtz-training-modules">
+          <button id="dtzHoerenOpenBtn" type="button" class="dtz-module-btn">Hören (Teil 1-4)</button>
+          <button id="dtzLesenOpenBtn" type="button" class="dtz-module-btn">Lesen (Teil 1-5)</button>
+        </div>
         <details id="dtzHoerenAccordion" class="dtz-module-accordion">
           <summary class="dtz-module-summary">
             <div class="title-wrap">
