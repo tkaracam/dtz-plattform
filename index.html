@@ -6728,7 +6728,6 @@
               ${bundleScript ? AudioPlayer(module, "bundle_main", isPlaying, bundleScript) : ""}
             </article>
             ${questionsHtml}
-            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6813,7 +6812,6 @@
               ${TaskInstruction(task.instructions || "Sie hören 4 kurze Dialoge. Entscheiden Sie Richtig/Falsch und lösen Sie die Detailfrage.")}
             </article>
             <div class="dtz-dialog-grid">${dialogsHtml}</div>
-            ${EvaluateButton(module)}
           </div>
         </section>
       `;
@@ -6877,7 +6875,6 @@
               <ul class="speak-list">${optionsListHtml}</ul>
             </article>
             ${statementRows}
-            ${EvaluateButton(module)}
           </div>
         </section>
       `;
