@@ -1,8 +1,11 @@
 package com.dtzlid.app
 
+import android.content.Context
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -20,9 +24,11 @@ import kotlinx.coroutines.withContext
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.CookieManager
 import java.net.CookiePolicy
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,9 +51,7 @@ fun AppRoot() {
     }
 
     if (loading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-            CircularProgressIndicator()
-        }
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
     } else {
         if (session.authenticated == true) {
             MainTabs(onLogout = {
@@ -58,9 +62,7 @@ fun AppRoot() {
             })
         } else {
             LoginScreen(onLogin = { u, p ->
-                scope.launch {
-                    session = Api.studentLogin(u, p)
-                }
+                scope.launch { session = Api.studentLogin(u, p) }
             })
         }
     }
@@ -139,8 +141,8 @@ fun DtzScreen() {
         Text("DTZ Training", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { module = "hoeren" }) { Text("Hören") }
-            Button(onClick = { module = "lesen" }) { Text("Lesen") }
+            Button(onClick = { module = "hoeren"; teil = 1 }) { Text("Hören") }
+            Button(onClick = { module = "lesen"; teil = 1 }) { Text("Lesen") }
         }
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -176,35 +178,237 @@ fun TrainingItemView(item: JSONObject, answers: MutableMap<String, String>) {
 
     when (schema) {
         "hoeren_teil1_bundle", "hoeren_teil2_bundle" -> {
-            val questions = item.optJSONArray("questions")
-            if (questions != null) {
-                for (i in 0 until questions.length()) {
-                    val q = questions.getJSONObject(i)
-                    Text(q.optString("audio_script"))
-                    Text(q.optString("question"), fontWeight = FontWeight.SemiBold)
-                    val options = q.optJSONArray("options")
-                    if (options != null) {
-                        for (idx in 0 until options.length()) {
-                            val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
-                            ChoiceRow(label, options.getString(idx), answers, q.optString("id"))
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
+            val questions = item.optJSONArray("questions") ?: JSONArray()
+            for (i in 0 until questions.length()) {
+                val q = questions.getJSONObject(i)
+                AudioScriptBlock(q.optString("audio_script"))
+                Text(q.optString("question"), fontWeight = FontWeight.SemiBold)
+                val options = q.optJSONArray("options") ?: JSONArray()
+                for (idx in 0 until options.length()) {
+                    val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
+                    ChoiceRow(label, options.getString(idx), answers, q.optString("id"))
                 }
+                Spacer(Modifier.height(8.dp))
             }
         }
-        else -> {
-            Text("Aufgabe wird vorbereitet.")
+        "hoeren_teil3_dialogcards" -> {
+            val dialogs = item.optJSONArray("dialogs") ?: JSONArray()
+            for (i in 0 until dialogs.length()) {
+                val d = dialogs.getJSONObject(i)
+                Text(d.optString("title"), fontWeight = FontWeight.Bold)
+                AudioScriptBlock(d.optString("audio_script"))
+                val tf = d.optJSONObject("true_false")
+                if (tf != null) {
+                    Text(tf.optString("statement"), fontWeight = FontWeight.SemiBold)
+                    TrueFalseView(d.optString("id") + "_tf", answers)
+                }
+                val detail = d.optJSONObject("detail")
+                if (detail != null) {
+                    Text(detail.optString("question"), fontWeight = FontWeight.SemiBold)
+                    val options = detail.optJSONArray("options") ?: JSONArray()
+                    for (idx in 0 until options.length()) {
+                        val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
+                        ChoiceRow(label, options.getString(idx), answers, d.optString("id") + "_mc")
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        "hoeren_teil4_matching" -> {
+            val options = item.optJSONObject("options") ?: JSONObject()
+            OptionsList(options)
+            val statements = item.optJSONArray("statements") ?: JSONArray()
+            for (i in 0 until statements.length()) {
+                val s = statements.getJSONObject(i)
+                AudioScriptBlock(s.optString("audio_script"))
+                MatchingPicker(s.optString("id"), options, answers)
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        "lesen_teil1_wegweiser" -> {
+            WegweiserBlock(item)
+            val situations = item.optJSONArray("situations") ?: JSONArray()
+            for (i in 0 until situations.length()) {
+                val s = situations.getJSONObject(i)
+                Text("${s.optInt("no")} ${s.optString("prompt")}", fontWeight = FontWeight.SemiBold)
+                val options = s.optJSONArray("options") ?: JSONArray()
+                for (idx in 0 until options.length()) {
+                    val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
+                    ChoiceRow(label, options.getString(idx), answers, s.optString("id"))
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        "lesen_teil2_matching" -> {
+            AnzeigenBlock(item)
+            val situations = item.optJSONArray("situations") ?: JSONArray()
+            val labels = item.optJSONArray("labels") ?: JSONArray()
+            for (i in 0 until situations.length()) {
+                val s = situations.getJSONObject(i)
+                Text("${s.optInt("no")} ${s.optString("prompt")}", fontWeight = FontWeight.SemiBold)
+                MatchingPicker(s.optString("id"), item.optJSONObject("ads") ?: JSONObject(), answers, labels)
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        "lesen_teil3_textblock_mix" -> {
+            val blocks = item.optJSONArray("blocks") ?: JSONArray()
+            for (i in 0 until blocks.length()) {
+                val b = blocks.getJSONObject(i)
+                Text(b.optString("title"), fontWeight = FontWeight.Bold)
+                Text(b.optString("text"))
+                val tf = b.optJSONObject("true_false")
+                if (tf != null) {
+                    Text(tf.optString("statement"), fontWeight = FontWeight.SemiBold)
+                    TrueFalseView(b.optString("id") + "_tf", answers)
+                }
+                val mc = b.optJSONObject("mc")
+                if (mc != null) {
+                    Text(mc.optString("question"), fontWeight = FontWeight.SemiBold)
+                    val options = mc.optJSONArray("options") ?: JSONArray()
+                    for (idx in 0 until options.length()) {
+                        val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
+                        ChoiceRow(label, options.getString(idx), answers, b.optString("id") + "_mc")
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        "lesen_teil4_richtig_falsch_text" -> {
+            Text(item.optString("text"))
+            val statements = item.optJSONArray("statements") ?: JSONArray()
+            for (i in 0 until statements.length()) {
+                val s = statements.getJSONObject(i)
+                Text("${s.optInt("no")} ${s.optString("statement")}", fontWeight = FontWeight.SemiBold)
+                TrueFalseView(s.optString("id"), answers)
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        "lesen_teil5_lueckentext" -> {
+            Text(item.optString("text_template"))
+            val example = item.optJSONObject("example")
+            if (example != null) {
+                Text("Beispiel ${example.optInt("no")}", fontWeight = FontWeight.SemiBold)
+                val options = example.optJSONArray("options") ?: JSONArray()
+                for (idx in 0 until options.length()) {
+                    val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
+                    ChoiceRow(label, options.getString(idx), mutableMapOf(), "")
+                }
+            }
+            val gaps = item.optJSONArray("gaps") ?: JSONArray()
+            for (i in 0 until gaps.length()) {
+                val g = gaps.getJSONObject(i)
+                Text("Lücke ${g.optInt("no")}", fontWeight = FontWeight.SemiBold)
+                val options = g.optJSONArray("options") ?: JSONArray()
+                for (idx in 0 until options.length()) {
+                    val label = listOf("A", "B", "C").getOrNull(idx) ?: ""
+                    ChoiceRow(label, options.getString(idx), answers, g.optString("id"))
+                }
+                Spacer(Modifier.height(8.dp))
+            }
+        }
+        else -> Text("Aufgabe wird vorbereitet.")
+    }
+}
+
+@Composable
+fun AudioScriptBlock(text: String) {
+    if (text.isBlank()) return
+    Column {
+        Text(text)
+        TtsButton(text)
+    }
+}
+
+@Composable
+fun TtsButton(text: String) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val tts = rememberTts(context)
+    Button(onClick = { tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "tts1") }) {
+        Text("▶")
+    }
+}
+
+@Composable
+fun rememberTts(context: Context): TextToSpeech {
+    val tts = remember {
+        TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts.language = Locale.GERMANY
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose { tts.shutdown() }
+    }
+    return tts
+}
+
+@Composable
+fun ChoiceRow(label: String, text: String, answers: MutableMap<String, String>, key: String) {
+    Row(Modifier.fillMaxWidth().clickable { answers[key] = label }, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        RadioButton(selected = answers[key] == label, onClick = { answers[key] = label })
+        Text("$label) $text")
+    }
+}
+
+@Composable
+fun TrueFalseView(key: String, answers: MutableMap<String, String>) {
+    Column {
+        Row(Modifier.clickable { answers[key] = "Richtig" }) {
+            RadioButton(selected = answers[key] == "Richtig", onClick = { answers[key] = "Richtig" })
+            Text("Richtig")
+        }
+        Row(Modifier.clickable { answers[key] = "Falsch" }) {
+            RadioButton(selected = answers[key] == "Falsch", onClick = { answers[key] = "Falsch" })
+            Text("Falsch")
         }
     }
 }
 
 @Composable
-fun ChoiceRow(label: String, text: String, answers: MutableMap<String, String>, key: String) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        val selected = answers[key] == label
-        RadioButton(selected = selected, onClick = { answers[key] = label })
-        Text("$label) $text")
+fun OptionsList(options: JSONObject) {
+    Column {
+        options.keys().asSequence().sorted().forEach { key ->
+            Text("$key: ${options.optString(key)}")
+        }
+    }
+}
+
+@Composable
+fun MatchingPicker(key: String, options: JSONObject, answers: MutableMap<String, String>, labels: JSONArray? = null) {
+    val list = labels?.let {
+        (0 until it.length()).map { idx -> it.getString(idx) }
+    } ?: options.keys().asSequence().toList().sorted()
+    var expanded by remember { mutableStateOf(false) }
+    val selected = answers[key] ?: ""
+    Box {
+        OutlinedButton(onClick = { expanded = true }) { Text(if (selected.isBlank()) "Bitte wählen" else selected) }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            list.forEach { label ->
+                DropdownMenuItem(text = { Text(label) }, onClick = {
+                    answers[key] = label
+                    expanded = false
+                })
+            }
+        }
+    }
+}
+
+@Composable
+fun WegweiserBlock(item: JSONObject) {
+    Text(item.optString("wegweiser_title"), fontWeight = FontWeight.Bold)
+    val arr = item.optJSONArray("wegweiser") ?: JSONArray()
+    for (i in 0 until arr.length()) {
+        Text(arr.getString(i))
+    }
+}
+
+@Composable
+fun AnzeigenBlock(item: JSONObject) {
+    Text("Anzeigen", fontWeight = FontWeight.Bold)
+    val ads = item.optJSONObject("ads") ?: JSONObject()
+    ads.keys().asSequence().sorted().forEach { key ->
+        Text("$key: ${ads.optString(key)}")
     }
 }
 
