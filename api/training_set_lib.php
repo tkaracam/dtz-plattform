@@ -1914,7 +1914,8 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
     ];
 
     if ($teil === 1 || $teil === 2) {
-        $item['audio_script'] = germanize_umlauts_text((string)($picked['audio_script'] ?? ''));
+        $bundleAudio = germanize_umlauts_text((string)($picked['audio_script'] ?? ''));
+        $item['audio_script'] = $bundleAudio;
         $item['speaker_meta'] = ['narrator'];
         $questions = [];
         $rawQuestions = array_values((array)($picked['questions'] ?? []));
@@ -1936,6 +1937,7 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
                 'question' => germanize_umlauts_text((string)($question['question'] ?? '')),
                 'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
                 'correct' => (string)$prepared['correct'],
+                'audio_script' => germanize_umlauts_text((string)($question['audio_script'] ?? $bundleAudio)),
                 'explanation' => $includeExplanation ? germanize_umlauts_text((string)($question['rationale'] ?? '')) : '',
             ];
         }

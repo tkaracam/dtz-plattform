@@ -5236,6 +5236,7 @@
             options: normalizeDtzOptionMap(q.options || {}),
             correct: String(q.correct || "").toUpperCase(),
             explanation: normalizeDtzGermanText(String(q.explanation || "")),
+            audio_script: normalizeDtzGermanText(String(q.audio_script || item.audio_script || item.text || "")),
           }))
         : [];
 
@@ -6045,6 +6046,21 @@
         };
       }
 
+      if ((firstTask.type === "hoeren_teil1_bundle" || firstTask.type === "hoeren_teil2_bundle") && key.startsWith("bundle_q:")) {
+        const questionId = key.slice("bundle_q:".length);
+        const question = (Array.isArray(firstTask.questions) ? firstTask.questions : []).find(item => String(item.id || "") === questionId);
+        if (!question) return null;
+        const script = String(question.audio_script || firstTask.audio_script || firstTask.text || "").trim();
+        if (!script) return null;
+        return {
+          key,
+          script,
+          label: String(firstTask.dtzPart || `Teil ${state.teil}`),
+          speakerMeta: Array.isArray(firstTask.speakerMeta) ? firstTask.speakerMeta : ["narrator"],
+          cacheTarget: question
+        };
+      }
+
       if (firstTask.type === "hoeren_teil3_dialogcards" && key.startsWith("dialog:")) {
         const id = key.slice("dialog:".length);
         const dialog = (Array.isArray(firstTask.dialogs) ? firstTask.dialogs : []).find(item => String(item.id || "") === id);
@@ -6648,6 +6664,8 @@
       const isPlaying = currentDtzSpeakingIndex === "bundle_main";
       const questionsHtml = questions.map((question, idx) => {
         const key = String(question.id || `q_${idx}`);
+        const audioKey = `bundle_q:${key}`;
+        const isQuestionPlaying = currentDtzSpeakingIndex === audioKey;
         const selected = String(state.answers[key] || "");
         const correct = String(question.correct || "");
         let rowClass = "lid-question";
@@ -6669,6 +6687,7 @@
         return `
           <article class="${rowClass}">
             <h4>Frage ${idx + 1}/${questions.length}</h4>
+            ${AudioPlayer(module, audioKey, isQuestionPlaying, question.audio_script || task.audio_script || task.text || "")}
             ${TaskInstruction(question.question || "Was ist richtig?")}
             ${MultipleChoiceQuestion({
               module,
