@@ -266,6 +266,10 @@
       border-color: #f08aa8;
     }
 
+    #internContent {
+      display: none;
+    }
+
     .hero::before,
     .hero::after {
       content: "";
@@ -2681,11 +2685,12 @@
       <p>Bitte wählen Sie, ob Sie als Mitglied (öffentlich) oder intern (Kurs/Lehrkraft) starten möchten.</p>
       <div class="entry-actions">
         <a class="ghost-btn primary-btn" href="./member.html">Mitgliedsbereich (Login)</a>
-        <a class="ghost-btn" href="#internArea">Intern (Kurs/Lehrkraft)</a>
+        <button id="openInternBtn" type="button" class="ghost-btn">Intern (Kurs/Lehrkraft)</button>
       </div>
     </section>
 
-    <section id="internArea" class="hero">
+    <div id="internContent">
+      <section id="internArea" class="hero">
       <div class="hero-top">
         <div>
           <h1>Willkommen im DTZ Training</h1>
@@ -2702,9 +2707,9 @@
           <div class="hero-cta" aria-hidden="true"></div>
         </div>
       </div>
-    </section>
+      </section>
 
-    <div class="shell">
+      <div class="shell">
       <section id="studentAuthCard" class="card auth-card">
         <h2 class="section-title">Schüler-Login</h2>
         <p class="section-subtitle">Zugangsdaten von der Lehrkraft eingeben.</p>
@@ -3162,8 +3167,9 @@
             <p class="speak-muted" id="speakPart3Lead"></p>
             <ul id="speakPart3Points" class="speak-list"></ul>
             <div class="speak-note">Tipp: Reagieren, Vorschläge machen und am Ende eine Einigung formulieren.</div>
-          </section>
-        </div>
+      </section>
+    </div>
+    </div>
           </div>
         </details>
       </section>
@@ -9953,6 +9959,15 @@
     document.getElementById("navToggleBtn").addEventListener("click", () => {
       document.getElementById("topNav").classList.toggle("open");
     });
+    const openInternBtn = document.getElementById("openInternBtn");
+    if (openInternBtn) {
+      openInternBtn.addEventListener("click", () => {
+        const intern = document.getElementById("internContent");
+        if (intern) intern.style.display = "block";
+        const target = document.getElementById("internArea");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
     document.addEventListener("click", event => {
       const nav = document.getElementById("topNav");
       if (!nav || !nav.classList.contains("open")) return;
