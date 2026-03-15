@@ -6438,7 +6438,9 @@
     function renderLesenTeil5ClozeTask(module, state, task) {
       const template = String(task.textTemplate || "");
       const gapTokenRegex = /\[(0|4[0-5])\]/g;
-      const textHtml = escapeHtml(template).replace(gapTokenRegex, (_match, no) => {
+      const textHtml = escapeHtml(template)
+        .replace(/\r?\n/g, "<br>")
+        .replace(gapTokenRegex, (_match, no) => {
         return `<span class="dtz-cloze-gap-inline">${escapeHtml(String(no))} ____</span>`;
       });
 
