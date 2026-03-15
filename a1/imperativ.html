@@ -1,27 +1,102 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Imperativ - A1</title>
   <style>
-    :root { --primary:#2c7be5; --bg:#f5f7fb; --card:#fff; --text:#1f2a44; --muted:#5b6b86; --border:#dfe7f3; }
+    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype"); font-weight: 300; font-style: normal; font-display: swap; }
+    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+    :root { --panel:#ffffff; --line:#d9e1ef; --text:#1f2f46; --muted:#5f6f88; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:"Avenir Next","Helvetica Neue",Arial,sans-serif; color:var(--text); background:var(--bg); }
-    .wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px 40px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; box-shadow:0 10px 24px rgba(28,44,78,.08); }
-    h1 { margin:0 0 8px; }
-    p { margin:0 0 12px; color:var(--muted); }
-    a.btn { display:inline-block; text-decoration:none; background:var(--primary); color:#fff; padding:10px 14px; border-radius:10px; font-weight:600; }
+    body { margin:0; font-family:"Comfortaa","Trebuchet MS",sans-serif; background: linear-gradient(180deg,#f8fbff 0%,#f1f5fb 100%); color:var(--text); line-height:1.45; }
+    .container { width:min(1180px, calc(100% - 1rem)); max-width:100%; margin:22px auto 30px; }
+    .top-nav { position:sticky; top:10px; z-index:40; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; padding:10px 12px; border-radius:14px; border:1px solid #e7d6de; background: rgba(255,255,255,0.92); box-shadow:0 10px 24px rgba(59,52,66,0.1); backdrop-filter: blur(8px); max-width:100%; }
+    .nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; color:#4a4454; letter-spacing:0.02em; white-space:nowrap; min-width:0; text-decoration:none; }
+    .nav-brand img { width:auto; height:27px; max-width:46vw; display:block; }
+    .nav-right { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; position:relative; }
+    .nav-links { display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:45; align-items:stretch; gap:8px; flex-direction:column; min-width:210px; padding:8px; border-radius:12px; border:1px solid #e7d6de; background: rgba(255,255,255,0.98); box-shadow:0 12px 24px rgba(59,52,66,0.14); order:1; }
+    .top-nav.open .nav-links { display:flex; }
+    .nav-link { width:100%; min-width:0; border-radius:999px; padding:8px 12px; border:1px solid #e6cfda; background:#fff7fa; color:#6f4f5f; text-transform:none; letter-spacing:0; font-size:0.9rem; box-shadow:none; text-decoration:none; text-align:center; font-weight:700; }
+    .nav-link:hover { color:#f2849e; border-color:#f2b7c9; }
+    .nav-toggle { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:40px; height:36px; border-radius:12px; border:1px solid #e6cfda; background:#fff7fa; font-size:1.1rem; color:#6f4f5f; cursor:pointer; }
+    .wrap { max-width:1080px; margin:0 auto; padding:18px; }
+    .hero { border-radius:20px; border:1px solid #b9c8df; background: radial-gradient(circle at top right,#8c7999 0%,#4a496e 45%,#2d395a 100%); color:#fff; padding:22px; margin-bottom:14px; }
+    .hero h1 { margin:0 0 8px; font-size: clamp(1.35rem, 3vw, 1.95rem); }
+    .hero p { margin:0; color:#e7edf8; font-size:.95rem; }
+    .grid { display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:12px; }
+    .card { grid-column: span 12; background: var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; }
+    .card h2 { margin:0 0 10px; font-size:1.12rem; color:#253b5a; }
+    .pill-link { display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; border:1px solid #dbe6f6; background:#f7fbff; color:#2b466f; font-weight:700; text-decoration:none; font-size:.92rem; }
+    .bullet-list { margin:0; padding-left:18px; }
+    .example-box { border:1px dashed #c9d7f0; border-radius:12px; padding:10px; background:#f9fbff; margin-bottom:8px; }
+    footer { text-align:center; padding:24px 0 30px; color:#72809b; font-size:.9rem; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Imperativ</h1>
-      <p>Diese A1-Seite wird gerade aufgebaut.</p>
-      <a class="btn" href="/a1-themen.html">Zurück zu A1-Themen</a>
+  <div class="container">
+    <nav id="topNav" class="top-nav">
+      <a id="navLogoBtn" class="nav-brand" href="./index.html" aria-label="Zur Startseite">
+        <img src="./assets/dtzlib-logo-v3.png" alt="DTZ-LID">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links">
+          <a class="nav-link" href="./index.html">Start</a>
+          <a class="nav-link" href="./index.html">Portal</a>
+          <a class="nav-link" href="./a1-themen.html">A1-Themen</a>
+          <a class="nav-link" href="./a2-themen.html">A2-Themen</a>
+          <a class="nav-link" href="./admin.html">Lehrer-Panel</a>
+          <a class="nav-link" href="./agb.html">AGB</a>
+        </div>
+        <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
+      </div>
+    </nav>
+
+    <div class="wrap">
+      <section class="hero">
+        <h1>Imperativ</h1>
+        <p>Aufforderungen für du/ihr/Sie.</p>
+      </section>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Überblick</h2>
+          <ul class="bullet-list">
+            <li>du: Komm! Geh!</li>
+            <li>ihr: Kommt! Geht!</li>
+            <li>Sie: Kommen Sie bitte.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Beispiele</h2>
+          <div class="example-box">Bitte <strong>kommen</strong> Sie.</div>
+          <div class="example-box"><strong>Mach</strong> die Tür zu!</div>
+        </div>
+        <div class="card">
+          <h2>Merksatz</h2>
+          <p>Imperativ = Aufforderung.</p>
+          <a class="pill-link" href="./a1-themen.html">Zurück zu A1-Themen</a>
+        </div>
+      </div>
     </div>
   </div>
+  <footer>© dtz-lid.com</footer>
+  <script>
+    const navToggleBtn = document.getElementById("navToggleBtn");
+    if (navToggleBtn) {
+      navToggleBtn.addEventListener("click", event => {
+        event.stopPropagation();
+        const nav = document.getElementById("topNav");
+        if (!nav) return;
+        nav.classList.toggle("open");
+      });
+    }
+    document.addEventListener("click", event => {
+      const nav = document.getElementById("topNav");
+      if (!nav || !nav.classList.contains("open")) return;
+      if (!nav.contains(event.target)) nav.classList.remove("open");
+    });
+  </script>
 </body>
 </html>

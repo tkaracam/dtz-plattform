@@ -1,206 +1,209 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>A1 Deutsch – Grammatik Themen</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A1-Themen | Grammatik</title>
   <style>
-    :root {
-      --primary: #2c7be5;
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #1f2a44;
-      --muted: #5b6b86;
-      --border: #dfe7f3;
-    }
-
+    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype"); font-weight: 300; font-style: normal; font-display: swap; }
+    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+    :root { --panel:#ffffff; --line:#d9e1ef; --text:#1f2f46; --muted:#5f6f88; }
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
-      font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, #f1f5fb 100%);
       color: var(--text);
-      background: var(--bg);
+      line-height: 1.45;
     }
-
-    header {
-      padding: 36px 20px 10px;
+    .container {
+      width: min(1180px, calc(100% - 1rem));
+      max-width: 100%;
+      margin: 22px auto 30px;
+    }
+    .top-nav {
+      position: sticky;
+      top: 10px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid #e7d6de;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 10px 24px rgba(59, 52, 66, 0.1);
+      backdrop-filter: blur(8px);
+      max-width: 100%;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: #4a4454;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      min-width: 0;
+      text-decoration: none;
+    }
+    .nav-brand img { width: auto; height: 27px; max-width: 46vw; display: block; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; position: relative; }
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 45;
+      align-items: stretch;
+      gap: 8px;
+      flex-direction: column;
+      min-width: 210px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid #e7d6de;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 12px 24px rgba(59, 52, 66, 0.14);
+      order: 1;
+    }
+    .top-nav.open .nav-links { display: flex; }
+    .nav-link {
+      width: 100%;
+      min-width: 0;
+      border-radius: 999px;
+      padding: 8px 12px;
+      border: 1px solid #e6cfda;
+      background: #fff7fa;
+      color: #6f4f5f;
+      font-size: 0.9rem;
+      text-decoration: none;
       text-align: center;
+      font-weight: 700;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-      letter-spacing: 0.2px;
+    .nav-link:hover { color: #f2849e; border-color: #f2b7c9; }
+    .nav-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 40px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid #e6cfda;
+      background: #fff7fa;
+      font-size: 1.1rem;
+      color: #6f4f5f;
+      cursor: pointer;
     }
-
-    header p {
-      margin: 10px 0 0;
-      color: var(--muted);
-      font-size: 1rem;
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 18px; }
+    .hero {
+      border-radius: 20px;
+      border: 1px solid #b9c8df;
+      background: radial-gradient(circle at top right, #8c7999 0%, #4a496e 45%, #2d395a 100%);
+      color: #fff;
+      padding: 22px;
+      margin-bottom: 14px;
     }
-
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-    }
-
+    .hero h1 { margin: 0 0 8px; font-size: clamp(1.35rem, 3vw, 1.95rem); }
+    .hero p { margin: 0; color: #e7edf8; font-size: .95rem; }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
+      grid-column: span 4;
+      background: var(--panel);
+      border: 1px solid var(--line);
       border-radius: 16px;
-      padding: 18px 18px 16px;
-      box-shadow: 0 10px 24px rgba(28, 44, 78, 0.08);
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      min-height: 180px;
+      gap: 8px;
     }
-
-    .card h3 {
-      margin: 0 0 8px;
-      font-size: 1.1rem;
-    }
-
-    .card p {
-      margin: 0 0 16px;
-      color: var(--muted);
-      line-height: 1.45;
-      flex: 1;
-    }
-
+    .card h3 { margin: 0; font-size: 1.05rem; color: #253b5a; }
+    .card p { margin: 0; color: var(--muted); font-size: .92rem; }
     .card a {
+      margin-top: auto;
       align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #dbe6f6;
+      background: #f7fbff;
+      color: #2b466f;
+      font-weight: 700;
       text-decoration: none;
-      background: var(--primary);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      font-size: .92rem;
     }
-
-    .card a:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 16px rgba(44, 123, 229, 0.25);
-    }
-
-    footer {
-      text-align: center;
-      padding: 24px 12px 36px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 640px) {
-      header { padding-top: 28px; }
-      header h1 { font-size: 1.6rem; }
-      .grid { grid-template-columns: 1fr; }
-    }
+    footer { text-align: center; padding: 24px 0 30px; color: #72809b; font-size: .9rem; }
+    @media (max-width: 980px) { .card { grid-column: span 6; } }
+    @media (max-width: 640px) { .card { grid-column: span 12; } }
   </style>
 </head>
 <body>
-  <header>
-    <h1>A1 Deutsch – Grammatik Themen</h1>
-    <p>Übersicht der wichtigsten Grundlagen für A1 mit kurzen Erklärungen und Aufgaben.</p>
-  </header>
+  <div class="container">
+    <nav id="topNav" class="top-nav">
+      <a id="navLogoBtn" class="nav-brand" href="./index.html" aria-label="Zur Startseite">
+        <img src="./assets/dtzlib-logo-v3.png" alt="DTZ-LID">
+      </a>
+      <div class="nav-right">
+        <div class="nav-links">
+          <a class="nav-link" href="./index.html">Start</a>
+          <a class="nav-link" href="./index.html">Portal</a>
+          <a class="nav-link" href="./a1-themen.html">A1-Themen</a>
+          <a class="nav-link" href="./a2-themen.html">A2-Themen</a>
+          <a class="nav-link" href="./admin.html">Lehrer-Panel</a>
+          <a class="nav-link" href="./agb.html">AGB</a>
+        </div>
+        <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
+      </div>
+    </nav>
 
-  <main>
-    <div class="grid">
-      <article class="card">
-        <h3>Verben im Präsens</h3>
-        <p>Grundformen im Präsens, regelmäßige Endungen und einfache Beispiele.</p>
-        <a href="/a1/praesens.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>sein und haben</h3>
-        <p>Unregelmäßige Formen, häufige Sätze und typische Anwendungen.</p>
-        <a href="/a1/sein-haben.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Personalpronomen</h3>
-        <p>ich, du, er/sie/es – Pronomen im Nominativ und einfache Sätze.</p>
-        <a href="/a1/pronomen.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Artikel (der, die, das)</h3>
-        <p>Bestimmte Artikel im Nominativ und Akkusativ mit Beispielen.</p>
-        <a href="/a1/artikel.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Unbestimmte Artikel (ein, eine)</h3>
-        <p>Ein/eine im Singular und wichtige Anwendungsfälle.</p>
-        <a href="/a1/unbestimmte-artikel.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Negation (nicht / kein)</h3>
-        <p>Wann nutzt man „nicht“, wann „kein“? Klare Regeln und Beispiele.</p>
-        <a href="/a1/negation.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>W-Fragen (wer, was, wo, wann)</h3>
-        <p>Fragesätze bilden und Antworten strukturieren.</p>
-        <a href="/a1/w-fragen.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Ja/Nein-Fragen</h3>
-        <p>Frageformen mit Verb an Position 1 und kurze Antworten.</p>
-        <a href="/a1/ja-nein-fragen.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Possessivartikel (mein, dein, sein)</h3>
-        <p>Zuordnung zu Personen und einfache Beispiele im Alltag.</p>
-        <a href="/a1/possessivartikel.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Modalverben (können, wollen, müssen)</h3>
-        <p>Häufige Modalverben mit Infinitiv und Satzstellung.</p>
-        <a href="/a1/modalverben.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Akkusativ</h3>
-        <p>Wen oder was? Grundfälle mit typischen Beispielen.</p>
-        <a href="/a1/akkusativ.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Trennbare Verben</h3>
-        <p>Aufstehen, anrufen – Trennung im Hauptsatz, Stellung im Satz.</p>
-        <a href="/a1/trennbare-verben.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Imperativ</h3>
-        <p>Höfliche und direkte Aufforderungen für du/ihr/Sie.</p>
-        <a href="/a1/imperativ.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Uhrzeit und Datum</h3>
-        <p>Uhrzeit sagen, Datum schreiben und wichtige Fragen.</p>
-        <a href="/a1/uhrzeit-datum.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Präpositionen (in, auf, bei, mit)</h3>
-        <p>Häufige Präpositionen im A1-Alltag und kurze Beispiele.</p>
-        <a href="/a1/praepositionen.html">Thema öffnen</a>
-      </article>
-      <article class="card">
-        <h3>Satzstellung (Verb auf Position 2)</h3>
-        <p>Grundregeln der Satzstellung im Hauptsatz.</p>
-        <a href="/a1/satzstellung.html">Thema öffnen</a>
-      </article>
+    <div class="wrap">
+      <section class="hero">
+        <h1>A1 Deutsch – Grammatik Themen</h1>
+        <p>Grundlagen, kurze Erklärungen und Beispiele – ideal für den Einstieg.</p>
+      </section>
+
+      <div class="grid">
+        <article class="card"><h3>Verben im Präsens</h3><p>Regelmäßige Endungen und häufige Verben.</p><a href="/a1/praesens.html">Thema öffnen</a></article>
+        <article class="card"><h3>sein und haben</h3><p>Wichtige Hilfsverben im Alltag.</p><a href="/a1/sein-haben.html">Thema öffnen</a></article>
+        <article class="card"><h3>Personalpronomen</h3><p>ich, du, er/sie/es, wir, ihr, Sie.</p><a href="/a1/pronomen.html">Thema öffnen</a></article>
+        <article class="card"><h3>Artikel (der, die, das)</h3><p>Bestimmte Artikel im Nominativ/Akkusativ.</p><a href="/a1/artikel.html">Thema öffnen</a></article>
+        <article class="card"><h3>Unbestimmte Artikel</h3><p>ein/eine und wichtige Regeln.</p><a href="/a1/unbestimmte-artikel.html">Thema öffnen</a></article>
+        <article class="card"><h3>Negation (nicht/kein)</h3><p>Verneinen im Alltag.</p><a href="/a1/negation.html">Thema öffnen</a></article>
+        <article class="card"><h3>W‑Fragen</h3><p>wer, was, wo, wann, wie, warum.</p><a href="/a1/w-fragen.html">Thema öffnen</a></article>
+        <article class="card"><h3>Ja/Nein‑Fragen</h3><p>Verb an Position 1.</p><a href="/a1/ja-nein-fragen.html">Thema öffnen</a></article>
+        <article class="card"><h3>Possessivartikel</h3><p>mein, dein, sein, ihr, unser, euer.</p><a href="/a1/possessivartikel.html">Thema öffnen</a></article>
+        <article class="card"><h3>Modalverben</h3><p>können, wollen, müssen.</p><a href="/a1/modalverben.html">Thema öffnen</a></article>
+        <article class="card"><h3>Akkusativ</h3><p>Wen/was? Direktes Objekt.</p><a href="/a1/akkusativ.html">Thema öffnen</a></article>
+        <article class="card"><h3>Trennbare Verben</h3><p>anrufen, aufstehen und mehr.</p><a href="/a1/trennbare-verben.html">Thema öffnen</a></article>
+        <article class="card"><h3>Imperativ</h3><p>Aufforderungen für du/ihr/Sie.</p><a href="/a1/imperativ.html">Thema öffnen</a></article>
+        <article class="card"><h3>Uhrzeit und Datum</h3><p>Zeitangaben korrekt bilden.</p><a href="/a1/uhrzeit-datum.html">Thema öffnen</a></article>
+        <article class="card"><h3>Präpositionen</h3><p>in, auf, bei, mit.</p><a href="/a1/praepositionen.html">Thema öffnen</a></article>
+        <article class="card"><h3>Satzstellung</h3><p>Verb auf Position 2.</p><a href="/a1/satzstellung.html">Thema öffnen</a></article>
+      </div>
     </div>
-  </main>
-
+  </div>
   <footer>© dtz-lid.com</footer>
+
+  <script>
+    const navToggleBtn = document.getElementById("navToggleBtn");
+    if (navToggleBtn) {
+      navToggleBtn.addEventListener("click", event => {
+        event.stopPropagation();
+        const nav = document.getElementById("topNav");
+        if (!nav) return;
+        nav.classList.toggle("open");
+      });
+    }
+    document.addEventListener("click", event => {
+      const nav = document.getElementById("topNav");
+      if (!nav || !nav.classList.contains("open")) return;
+      if (!nav.contains(event.target)) nav.classList.remove("open");
+    });
+  </script>
 </body>
 </html>
