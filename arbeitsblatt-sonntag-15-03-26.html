@@ -119,6 +119,29 @@
       padding: 10px;
       border-radius: 8px;
     }
+    .choice-group {
+      margin: 10px 0 16px;
+      display: grid;
+      gap: 8px;
+    }
+    .choice-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid #d8e3f4;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #f7faff;
+    }
+    .choice-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+    .choice-item strong {
+      min-width: 28px;
+      color: #1d3f6f;
+    }
   </style>
 </head>
 <body>
@@ -183,12 +206,26 @@
         <li>Wenn Krankenhäuser mehr Personal <strong>__________</strong>, müssten Pflegekräfte weniger Überstunden machen.</li>
         <li>Wenn Pflegekräfte besser bezahlt <strong>__________</strong>, wäre der Beruf attraktiver.</li>
       </ol>
-      <label for="konj_1">Lücke 1</label>
-      <input id="konj_1" type="text" maxlength="120" />
-      <label for="konj_2">Lücke 2</label>
-      <input id="konj_2" type="text" maxlength="120" />
-      <label for="konj_3">Lücke 3</label>
-      <input id="konj_3" type="text" maxlength="120" />
+      <label>Lücke 1</label>
+      <div class="choice-group">
+        <label class="choice-item"><input type="radio" name="konj_1" value="A) haetten"><strong>A)</strong><span>hätten</span></label>
+        <label class="choice-item"><input type="radio" name="konj_1" value="B) haben"><strong>B)</strong><span>haben</span></label>
+        <label class="choice-item"><input type="radio" name="konj_1" value="C) hatten"><strong>C)</strong><span>hatten</span></label>
+      </div>
+
+      <label>Lücke 2</label>
+      <div class="choice-group">
+        <label class="choice-item"><input type="radio" name="konj_2" value="A) haetten"><strong>A)</strong><span>hätten</span></label>
+        <label class="choice-item"><input type="radio" name="konj_2" value="B) hatten"><strong>B)</strong><span>hatten</span></label>
+        <label class="choice-item"><input type="radio" name="konj_2" value="C) haben"><strong>C)</strong><span>haben</span></label>
+      </div>
+
+      <label>Lücke 3</label>
+      <div class="choice-group">
+        <label class="choice-item"><input type="radio" name="konj_3" value="A) werden"><strong>A)</strong><span>werden</span></label>
+        <label class="choice-item"><input type="radio" name="konj_3" value="B) wurden"><strong>B)</strong><span>wurden</span></label>
+        <label class="choice-item"><input type="radio" name="konj_3" value="C) wuerden"><strong>C)</strong><span>würden</span></label>
+      </div>
     </section>
 
     <section class="block">
@@ -230,6 +267,11 @@
     function collectAnswers() {
       const answers = {};
       answerKeys.forEach(key => {
+        if (key.startsWith("konj_")) {
+          const selected = document.querySelector(`input[name="${key}"]:checked`);
+          answers[key] = selected ? String(selected.value || "").trim() : "";
+          return;
+        }
         const node = document.getElementById(key);
         answers[key] = node ? String(node.value || "").trim() : "";
       });
@@ -281,6 +323,12 @@
     function clearMod6Form() {
       document.getElementById("mod6Name").value = "";
       answerKeys.forEach(key => {
+        if (key.startsWith("konj_")) {
+          document.querySelectorAll(`input[name="${key}"]`).forEach(node => {
+            node.checked = false;
+          });
+          return;
+        }
         const node = document.getElementById(key);
         if (node) node.value = "";
       });
