@@ -6662,6 +6662,7 @@
     function renderHoerenBundleTask(module, state, task, teilNo) {
       const questions = Array.isArray(task.questions) ? task.questions : [];
       const isPlaying = currentDtzSpeakingIndex === "bundle_main";
+      const bundleScript = String(task.audio_script || task.text || "").trim();
       const questionsHtml = questions.map((question, idx) => {
         const key = String(question.id || `q_${idx}`);
         const audioKey = `bundle_q:${key}`;
@@ -6710,7 +6711,7 @@
           <div class="dtz-lesen-group-body">
             <article class="lid-question">
               ${TaskInstruction(task.instructions || "Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.")}
-              ${AudioPlayer(module, "bundle_main", isPlaying, task.audio_script || task.text || "")}
+              ${bundleScript ? AudioPlayer(module, "bundle_main", isPlaying, bundleScript) : ""}
             </article>
             ${questionsHtml}
             ${EvaluateButton(module)}

@@ -1420,6 +1420,174 @@ function pick_random_item(array $items): array
     return (array)$items[$index];
 }
 
+function pick_random_subset(array $items, int $count): array
+{
+    $pool = array_values($items);
+    $len = count($pool);
+    if ($count >= $len) {
+        return $pool;
+    }
+    for ($i = $len - 1; $i > 0; $i--) {
+        try {
+            $j = random_int(0, $i);
+        } catch (Throwable $e) {
+            $j = mt_rand(0, $i);
+        }
+        [$pool[$i], $pool[$j]] = [$pool[$j], $pool[$i]];
+    }
+    return array_slice($pool, 0, max(0, $count));
+}
+
+function build_hoeren_independent_question_bank(): array
+{
+    return [
+        1 => [
+            [
+                'audio_script' => 'Guten Tag, hier spricht die Praxis am Markt. Ihr Termin am Dienstag fällt aus. Neuer Termin ist Donnerstag um 9 Uhr in Zimmer 3.',
+                'question' => 'Wann ist der neue Termin?',
+                'options' => ['A' => 'am Dienstag um 9 Uhr', 'B' => 'am Donnerstag um 9 Uhr', 'C' => 'am Donnerstag um 10 Uhr'],
+                'correct' => 'B',
+                'rationale' => 'In der Ansage wird Donnerstag um 9 Uhr genannt.',
+            ],
+            [
+                'audio_script' => 'Information der Sprachschule: Der B1-Kurs findet heute in Raum 12 statt, nicht in Raum 8.',
+                'question' => 'Wo findet der Kurs heute statt?',
+                'options' => ['A' => 'in Raum 8', 'B' => 'in Raum 10', 'C' => 'in Raum 12'],
+                'correct' => 'C',
+                'rationale' => 'Der neue Raum ist 12.',
+            ],
+            [
+                'audio_script' => 'Achtung Eltern: Die Kita Sonnenweg schließt heute schon um 15 Uhr wegen einer Teamfortbildung.',
+                'question' => 'Warum schließt die Kita früher?',
+                'options' => ['A' => 'wegen einer Teamfortbildung', 'B' => 'wegen eines Stromausfalls', 'C' => 'wegen eines Feiertags'],
+                'correct' => 'A',
+                'rationale' => 'Genannt wird eine Teamfortbildung.',
+            ],
+            [
+                'audio_script' => 'Im Supermarkt Nord ist Kasse 2 defekt. Bitte nutzen Sie Kasse 1 oder 3.',
+                'question' => 'Welche Kasse ist defekt?',
+                'options' => ['A' => 'Kasse 1', 'B' => 'Kasse 2', 'C' => 'Kasse 3'],
+                'correct' => 'B',
+                'rationale' => 'Defekt ist Kasse 2.',
+            ],
+            [
+                'audio_script' => 'Mitteilung vom Jobcenter: Ihr Termin morgen um 11 Uhr wird auf Freitag 11:30 Uhr verschoben.',
+                'question' => 'Auf wann wird der Termin verschoben?',
+                'options' => ['A' => 'auf Freitag um 11:30 Uhr', 'B' => 'auf Donnerstag um 11:30 Uhr', 'C' => 'auf Freitag um 10:30 Uhr'],
+                'correct' => 'A',
+                'rationale' => 'Neuer Termin ist Freitag 11:30 Uhr.',
+            ],
+            [
+                'audio_script' => 'Durchsage am Bahnhof: Der Zug nach Kassel fährt heute 20 Minuten später von Gleis 6.',
+                'question' => 'Von welchem Gleis fährt der Zug?',
+                'options' => ['A' => 'von Gleis 4', 'B' => 'von Gleis 5', 'C' => 'von Gleis 6'],
+                'correct' => 'C',
+                'rationale' => 'Gleis 6 wird genannt.',
+            ],
+            [
+                'audio_script' => 'Stadtbibliothek: Rückgaben sind heute nur bis 17 Uhr möglich. Danach ist der Automat außer Betrieb.',
+                'question' => 'Bis wann sind Rückgaben möglich?',
+                'options' => ['A' => 'bis 16 Uhr', 'B' => 'bis 17 Uhr', 'C' => 'bis 18 Uhr'],
+                'correct' => 'B',
+                'rationale' => 'Rückgaben sind bis 17 Uhr möglich.',
+            ],
+            [
+                'audio_script' => 'Hausverwaltung Lindenhof: Morgen wird das Wasser zwischen 8 und 11 Uhr abgestellt.',
+                'question' => 'Wie lange ist das Wasser abgestellt?',
+                'options' => ['A' => 'von 8 bis 10 Uhr', 'B' => 'von 8 bis 11 Uhr', 'C' => 'von 9 bis 11 Uhr'],
+                'correct' => 'B',
+                'rationale' => 'Genannt wird 8 bis 11 Uhr.',
+            ],
+            [
+                'audio_script' => 'Teamleitung Logistik: Die Frühschicht beginnt morgen schon um 5:30 Uhr statt um 6 Uhr.',
+                'question' => 'Wann beginnt die Frühschicht morgen?',
+                'options' => ['A' => 'um 5:30 Uhr', 'B' => 'um 6 Uhr', 'C' => 'um 6:30 Uhr'],
+                'correct' => 'A',
+                'rationale' => 'Die neue Zeit ist 5:30 Uhr.',
+            ],
+            [
+                'audio_script' => 'Paketstation Mitte: Ihr Paket liegt in Fach 14 und kann bis Samstag abgeholt werden.',
+                'question' => 'Bis wann kann das Paket abgeholt werden?',
+                'options' => ['A' => 'bis Freitag', 'B' => 'bis Samstag', 'C' => 'bis Sonntag'],
+                'correct' => 'B',
+                'rationale' => 'Abholung ist bis Samstag möglich.',
+            ],
+        ],
+        2 => [
+            [
+                'audio_script' => 'Radio Stadtverkehr: Auf der A3 gibt es zwischen Nord und West einen Stau von zehn Kilometern. Nutzen Sie die Umleitung über B12.',
+                'question' => 'Welche Umleitung wird empfohlen?',
+                'options' => ['A' => 'über B10', 'B' => 'über B11', 'C' => 'über B12'],
+                'correct' => 'C',
+                'rationale' => 'Empfohlen wird B12.',
+            ],
+            [
+                'audio_script' => 'Wetterservice: Vormittags bleibt es trocken, ab 14 Uhr regnet es. Die Temperaturen liegen zwischen 8 und 13 Grad.',
+                'question' => 'Ab wann wird Regen gemeldet?',
+                'options' => ['A' => 'ab 12 Uhr', 'B' => 'ab 13 Uhr', 'C' => 'ab 14 Uhr'],
+                'correct' => 'C',
+                'rationale' => 'Regen beginnt ab 14 Uhr.',
+            ],
+            [
+                'audio_script' => 'Servicehinweis der Stadt: Das Bürgeramt öffnet heute erst um 10 Uhr. Bereits vereinbarte Termine bleiben gültig.',
+                'question' => 'Was gilt für bereits vereinbarte Termine?',
+                'options' => ['A' => 'Sie bleiben gültig.', 'B' => 'Sie werden abgesagt.', 'C' => 'Sie werden verschoben.'],
+                'correct' => 'A',
+                'rationale' => 'Die Termine bleiben gültig.',
+            ],
+            [
+                'audio_script' => 'Gesundheitszentrum Süd: Am Freitag gibt es kostenlose Blutdruckmessungen von 9 bis 12 Uhr, ohne Anmeldung.',
+                'question' => 'Wann finden die Messungen statt?',
+                'options' => ['A' => 'Freitag von 9 bis 12 Uhr', 'B' => 'Freitag von 10 bis 12 Uhr', 'C' => 'Samstag von 9 bis 12 Uhr'],
+                'correct' => 'A',
+                'rationale' => 'Genannt wird Freitag 9 bis 12 Uhr.',
+            ],
+            [
+                'audio_script' => 'Abfallwirtschaft: Wegen Feiertag wird die Müllabfuhr von Montag auf Dienstag verschoben.',
+                'question' => 'Auf welchen Tag wird die Abfuhr verschoben?',
+                'options' => ['A' => 'auf Dienstag', 'B' => 'auf Mittwoch', 'C' => 'auf Freitag'],
+                'correct' => 'A',
+                'rationale' => 'Die Abfuhr ist am Dienstag.',
+            ],
+            [
+                'audio_script' => 'Schwimmbad Ost: Das Hallenbad ist am Wochenende von 8 bis 20 Uhr geöffnet. Montag bleibt es geschlossen.',
+                'question' => 'Wie ist das Hallenbad am Montag geöffnet?',
+                'options' => ['A' => 'von 8 bis 20 Uhr', 'B' => 'geschlossen', 'C' => 'nur bis 12 Uhr'],
+                'correct' => 'B',
+                'rationale' => 'Montag ist geschlossen.',
+            ],
+            [
+                'audio_script' => 'Stadtwerke: In der Gartenstraße gibt es morgen zwischen 13 und 15 Uhr eine geplante Stromunterbrechung.',
+                'question' => 'Wie lange dauert die Unterbrechung?',
+                'options' => ['A' => 'eine Stunde', 'B' => 'zwei Stunden', 'C' => 'drei Stunden'],
+                'correct' => 'B',
+                'rationale' => '13 bis 15 Uhr sind zwei Stunden.',
+            ],
+            [
+                'audio_script' => 'Stadtfest-Info: Linie 4 fährt am Samstag nicht durch die Innenstadt. Bitte nutzen Sie Linie 7.',
+                'question' => 'Welche Linie soll man stattdessen nehmen?',
+                'options' => ['A' => 'Linie 5', 'B' => 'Linie 6', 'C' => 'Linie 7'],
+                'correct' => 'C',
+                'rationale' => 'Empfohlen wird Linie 7.',
+            ],
+            [
+                'audio_script' => 'Arbeitsagentur: Der Infoabend zum Thema Bewerbung beginnt am Mittwoch um 18:30 Uhr im Raum A2.',
+                'question' => 'Wo findet der Infoabend statt?',
+                'options' => ['A' => 'im Raum A2', 'B' => 'im Raum B2', 'C' => 'im Raum A3'],
+                'correct' => 'A',
+                'rationale' => 'Der Raum ist A2.',
+            ],
+            [
+                'audio_script' => 'Apothekennotdienst: Heute hat die Adler-Apotheke in der Ringstraße 8 bis 22 Uhr geöffnet.',
+                'question' => 'Wie lange ist die Adler-Apotheke heute geöffnet?',
+                'options' => ['A' => 'bis 20 Uhr', 'B' => 'bis 22 Uhr', 'C' => 'bis 24 Uhr'],
+                'correct' => 'B',
+                'rationale' => 'Sie ist bis 22 Uhr geöffnet.',
+            ],
+        ],
+    ];
+}
+
 function build_hoeren_teil_structured_pools(): array
 {
     return [
@@ -1914,17 +2082,17 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
     ];
 
     if ($teil === 1 || $teil === 2) {
-        $bundleAudio = germanize_umlauts_text((string)($picked['audio_script'] ?? ''));
-        $item['audio_script'] = $bundleAudio;
+        $item['audio_script'] = '';
         $item['speaker_meta'] = ['narrator'];
         $questions = [];
-        $rawQuestions = array_values((array)($picked['questions'] ?? []));
+        $independentBank = build_hoeren_independent_question_bank();
+        $rawQuestions = array_values((array)($independentBank[$teil] ?? []));
         $expected = (int)($expectedCounts[$teil] ?? 0);
         if ($expected > 0) {
             if (count($rawQuestions) < $expected) {
                 throw new RuntimeException('Für Hören Teil ' . $teil . ' sind weniger als ' . $expected . ' Fragen konfiguriert.');
             }
-            $rawQuestions = array_slice($rawQuestions, 0, $expected);
+            $rawQuestions = pick_random_subset($rawQuestions, $expected);
         }
         foreach ($rawQuestions as $idx => $question) {
             $prepared = prepare_training_options(
@@ -1933,11 +2101,11 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
                 true
             );
             $questions[] = [
-                'id' => 'q_' . $idx,
+                'id' => 'q_' . ($idx + 1),
                 'question' => germanize_umlauts_text((string)($question['question'] ?? '')),
                 'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
                 'correct' => (string)$prepared['correct'],
-                'audio_script' => germanize_umlauts_text((string)($question['audio_script'] ?? $bundleAudio)),
+                'audio_script' => germanize_umlauts_text((string)($question['audio_script'] ?? '')),
                 'explanation' => $includeExplanation ? germanize_umlauts_text((string)($question['rationale'] ?? '')) : '',
             ];
         }
