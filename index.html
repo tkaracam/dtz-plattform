@@ -228,6 +228,44 @@
       max-width: 100%;
     }
 
+    .entry-card {
+      border: 1px solid rgba(255, 214, 226, 0.28);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      background: #ffffff;
+      box-shadow: 0 12px 26px rgba(59, 52, 66, 0.12);
+      margin-bottom: 14px;
+    }
+
+    .entry-card h2 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      color: #253b5a;
+    }
+
+    .entry-card p {
+      margin: 0 0 12px;
+      color: #5f6f88;
+    }
+
+    .entry-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .entry-actions .ghost-btn {
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+    }
+
+    .entry-actions .primary-btn {
+      background: #f08aa8;
+      color: #fff;
+      border-color: #f08aa8;
+    }
+
     .hero::before,
     .hero::after {
       content: "";
@@ -2638,7 +2676,16 @@
       <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
     </nav>
 
-    <section class="hero">
+    <section class="entry-card">
+      <h2>Willkommen</h2>
+      <p>Bitte wählen Sie, ob Sie als Mitglied (öffentlich) oder intern (Kurs/Lehrkraft) starten möchten.</p>
+      <div class="entry-actions">
+        <a class="ghost-btn primary-btn" href="./member.html">Mitgliedsbereich (Login)</a>
+        <a class="ghost-btn" href="#internArea">Intern (Kurs/Lehrkraft)</a>
+      </div>
+    </section>
+
+    <section id="internArea" class="hero">
       <div class="hero-top">
         <div>
           <h1>Willkommen im DTZ Training</h1>
