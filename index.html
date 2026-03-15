@@ -256,9 +256,16 @@
       position: relative;
       z-index: 1;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       gap: 1.25rem;
       align-items: flex-start;
+      text-align: center;
+    }
+
+    .hero-top > div {
+      width: 100%;
+      max-width: 920px;
+      margin: 0 auto;
     }
 
     .eyebrow {
@@ -346,12 +353,16 @@
       display: grid;
       gap: 12px;
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      justify-items: center;
     }
 
     .portal-wide {
       font-size: 1.02rem;
       letter-spacing: 0.06em;
       padding: 12px 18px;
+      grid-column: 1 / -1;
+      max-width: 520px;
+      justify-self: center;
     }
 
     .level-tile {
@@ -371,6 +382,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      width: 100%;
     }
 
     .level-tile:hover {
