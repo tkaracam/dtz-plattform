@@ -81,11 +81,16 @@ function germanize_umlauts_text(string $text): string
         return '';
     }
 
-    return str_replace(
-        ['Ae', 'Oe', 'Ue', 'ae', 'oe', 'ue'],
-        ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü'],
-        $text
-    );
+    $patterns = [
+        '/(?<![AEIOUYÄÖÜaeiouyäöüy])Ae/u',
+        '/(?<![AEIOUYÄÖÜaeiouyäöüy])Oe/u',
+        '/(?<![AEIOUYÄÖÜaeiouyäöüy])Ue/u',
+        '/(?<![AEIOUYÄÖÜaeiouyäöüy])ae/u',
+        '/(?<![AEIOUYÄÖÜaeiouyäöüy])oe/u',
+        '/(?<![AEIOUYÄÖÜaeiouyäöüy])ue/u',
+    ];
+    $replacements = ['Ä', 'Ö', 'Ü', 'ä', 'ö', 'ü'];
+    return preg_replace($patterns, $replacements, $text);
 }
 
 function build_clean_hoeren_templates(): array
