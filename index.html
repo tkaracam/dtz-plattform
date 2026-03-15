@@ -5152,15 +5152,15 @@
       text = text
         .replace(/AE/g, "Ä")
         .replace(/OE/g, "Ö")
-        .replace(/UE/g, "Ü")
         .replace(/Ae/g, "Ä")
         .replace(/Oe/g, "Ö")
-        .replace(/Ue/g, "Ü")
         .replace(/ae/g, "ä")
         .replace(/oe/g, "ö");
-      text = text.replace(/ue/g, (match, offset, source) => {
+      const vowels = "aeiouyäöüAEIOUYÄÖÜ";
+      text = text.replace(/UE|Ue|ue/g, (match, offset, source) => {
         const prev = offset > 0 ? source[offset - 1] : "";
-        return prev === "q" || prev === "Q" ? match : "ü";
+        if (prev === "q" || prev === "Q" || vowels.includes(prev)) return match;
+        return match === "UE" ? "Ü" : "ü";
       });
       return text;
     }
@@ -5852,10 +5852,14 @@
       return String(text || "")
         .replace(/Ae/g, "Ä")
         .replace(/Oe/g, "Ö")
-        .replace(/Ue/g, "Ü")
         .replace(/ae/g, "ä")
         .replace(/oe/g, "ö")
-        .replace(/ue/g, "ü")
+        .replace(/UE|Ue|ue/g, (match, offset, source) => {
+          const prev = offset > 0 ? source[offset - 1] : "";
+          const vowels = "aeiouyäöüAEIOUYÄÖÜ";
+          if (prev === "q" || prev === "Q" || vowels.includes(prev)) return match;
+          return match === "UE" ? "Ü" : "ü";
+        })
         .replace(/(\d{1,2}):(\d{2})/g, "$1 Uhr $2")
         .replace(/\bca\.\s*/gi, "circa ")
         .replace(/\bu\.\s*a\.\b/gi, "unter anderem")
