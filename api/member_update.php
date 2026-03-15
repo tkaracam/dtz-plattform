@@ -1,0 +1,84 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+require_once __DIR__ . '/auth.php';
+$member = require_member_session_json();
+
+$raw = file_get_contents('php://input') ?: '';
+$body = json_decode($raw, true);
+if (!is_array($body)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$displayName = trim((string)($body['display_name'] ?? ''));
+$email = trim((string)($body['email'] ?? ''));
+$currentPassword = (string)($body['current_password'] ?? '');
+$newPassword = (string)($body['new_password'] ?? '');
+
+$members = load_member_users();
+$updated = false;
+foreach ($members as &$row) {
+    if (!is_array($row)) continue;
+    if (mb_strtolower((string)($row['username'] ?? '')) !== mb_strtolower($member['username'] ?? '')) {
+        continue;
+    }
+
+    if ($newPassword !== '') {
+        if ($currentPassword === '' || empty($row['password_hash']) || !password_verify($currentPassword, (string)$row['password_hash'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Aktuelles Passwort ist falsch.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if (mb_strlen($newPassword) < 6 || !preg_match('/[A-ZÄÖÜ]/u', $newPassword)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Neues Passwort muss mindestens 6 Zeichen haben und einen Großbuchstaben enthalten.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $row['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
+        $updated = true;
+    }
+
+    if ($displayName !== '') {
+        $row['display_name'] = $displayName;
+        $updated = true;
+    }
+    if ($email !== '') {
+        $row['email'] = $email;
+        $updated = true;
+    }
+    break;
+}
+unset($row);
+
+if ($updated && !write_member_users($members)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Änderungen konnten nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($displayName !== '') {
+    $_SESSION['member_display_name'] = $displayName;
+}
+if ($email !== '') {
+    $_SESSION['member_email'] = $email;
+}
+
+echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);

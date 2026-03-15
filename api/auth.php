@@ -221,6 +221,11 @@ function student_users_file(): string
     return __DIR__ . '/storage/student_users.json';
 }
 
+function member_users_file(): string
+{
+    return __DIR__ . '/storage/member_users.json';
+}
+
 function load_student_users(): array
 {
     $file = student_users_file();
@@ -250,6 +255,35 @@ function write_student_users(array $users): bool
     }
 
     return file_put_contents(student_users_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function load_member_users(): array
+{
+    $file = member_users_file();
+    if (!is_file($file)) {
+        return [];
+    }
+    $raw = file_get_contents($file);
+    if ($raw === false || trim($raw) === '') {
+        return [];
+    }
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
+}
+
+function write_member_users(array $users): bool
+{
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+
+    $json = json_encode(array_values($users), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if ($json === false) {
+        return false;
+    }
+
+    return file_put_contents(member_users_file(), $json . PHP_EOL, LOCK_EX) !== false;
 }
 
 function teacher_users_file(): string
@@ -304,6 +338,24 @@ function find_student_user_by_username(string $username): ?array
     return null;
 }
 
+function find_member_user_by_username(string $username): ?array
+{
+    $needle = auth_lower_text($username);
+    if ($needle === '') {
+        return null;
+    }
+    foreach (load_member_users() as $user) {
+        if (!is_array($user)) {
+            continue;
+        }
+        $uname = auth_lower_text((string)($user['username'] ?? ''));
+        if ($uname === $needle) {
+            return $user;
+        }
+    }
+    return null;
+}
+
 function admin_can_access_student_record(array $student, array $adminCtx): bool
 {
     if (admin_is_hauptadmin($adminCtx)) {
@@ -342,6 +394,24 @@ function admin_can_access_course_record(array $course, array $adminCtx): bool
         return true;
     }
     return false;
+}
+
+function require_member_session_json(): array
+{
+    start_secure_session();
+    enforce_session_timeout_json();
+    if (empty($_SESSION['member_authenticated']) || empty($_SESSION['member_username'])) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Nicht autorisiert. Bitte zuerst als Mitglied anmelden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    return [
+        'role' => 'member',
+        'username' => (string)$_SESSION['member_username'],
+        'display_name' => (string)($_SESSION['member_display_name'] ?? ''),
+        'email' => (string)($_SESSION['member_email'] ?? ''),
+    ];
 }
 
 function enforce_session_timeout_json(): void
