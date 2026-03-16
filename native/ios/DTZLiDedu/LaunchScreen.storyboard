@@ -7,7 +7,14 @@
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <subviews>
+                            <label id="DTZ-Label" translatesAutoresizingMaskIntoConstraints="NO" text="DTZ-LID edu" textAlignment="center" fontDescription="system"/> 
+                        </subviews>
+                        <color key="backgroundColor" red="0.9608" green="0.9686" blue="0.9843" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="DTZ-Label" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="c1"/>
+                            <constraint firstItem="DTZ-Label" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="c2"/>
+                        </constraints>
                     </view>
                 </viewController>
             </objects>
