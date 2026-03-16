@@ -47,3 +47,6 @@ dependencies {
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
 }
+
+// Optional signing (keystore.properties)
+apply from: 'signing.gradle'

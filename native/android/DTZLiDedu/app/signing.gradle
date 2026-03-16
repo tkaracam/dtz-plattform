@@ -1,0 +1,16 @@
+// Optional signing config. Only used if keystore.properties exists.
+import java.util.Properties
+
+if (file("../keystore.properties").exists()) {
+    def props = new Properties()
+    file("../keystore.properties").withInputStream { props.load(it) }
+
+    android.signingConfigs.create("release") {
+        storeFile file(props["storeFile"])
+        storePassword props["storePassword"]
+        keyAlias props["keyAlias"]
+        keyPassword props["keyPassword"]
+    }
+
+    android.buildTypes.release.signingConfig android.signingConfigs.release
+}
