@@ -42,16 +42,26 @@ fun AppRoot() {
     val scope = rememberCoroutineScope()
     var session by remember { mutableStateOf(StudentSession()) }
     var loading by remember { mutableStateOf(true) }
+    var showOnboarding by remember { mutableStateOf(true) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         scope.launch {
             session = Api.studentSession()
             loading = false
         }
+        val prefs = context.getSharedPreferences("dtzlid_prefs", Context.MODE_PRIVATE)
+        showOnboarding = !prefs.getBoolean("onboarding_seen", false)
     }
 
     if (loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+    } else if (showOnboarding) {
+        OnboardingScreen(onDone = {
+            context.getSharedPreferences("dtzlid_prefs", Context.MODE_PRIVATE)
+                .edit().putBoolean("onboarding_seen", true).apply()
+            showOnboarding = false
+        })
     } else {
         if (session.authenticated == true) {
             MainTabs(onLogout = {
@@ -64,6 +74,30 @@ fun AppRoot() {
             LoginScreen(onLogin = { u, p ->
                 scope.launch { session = Api.studentLogin(u, p) }
             })
+        }
+    }
+}
+
+@Composable
+fun OnboardingScreen(onDone: () -> Unit) {
+    var step by remember { mutableStateOf(0) }
+    val pages = listOf(
+        "DTZ Training" to "Hören und Lesen in Teilen üben",
+        "Schreiben" to "Brief schreiben und hochladen",
+        "Portal" to "Korrigierte Briefe im Überblick"
+    )
+
+    Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.weight(1f))
+        Text(pages[step].first, style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(12.dp))
+        Text(pages[step].second, style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.weight(1f))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(onClick = onDone) { Text("Überspringen") }
+            Button(onClick = {
+                if (step == pages.size - 1) onDone() else step += 1
+            }) { Text(if (step == pages.size - 1) "Start" else "Weiter") }
         }
     }
 }

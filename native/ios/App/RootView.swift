@@ -4,6 +4,7 @@ import AVFoundation
 struct RootView: View {
     @StateObject private var session = StudentSessionStore()
     @State private var loading = true
+    @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "onboarding_seen")
 
     var body: some View {
         NavigationView {
@@ -17,6 +18,11 @@ struct RootView: View {
                             loading = false
                         }
                     }
+            } else if showOnboarding {
+                OnboardingView(onDone: {
+                    UserDefaults.standard.set(true, forKey: "onboarding_seen")
+                    showOnboarding = false
+                })
             } else {
                 if session.authenticated {
                     MainTabView()
@@ -28,6 +34,45 @@ struct RootView: View {
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+    }
+}
+
+struct OnboardingView: View {
+    let onDone: () -> Void
+    @State private var step = 0
+
+    private let pages = [
+        ("DTZ Training", "Hören und Lesen in Teilen üben"),
+        ("Schreiben", "Brief schreiben und hochladen"),
+        ("Portal", "Korrigierte Briefe im Überblick")
+    ]
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Text(pages[step].0)
+                .font(.largeTitle).bold()
+            Text(pages[step].1)
+                .font(.headline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            Spacer()
+            HStack(spacing: 12) {
+                Button("Überspringen") { onDone() }
+                    .buttonStyle(.bordered)
+                Button(step == pages.count - 1 ? "Start" : "Weiter") {
+                    if step == pages.count - 1 {
+                        onDone()
+                    } else {
+                        step += 1
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.bottom, 24)
+        }
+        .padding()
     }
 }
 
