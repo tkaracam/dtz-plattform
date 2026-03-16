@@ -1,2 +1,15 @@
+# macOS
 .DS_Store
-api/config.php
+
+# Android Studio / Gradle
+native/android/DTZLiDedu/.gradle/
+native/android/DTZLiDedu/.idea/
+native/android/DTZLiDedu/build/
+native/android/DTZLiDedu/app/build/
+native/android/DTZLiDedu/local.properties
+
+# Gradle wrapper cache
+native/android/DTZLiDedu/gradle/
+
+# iOS build artifacts
+native/ios/DTZLiDedu/build/
