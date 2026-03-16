@@ -193,7 +193,10 @@ fun DtzScreen() {
                 scoreLabel = ""
                 answers = mutableMapOf()
                 item = Api.trainingSet(module, teil)
-                if (item == null) status = "Aufgaben konnten nicht geladen werden"
+                if (item == null) {
+                    item = demoTrainingItem(module, teil)
+                    status = if (item == null) "Aufgaben konnten nicht geladen werden" else "Demo-Modus"
+                }
             }
         }) { Text("Aufgaben laden") }
         Spacer(Modifier.height(12.dp))
@@ -211,7 +214,10 @@ fun DtzScreen() {
                     scoreLabel = ""
                     answers = mutableMapOf()
                     item = Api.trainingSet(module, teil)
-                    if (item == null) status = "Aufgaben konnten nicht geladen werden"
+                    if (item == null) {
+                        item = demoTrainingItem(module, teil)
+                        status = if (item == null) "Aufgaben konnten nicht geladen werden" else "Demo-Modus"
+                    }
                 }
             }) { Text("Neue Aufgaben") }
         }
@@ -460,6 +466,160 @@ fun AnzeigenBlock(item: JSONObject) {
     ads.keys().asSequence().sorted().forEach { key ->
         Text("$key: ${ads.optString(key)}")
     }
+}
+
+fun demoTrainingItem(module: String, teil: Int): JSONObject? {
+    if (module == "hoeren") {
+        if (teil == 1 || teil == 2) {
+            val questions = JSONArray()
+            questions.put(JSONObject()
+                .put("id", "h$teil-q1")
+                .put("question", "Wann beginnt der Kurs?")
+                .put("options", JSONArray().put("Um 8 Uhr").put("Um 9 Uhr").put("Um 10 Uhr"))
+                .put("correct", "B")
+                .put("audio_script", "Der Kurs beginnt um neun Uhr."))
+            questions.put(JSONObject()
+                .put("id", "h$teil-q2")
+                .put("question", "Wo treffen sich die Teilnehmenden?")
+                .put("options", JSONArray().put("Im Raum 2").put("Im Raum 3").put("Im Raum 4"))
+                .put("correct", "A")
+                .put("audio_script", "Wir treffen uns im Raum zwei."))
+            return JSONObject()
+                .put("dtz_schema", if (teil == 1) "hoeren_teil1_bundle" else "hoeren_teil2_bundle")
+                .put("dtz_part", "H$teil")
+                .put("title", "Demo Hören Teil $teil")
+                .put("instructions", "Hören Sie den Text und wählen Sie die richtige Lösung.")
+                .put("questions", questions)
+        }
+        if (teil == 3) {
+            val dialogs = JSONArray()
+            dialogs.put(JSONObject()
+                .put("id", "h3-d1")
+                .put("title", "Dialog 1")
+                .put("audio_script", "A: Hast du morgen Zeit? B: Ja, am Nachmittag.")
+                .put("true_false", JSONObject().put("statement", "Sie haben morgen Nachmittag Zeit.").put("correct", "A"))
+                .put("detail", JSONObject().put("question", "Wann passt es?")
+                    .put("options", JSONArray().put("Morgens").put("Nachmittags").put("Abends"))
+                    .put("correct", "B")))
+            return JSONObject()
+                .put("dtz_schema", "hoeren_teil3_dialogcards")
+                .put("dtz_part", "H3")
+                .put("title", "Demo Hören Teil 3")
+                .put("instructions", "Hören Sie die Dialoge.")
+                .put("dialogs", dialogs)
+        }
+        if (teil == 4) {
+            val options = JSONObject().put("A", "Einladung").put("B", "Termin absagen").put("C", "Information")
+            val statements = JSONArray()
+            statements.put(JSONObject()
+                .put("id", "h4-s1")
+                .put("audio_script", "Der Termin morgen muss leider verschoben werden.")
+                .put("correct", "B"))
+            statements.put(JSONObject()
+                .put("id", "h4-s2")
+                .put("audio_script", "Sie sind herzlich zur Feier eingeladen.")
+                .put("correct", "A"))
+            return JSONObject()
+                .put("dtz_schema", "hoeren_teil4_matching")
+                .put("dtz_part", "H4")
+                .put("title", "Demo Hören Teil 4")
+                .put("instructions", "Ordnen Sie die Aussagen zu.")
+                .put("options", options)
+                .put("labels", JSONArray().put("A").put("B").put("C"))
+                .put("statements", statements)
+        }
+    }
+
+    if (module == "lesen") {
+        if (teil == 1) {
+            val situations = JSONArray()
+            situations.put(JSONObject()
+                .put("id", "l1-s1")
+                .put("no", 1)
+                .put("prompt", "Sie möchten sich anmelden.")
+                .put("options", JSONArray().put("EG").put("1. OG").put("2. OG"))
+                .put("correct", "A"))
+            situations.put(JSONObject()
+                .put("id", "l1-s2")
+                .put("no", 2)
+                .put("prompt", "Sie suchen die Bibliothek.")
+                .put("options", JSONArray().put("EG").put("1. OG").put("2. OG"))
+                .put("correct", "C"))
+            return JSONObject()
+                .put("dtz_schema", "lesen_teil1_wegweiser")
+                .put("dtz_part", "L1")
+                .put("title", "Demo Lesen Teil 1")
+                .put("instructions", "Wählen Sie die richtige Stelle.")
+                .put("wegweiser_title", "Wegweiser")
+                .put("wegweiser", JSONArray().put("EG: Anmeldung, Information").put("1. OG: Kursräume 1–3").put("2. OG: Bibliothek"))
+                .put("situations", situations)
+        }
+        if (teil == 2) {
+            val situations = JSONArray()
+            situations.put(JSONObject()
+                .put("id", "l2-s1")
+                .put("no", 1)
+                .put("prompt", "Sie suchen eine Wohnung.")
+                .put("correct", "A"))
+            situations.put(JSONObject()
+                .put("id", "l2-s2")
+                .put("no", 2)
+                .put("prompt", "Sie brauchen einen Sprachkurs.")
+                .put("correct", "B"))
+            val ads = JSONObject().put("A", "2-Zimmer-Wohnung, zentral").put("B", "Deutschkurse am Abend").put("C", "Fahrrad zu verkaufen")
+            return JSONObject()
+                .put("dtz_schema", "lesen_teil2_matching")
+                .put("dtz_part", "L2")
+                .put("title", "Demo Lesen Teil 2")
+                .put("instructions", "Ordnen Sie die Anzeigen zu.")
+                .put("ads", ads)
+                .put("labels", JSONArray().put("A").put("B").put("C"))
+                .put("situations", situations)
+        }
+        if (teil == 3) {
+            val blocks = JSONArray()
+            blocks.put(JSONObject()
+                .put("id", "l3-b1")
+                .put("title", "Infoabend")
+                .put("text", "Der Infoabend findet am Dienstag um 18 Uhr statt.")
+                .put("true_false", JSONObject().put("statement", "Der Infoabend ist am Dienstag.").put("correct", "A"))
+                .put("mc", JSONObject().put("question", "Wann beginnt der Infoabend?")
+                    .put("options", JSONArray().put("18 Uhr").put("19 Uhr").put("20 Uhr"))
+                    .put("correct", "A")))
+            return JSONObject()
+                .put("dtz_schema", "lesen_teil3_textblock_mix")
+                .put("dtz_part", "L3")
+                .put("title", "Demo Lesen Teil 3")
+                .put("instructions", "Lesen Sie die Texte und beantworten Sie die Fragen.")
+                .put("blocks", blocks)
+        }
+        if (teil == 4) {
+            val statements = JSONArray()
+            statements.put(JSONObject().put("id", "l4-s1").put("no", 37).put("statement", "Am Samstag ist die Bibliothek geöffnet.").put("correct", "B"))
+            statements.put(JSONObject().put("id", "l4-s2").put("no", 38).put("statement", "Die Bibliothek schließt um 18 Uhr.").put("correct", "A"))
+            return JSONObject()
+                .put("dtz_schema", "lesen_teil4_richtig_falsch_text")
+                .put("dtz_part", "L4")
+                .put("title", "Demo Lesen Teil 4")
+                .put("instructions", "Lesen Sie den Text und entscheiden Sie.")
+                .put("text", "Die Bibliothek ist montags bis freitags von 9 bis 18 Uhr geöffnet.")
+                .put("statements", statements)
+        }
+        if (teil == 5) {
+            val gaps = JSONArray()
+            gaps.put(JSONObject().put("id", "l5-g1").put("no", 40).put("options", JSONArray().put("für").put("zu").put("an")).put("correct", "A"))
+            gaps.put(JSONObject().put("id", "l5-g2").put("no", 41).put("options", JSONArray().put("am").put("im").put("auf")).put("correct", "B"))
+            return JSONObject()
+                .put("dtz_schema", "lesen_teil5_lueckentext")
+                .put("dtz_part", "L5")
+                .put("title", "Demo Lesen Teil 5")
+                .put("instructions", "Schließen Sie die Lücken.")
+                .put("text_template", "Sehr geehrte Damen und Herren, ich möchte ___ einen Termin vereinbaren.")
+                .put("example", JSONObject().put("no", 0).put("options", JSONArray().put("gern").put("gerne").put("gernem")).put("correct", "B"))
+                .put("gaps", gaps)
+        }
+    }
+    return null
 }
 
 fun evaluateTraining(item: JSONObject, answers: Map<String, String>): Pair<Int, Int> {

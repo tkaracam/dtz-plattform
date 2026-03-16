@@ -230,9 +230,13 @@ struct TrainingDetailView: View {
                 item = first
             } else {
                 status = resp.error ?? "Keine Aufgaben verfügbar"
+                item = demoTrainingItem(module: module, teil: teil)
+                if item != nil { status = "Demo-Modus" }
             }
         } catch {
             status = "Aufgaben konnten nicht geladen werden"
+            item = demoTrainingItem(module: module, teil: teil)
+            if item != nil { status = "Demo-Modus" }
         }
     }
 
@@ -398,6 +402,238 @@ struct TrainingDetailView: View {
     private func adsOrEmpty(_ ads: [String: String]?) -> [String: String] {
         ads ?? [:]
     }
+}
+
+private func demoTrainingItem(module: String, teil: Int) -> TrainingItem? {
+    if module == "hoeren" {
+        if teil == 1 || teil == 2 {
+            return TrainingItem(
+                template_id: "demo-h1",
+                dtz_schema: teil == 1 ? "hoeren_teil1_bundle" : "hoeren_teil2_bundle",
+                dtz_part: "H" + String(teil),
+                title: "Demo Hören Teil \(teil)",
+                instructions: "Hören Sie den Text und wählen Sie die richtige Lösung.",
+                audio_script: nil,
+                text: nil,
+                questions: [
+                    TrainingQuestion(rawId: "h\(teil)-q1", question: "Wann beginnt der Kurs?", options: ["Um 8 Uhr", "Um 9 Uhr", "Um 10 Uhr"], correct: "B", audio_script: "Der Kurs beginnt um neun Uhr.", explanation: nil),
+                    TrainingQuestion(rawId: "h\(teil)-q2", question: "Wo treffen sich die Teilnehmenden?", options: ["Im Raum 2", "Im Raum 3", "Im Raum 4"], correct: "A", audio_script: "Wir treffen uns im Raum zwei.", explanation: nil)
+                ],
+                dialogs: nil,
+                options: nil,
+                statements: nil,
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: nil,
+                ads: nil,
+                labels: nil,
+                blocks: nil,
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+        if teil == 3 {
+            return TrainingItem(
+                template_id: "demo-h3",
+                dtz_schema: "hoeren_teil3_dialogcards",
+                dtz_part: "H3",
+                title: "Demo Hören Teil 3",
+                instructions: "Hören Sie die Dialoge.",
+                audio_script: nil,
+                text: nil,
+                questions: nil,
+                dialogs: [
+                    TrainingDialog(rawId: "h3-d1", title: "Dialog 1", audio_script: "A: Hast du morgen Zeit? B: Ja, am Nachmittag.", true_false: TrainingTrueFalse(statement: "Sie haben morgen Nachmittag Zeit.", correct: "A", explanation: nil), detail: TrainingDetailQuestion(question: "Wann passt es?", options: ["Morgens", "Nachmittags", "Abends"], correct: "B", explanation: nil))
+                ],
+                options: nil,
+                statements: nil,
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: nil,
+                ads: nil,
+                labels: nil,
+                blocks: nil,
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+        if teil == 4 {
+            return TrainingItem(
+                template_id: "demo-h4",
+                dtz_schema: "hoeren_teil4_matching",
+                dtz_part: "H4",
+                title: "Demo Hören Teil 4",
+                instructions: "Ordnen Sie die Aussagen zu.",
+                audio_script: nil,
+                text: nil,
+                questions: nil,
+                dialogs: nil,
+                options: ["A": "Einladung", "B": "Termin absagen", "C": "Information"],
+                statements: [
+                    TrainingStatement(rawId: "h4-s1", title: "Aussage 1", statement: nil, question: nil, audio_script: "Der Termin morgen muss leider verschoben werden.", correct: "B", explanation: nil, no: 1),
+                    TrainingStatement(rawId: "h4-s2", title: "Aussage 2", statement: nil, question: nil, audio_script: "Sie sind herzlich zur Feier eingeladen.", correct: "A", explanation: nil, no: 2)
+                ],
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: nil,
+                ads: nil,
+                labels: ["A", "B", "C"],
+                blocks: nil,
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+    }
+
+    if module == "lesen" {
+        if teil == 1 {
+            return TrainingItem(
+                template_id: "demo-l1",
+                dtz_schema: "lesen_teil1_wegweiser",
+                dtz_part: "L1",
+                title: "Demo Lesen Teil 1",
+                instructions: "Wählen Sie die richtige Stelle.",
+                audio_script: nil,
+                text: nil,
+                questions: nil,
+                dialogs: nil,
+                options: nil,
+                statements: nil,
+                allow_reuse: nil,
+                wegweiser_title: "Wegweiser",
+                wegweiser: ["EG: Anmeldung, Information", "1. OG: Kursräume 1–3", "2. OG: Bibliothek"],
+                situations: [
+                    TrainingSituation(rawId: "l1-s1", no: 1, prompt: "Sie möchten sich anmelden.", options: ["EG", "1. OG", "2. OG"], correct: "A", explanation: nil),
+                    TrainingSituation(rawId: "l1-s2", no: 2, prompt: "Sie suchen die Bibliothek.", options: ["EG", "1. OG", "2. OG"], correct: "C", explanation: nil)
+                ],
+                ads: nil,
+                labels: nil,
+                blocks: nil,
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+        if teil == 2 {
+            return TrainingItem(
+                template_id: "demo-l2",
+                dtz_schema: "lesen_teil2_matching",
+                dtz_part: "L2",
+                title: "Demo Lesen Teil 2",
+                instructions: "Ordnen Sie die Anzeigen zu.",
+                audio_script: nil,
+                text: nil,
+                questions: nil,
+                dialogs: nil,
+                options: nil,
+                statements: nil,
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: [
+                    TrainingSituation(rawId: "l2-s1", no: 1, prompt: "Sie suchen eine Wohnung.", options: nil, correct: "A", explanation: nil),
+                    TrainingSituation(rawId: "l2-s2", no: 2, prompt: "Sie brauchen einen Sprachkurs.", options: nil, correct: "B", explanation: nil)
+                ],
+                ads: ["A": "2-Zimmer-Wohnung, zentral", "B": "Deutschkurse am Abend", "C": "Fahrrad zu verkaufen"],
+                labels: ["A", "B", "C"],
+                blocks: nil,
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+        if teil == 3 {
+            return TrainingItem(
+                template_id: "demo-l3",
+                dtz_schema: "lesen_teil3_textblock_mix",
+                dtz_part: "L3",
+                title: "Demo Lesen Teil 3",
+                instructions: "Lesen Sie die Texte und beantworten Sie die Fragen.",
+                audio_script: nil,
+                text: nil,
+                questions: nil,
+                dialogs: nil,
+                options: nil,
+                statements: nil,
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: nil,
+                ads: nil,
+                labels: nil,
+                blocks: [
+                    TrainingBlock(rawId: "l3-b1", title: "Infoabend", text: "Der Infoabend findet am Dienstag um 18 Uhr statt.", true_false: TrainingBlockTrueFalse(no: 31, statement: "Der Infoabend ist am Dienstag.", correct: "A", explanation: nil), mc: TrainingBlockMC(no: 32, question: "Wann beginnt der Infoabend?", options: ["18 Uhr", "19 Uhr", "20 Uhr"], correct: "A", explanation: nil))
+                ],
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+        if teil == 4 {
+            return TrainingItem(
+                template_id: "demo-l4",
+                dtz_schema: "lesen_teil4_richtig_falsch_text",
+                dtz_part: "L4",
+                title: "Demo Lesen Teil 4",
+                instructions: "Lesen Sie den Text und entscheiden Sie.",
+                audio_script: nil,
+                text: "Die Bibliothek ist montags bis freitags von 9 bis 18 Uhr geöffnet.",
+                questions: nil,
+                dialogs: nil,
+                options: nil,
+                statements: [
+                    TrainingStatement(rawId: "l4-s1", title: nil, statement: "Am Samstag ist die Bibliothek geöffnet.", question: nil, audio_script: nil, correct: "B", explanation: nil, no: 37),
+                    TrainingStatement(rawId: "l4-s2", title: nil, statement: "Die Bibliothek schließt um 18 Uhr.", question: nil, audio_script: nil, correct: "A", explanation: nil, no: 38)
+                ],
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: nil,
+                ads: nil,
+                labels: nil,
+                blocks: nil,
+                text_template: nil,
+                example: nil,
+                gaps: nil
+            )
+        }
+        if teil == 5 {
+            return TrainingItem(
+                template_id: "demo-l5",
+                dtz_schema: "lesen_teil5_lueckentext",
+                dtz_part: "L5",
+                title: "Demo Lesen Teil 5",
+                instructions: "Schließen Sie die Lücken.",
+                audio_script: nil,
+                text: nil,
+                questions: nil,
+                dialogs: nil,
+                options: nil,
+                statements: nil,
+                allow_reuse: nil,
+                wegweiser_title: nil,
+                wegweiser: nil,
+                situations: nil,
+                ads: nil,
+                labels: nil,
+                blocks: nil,
+                text_template: "Sehr geehrte Damen und Herren, ich möchte \_\_\_ einen Termin vereinbaren.",
+                example: TrainingClozeExample(no: 0, options: ["gern", "gerne", "gernem"], correct: "B", explanation: nil),
+                gaps: [
+                    TrainingGap(rawId: "l5-g1", no: 40, options: ["für", "zu", "an"], correct: "A", explanation: nil),
+                    TrainingGap(rawId: "l5-g2", no: 41, options: ["am", "im", "auf"], correct: "B", explanation: nil)
+                ]
+            )
+        }
+    }
+
+    return nil
 }
 
 struct OptionsView: View {
