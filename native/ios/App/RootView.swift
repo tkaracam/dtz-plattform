@@ -448,7 +448,8 @@ private func demoTrainingItem(module: String, teil: Int) -> TrainingItem? {
                 questions: nil,
                 dialogs: [
                     TrainingDialog(rawId: "h3-d1", title: "Dialog 1", audio_script: "A: Hast du morgen Zeit? B: Ja, am Nachmittag.", true_false: TrainingTrueFalse(statement: "Sie haben morgen Nachmittag Zeit.", correct: "A", explanation: nil), detail: TrainingDetailQuestion(question: "Wann passt es?", options: ["Morgens", "Nachmittags", "Abends"], correct: "B", explanation: nil)),
-                    TrainingDialog(rawId: "h3-d2", title: "Dialog 2", audio_script: "A: Kannst du heute kommen? B: Leider nicht, ich arbeite bis sechs.", true_false: TrainingTrueFalse(statement: "Die Person arbeitet bis 18 Uhr.", correct: "A", explanation: nil), detail: TrainingDetailQuestion(question: "Warum kann sie nicht kommen?", options: ["Krankheit", "Arbeit", "Urlaub"], correct: "B", explanation: nil))
+                    TrainingDialog(rawId: "h3-d2", title: "Dialog 2", audio_script: "A: Kannst du heute kommen? B: Leider nicht, ich arbeite bis sechs.", true_false: TrainingTrueFalse(statement: "Die Person arbeitet bis 18 Uhr.", correct: "A", explanation: nil), detail: TrainingDetailQuestion(question: "Warum kann sie nicht kommen?", options: ["Krankheit", "Arbeit", "Urlaub"], correct: "B", explanation: nil)),
+                    TrainingDialog(rawId: "h3-d3", title: "Dialog 3", audio_script: "A: Wir treffen uns um halb zwei, richtig? B: Ja, um 13:30 Uhr.", true_false: TrainingTrueFalse(statement: "Das Treffen ist um 13:30 Uhr.", correct: "A", explanation: nil), detail: TrainingDetailQuestion(question: "Wann ist das Treffen?", options: ["12:30", "13:30", "14:30"], correct: "B", explanation: nil))
                 ],
                 options: nil,
                 statements: nil,
@@ -480,7 +481,8 @@ private func demoTrainingItem(module: String, teil: Int) -> TrainingItem? {
                     TrainingStatement(rawId: "h4-s1", title: "Aussage 1", statement: nil, question: nil, audio_script: "Der Termin morgen muss leider verschoben werden.", correct: "B", explanation: nil, no: 1),
                     TrainingStatement(rawId: "h4-s2", title: "Aussage 2", statement: nil, question: nil, audio_script: "Sie sind herzlich zur Feier eingeladen.", correct: "A", explanation: nil, no: 2),
                     TrainingStatement(rawId: "h4-s3", title: "Aussage 3", statement: nil, question: nil, audio_script: "Der Kurs startet am Montag um neun Uhr.", correct: "C", explanation: nil, no: 3),
-                    TrainingStatement(rawId: "h4-s4", title: "Aussage 4", statement: nil, question: nil, audio_script: "Bitte beachten Sie die neuen Öffnungszeiten.", correct: "C", explanation: nil, no: 4)
+                    TrainingStatement(rawId: "h4-s4", title: "Aussage 4", statement: nil, question: nil, audio_script: "Bitte beachten Sie die neuen Öffnungszeiten.", correct: "C", explanation: nil, no: 4),
+                    TrainingStatement(rawId: "h4-s5", title: "Aussage 5", statement: nil, question: nil, audio_script: "Die Anmeldung ist heute bis 16 Uhr möglich.", correct: "C", explanation: nil, no: 5)
                 ],
                 allow_reuse: nil,
                 wegweiser_title: nil,
@@ -580,7 +582,8 @@ private func demoTrainingItem(module: String, teil: Int) -> TrainingItem? {
                 labels: nil,
                 blocks: [
                     TrainingBlock(rawId: "l3-b1", title: "Infoabend", text: "Der Infoabend findet am Dienstag um 18 Uhr statt.", true_false: TrainingBlockTrueFalse(no: 31, statement: "Der Infoabend ist am Dienstag.", correct: "A", explanation: nil), mc: TrainingBlockMC(no: 32, question: "Wann beginnt der Infoabend?", options: ["18 Uhr", "19 Uhr", "20 Uhr"], correct: "A", explanation: nil)),
-                    TrainingBlock(rawId: "l3-b2", title: "Bibliothek", text: "Die Bibliothek ist am Freitag geschlossen.", true_false: TrainingBlockTrueFalse(no: 33, statement: "Am Freitag ist die Bibliothek geschlossen.", correct: "A", explanation: nil), mc: TrainingBlockMC(no: 34, question: "Wann ist geschlossen?", options: ["Freitag", "Samstag", "Sonntag"], correct: "A", explanation: nil))
+                    TrainingBlock(rawId: "l3-b2", title: "Bibliothek", text: "Die Bibliothek ist am Freitag geschlossen.", true_false: TrainingBlockTrueFalse(no: 33, statement: "Am Freitag ist die Bibliothek geschlossen.", correct: "A", explanation: nil), mc: TrainingBlockMC(no: 34, question: "Wann ist geschlossen?", options: ["Freitag", "Samstag", "Sonntag"], correct: "A", explanation: nil)),
+                    TrainingBlock(rawId: "l3-b3", title: "Kurswechsel", text: "Der Kurs beginnt nächsten Montag um 9 Uhr.", true_false: TrainingBlockTrueFalse(no: 35, statement: "Der Kurs beginnt am Montag.", correct: "A", explanation: nil), mc: TrainingBlockMC(no: 36, question: "Wann beginnt der Kurs?", options: ["Montag", "Dienstag", "Mittwoch"], correct: "A", explanation: nil))
                 ],
                 text_template: nil,
                 example: nil,
@@ -602,7 +605,8 @@ private func demoTrainingItem(module: String, teil: Int) -> TrainingItem? {
                 statements: [
                     TrainingStatement(rawId: "l4-s1", title: nil, statement: "Am Samstag ist die Bibliothek geöffnet.", question: nil, audio_script: nil, correct: "B", explanation: nil, no: 37),
                     TrainingStatement(rawId: "l4-s2", title: nil, statement: "Die Bibliothek schließt um 18 Uhr.", question: nil, audio_script: nil, correct: "A", explanation: nil, no: 38),
-                    TrainingStatement(rawId: "l4-s3", title: nil, statement: "Die Bibliothek öffnet um 9 Uhr.", question: nil, audio_script: nil, correct: "A", explanation: nil, no: 39)
+                    TrainingStatement(rawId: "l4-s3", title: nil, statement: "Die Bibliothek öffnet um 9 Uhr.", question: nil, audio_script: nil, correct: "A", explanation: nil, no: 39),
+                    TrainingStatement(rawId: "l4-s4", title: nil, statement: "Die Bibliothek ist sonntags geöffnet.", question: nil, audio_script: nil, correct: "B", explanation: nil, no: 40)
                 ],
                 allow_reuse: nil,
                 wegweiser_title: nil,
