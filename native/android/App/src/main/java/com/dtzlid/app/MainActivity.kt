@@ -134,6 +134,7 @@ fun DtzScreen() {
     var teil by remember { mutableStateOf(1) }
     var item by remember { mutableStateOf<JSONObject?>(null) }
     var status by remember { mutableStateOf("") }
+    var scoreLabel by remember { mutableStateOf("") }
     var answers by remember { mutableStateOf(mutableMapOf<String, String>()) }
     val scope = rememberCoroutineScope()
 
@@ -155,6 +156,7 @@ fun DtzScreen() {
         Button(onClick = {
             scope.launch {
                 status = ""
+                scoreLabel = ""
                 answers = mutableMapOf()
                 item = Api.trainingSet(module, teil)
                 if (item == null) status = "Aufgaben konnten nicht geladen werden"
@@ -164,8 +166,22 @@ fun DtzScreen() {
         if (item != null) {
             TrainingItemView(item!!, answers)
             Spacer(Modifier.height(12.dp))
-            Button(onClick = { status = "Antworten gespeichert" }) { Text("Auswerten") }
+            Button(onClick = {
+                val res = evaluateTraining(item!!, answers)
+                scoreLabel = "Ergebnis: ${res.first}/${res.second}"
+            }) { Text("Auswerten") }
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = {
+                scope.launch {
+                    status = ""
+                    scoreLabel = ""
+                    answers = mutableMapOf()
+                    item = Api.trainingSet(module, teil)
+                    if (item == null) status = "Aufgaben konnten nicht geladen werden"
+                }
+            }) { Text("Neue Aufgaben") }
         }
+        if (scoreLabel.isNotEmpty()) Text(scoreLabel, fontWeight = FontWeight.Bold)
         if (status.isNotEmpty()) Text(status)
     }
 }
@@ -410,6 +426,116 @@ fun AnzeigenBlock(item: JSONObject) {
     ads.keys().asSequence().sorted().forEach { key ->
         Text("$key: ${ads.optString(key)}")
     }
+}
+
+fun evaluateTraining(item: JSONObject, answers: Map<String, String>): Pair<Int, Int> {
+    val schema = item.optString("dtz_schema")
+    var total = 0
+    var correct = 0
+
+    fun check(key: String, expected: String) {
+        total += 1
+        if (answers[key] == expected) correct += 1
+    }
+
+    fun mapTf(code: String): String {
+        return if (code.uppercase(Locale.getDefault()) == "A") "Richtig" else "Falsch"
+    }
+
+    when (schema) {
+        "hoeren_teil1_bundle", "hoeren_teil2_bundle" -> {
+            val questions = item.optJSONArray("questions") ?: JSONArray()
+            for (i in 0 until questions.length()) {
+                val q = questions.getJSONObject(i)
+                val key = q.optString("id")
+                val expected = q.optString("correct")
+                if (key.isNotBlank() && expected.isNotBlank()) {
+                    check(key, expected)
+                }
+            }
+        }
+        "hoeren_teil3_dialogcards" -> {
+            val dialogs = item.optJSONArray("dialogs") ?: JSONArray()
+            for (i in 0 until dialogs.length()) {
+                val d = dialogs.getJSONObject(i)
+                val base = d.optString("id")
+                val tf = d.optJSONObject("true_false")
+                if (tf != null) {
+                    val expected = mapTf(tf.optString("correct"))
+                    check(base + "_tf", expected)
+                }
+                val detail = d.optJSONObject("detail")
+                if (detail != null) {
+                    val expected = detail.optString("correct")
+                    if (expected.isNotBlank()) check(base + "_mc", expected)
+                }
+            }
+        }
+        "hoeren_teil4_matching" -> {
+            val statements = item.optJSONArray("statements") ?: JSONArray()
+            for (i in 0 until statements.length()) {
+                val s = statements.getJSONObject(i)
+                val key = s.optString("id")
+                val expected = s.optString("correct")
+                if (key.isNotBlank() && expected.isNotBlank()) check(key, expected)
+            }
+        }
+        "lesen_teil1_wegweiser" -> {
+            val situations = item.optJSONArray("situations") ?: JSONArray()
+            for (i in 0 until situations.length()) {
+                val s = situations.getJSONObject(i)
+                val key = s.optString("id")
+                val expected = s.optString("correct")
+                if (key.isNotBlank() && expected.isNotBlank()) check(key, expected)
+            }
+        }
+        "lesen_teil2_matching" -> {
+            val situations = item.optJSONArray("situations") ?: JSONArray()
+            for (i in 0 until situations.length()) {
+                val s = situations.getJSONObject(i)
+                val key = s.optString("id")
+                val expected = s.optString("correct")
+                if (key.isNotBlank() && expected.isNotBlank()) check(key, expected)
+            }
+        }
+        "lesen_teil3_textblock_mix" -> {
+            val blocks = item.optJSONArray("blocks") ?: JSONArray()
+            for (i in 0 until blocks.length()) {
+                val b = blocks.getJSONObject(i)
+                val base = b.optString("id")
+                val tf = b.optJSONObject("true_false")
+                if (tf != null) {
+                    val expected = mapTf(tf.optString("correct"))
+                    check(base + "_tf", expected)
+                }
+                val mc = b.optJSONObject("mc")
+                if (mc != null) {
+                    val expected = mc.optString("correct")
+                    if (expected.isNotBlank()) check(base + "_mc", expected)
+                }
+            }
+        }
+        "lesen_teil4_richtig_falsch_text" -> {
+            val statements = item.optJSONArray("statements") ?: JSONArray()
+            for (i in 0 until statements.length()) {
+                val s = statements.getJSONObject(i)
+                val key = s.optString("id")
+                val expected = mapTf(s.optString("correct"))
+                if (key.isNotBlank()) check(key, expected)
+            }
+        }
+        "lesen_teil5_lueckentext" -> {
+            val gaps = item.optJSONArray("gaps") ?: JSONArray()
+            for (i in 0 until gaps.length()) {
+                val g = gaps.getJSONObject(i)
+                val key = g.optString("id")
+                val expected = g.optString("correct")
+                if (key.isNotBlank() && expected.isNotBlank()) check(key, expected)
+            }
+        }
+    }
+
+    return Pair(correct, total)
 }
 
 @Composable
