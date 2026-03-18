@@ -24,6 +24,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
+import android.webkit.PermissionRequest
 import android.webkit.WebSettings
 import android.webkit.ValueCallback
 import android.webkit.WebView
@@ -234,6 +235,7 @@ fun WebAppScreen() {
     var topMenuExpanded by remember { mutableStateOf(false) }
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
+    var pendingWebPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
     val favorites = remember {
         val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
         raw.split("\n").map { it.trim() }.filter { isAllowedWebUrl(it) }.toMutableStateList()
@@ -256,6 +258,27 @@ fun WebAppScreen() {
         }
         fileChooserCallback?.onReceiveValue(uris)
         fileChooserCallback = null
+    }
+    val webPermissionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        val request = pendingWebPermissionRequest
+        pendingWebPermissionRequest = null
+        if (request == null) return@rememberLauncherForActivityResult
+        val allowedResources = request.resources.filter { resource ->
+            when (resource) {
+                PermissionRequest.RESOURCE_AUDIO_CAPTURE ->
+                    grants[Manifest.permission.RECORD_AUDIO] == true
+                PermissionRequest.RESOURCE_VIDEO_CAPTURE ->
+                    grants[Manifest.permission.CAMERA] == true
+                else -> false
+            }
+        }.toTypedArray()
+        if (allowedResources.isNotEmpty()) {
+            request.grant(allowedResources)
+        } else {
+            request.deny()
+        }
     }
 
     fun openSafeUrl(url: String) {
@@ -539,6 +562,48 @@ fun WebAppScreen() {
                                     fileChooserCallback = null
                                 }
                                 return true
+                            }
+
+                            override fun onPermissionRequest(request: PermissionRequest?) {
+                                val safeRequest = request ?: return
+                                val origin = safeRequest.origin?.toString().orEmpty()
+                                if (!isAllowedWebUrl(origin)) {
+                                    safeRequest.deny()
+                                    return
+                                }
+                                val neededPermissions = mutableSetOf<String>()
+                                val requestedResources = safeRequest.resources.toSet()
+                                if (requestedResources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                                    neededPermissions.add(Manifest.permission.RECORD_AUDIO)
+                                }
+                                if (requestedResources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                                    neededPermissions.add(Manifest.permission.CAMERA)
+                                }
+                                if (neededPermissions.isEmpty()) {
+                                    safeRequest.deny()
+                                    return
+                                }
+                                val allGranted = neededPermissions.all { perm ->
+                                    ContextCompat.checkSelfPermission(context, perm) == PackageManager.PERMISSION_GRANTED
+                                }
+                                if (allGranted) {
+                                    safeRequest.grant(
+                                        safeRequest.resources.filter {
+                                            it == PermissionRequest.RESOURCE_AUDIO_CAPTURE ||
+                                                it == PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                                        }.toTypedArray()
+                                    )
+                                } else {
+                                    pendingWebPermissionRequest?.deny()
+                                    pendingWebPermissionRequest = safeRequest
+                                    webPermissionsLauncher.launch(neededPermissions.toTypedArray())
+                                }
+                            }
+
+                            override fun onPermissionRequestCanceled(request: PermissionRequest?) {
+                                if (pendingWebPermissionRequest == request) {
+                                    pendingWebPermissionRequest = null
+                                }
                             }
                         }
                         webViewClient = object : WebViewClient() {
