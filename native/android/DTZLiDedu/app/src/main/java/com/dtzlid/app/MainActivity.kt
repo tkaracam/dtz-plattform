@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.Manifest
 import android.app.DownloadManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -21,6 +23,7 @@ import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.view.WindowManager
 import android.webkit.GeolocationPermissions
 import android.webkit.PermissionRequest
 import android.webkit.SafeBrowsingResponse
@@ -115,7 +118,18 @@ private const val WEB_PREFS = "dtz_webview"
 private const val WEB_LAST_URL = "last_url"
 private const val WEB_PENDING_DEEP_LINK = "pending_deep_link"
 private const val WEB_FAVORITES = "favorites"
+private const val WEB_DESKTOP_MODE = "desktop_mode"
+private const val WEB_TEXT_ZOOM = "text_zoom"
+private const val WEB_KEEP_SCREEN_ON = "keep_screen_on"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
+private const val WEBVIEW_TAG_UA = "DTZLiDWebView/1.0"
+private const val WEB_RECENT_PAGES_LIMIT = 50
+
+private data class WebRecentPage(
+    val title: String,
+    val url: String,
+    val visitedAt: Long
+)
 
 private fun isAllowedWebUrl(url: String): Boolean {
     return normalizeAllowedWebUrl(url) != null
@@ -241,7 +255,9 @@ fun WebAppScreen() {
     }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var canGoBack by remember { mutableStateOf(false) }
+    var canGoForward by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
+    var loadProgress by remember { mutableStateOf(0) }
     var offline by remember { mutableStateOf(false) }
     var loadTimedOut by remember { mutableStateOf(false) }
     var webViewGeneration by remember { mutableStateOf(0) }
@@ -249,14 +265,21 @@ fun WebAppScreen() {
     var historyItems by remember { mutableStateOf(NotificationCenter.list(context)) }
     var historyFilter by remember { mutableStateOf("all") }
     var showFavorites by remember { mutableStateOf(false) }
+    var showRecentPages by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
+    var defaultUserAgent by remember { mutableStateOf("") }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     var pendingWebPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
     var pendingGeoOrigin by remember { mutableStateOf<String?>(null) }
     var pendingGeoCallback by remember { mutableStateOf<GeolocationPermissions.Callback?>(null) }
+    var desktopMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_DESKTOP_MODE, false)) }
+    var textZoom by remember { mutableStateOf(webPrefs.getInt(WEB_TEXT_ZOOM, 100).coerceIn(70, 180)) }
+    var keepScreenOn by remember { mutableStateOf(webPrefs.getBoolean(WEB_KEEP_SCREEN_ON, false)) }
+    val recentPages = remember { mutableStateListOf<WebRecentPage>() }
     val favorites = remember {
         val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
         raw.split("\n")
@@ -320,9 +343,37 @@ fun WebAppScreen() {
         webViewRef?.loadUrl(normalizeAllowedWebUrl(url) ?: WEB_BASE_URL)
     }
 
+    fun buildUserAgent(baseUserAgent: String): String {
+        val base = baseUserAgent.replace(" $WEBVIEW_TAG_UA", "").trim()
+        if (desktopMode) {
+            return "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 " +
+                "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 $WEBVIEW_TAG_UA"
+        }
+        return "$base $WEBVIEW_TAG_UA".trim()
+    }
+
+    fun applyRuntimeWebPreferences(view: WebView) {
+        val settings = view.settings
+        if (defaultUserAgent.isBlank()) {
+            defaultUserAgent = settings.userAgentString
+        }
+        settings.textZoom = textZoom
+        settings.userAgentString = buildUserAgent(defaultUserAgent)
+    }
+
     fun persistFavorites() {
         val raw = favorites.joinToString("\n")
         webPrefs.edit().putString(WEB_FAVORITES, raw).apply()
+    }
+
+    fun addRecentPage(url: String, title: String) {
+        val normalizedUrl = normalizeAllowedWebUrl(url) ?: return
+        val cleanedTitle = title.trim().ifBlank { normalizedUrl }
+        recentPages.removeAll { it.url == normalizedUrl }
+        recentPages.add(0, WebRecentPage(cleanedTitle, normalizedUrl, System.currentTimeMillis()))
+        while (recentPages.size > WEB_RECENT_PAGES_LIMIT) {
+            recentPages.removeLast()
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -340,6 +391,16 @@ fun WebAppScreen() {
         scope.launch {
             Api.syncFcmTokenWithCurrentSession(context)
         }
+    }
+
+    DisposableEffect(keepScreenOn) {
+        val activity = context as? Activity
+        if (keepScreenOn) {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose { }
     }
 
     DisposableEffect(Unit) {
@@ -452,6 +513,44 @@ fun WebAppScreen() {
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text("Son Sayfalar") },
+                            onClick = {
+                                topMenuExpanded = false
+                                showRecentPages = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Linki Kopyala") },
+                            onClick = {
+                                topMenuExpanded = false
+                                val current = webViewRef?.url.orEmpty()
+                                val normalized = normalizeAllowedWebUrl(current)
+                                if (normalized != null) {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    clipboard.setPrimaryClip(ClipData.newPlainText("DTZ-LID", normalized))
+                                    Toast.makeText(context, "Link kopyalandı", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Paylaş") },
+                            onClick = {
+                                topMenuExpanded = false
+                                val current = webViewRef?.url.orEmpty()
+                                val normalized = normalizeAllowedWebUrl(current)
+                                if (normalized != null) {
+                                    runCatching {
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_SUBJECT, currentPageTitle)
+                                            putExtra(Intent.EXTRA_TEXT, normalized)
+                                        }
+                                        context.startActivity(Intent.createChooser(shareIntent, "Bağlantıyı paylaş"))
+                                    }
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("Tarayıcıda Aç") },
                             onClick = {
                                 topMenuExpanded = false
@@ -463,6 +562,13 @@ fun WebAppScreen() {
                                         Toast.makeText(context, "Tarayıcı açılamadı", Toast.LENGTH_SHORT).show()
                                     }
                                 }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("WebView Ayarları") },
+                            onClick = {
+                                topMenuExpanded = false
+                                showSettings = true
                             }
                         )
                         DropdownMenuItem(
@@ -531,7 +637,7 @@ fun WebAppScreen() {
                 AndroidView(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = if (showFindBar) 94.dp else 42.dp),
+                        .padding(top = if (showFindBar) 94.dp else 42.dp, bottom = 58.dp),
                     factory = {
                         WebView(context).apply {
                         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
@@ -552,9 +658,8 @@ fun WebAppScreen() {
                         settings.displayZoomControls = false
                         settings.offscreenPreRaster = true
                         settings.setGeolocationEnabled(true)
-                        if (!settings.userAgentString.contains("DTZLiDWebView", ignoreCase = true)) {
-                            settings.userAgentString = "${settings.userAgentString} DTZLiDWebView/1.0"
-                        }
+                        defaultUserAgent = settings.userAgentString
+                        applyRuntimeWebPreferences(this)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             settings.safeBrowsingEnabled = true
                         }
@@ -579,6 +684,7 @@ fun WebAppScreen() {
                         }
                         webChromeClient = object : WebChromeClient() {
                             override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                                loadProgress = newProgress.coerceIn(0, 100)
                                 loading = newProgress < 100
                             }
 
@@ -736,6 +842,7 @@ fun WebAppScreen() {
 
                             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                                 loading = true
+                                loadProgress = 0
                                 loadTimedOut = false
                             }
 
@@ -787,7 +894,9 @@ fun WebAppScreen() {
 
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 canGoBack = view?.canGoBack() == true
+                                canGoForward = view?.canGoForward() == true
                                 loading = false
+                                loadProgress = 100
                                 offline = false
                                 loadTimedOut = false
                                 settings.cacheMode = WebSettings.LOAD_DEFAULT
@@ -795,6 +904,7 @@ fun WebAppScreen() {
                                 val normalized = normalizeAllowedWebUrl(currentUrl)
                                 if (normalized != null) {
                                     webPrefs.edit().putString(WEB_LAST_URL, normalized).apply()
+                                    addRecentPage(normalized, currentPageTitle)
                                 }
                                 scope.launch {
                                     Api.syncFcmTokenWithCurrentSession(context)
@@ -816,12 +926,24 @@ fun WebAppScreen() {
                     update = { view ->
                         webViewRef = view
                         canGoBack = view.canGoBack()
+                        canGoForward = view.canGoForward()
+                        applyRuntimeWebPreferences(view)
                     }
                 )
             }
 
             if (loading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter))
+                Column(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)) {
+                    LinearProgressIndicator(
+                        progress = { (loadProgress.coerceIn(0, 100) / 100f) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        text = "%$loadProgress",
+                        modifier = Modifier.align(Alignment.End).padding(end = 8.dp, top = 2.dp),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
             if (offline) {
                 Card(
@@ -852,6 +974,51 @@ fun WebAppScreen() {
                             Button(onClick = { openSafeUrl(WEB_BASE_URL) }) { Text("Ana Sayfa") }
                         }
                     }
+                }
+            }
+            Surface(
+                tonalElevation = 4.dp,
+                shadowElevation = 6.dp,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            webViewRef?.goBack()
+                            webViewRef?.post {
+                                canGoBack = webViewRef?.canGoBack() == true
+                                canGoForward = webViewRef?.canGoForward() == true
+                            }
+                        },
+                        enabled = canGoBack
+                    ) { Icon(Icons.Default.ArrowBack, contentDescription = "Geri") }
+                    IconButton(
+                        onClick = {
+                            webViewRef?.goForward()
+                            webViewRef?.post {
+                                canGoBack = webViewRef?.canGoBack() == true
+                                canGoForward = webViewRef?.canGoForward() == true
+                            }
+                        },
+                        enabled = canGoForward
+                    ) { Icon(Icons.Default.ArrowForward, contentDescription = "İleri") }
+                    IconButton(
+                        onClick = { openSafeUrl(WEB_BASE_URL) }
+                    ) { Icon(Icons.Default.Home, contentDescription = "Ana Sayfa") }
+                    IconButton(
+                        onClick = { showFavorites = true }
+                    ) { Icon(Icons.Default.Favorite, contentDescription = "Favoriler") }
+                    IconButton(
+                        onClick = { showRecentPages = true }
+                    ) { Icon(Icons.Default.History, contentDescription = "Son Sayfalar") }
                 }
             }
         }
@@ -955,6 +1122,110 @@ fun WebAppScreen() {
             },
             confirmButton = {
                 TextButton(onClick = { showFavorites = false }) { Text("Kapat") }
+            }
+        )
+    }
+
+    if (showRecentPages) {
+        AlertDialog(
+            onDismissRequest = { showRecentPages = false },
+            title = { Text("Son Sayfalar") },
+            text = {
+                if (recentPages.isEmpty()) {
+                    Text("Henüz kayıtlı sayfa yok.")
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(recentPages) { row ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showRecentPages = false
+                                        openSafeUrl(row.url)
+                                    }
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(row.title, fontWeight = FontWeight.SemiBold)
+                                    Text(row.url, style = MaterialTheme.typography.bodySmall)
+                                    Text(
+                                        SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date(row.visitedAt)),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showRecentPages = false }) { Text("Kapat") }
+            },
+            dismissButton = {
+                TextButton(onClick = { recentPages.clear() }) { Text("Temizle") }
+            }
+        )
+    }
+
+    if (showSettings) {
+        AlertDialog(
+            onDismissRequest = { showSettings = false },
+            title = { Text("WebView Ayarları") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Desktop Modu", fontWeight = FontWeight.SemiBold)
+                            Text("Web sitesini masaüstü görünümüyle açar.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = desktopMode,
+                            onCheckedChange = { checked ->
+                                desktopMode = checked
+                                webPrefs.edit().putBoolean(WEB_DESKTOP_MODE, checked).apply()
+                                webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
+                            }
+                        )
+                    }
+                    Column {
+                        Text("Yazı Boyutu: %$textZoom", fontWeight = FontWeight.SemiBold)
+                        Slider(
+                            value = textZoom.toFloat(),
+                            onValueChange = { value ->
+                                textZoom = value.toInt().coerceIn(70, 180)
+                                webPrefs.edit().putInt(WEB_TEXT_ZOOM, textZoom).apply()
+                                webViewRef?.let { applyRuntimeWebPreferences(it) }
+                            },
+                            valueRange = 70f..180f
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Ekran Açık Kalsın", fontWeight = FontWeight.SemiBold)
+                            Text("Ders sırasında ekranın kapanmasını engeller.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = keepScreenOn,
+                            onCheckedChange = { checked ->
+                                keepScreenOn = checked
+                                webPrefs.edit().putBoolean(WEB_KEEP_SCREEN_ON, checked).apply()
+                            }
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSettings = false }) { Text("Kapat") }
             }
         )
     }
