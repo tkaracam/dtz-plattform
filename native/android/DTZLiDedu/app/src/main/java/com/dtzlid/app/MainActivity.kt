@@ -693,6 +693,28 @@ fun WebAppScreen() {
                                     return false
                                 }
                                 val lower = target.lowercase(Locale.getDefault())
+                                if (lower.startsWith("intent://")) {
+                                    runCatching {
+                                        val intent = Intent.parseUri(target, Intent.URI_INTENT_SCHEME)
+                                        val fallback = intent.getStringExtra("browser_fallback_url").orEmpty()
+                                        val resolved = intent.resolveActivity(context.packageManager)
+                                        when {
+                                            resolved != null -> context.startActivity(intent)
+                                            fallback.isNotBlank() -> {
+                                                val normalizedFallback = normalizeAllowedWebUrl(fallback)
+                                                if (normalizedFallback != null) {
+                                                    view?.post { view.loadUrl(normalizedFallback) }
+                                                } else {
+                                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(fallback)))
+                                                }
+                                            }
+                                            else -> Toast.makeText(context, "Uygulama bulunamadı", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }.onFailure {
+                                        Toast.makeText(context, "Bağlantı açılamadı", Toast.LENGTH_SHORT).show()
+                                    }
+                                    return true
+                                }
                                 val isHttp = lower.startsWith("http://") || lower.startsWith("https://")
                                 if (isHttp) {
                                     val normalized = normalizeAllowedWebUrl(target)
@@ -939,6 +961,10 @@ fun WebAppScreen() {
 
     DisposableEffect(Unit) {
         onDispose {
+            pendingWebPermissionRequest?.deny()
+            pendingWebPermissionRequest = null
+            pendingGeoCallback = null
+            pendingGeoOrigin = null
             webViewRef?.destroy()
         }
     }
