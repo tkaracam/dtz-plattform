@@ -71,5 +71,9 @@ object NotificationCenter {
         }
         return out
     }
-}
 
+    fun clear(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_ITEMS, "[]").apply()
+    }
+}

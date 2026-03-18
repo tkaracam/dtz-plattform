@@ -33,6 +33,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -106,6 +107,13 @@ private const val WEB_PENDING_DEEP_LINK = "pending_deep_link"
 private fun isAllowedWebUrl(url: String): Boolean {
     val trimmed = url.trim()
     return trimmed.startsWith(WEB_BASE_URL) || trimmed.startsWith(WEB_BASE_URL_WWW)
+}
+
+private fun hasActiveInternet(context: Context): Boolean {
+    val connectivity = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivity.activeNetwork ?: return false
+    val capabilities = connectivity.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 }
 
 @Composable
@@ -213,6 +221,7 @@ fun WebAppScreen() {
     var offline by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
     var historyItems by remember { mutableStateOf(NotificationCenter.list(context)) }
+    var historyFilter by remember { mutableStateOf("all") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     val notificationsLauncher = rememberLauncherForActivityResult(
@@ -240,6 +249,7 @@ fun WebAppScreen() {
     }
 
     LaunchedEffect(Unit) {
+        offline = !hasActiveInternet(context)
         PushNotificationWorker.ensureScheduled(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = ContextCompat.checkSelfPermission(
@@ -315,14 +325,39 @@ fun WebAppScreen() {
                                 Toast.makeText(context, "Cache temizlendi", Toast.LENGTH_SHORT).show()
                             }
                         )
+                        DropdownMenuItem(
+                            text = { Text("Bildirimleri Temizle") },
+                            onClick = {
+                                topMenuExpanded = false
+                                NotificationCenter.clear(context)
+                                historyItems = emptyList()
+                                Toast.makeText(context, "Bildirim geçmişi temizlendi", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 }
             )
         }
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopStart)
+                    .padding(start = 8.dp, end = 8.dp, top = 2.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AssistChip(onClick = { openSafeUrl(WEB_BASE_URL) }, label = { Text("Start") })
+                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#dtz") }, label = { Text("DTZ") })
+                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#schreiben") }, label = { Text("Schreiben") })
+                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#portal") }, label = { Text("Portal") })
+                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/admin.html") }, label = { Text("Dozent") })
+            }
             AndroidView(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 42.dp),
                 factory = {
                     WebView(context).apply {
                         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
@@ -465,32 +500,47 @@ fun WebAppScreen() {
     }
 
     if (showHistory) {
+        val filteredHistory = historyItems.filter {
+            historyFilter == "all" || it.category == historyFilter
+        }
         AlertDialog(
             onDismissRequest = { showHistory = false },
             title = { Text("Bildirim Geçmişi") },
             text = {
-                if (historyItems.isEmpty()) {
-                    Text("Henüz bildirim yok.")
-                } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(historyItems) { row ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        showHistory = false
-                                        if (row.deepLinkUrl.isNotBlank()) {
-                                            openSafeUrl(row.deepLinkUrl)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        FilterChip(selected = historyFilter == "all", onClick = { historyFilter = "all" }, label = { Text("Tümü") })
+                        FilterChip(selected = historyFilter == "homework_new", onClick = { historyFilter = "homework_new" }, label = { Text("Ödev") })
+                        FilterChip(selected = historyFilter == "homework_reminder", onClick = { historyFilter = "homework_reminder" }, label = { Text("Hatırlatma") })
+                        FilterChip(selected = historyFilter == "teacher_note", onClick = { historyFilter = "teacher_note" }, label = { Text("Not") })
+                        FilterChip(selected = historyFilter == "correction_result", onClick = { historyFilter = "correction_result" }, label = { Text("Sonuç") })
+                    }
+                    if (filteredHistory.isEmpty()) {
+                        Text("Filtreye uygun bildirim yok.")
+                    } else {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(filteredHistory) { row ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            showHistory = false
+                                            if (row.deepLinkUrl.isNotBlank()) {
+                                                openSafeUrl(row.deepLinkUrl)
+                                            }
                                         }
+                                ) {
+                                    Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(row.title, fontWeight = FontWeight.SemiBold)
+                                        Text(row.body)
+                                        Text(
+                                            SimpleDateFormat("dd.MM HH:mm", Locale.getDefault()).format(Date(row.createdAt)),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
                                     }
-                            ) {
-                                Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(row.title, fontWeight = FontWeight.SemiBold)
-                                    Text(row.body)
-                                    Text(
-                                        SimpleDateFormat("dd.MM HH:mm", Locale.getDefault()).format(Date(row.createdAt)),
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
                                 }
                             }
                         }
@@ -499,6 +549,12 @@ fun WebAppScreen() {
             },
             confirmButton = {
                 TextButton(onClick = { showHistory = false }) { Text("Kapat") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    NotificationCenter.clear(context)
+                    historyItems = emptyList()
+                }) { Text("Temizle") }
             }
         )
     }
