@@ -6,6 +6,7 @@ import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
@@ -20,11 +21,13 @@ import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.webkit.GeolocationPermissions
+import android.webkit.PermissionRequest
+import android.webkit.SafeBrowsingResponse
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
-import android.webkit.PermissionRequest
 import android.webkit.WebSettings
 import android.webkit.ValueCallback
 import android.webkit.WebView
@@ -83,6 +86,10 @@ import kotlin.coroutines.resumeWithException
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isDebuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        if (isDebuggable) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
         stashPendingDeepLinkIntent(intent)
         setContent { AppRoot() }
     }
@@ -108,10 +115,21 @@ private const val WEB_PREFS = "dtz_webview"
 private const val WEB_LAST_URL = "last_url"
 private const val WEB_PENDING_DEEP_LINK = "pending_deep_link"
 private const val WEB_FAVORITES = "favorites"
+private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
 
 private fun isAllowedWebUrl(url: String): Boolean {
+    return normalizeAllowedWebUrl(url) != null
+}
+
+private fun normalizeAllowedWebUrl(url: String): String? {
     val trimmed = url.trim()
-    return trimmed.startsWith(WEB_BASE_URL) || trimmed.startsWith(WEB_BASE_URL_WWW)
+    if (trimmed.isBlank()) return null
+    val uri = runCatching { Uri.parse(trimmed) }.getOrNull() ?: return null
+    val host = uri.host?.lowercase(Locale.US) ?: return null
+    val scheme = uri.scheme?.lowercase(Locale.US) ?: return null
+    if (scheme != "https" && scheme != "http") return null
+    if (!WEB_ALLOWED_HOSTS.contains(host)) return null
+    return uri.buildUpon().scheme("https").build().toString()
 }
 
 private fun hasActiveInternet(context: Context): Boolean {
@@ -212,12 +230,13 @@ fun WebAppScreen() {
     val webPrefs = remember { context.getSharedPreferences(WEB_PREFS, Context.MODE_PRIVATE) }
     val startUrl = remember {
         val pending = webPrefs.getString(WEB_PENDING_DEEP_LINK, "") ?: ""
-        if (isAllowedWebUrl(pending)) {
+        val normalizedPending = normalizeAllowedWebUrl(pending)
+        if (normalizedPending != null) {
             webPrefs.edit().remove(WEB_PENDING_DEEP_LINK).apply()
-            pending
+            normalizedPending
         } else {
             val saved = webPrefs.getString(WEB_LAST_URL, WEB_BASE_URL) ?: WEB_BASE_URL
-            if (isAllowedWebUrl(saved)) saved else WEB_BASE_URL
+            normalizeAllowedWebUrl(saved) ?: WEB_BASE_URL
         }
     }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
@@ -236,9 +255,14 @@ fun WebAppScreen() {
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     var pendingWebPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
+    var pendingGeoOrigin by remember { mutableStateOf<String?>(null) }
+    var pendingGeoCallback by remember { mutableStateOf<GeolocationPermissions.Callback?>(null) }
     val favorites = remember {
         val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
-        raw.split("\n").map { it.trim() }.filter { isAllowedWebUrl(it) }.toMutableStateList()
+        raw.split("\n")
+            .mapNotNull { normalizeAllowedWebUrl(it) }
+            .distinct()
+            .toMutableStateList()
     }
     val notificationsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -280,9 +304,20 @@ fun WebAppScreen() {
             request.deny()
         }
     }
+    val geoPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { grants ->
+        val callback = pendingGeoCallback
+        val origin = pendingGeoOrigin
+        pendingGeoCallback = null
+        pendingGeoOrigin = null
+        val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        callback?.invoke(origin.orEmpty(), granted, false)
+    }
 
     fun openSafeUrl(url: String) {
-        webViewRef?.loadUrl(if (isAllowedWebUrl(url)) url else WEB_BASE_URL)
+        webViewRef?.loadUrl(normalizeAllowedWebUrl(url) ?: WEB_BASE_URL)
     }
 
     fun persistFavorites() {
@@ -508,10 +543,18 @@ fun WebAppScreen() {
                         settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                         settings.setSupportMultipleWindows(false)
                         settings.javaScriptCanOpenWindowsAutomatically = true
+                        settings.mediaPlaybackRequiresUserGesture = false
                         settings.loadsImagesAutomatically = true
                         settings.allowFileAccess = true
                         settings.allowContentAccess = true
+                        settings.setSupportZoom(true)
+                        settings.builtInZoomControls = true
+                        settings.displayZoomControls = false
                         settings.offscreenPreRaster = true
+                        settings.setGeolocationEnabled(true)
+                        if (!settings.userAgentString.contains("DTZLiDWebView", ignoreCase = true)) {
+                            settings.userAgentString = "${settings.userAgentString} DTZLiDWebView/1.0"
+                        }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             settings.safeBrowsingEnabled = true
                         }
@@ -605,6 +648,43 @@ fun WebAppScreen() {
                                     pendingWebPermissionRequest = null
                                 }
                             }
+
+                            override fun onGeolocationPermissionsShowPrompt(
+                                origin: String?,
+                                callback: GeolocationPermissions.Callback?
+                            ) {
+                                val safeCallback = callback ?: return
+                                val safeOrigin = origin.orEmpty()
+                                if (!isAllowedWebUrl(safeOrigin)) {
+                                    safeCallback.invoke(safeOrigin, false, false)
+                                    return
+                                }
+                                val fineGranted = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                                val coarseGranted = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                                if (fineGranted || coarseGranted) {
+                                    safeCallback.invoke(safeOrigin, true, false)
+                                } else {
+                                    pendingGeoCallback = safeCallback
+                                    pendingGeoOrigin = safeOrigin
+                                    geoPermissionLauncher.launch(
+                                        arrayOf(
+                                            Manifest.permission.ACCESS_FINE_LOCATION,
+                                            Manifest.permission.ACCESS_COARSE_LOCATION
+                                        )
+                                    )
+                                }
+                            }
+
+                            override fun onGeolocationPermissionsHidePrompt() {
+                                pendingGeoCallback = null
+                                pendingGeoOrigin = null
+                            }
                         }
                         webViewClient = object : WebViewClient() {
                             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
@@ -614,8 +694,15 @@ fun WebAppScreen() {
                                 }
                                 val lower = target.lowercase(Locale.getDefault())
                                 val isHttp = lower.startsWith("http://") || lower.startsWith("https://")
-                                if (isHttp && isAllowedWebUrl(target)) {
-                                    return false
+                                if (isHttp) {
+                                    val normalized = normalizeAllowedWebUrl(target)
+                                    if (normalized != null) {
+                                        if (normalized != target) {
+                                            view?.post { view.loadUrl(normalized) }
+                                            return true
+                                        }
+                                        return false
+                                    }
                                 }
                                 runCatching {
                                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
@@ -656,6 +743,16 @@ fun WebAppScreen() {
                                 }
                             }
 
+                            override fun onSafeBrowsingHit(
+                                view: WebView?,
+                                request: WebResourceRequest?,
+                                threatType: Int,
+                                callback: SafeBrowsingResponse?
+                            ) {
+                                callback?.backToSafety(true)
+                                Toast.makeText(context, "Tehlikeli içerik engellendi", Toast.LENGTH_LONG).show()
+                            }
+
                             override fun onReceivedSslError(
                                 view: WebView?,
                                 handler: SslErrorHandler?,
@@ -673,8 +770,9 @@ fun WebAppScreen() {
                                 loadTimedOut = false
                                 settings.cacheMode = WebSettings.LOAD_DEFAULT
                                 val currentUrl = url ?: view?.url ?: ""
-                                if (isAllowedWebUrl(currentUrl)) {
-                                    webPrefs.edit().putString(WEB_LAST_URL, currentUrl).apply()
+                                val normalized = normalizeAllowedWebUrl(currentUrl)
+                                if (normalized != null) {
+                                    webPrefs.edit().putString(WEB_LAST_URL, normalized).apply()
                                 }
                                 scope.launch {
                                     Api.syncFcmTokenWithCurrentSession(context)
