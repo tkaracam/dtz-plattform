@@ -354,7 +354,7 @@ fun WebAppScreen() {
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
+            TopAppBar(
                 title = { Text(currentPageTitle) },
                 actions = {
                     IconButton(onClick = {
