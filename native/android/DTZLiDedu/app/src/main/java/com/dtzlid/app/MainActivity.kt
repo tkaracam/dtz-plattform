@@ -103,6 +103,7 @@ private const val WEB_BASE_URL_WWW = "https://www.dtz-lid.com"
 private const val WEB_PREFS = "dtz_webview"
 private const val WEB_LAST_URL = "last_url"
 private const val WEB_PENDING_DEEP_LINK = "pending_deep_link"
+private const val WEB_FAVORITES = "favorites"
 
 private fun isAllowedWebUrl(url: String): Boolean {
     val trimmed = url.trim()
@@ -222,8 +223,15 @@ fun WebAppScreen() {
     var showHistory by remember { mutableStateOf(false) }
     var historyItems by remember { mutableStateOf(NotificationCenter.list(context)) }
     var historyFilter by remember { mutableStateOf("all") }
+    var showFavorites by remember { mutableStateOf(false) }
+    var showFindBar by remember { mutableStateOf(false) }
+    var findQuery by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
+    val favorites = remember {
+        val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
+        raw.split("\n").map { it.trim() }.filter { isAllowedWebUrl(it) }.toMutableStateList()
+    }
     val notificationsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { }
@@ -246,6 +254,11 @@ fun WebAppScreen() {
 
     fun openSafeUrl(url: String) {
         webViewRef?.loadUrl(if (isAllowedWebUrl(url)) url else WEB_BASE_URL)
+    }
+
+    fun persistFavorites() {
+        val raw = favorites.joinToString("\n")
+        webPrefs.edit().putString(WEB_FAVORITES, raw).apply()
     }
 
     LaunchedEffect(Unit) {
@@ -285,6 +298,15 @@ fun WebAppScreen() {
         webViewRef?.goBack()
     }
 
+    LaunchedEffect(findQuery) {
+        val q = findQuery.trim()
+        if (showFindBar && q.isNotBlank()) {
+            webViewRef?.findAllAsync(q)
+        } else {
+            webViewRef?.clearMatches()
+        }
+    }
+
     Scaffold(
         topBar = {
             SmallTopAppBar(
@@ -295,6 +317,9 @@ fun WebAppScreen() {
                         showHistory = true
                     }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Bildirim Geçmişi")
+                    }
+                    IconButton(onClick = { showFindBar = !showFindBar }) {
+                        Icon(Icons.Default.Search, contentDescription = "Sayfada Ara")
                     }
                     IconButton(onClick = { topMenuExpanded = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Menü")
@@ -334,6 +359,42 @@ fun WebAppScreen() {
                                 Toast.makeText(context, "Bildirim geçmişi temizlendi", Toast.LENGTH_SHORT).show()
                             }
                         )
+                        DropdownMenuItem(
+                            text = { Text("Bu Sayfayı Favorilere Ekle") },
+                            onClick = {
+                                topMenuExpanded = false
+                                val current = webViewRef?.url.orEmpty()
+                                if (isAllowedWebUrl(current) && !favorites.contains(current)) {
+                                    favorites.add(current)
+                                    persistFavorites()
+                                    Toast.makeText(context, "Favorilere eklendi", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Favoriler") },
+                            onClick = {
+                                topMenuExpanded = false
+                                showFavorites = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Güvenli Oturumu Sıfırla") },
+                            onClick = {
+                                topMenuExpanded = false
+                                webPrefs.edit()
+                                    .putString(WEB_LAST_URL, WEB_BASE_URL)
+                                    .remove(WEB_PENDING_DEEP_LINK)
+                                    .apply()
+                                android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                                android.webkit.CookieManager.getInstance().flush()
+                                android.webkit.WebStorage.getInstance().deleteAllData()
+                                webViewRef?.clearHistory()
+                                webViewRef?.clearCache(true)
+                                openSafeUrl(WEB_BASE_URL)
+                                Toast.makeText(context, "Oturum temizlendi", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 }
             )
@@ -354,10 +415,35 @@ fun WebAppScreen() {
                 AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#portal") }, label = { Text("Portal") })
                 AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/admin.html") }, label = { Text("Dozent") })
             }
+            if (showFindBar) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopStart)
+                        .padding(start = 8.dp, end = 8.dp, top = 42.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = findQuery,
+                        onValueChange = { findQuery = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Sayfada ara...") },
+                        singleLine = true
+                    )
+                    OutlinedButton(onClick = { webViewRef?.findNext(false) }) { Text("Yukarı") }
+                    OutlinedButton(onClick = { webViewRef?.findNext(true) }) { Text("Aşağı") }
+                    TextButton(onClick = {
+                        showFindBar = false
+                        findQuery = ""
+                        webViewRef?.clearMatches()
+                    }) { Text("Kapat") }
+                }
+            }
             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 42.dp),
+                    .padding(top = if (showFindBar) 94.dp else 42.dp),
                 factory = {
                     WebView(context).apply {
                         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
@@ -555,6 +641,48 @@ fun WebAppScreen() {
                     NotificationCenter.clear(context)
                     historyItems = emptyList()
                 }) { Text("Temizle") }
+            }
+        )
+    }
+
+    if (showFavorites) {
+        AlertDialog(
+            onDismissRequest = { showFavorites = false },
+            title = { Text("Favoriler") },
+            text = {
+                if (favorites.isEmpty()) {
+                    Text("Henüz favori yok.")
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(favorites) { item ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showFavorites = false
+                                        openSafeUrl(item)
+                                    }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(item, modifier = Modifier.weight(1f))
+                                    TextButton(onClick = {
+                                        favorites.remove(item)
+                                        persistFavorites()
+                                    }) { Text("Sil") }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showFavorites = false }) { Text("Kapat") }
             }
         )
     }
