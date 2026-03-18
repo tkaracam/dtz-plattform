@@ -27,9 +27,20 @@ class DTZFirebaseMessagingService : FirebaseMessagingService() {
         val body = message.notification?.body
             ?: message.data["body"]
             ?: "Yeni bir bildiriminiz var."
+        val category = message.data["category"] ?: "fcm"
+        val deepLinkUrl = message.data["deep_link_url"] ?: "https://dtz-lid.com"
+
+        NotificationCenter.append(
+            context = this,
+            title = title,
+            body = body,
+            category = category,
+            deepLinkUrl = deepLinkUrl
+        )
 
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(NotificationCenter.INTENT_EXTRA_DEEP_LINK_URL, deepLinkUrl)
         }
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -67,4 +78,3 @@ class DTZFirebaseMessagingService : FirebaseMessagingService() {
         private const val CHANNEL_ID = "dtz_fcm_channel"
     }
 }
-

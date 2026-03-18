@@ -49,7 +49,9 @@ class PushNotificationWorker(
                     notify(
                         id = 1001,
                         title = "Neue Hausaufgabe",
-                        text = assignmentTitle
+                        text = assignmentTitle,
+                        category = "homework_new",
+                        deepLinkUrl = "https://dtz-lid.com"
                     )
                     prefs.edit().putString("last_assignment_id", assignmentId).apply()
                 }
@@ -64,7 +66,9 @@ class PushNotificationWorker(
                             notify(
                                 id = 1002,
                                 title = "Hausaufgabe Erinnerung",
-                                text = "$assignmentTitle - $label"
+                                text = "$assignmentTitle - $label",
+                                category = "homework_reminder",
+                                deepLinkUrl = "https://dtz-lid.com"
                             )
                             prefs.edit().putString("last_reminder_key", reminderKey).apply()
                         }
@@ -86,7 +90,9 @@ class PushNotificationWorker(
                     notify(
                         id = 1003,
                         title = "Dozent mesajı",
-                        text = noteText.ifBlank { "Yeni bir dozent notu var." }
+                        text = noteText.ifBlank { "Yeni bir dozent notu var." },
+                        category = "teacher_note",
+                        deepLinkUrl = "https://dtz-lid.com"
                     )
                     prefs.edit().putString("last_note_id", noteId).apply()
                 }
@@ -102,7 +108,9 @@ class PushNotificationWorker(
                     notify(
                         id = 1004,
                         title = "Brief bewertet",
-                        text = topic.ifBlank { "Bir mektubun değerlendirildi." }
+                        text = topic.ifBlank { "Bir mektubun değerlendirildi." },
+                        category = "correction_result",
+                        deepLinkUrl = "https://dtz-lid.com"
                     )
                     prefs.edit().putString("last_correction_upload_id", uploadId).apply()
                 }
@@ -125,9 +133,18 @@ class PushNotificationWorker(
         }
     }
 
-    private fun notify(id: Int, title: String, text: String) {
+    private fun notify(id: Int, title: String, text: String, category: String, deepLinkUrl: String) {
+        NotificationCenter.append(
+            context = applicationContext,
+            title = title,
+            body = text,
+            category = category,
+            deepLinkUrl = deepLinkUrl
+        )
+
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(NotificationCenter.INTENT_EXTRA_DEEP_LINK_URL, deepLinkUrl)
         }
         val pendingIntent = PendingIntent.getActivity(
             applicationContext,
@@ -186,4 +203,3 @@ class PushNotificationWorker(
         }
     }
 }
-

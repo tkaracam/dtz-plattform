@@ -1,11 +1,18 @@
 package com.dtzlid.app
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.Manifest
+import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -14,8 +21,12 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
+import android.webkit.ValueCallback
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.URLUtil
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -25,6 +36,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -65,13 +78,116 @@ import kotlin.coroutines.resumeWithException
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        stashPendingDeepLinkIntent(intent)
         setContent { AppRoot() }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        stashPendingDeepLinkIntent(intent)
+    }
+
+    private fun stashPendingDeepLinkIntent(intent: Intent?) {
+        val fromExtra = intent?.getStringExtra(NotificationCenter.INTENT_EXTRA_DEEP_LINK_URL).orEmpty()
+        val fromData = intent?.dataString.orEmpty()
+        val chosen = listOf(fromExtra, fromData).firstOrNull { isAllowedWebUrl(it) } ?: return
+        val prefs = getSharedPreferences(WEB_PREFS, Context.MODE_PRIVATE)
+        prefs.edit().putString(WEB_PENDING_DEEP_LINK, chosen).apply()
+    }
+}
+
+private const val WEB_BASE_URL = "https://dtz-lid.com"
+private const val WEB_BASE_URL_WWW = "https://www.dtz-lid.com"
+private const val WEB_PREFS = "dtz_webview"
+private const val WEB_LAST_URL = "last_url"
+private const val WEB_PENDING_DEEP_LINK = "pending_deep_link"
+
+private fun isAllowedWebUrl(url: String): Boolean {
+    val trimmed = url.trim()
+    return trimmed.startsWith(WEB_BASE_URL) || trimmed.startsWith(WEB_BASE_URL_WWW)
 }
 
 @Composable
 fun AppRoot() {
     WebAppScreen()
+}
+
+@Composable
+fun NativeAppScreen() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var session by remember { mutableStateOf(StudentSession()) }
+    var loading by remember { mutableStateOf(true) }
+    val notificationsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
+
+    LaunchedEffect(Unit) {
+        PushNotificationWorker.ensureScheduled(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val granted = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                notificationsLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        scope.launch {
+            try {
+                val admin = Api.adminSession()
+                session = if (admin.authenticated == true) admin else Api.studentSession()
+                if (session.authenticated == true) {
+                    Api.syncFcmTokenWithCurrentSession(context)
+                }
+            } finally {
+                loading = false
+            }
+        }
+    }
+
+    if (loading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (session.authenticated == true) {
+        MainTabs(session = session, onLogout = {
+            scope.launch {
+                if (session.isTeacherRole()) {
+                    Api.adminLogout()
+                } else {
+                    Api.studentLogout()
+                }
+                session = StudentSession()
+            }
+        })
+    } else {
+        LoginScreen(
+            onStudentLogin = { user, pass ->
+                scope.launch {
+                    val next = Api.studentLogin(user, pass)
+                    session = next
+                    if (next.authenticated == true) {
+                        Api.syncFcmTokenWithCurrentSession(context)
+                    }
+                }
+            },
+            onTeacherLogin = { user, pass ->
+                scope.launch {
+                    val next = Api.adminLogin(user, pass)
+                    session = next
+                    if (next.authenticated == true) {
+                        Api.syncFcmTokenWithCurrentSession(context)
+                    }
+                }
+            }
+        )
+    }
 }
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -80,12 +196,48 @@ fun AppRoot() {
 fun WebAppScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val webPrefs = remember { context.getSharedPreferences(WEB_PREFS, Context.MODE_PRIVATE) }
+    val startUrl = remember {
+        val pending = webPrefs.getString(WEB_PENDING_DEEP_LINK, "") ?: ""
+        if (isAllowedWebUrl(pending)) {
+            webPrefs.edit().remove(WEB_PENDING_DEEP_LINK).apply()
+            pending
+        } else {
+            val saved = webPrefs.getString(WEB_LAST_URL, WEB_BASE_URL) ?: WEB_BASE_URL
+            if (isAllowedWebUrl(saved)) saved else WEB_BASE_URL
+        }
+    }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var canGoBack by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
+    var offline by remember { mutableStateOf(false) }
+    var showHistory by remember { mutableStateOf(false) }
+    var historyItems by remember { mutableStateOf(NotificationCenter.list(context)) }
+    var topMenuExpanded by remember { mutableStateOf(false) }
+    var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     val notificationsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { }
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val data = result.data
+        val uris: Array<Uri>? = when {
+            result.resultCode != Activity.RESULT_OK -> null
+            data == null -> null
+            data.clipData != null -> {
+                Array(data.clipData!!.itemCount) { i -> data.clipData!!.getItemAt(i).uri }
+            }
+            data.data != null -> arrayOf(data.data!!)
+            else -> null
+        }
+        fileChooserCallback?.onReceiveValue(uris)
+        fileChooserCallback = null
+    }
+
+    fun openSafeUrl(url: String) {
+        webViewRef?.loadUrl(if (isAllowedWebUrl(url)) url else WEB_BASE_URL)
+    }
 
     LaunchedEffect(Unit) {
         PushNotificationWorker.ensureScheduled(context)
@@ -103,6 +255,22 @@ fun WebAppScreen() {
         }
     }
 
+    DisposableEffect(Unit) {
+        val connectivity = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                if (offline) {
+                    offline = false
+                    webViewRef?.post { webViewRef?.reload() }
+                }
+            }
+        }
+        runCatching { connectivity.registerDefaultNetworkCallback(callback) }
+        onDispose {
+            runCatching { connectivity.unregisterNetworkCallback(callback) }
+        }
+    }
+
     BackHandler(enabled = canGoBack) {
         webViewRef?.goBack()
     }
@@ -110,7 +278,45 @@ fun WebAppScreen() {
     Scaffold(
         topBar = {
             SmallTopAppBar(
-                title = { Text("DTZ-LID edu") }
+                title = { Text("DTZ-LID edu") },
+                actions = {
+                    IconButton(onClick = {
+                        historyItems = NotificationCenter.list(context)
+                        showHistory = true
+                    }) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Bildirim Geçmişi")
+                    }
+                    IconButton(onClick = { topMenuExpanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menü")
+                    }
+                    DropdownMenu(
+                        expanded = topMenuExpanded,
+                        onDismissRequest = { topMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Ana Sayfa") },
+                            onClick = {
+                                topMenuExpanded = false
+                                openSafeUrl(WEB_BASE_URL)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Sayfayı Yenile") },
+                            onClick = {
+                                topMenuExpanded = false
+                                webViewRef?.reload()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Cache Temizle") },
+                            onClick = {
+                                topMenuExpanded = false
+                                webViewRef?.clearCache(true)
+                                Toast.makeText(context, "Cache temizlendi", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -119,29 +325,116 @@ fun WebAppScreen() {
                 modifier = Modifier.fillMaxSize(),
                 factory = {
                     WebView(context).apply {
+                        android.webkit.CookieManager.getInstance().setAcceptCookie(true)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
+                        settings.databaseEnabled = true
+                        settings.cacheMode = WebSettings.LOAD_DEFAULT
                         settings.javaScriptCanOpenWindowsAutomatically = true
                         settings.loadsImagesAutomatically = true
+                        settings.allowFileAccess = true
+                        settings.allowContentAccess = true
+                        setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+                            runCatching {
+                                val req = DownloadManager.Request(Uri.parse(url)).apply {
+                                    setMimeType(mimeType)
+                                    addRequestHeader("User-Agent", userAgent)
+                                    setDescription("İndiriliyor...")
+                                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                    setDestinationInExternalPublicDir(
+                                        android.os.Environment.DIRECTORY_DOWNLOADS,
+                                        URLUtil.guessFileName(url, contentDisposition, mimeType)
+                                    )
+                                }
+                                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                                dm.enqueue(req)
+                                Toast.makeText(context, "İndirme başlatıldı", Toast.LENGTH_SHORT).show()
+                            }.onFailure {
+                                Toast.makeText(context, "İndirme başlatılamadı", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                         webChromeClient = object : WebChromeClient() {
                             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                 loading = newProgress < 100
                             }
+
+                            override fun onShowFileChooser(
+                                webView: WebView?,
+                                filePathCallback: ValueCallback<Array<Uri>>?,
+                                fileChooserParams: FileChooserParams?
+                            ): Boolean {
+                                fileChooserCallback?.onReceiveValue(null)
+                                fileChooserCallback = filePathCallback
+                                val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
+                                    addCategory(Intent.CATEGORY_OPENABLE)
+                                    type = "*/*"
+                                }
+                                runCatching {
+                                    filePickerLauncher.launch(intent)
+                                }.onFailure {
+                                    fileChooserCallback?.onReceiveValue(null)
+                                    fileChooserCallback = null
+                                }
+                                return true
+                            }
                         }
                         webViewClient = object : WebViewClient() {
                             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                                return false
+                                val target = request?.url?.toString().orEmpty()
+                                if (target.isBlank()) {
+                                    return false
+                                }
+                                val lower = target.lowercase(Locale.getDefault())
+                                val isHttp = lower.startsWith("http://") || lower.startsWith("https://")
+                                if (isHttp && isAllowedWebUrl(target)) {
+                                    return false
+                                }
+                                runCatching {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
+                                }
+                                return true
+                            }
+
+                            override fun onReceivedError(
+                                view: WebView?,
+                                request: WebResourceRequest?,
+                                error: android.webkit.WebResourceError?
+                            ) {
+                                if (request?.isForMainFrame == true) {
+                                    offline = true
+                                    settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+                                }
+                            }
+
+                            override fun onReceivedHttpError(
+                                view: WebView?,
+                                request: WebResourceRequest?,
+                                errorResponse: android.webkit.WebResourceResponse?
+                            ) {
+                                if (request?.isForMainFrame == true) {
+                                    val status = errorResponse?.statusCode ?: 0
+                                    if (status == 401 || status == 403) {
+                                        webPrefs.edit().putString(WEB_LAST_URL, WEB_BASE_URL).apply()
+                                        view?.post { view.loadUrl(WEB_BASE_URL) }
+                                    }
+                                }
                             }
 
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 canGoBack = view?.canGoBack() == true
                                 loading = false
+                                offline = false
+                                settings.cacheMode = WebSettings.LOAD_DEFAULT
+                                val currentUrl = url ?: view?.url ?: ""
+                                if (isAllowedWebUrl(currentUrl)) {
+                                    webPrefs.edit().putString(WEB_LAST_URL, currentUrl).apply()
+                                }
                                 scope.launch {
                                     Api.syncFcmTokenWithCurrentSession(context)
                                 }
                             }
                         }
-                        loadUrl("https://dtz-lid.com")
+                        loadUrl(startUrl)
                     }
                 },
                 update = { view ->
@@ -153,7 +446,61 @@ fun WebAppScreen() {
             if (loading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter))
             }
+            if (offline) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp)
+                ) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Bağlantı yok", style = MaterialTheme.typography.titleMedium)
+                        Text("İnternet gelince sayfa otomatik yenilenir.")
+                        OutlinedButton(onClick = { webViewRef?.reload() }) {
+                            Text("Yeniden Dene")
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    if (showHistory) {
+        AlertDialog(
+            onDismissRequest = { showHistory = false },
+            title = { Text("Bildirim Geçmişi") },
+            text = {
+                if (historyItems.isEmpty()) {
+                    Text("Henüz bildirim yok.")
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(historyItems) { row ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showHistory = false
+                                        if (row.deepLinkUrl.isNotBlank()) {
+                                            openSafeUrl(row.deepLinkUrl)
+                                        }
+                                    }
+                            ) {
+                                Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(row.title, fontWeight = FontWeight.SemiBold)
+                                    Text(row.body)
+                                    Text(
+                                        SimpleDateFormat("dd.MM HH:mm", Locale.getDefault()).format(Date(row.createdAt)),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showHistory = false }) { Text("Kapat") }
+            }
+        )
     }
 
     DisposableEffect(Unit) {
