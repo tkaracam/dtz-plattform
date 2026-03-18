@@ -13,6 +13,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -21,6 +22,8 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.RenderProcessGoneDetail
+import android.webkit.SslErrorHandler
 import android.webkit.WebSettings
 import android.webkit.ValueCallback
 import android.webkit.WebView
@@ -220,6 +223,8 @@ fun WebAppScreen() {
     var canGoBack by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     var offline by remember { mutableStateOf(false) }
+    var loadTimedOut by remember { mutableStateOf(false) }
+    var webViewGeneration by remember { mutableStateOf(0) }
     var showHistory by remember { mutableStateOf(false) }
     var historyItems by remember { mutableStateOf(NotificationCenter.list(context)) }
     var historyFilter by remember { mutableStateOf("all") }
@@ -227,6 +232,7 @@ fun WebAppScreen() {
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
+    var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     val favorites = remember {
         val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
@@ -287,10 +293,26 @@ fun WebAppScreen() {
                     webViewRef?.post { webViewRef?.reload() }
                 }
             }
+
+            override fun onLost(network: Network) {
+                offline = !hasActiveInternet(context)
+            }
         }
         runCatching { connectivity.registerDefaultNetworkCallback(callback) }
         onDispose {
             runCatching { connectivity.unregisterNetworkCallback(callback) }
+        }
+    }
+
+    LaunchedEffect(loading, webViewGeneration) {
+        if (loading) {
+            loadTimedOut = false
+            kotlinx.coroutines.delay(20000)
+            if (loading) {
+                loadTimedOut = true
+            }
+        } else {
+            loadTimedOut = false
         }
     }
 
@@ -310,7 +332,7 @@ fun WebAppScreen() {
     Scaffold(
         topBar = {
             SmallTopAppBar(
-                title = { Text("DTZ-LID edu") },
+                title = { Text(currentPageTitle) },
                 actions = {
                     IconButton(onClick = {
                         historyItems = NotificationCenter.list(context)
@@ -333,13 +355,6 @@ fun WebAppScreen() {
                             onClick = {
                                 topMenuExpanded = false
                                 openSafeUrl(WEB_BASE_URL)
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Sayfayı Yenile") },
-                            onClick = {
-                                topMenuExpanded = false
-                                webViewRef?.reload()
                             }
                         )
                         DropdownMenuItem(
@@ -376,6 +391,20 @@ fun WebAppScreen() {
                             onClick = {
                                 topMenuExpanded = false
                                 showFavorites = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Tarayıcıda Aç") },
+                            onClick = {
+                                topMenuExpanded = false
+                                val current = webViewRef?.url.orEmpty()
+                                if (isAllowedWebUrl(current)) {
+                                    runCatching {
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(current)))
+                                    }.onFailure {
+                                        Toast.makeText(context, "Tarayıcı açılamadı", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
                         )
                         DropdownMenuItem(
@@ -440,21 +469,29 @@ fun WebAppScreen() {
                     }) { Text("Kapat") }
                 }
             }
-            AndroidView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = if (showFindBar) 94.dp else 42.dp),
-                factory = {
-                    WebView(context).apply {
+            key(webViewGeneration) {
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = if (showFindBar) 94.dp else 42.dp),
+                    factory = {
+                        WebView(context).apply {
                         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+                        android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.databaseEnabled = true
                         settings.cacheMode = WebSettings.LOAD_DEFAULT
+                        settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                        settings.setSupportMultipleWindows(false)
                         settings.javaScriptCanOpenWindowsAutomatically = true
                         settings.loadsImagesAutomatically = true
                         settings.allowFileAccess = true
                         settings.allowContentAccess = true
+                        settings.offscreenPreRaster = true
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            settings.safeBrowsingEnabled = true
+                        }
                         setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
                             runCatching {
                                 val req = DownloadManager.Request(Uri.parse(url)).apply {
@@ -477,6 +514,11 @@ fun WebAppScreen() {
                         webChromeClient = object : WebChromeClient() {
                             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                 loading = newProgress < 100
+                            }
+
+                            override fun onReceivedTitle(view: WebView?, title: String?) {
+                                val safeTitle = title?.trim().orEmpty()
+                                currentPageTitle = if (safeTitle.isNotBlank()) safeTitle else "DTZ-LID edu"
                             }
 
                             override fun onShowFileChooser(
@@ -512,8 +554,15 @@ fun WebAppScreen() {
                                 }
                                 runCatching {
                                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
+                                }.onFailure {
+                                    Toast.makeText(context, "Bağlantı açılamadı", Toast.LENGTH_SHORT).show()
                                 }
                                 return true
+                            }
+
+                            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                                loading = true
+                                loadTimedOut = false
                             }
 
                             override fun onReceivedError(
@@ -523,6 +572,7 @@ fun WebAppScreen() {
                             ) {
                                 if (request?.isForMainFrame == true) {
                                     offline = true
+                                    loadTimedOut = false
                                     settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                                 }
                             }
@@ -541,10 +591,21 @@ fun WebAppScreen() {
                                 }
                             }
 
+                            override fun onReceivedSslError(
+                                view: WebView?,
+                                handler: SslErrorHandler?,
+                                error: SslError?
+                            ) {
+                                handler?.cancel()
+                                loading = false
+                                Toast.makeText(context, "SSL hatası nedeniyle bağlantı engellendi", Toast.LENGTH_LONG).show()
+                            }
+
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 canGoBack = view?.canGoBack() == true
                                 loading = false
                                 offline = false
+                                loadTimedOut = false
                                 settings.cacheMode = WebSettings.LOAD_DEFAULT
                                 val currentUrl = url ?: view?.url ?: ""
                                 if (isAllowedWebUrl(currentUrl)) {
@@ -554,15 +615,25 @@ fun WebAppScreen() {
                                     Api.syncFcmTokenWithCurrentSession(context)
                                 }
                             }
+
+                            override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                                view?.destroy()
+                                webViewRef = null
+                                loading = true
+                                loadTimedOut = false
+                                webViewGeneration += 1
+                                return true
+                            }
                         }
                         loadUrl(startUrl)
+                        }
+                    },
+                    update = { view ->
+                        webViewRef = view
+                        canGoBack = view.canGoBack()
                     }
-                },
-                update = { view ->
-                    webViewRef = view
-                    canGoBack = view.canGoBack()
-                }
-            )
+                )
+            }
 
             if (loading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter))
@@ -578,6 +649,22 @@ fun WebAppScreen() {
                         Text("İnternet gelince sayfa otomatik yenilenir.")
                         OutlinedButton(onClick = { webViewRef?.reload() }) {
                             Text("Yeniden Dene")
+                        }
+                    }
+                }
+            }
+            if (loadTimedOut && !offline) {
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(16.dp)
+                ) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Yükleme uzun sürdü", style = MaterialTheme.typography.titleMedium)
+                        Text("Sayfayı yeniden deneyebilir veya ana sayfaya dönebilirsiniz.")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = { webViewRef?.reload() }) { Text("Tekrar Dene") }
+                            Button(onClick = { openSafeUrl(WEB_BASE_URL) }) { Text("Ana Sayfa") }
                         }
                     }
                 }
