@@ -385,9 +385,6 @@ fun WebAppScreen() {
     var commandQuery by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
-    var webTtsReady by remember { mutableStateOf(false) }
-    var webReadingAloud by remember { mutableStateOf(false) }
-    var webTts by remember { mutableStateOf<TextToSpeech?>(null) }
     var defaultUserAgent by remember { mutableStateOf("") }
     var fileChooserCallback by remember { mutableStateOf<ValueCallback<Array<Uri>>?>(null) }
     var pendingWebPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
@@ -514,66 +511,6 @@ fun WebAppScreen() {
             .putBoolean(WEB_USE_LAST_URL, useLastUrlOnLaunch)
             .putString(WEB_START_URL, startPageUrl)
             .apply()
-    }
-
-    fun stopReadAloud() {
-        webTts?.stop()
-        webReadingAloud = false
-    }
-
-    fun decodeJsString(result: String): String {
-        var s = result.trim()
-        if (s.startsWith("\"") && s.endsWith("\"") && s.length >= 2) {
-            s = s.substring(1, s.length - 1)
-        }
-        return s
-            .replace("\\n", "\n")
-            .replace("\\t", "\t")
-            .replace("\\\"", "\"")
-            .replace("\\\\", "\\")
-            .replace("\\u003C", "<")
-            .replace("\\u003E", ">")
-            .replace("\\u0026", "&")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-    }
-
-    fun splitForTts(text: String, maxLen: Int = 2800): List<String> {
-        if (text.length <= maxLen) return listOf(text)
-        val out = mutableListOf<String>()
-        var remaining = text
-        while (remaining.length > maxLen) {
-            val cut = remaining.lastIndexOf(' ', startIndex = maxLen).let { if (it > 200) it else maxLen }
-            out += remaining.substring(0, cut).trim()
-            remaining = remaining.substring(cut).trim()
-        }
-        if (remaining.isNotBlank()) out += remaining
-        return out
-    }
-
-    fun startReadAloud() {
-        val engine = webTts
-        if (!webTtsReady || engine == null) {
-            Toast.makeText(context, "Ses motoru hazır değil", Toast.LENGTH_SHORT).show()
-            return
-        }
-        webViewRef?.evaluateJavascript(
-            "(function(){var t=document.body?document.body.innerText:'';return JSON.stringify(t||'');})();"
-        ) { res ->
-            val plain = decodeJsString(res.orEmpty())
-            if (plain.isBlank()) {
-                Toast.makeText(context, "Okunacak metin bulunamadı", Toast.LENGTH_SHORT).show()
-                webReadingAloud = false
-                return@evaluateJavascript
-            }
-            val chunks = splitForTts(plain)
-            stopReadAloud()
-            chunks.forEachIndexed { idx, chunk ->
-                val queueMode = if (idx == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
-                engine.speak(chunk, queueMode, null, "web-tts-$idx")
-            }
-            webReadingAloud = true
-        }
     }
 
     fun addRecentPage(url: String, title: String) {
@@ -760,42 +697,6 @@ fun WebAppScreen() {
         }
         if (autoNetworkOptimize) {
             applyNetworkOptimizedProfile()
-        }
-    }
-
-    DisposableEffect(Unit) {
-        var localTts: TextToSpeech? = null
-        val tts = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                localTts?.language = Locale.GERMANY
-                localTts?.setSpeechRate(0.93f)
-                localTts?.setPitch(1.0f)
-                webTtsReady = true
-            } else {
-                webTtsReady = false
-            }
-        }
-        localTts = tts
-        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) {}
-            override fun onError(utteranceId: String?) {
-                Handler(Looper.getMainLooper()).post { webReadingAloud = false }
-            }
-            override fun onDone(utteranceId: String?) {
-                Handler(Looper.getMainLooper()).post {
-                    if (utteranceId?.startsWith("web-tts-") == true) {
-                        webReadingAloud = false
-                    }
-                }
-            }
-        })
-        webTts = tts
-        onDispose {
-            webReadingAloud = false
-            webTtsReady = false
-            tts.stop()
-            tts.shutdown()
-            webTts = null
         }
     }
 
@@ -1040,13 +941,6 @@ fun WebAppScreen() {
                                 topMenuExpanded = false
                                 commandQuery = ""
                                 showCommandCenter = true
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(if (webReadingAloud) "Sesli Okumayı Durdur" else "Sayfayı Sesli Oku") },
-                            onClick = {
-                                topMenuExpanded = false
-                                if (webReadingAloud) stopReadAloud() else startReadAloud()
                             }
                         )
                         DropdownMenuItem(
@@ -1406,7 +1300,6 @@ fun WebAppScreen() {
                             }
 
                             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
-                                stopReadAloud()
                                 loading = true
                                 loadProgress = 0
                                 loadTimedOut = false
@@ -2194,10 +2087,7 @@ fun WebAppScreen() {
             "WebView Ayarları" to { showSettings = true },
             "Sayfa Bilgisi" to { showPageInfoDialog = true },
             "Sayfada Ara" to { showFindBar = true },
-            "Ağa Göre Optimize Et" to { applyNetworkOptimizedProfile() },
-            (if (webReadingAloud) "Sesli Okumayı Durdur" else "Sayfayı Sesli Oku") to {
-                if (webReadingAloud) stopReadAloud() else startReadAloud()
-            }
+            "Ağa Göre Optimize Et" to { applyNetworkOptimizedProfile() }
         )
         val filtered = commands.filter {
             commandQuery.isBlank() || it.first.contains(commandQuery, ignoreCase = true)
