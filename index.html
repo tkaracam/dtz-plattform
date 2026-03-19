@@ -5212,9 +5212,11 @@
     }
 
     function updateHeroHomeVisibility(mode) {
+      const internArea = document.getElementById("internArea");
       const heroHomeContent = document.getElementById("heroHomeContent");
       if (!heroHomeContent) return;
       const showHome = mode === "" || mode === "home";
+      if (internArea) internArea.classList.toggle("hidden", !showHome);
       heroHomeContent.classList.toggle("hidden", !showHome);
     }
 
