@@ -2779,50 +2779,6 @@
                   <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
                 </div>
               </div>
-              <div>
-                <label for="hwTaskTemplateHoeren"><strong>Hören</strong> · Aufgabe zuweisen</label>
-                <select id="hwTaskTemplateHoeren">
-                  <option value="">Bitte Aufgabe wählen</option>
-                </select>
-                <label for="hwTaskPreviewHoeren" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
-                <textarea id="hwTaskPreviewHoeren" rows="5"></textarea>
-                <div class="actions" style="margin-top:8px;">
-                  <button id="createHomeworkHoerenBtn" type="button">Hören zuweisen</button>
-                </div>
-              </div>
-              <div>
-                <label for="hwTaskTemplateLesen"><strong>Lesen</strong> · Aufgabe zuweisen</label>
-                <select id="hwTaskTemplateLesen">
-                  <option value="">Bitte Aufgabe wählen</option>
-                </select>
-                <label for="hwTaskPreviewLesen" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
-                <textarea id="hwTaskPreviewLesen" rows="5"></textarea>
-                <div class="actions" style="margin-top:8px;">
-                  <button id="createHomeworkLesenBtn" type="button">Lesen zuweisen</button>
-                </div>
-              </div>
-              <div>
-                <label for="hwTaskTemplateMail"><strong>Mail-Aufgabe</strong> · Aufgabe zuweisen</label>
-                <select id="hwTaskTemplateMail">
-                  <option value="">Bitte Aufgabe wählen</option>
-                </select>
-                <label for="hwTaskPreviewMail" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
-                <textarea id="hwTaskPreviewMail" rows="5"></textarea>
-                <div class="actions" style="margin-top:8px;">
-                  <button id="createHomeworkMailBtn" type="button">Mail-Aufgabe zuweisen</button>
-                </div>
-              </div>
-              <div>
-                <label for="hwTaskTemplateMock"><strong>DTZ Mock-Prüfung (Komplett)</strong> · Aufgabe zuweisen</label>
-                <select id="hwTaskTemplateMock">
-                  <option value="">Bitte Aufgabe wählen</option>
-                </select>
-                <label for="hwTaskPreviewMock" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
-                <textarea id="hwTaskPreviewMock" rows="5"></textarea>
-                <div class="actions" style="margin-top:8px;">
-                  <button id="createHomeworkMockBtn" type="button">Mock-Prüfung zuweisen</button>
-                </div>
-              </div>
               <div id="hwCourseWrap">
                 <label for="hwCourseId">Kurs / Gruppe auswählen</label>
                 <select id="hwCourseId">
@@ -10145,11 +10101,8 @@
       }
       setCourseActive(selectedCourseId, false);
     });
-    document.getElementById("createHomeworkHoerenBtn").addEventListener("click", () => createHomeworkAssignment("hoeren"));
-    document.getElementById("createHomeworkLesenBtn").addEventListener("click", () => createHomeworkAssignment("lesen"));
-    document.getElementById("createHomeworkMailBtn").addEventListener("click", () => createHomeworkAssignment("mail"));
-    document.getElementById("createHomeworkMockBtn").addEventListener("click", () => createHomeworkAssignment("mock"));
-    document.getElementById("createHomeworkBatchBtn").addEventListener("click", createHomeworkBatchAssignments);
+    const createHomeworkBatchBtn = document.getElementById("createHomeworkBatchBtn");
+    if (createHomeworkBatchBtn) createHomeworkBatchBtn.addEventListener("click", createHomeworkBatchAssignments);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
@@ -10177,26 +10130,13 @@
       syncHomeworkTargetVisibility();
       persistHomeworkQuickDefaults();
     });
-    document.getElementById("hwTaskTemplateHoeren").addEventListener("change", () => {
-      updateHomeworkTemplatePreview("hoeren");
-      persistHomeworkQuickDefaults();
-    });
-    document.getElementById("hwTaskTemplateLesen").addEventListener("change", () => {
-      updateHomeworkTemplatePreview("lesen");
-      persistHomeworkQuickDefaults();
-    });
-    document.getElementById("hwTaskTemplateMail").addEventListener("change", () => {
-      updateHomeworkTemplatePreview("mail");
-      persistHomeworkQuickDefaults();
-    });
-    document.getElementById("hwTaskTemplateMock").addEventListener("change", () => {
-      updateHomeworkTemplatePreview("mock");
-      persistHomeworkQuickDefaults();
-    });
-    document.getElementById("hwTaskTemplatesMulti").addEventListener("change", () => {
-      updateHomeworkTemplateMultiPreview();
-      persistHomeworkQuickDefaults();
-    });
+    const hwTaskTemplatesMulti = document.getElementById("hwTaskTemplatesMulti");
+    if (hwTaskTemplatesMulti) {
+      hwTaskTemplatesMulti.addEventListener("change", () => {
+        updateHomeworkTemplateMultiPreview();
+        persistHomeworkQuickDefaults();
+      });
+    }
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationValue").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationUnit").addEventListener("change", persistHomeworkQuickDefaults);
