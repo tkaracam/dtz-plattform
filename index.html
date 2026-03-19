@@ -3832,6 +3832,7 @@
       const statsMetaNode = document.getElementById("dashStatsMeta");
       const recNode = document.getElementById("dashRecommendation");
       const annNode = document.getElementById("dashAnnouncement");
+      const dashStartTaskBtn = document.getElementById("dashStartTaskBtn");
       if (!todayTaskNode || !statsMainNode || !statsMetaNode) return;
 
       const solved = Number(homeDashboardState.solved_total || 0);
@@ -3842,6 +3843,12 @@
 
       if (lastSectionNode) lastSectionNode.textContent = String(homeDashboardState.last_section || "Portal");
       todayTaskNode.textContent = getTodayTaskLabel();
+      const hasAssignedTask = !!(currentAssignedHomework && String(currentAssignedHomework.id || "").trim());
+      if (dashStartTaskBtn) {
+        const wrap = dashStartTaskBtn.closest(".btn-wrap");
+        if (wrap) wrap.style.display = hasAssignedTask ? "" : "none";
+        dashStartTaskBtn.style.display = hasAssignedTask ? "" : "none";
+      }
       statsMainNode.textContent = `${solved} Test · %${accuracy}`;
       statsMetaNode.textContent = `Serie: ${Number(homeDashboardState.streak_days || 0)} Tage · Richtig: ${correct}/${answered}`;
       if (recNode) recNode.textContent = rec.label;
