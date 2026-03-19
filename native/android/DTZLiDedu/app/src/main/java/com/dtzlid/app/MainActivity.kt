@@ -121,6 +121,7 @@ private const val WEB_FAVORITES = "favorites"
 private const val WEB_DESKTOP_MODE = "desktop_mode"
 private const val WEB_TEXT_ZOOM = "text_zoom"
 private const val WEB_KEEP_SCREEN_ON = "keep_screen_on"
+private const val WEB_RECENT_PAGES = "recent_pages"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
 private const val WEBVIEW_TAG_UA = "DTZLiDWebView/1.0"
 private const val WEB_RECENT_PAGES_LIMIT = 50
@@ -130,6 +131,36 @@ private data class WebRecentPage(
     val url: String,
     val visitedAt: Long
 )
+
+private fun loadRecentPages(prefs: android.content.SharedPreferences): List<WebRecentPage> {
+    val raw = prefs.getString(WEB_RECENT_PAGES, "[]").orEmpty()
+    val arr = runCatching { JSONArray(raw) }.getOrElse { JSONArray() }
+    val out = mutableListOf<WebRecentPage>()
+    for (i in 0 until arr.length()) {
+        val row = arr.optJSONObject(i) ?: continue
+        val normalized = normalizeAllowedWebUrl(row.optString("url", "")) ?: continue
+        val title = row.optString("title", normalized).ifBlank { normalized }
+        val visitedAt = row.optLong("visitedAt", System.currentTimeMillis())
+        out += WebRecentPage(title = title, url = normalized, visitedAt = visitedAt)
+    }
+    return out.sortedByDescending { it.visitedAt }.take(WEB_RECENT_PAGES_LIMIT)
+}
+
+private fun persistRecentPages(
+    prefs: android.content.SharedPreferences,
+    pages: List<WebRecentPage>
+) {
+    val arr = JSONArray()
+    pages.take(WEB_RECENT_PAGES_LIMIT).forEach { row ->
+        arr.put(
+            JSONObject()
+                .put("title", row.title)
+                .put("url", row.url)
+                .put("visitedAt", row.visitedAt)
+        )
+    }
+    prefs.edit().putString(WEB_RECENT_PAGES, arr.toString()).apply()
+}
 
 private fun isAllowedWebUrl(url: String): Boolean {
     return normalizeAllowedWebUrl(url) != null
@@ -267,6 +298,7 @@ fun WebAppScreen() {
     var showFavorites by remember { mutableStateOf(false) }
     var showRecentPages by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showScrollTop by remember { mutableStateOf(false) }
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
@@ -279,7 +311,7 @@ fun WebAppScreen() {
     var desktopMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_DESKTOP_MODE, false)) }
     var textZoom by remember { mutableStateOf(webPrefs.getInt(WEB_TEXT_ZOOM, 100).coerceIn(70, 180)) }
     var keepScreenOn by remember { mutableStateOf(webPrefs.getBoolean(WEB_KEEP_SCREEN_ON, false)) }
-    val recentPages = remember { mutableStateListOf<WebRecentPage>() }
+    val recentPages = remember { loadRecentPages(webPrefs).toMutableStateList() }
     val favorites = remember {
         val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
         raw.split("\n")
@@ -374,6 +406,7 @@ fun WebAppScreen() {
         while (recentPages.size > WEB_RECENT_PAGES_LIMIT) {
             recentPages.removeLast()
         }
+        persistRecentPages(webPrefs, recentPages)
     }
 
     LaunchedEffect(Unit) {
@@ -663,6 +696,9 @@ fun WebAppScreen() {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             settings.safeBrowsingEnabled = true
                         }
+                        setOnScrollChangeListener { _, _, scrollY, _, _ ->
+                            showScrollTop = scrollY > 600
+                        }
                         setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
                             runCatching {
                                 val req = DownloadManager.Request(Uri.parse(url)).apply {
@@ -844,6 +880,7 @@ fun WebAppScreen() {
                                 loading = true
                                 loadProgress = 0
                                 loadTimedOut = false
+                                showScrollTop = false
                             }
 
                             override fun onReceivedError(
@@ -927,6 +964,7 @@ fun WebAppScreen() {
                         webViewRef = view
                         canGoBack = view.canGoBack()
                         canGoForward = view.canGoForward()
+                        showScrollTop = view.scrollY > 600
                         applyRuntimeWebPreferences(view)
                     }
                 )
@@ -976,6 +1014,21 @@ fun WebAppScreen() {
                     }
                 }
             }
+            if (showScrollTop) {
+                SmallFloatingActionButton(
+                    onClick = {
+                        webViewRef?.post {
+                            webViewRef?.pageUp(true)
+                            webViewRef?.scrollTo(0, 0)
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 14.dp, bottom = 70.dp)
+                ) {
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Yukarı Çık")
+                }
+            }
             Surface(
                 tonalElevation = 4.dp,
                 shadowElevation = 6.dp,
@@ -1013,6 +1066,16 @@ fun WebAppScreen() {
                     IconButton(
                         onClick = { openSafeUrl(WEB_BASE_URL) }
                     ) { Icon(Icons.Default.Home, contentDescription = "Ana Sayfa") }
+                    IconButton(
+                        onClick = {
+                            if (loading) webViewRef?.stopLoading() else webViewRef?.reload()
+                        }
+                    ) {
+                        Icon(
+                            if (loading) Icons.Default.Close else Icons.Default.Refresh,
+                            contentDescription = if (loading) "Yüklemeyi Durdur" else "Yenile"
+                        )
+                    }
                     IconButton(
                         onClick = { showFavorites = true }
                     ) { Icon(Icons.Default.Favorite, contentDescription = "Favoriler") }
@@ -1164,7 +1227,10 @@ fun WebAppScreen() {
                 TextButton(onClick = { showRecentPages = false }) { Text("Kapat") }
             },
             dismissButton = {
-                TextButton(onClick = { recentPages.clear() }) { Text("Temizle") }
+                TextButton(onClick = {
+                    recentPages.clear()
+                    persistRecentPages(webPrefs, recentPages)
+                }) { Text("Temizle") }
             }
         )
     }
