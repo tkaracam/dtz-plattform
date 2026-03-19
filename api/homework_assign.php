@@ -95,14 +95,25 @@ function build_unique_dtz_bundle(string $module, int $teil): array
         $available[] = $item;
     }
 
+    $reusedCycle = false;
     if (!$available) {
-        throw new RuntimeException('Für dieses Teil sind aktuell keine neuen Fragen mehr verfügbar (ohne Wiederholung).');
+        // Pool is exhausted for this Teil: start a fresh cycle instead of failing assignment creation.
+        $reusedCycle = true;
+        $available = array_values(array_filter($items, static function ($item): bool {
+            return is_array($item) && trim((string)($item['template_id'] ?? '')) !== '';
+        }));
+        $usedLookup = [];
+    }
+
+    if (!$available) {
+        throw new RuntimeException('Für dieses Teil sind aktuell keine Fragen verfügbar.');
     }
 
     $targetCount = $module === 'hoeren' ? 8 : 10;
     if ($targetCount > count($available)) {
         $targetCount = count($available);
     }
+    shuffle($available);
     $picked = array_slice($available, 0, $targetCount);
 
     foreach ($picked as $row) {
@@ -123,6 +134,7 @@ function build_unique_dtz_bundle(string $module, int $teil): array
         'module' => $module,
         'teil' => $teil,
         'items' => $picked,
+        'reused_cycle' => $reusedCycle,
     ];
 }
 
@@ -131,13 +143,16 @@ function format_dtz_bundle_description(string $baseDescription, array $bundle): 
     $module = (string)($bundle['module'] ?? '');
     $teil = (int)($bundle['teil'] ?? 0);
     $items = is_array($bundle['items'] ?? null) ? $bundle['items'] : [];
+    $reusedCycle = !empty($bundle['reused_cycle']);
     $moduleLabel = $module === 'hoeren' ? 'Hören' : 'Lesen';
     $lines = [];
     $lines[] = trim($baseDescription);
     $lines[] = '';
     $lines[] = '--- Automatisch zugewiesenes Fragenpaket ---';
     $lines[] = "Bereich: {$moduleLabel} Teil {$teil}";
-    $lines[] = 'Hinweis: Diese Fragen wurden für diese Aufgabe neu vergeben (ohne Wiederholung).';
+    $lines[] = $reusedCycle
+        ? 'Hinweis: Fragenpool wurde neu gestartet (Wiederholung möglich).'
+        : 'Hinweis: Diese Fragen wurden für diese Aufgabe neu vergeben (ohne Wiederholung).';
     foreach ($items as $idx => $item) {
         $qid = trim((string)($item['template_id'] ?? ''));
         $question = trim((string)($item['question'] ?? $item['title'] ?? ''));
