@@ -374,6 +374,7 @@ fun WebAppScreen() {
     var showJumpDialog by remember { mutableStateOf(false) }
     var showPageInfoDialog by remember { mutableStateOf(false) }
     var showImportSettingsDialog by remember { mutableStateOf(false) }
+    var showCommandCenter by remember { mutableStateOf(false) }
     var showScrollTop by remember { mutableStateOf(false) }
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
@@ -381,6 +382,7 @@ fun WebAppScreen() {
     var findActiveMatch by remember { mutableStateOf(0) }
     var jumpInput by remember { mutableStateOf("") }
     var importSettingsInput by remember { mutableStateOf("") }
+    var commandQuery by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
     var defaultUserAgent by remember { mutableStateOf("") }
@@ -931,6 +933,14 @@ fun WebAppScreen() {
                             onClick = {
                                 topMenuExpanded = false
                                 showSettings = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Komut Merkezi") },
+                            onClick = {
+                                topMenuExpanded = false
+                                commandQuery = ""
+                                showCommandCenter = true
                             }
                         )
                         DropdownMenuItem(
@@ -2057,6 +2067,64 @@ fun WebAppScreen() {
             },
             dismissButton = {
                 TextButton(onClick = { showImportSettingsDialog = false }) { Text("Kapat") }
+            }
+        )
+    }
+
+    if (showCommandCenter) {
+        val commands = listOf(
+            "Ana Sayfa" to { goHome() },
+            "DTZ Bölümü" to { openSafeUrl("$WEB_BASE_URL/#dtz") },
+            "Schreiben Bölümü" to { openSafeUrl("$WEB_BASE_URL/#schreiben") },
+            "Portal Bölümü" to { openSafeUrl("$WEB_BASE_URL/#portal") },
+            "Dozent Paneli" to { openSafeUrl("$WEB_BASE_URL/admin.html") },
+            "Favorileri Aç" to { showFavorites = true },
+            "Son Sayfaları Aç" to { showRecentPages = true },
+            "Bildirim Geçmişi" to {
+                historyItems = NotificationCenter.list(context)
+                showHistory = true
+            },
+            "WebView Ayarları" to { showSettings = true },
+            "Sayfa Bilgisi" to { showPageInfoDialog = true },
+            "Sayfada Ara" to { showFindBar = true },
+            "Ağa Göre Optimize Et" to { applyNetworkOptimizedProfile() }
+        )
+        val filtered = commands.filter {
+            commandQuery.isBlank() || it.first.contains(commandQuery, ignoreCase = true)
+        }
+        AlertDialog(
+            onDismissRequest = { showCommandCenter = false },
+            title = { Text("Komut Merkezi") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = commandQuery,
+                        onValueChange = { commandQuery = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Komut ara...") },
+                        singleLine = true
+                    )
+                    if (filtered.isEmpty()) {
+                        Text("Eşleşen komut yok.")
+                    } else {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(filtered) { row ->
+                                OutlinedButton(
+                                    onClick = {
+                                        showCommandCenter = false
+                                        row.second.invoke()
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(row.first)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showCommandCenter = false }) { Text("Kapat") }
             }
         )
     }
