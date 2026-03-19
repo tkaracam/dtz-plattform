@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Outer circle -->
+  <circle cx="256" cy="256" r="220" stroke="#333" stroke-width="12" fill="none"/>
+
+  <!-- Book base -->
+  <path d="M140 300 Q256 240 372 300" stroke="#333" stroke-width="10" fill="none"/>
+
+  <!-- Left page (black + gold) -->
+  <path d="M160 280 Q230 250 256 280 L256 330 Q220 310 160 330 Z" fill="#000000"/>
+  <path d="M160 330 Q220 310 256 330 L256 350 Q220 335 160 350 Z" fill="#FFCC00"/>
+
+  <!-- Right page (red + gold) -->
+  <path d="M256 280 Q282 250 352 280 L352 330 Q292 310 256 330 Z" fill="#DD0000"/>
+  <path d="M256 330 Q292 310 352 330 L352 350 Q292 335 256 350 Z" fill="#FFCC00"/>
+
+  <!-- Graduation cap -->
+  <polygon points="200,180 312,180 350,210 162,210" fill="#333"/>
+  <rect x="230" y="210" width="52" height="20" fill="#333"/>
+  
+  <!-- Tassel -->
+  <line x1="210" y1="210" x2="210" y2="250" stroke="#333" stroke-width="6"/>
+  <circle cx="210" cy="255" r="6" fill="#333"/>
+
+</svg>
