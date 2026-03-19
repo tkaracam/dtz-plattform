@@ -216,11 +216,15 @@
     }
 
     .nav-sub-links {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
       margin-top: -2px;
       margin-bottom: 2px;
+    }
+
+    .nav-sub-links.open {
+      display: grid;
     }
 
     .nav-sub-link {
@@ -2945,8 +2949,8 @@
         <div class="nav-links">
           <button id="navHomeBtn" class="nav-link" type="button">Start</button>
           <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
-          <button id="navNiveauBtn" class="nav-link" type="button">Niveau</button>
-          <div class="nav-sub-links" aria-label="Niveau Untermenü">
+          <button id="navNiveauBtn" class="nav-link" type="button" aria-expanded="false" aria-controls="navNiveauSubmenu">Niveau</button>
+          <div id="navNiveauSubmenu" class="nav-sub-links" aria-label="Niveau Untermenü">
             <button id="navHoerenBtn" class="nav-sub-link" type="button">Hören</button>
             <button id="navLesenBtn" class="nav-sub-link" type="button">Lesen</button>
             <button id="navSchreibenBtn" class="nav-sub-link" type="button">Schreiben</button>
@@ -8135,6 +8139,10 @@
     function closeNavOnMobile() {
       const nav = document.getElementById("topNav");
       if (nav) nav.classList.remove("open");
+      const submenu = document.getElementById("navNiveauSubmenu");
+      if (submenu) submenu.classList.remove("open");
+      const niveauBtn = document.getElementById("navNiveauBtn");
+      if (niveauBtn) niveauBtn.setAttribute("aria-expanded", "false");
     }
 
     const QUICK_ACTIONS = [
@@ -10966,7 +10974,15 @@
     const navPortalBtn = document.getElementById("navPortalBtn");
     if (navPortalBtn) navPortalBtn.addEventListener("click", () => navigateToSection("portal"));
     const navNiveauBtn = document.getElementById("navNiveauBtn");
-    if (navNiveauBtn) navNiveauBtn.addEventListener("click", () => navigateToSection("niveau"));
+    const navNiveauSubmenu = document.getElementById("navNiveauSubmenu");
+    if (navNiveauBtn) {
+      navNiveauBtn.addEventListener("click", () => {
+        if (!navNiveauSubmenu) return;
+        const willOpen = !navNiveauSubmenu.classList.contains("open");
+        navNiveauSubmenu.classList.toggle("open", willOpen);
+        navNiveauBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+    }
     const navHoerenBtn = document.getElementById("navHoerenBtn");
     if (navHoerenBtn) navHoerenBtn.addEventListener("click", () => navigateToSection("dtz-hoeren"));
     const navLesenBtn = document.getElementById("navLesenBtn");
