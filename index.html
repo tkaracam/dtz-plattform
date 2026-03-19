@@ -3568,6 +3568,7 @@
         <div class="dtz-training-modules">
           <button id="dtzHubHoerenBtn" type="button" class="dtz-module-btn">Hören</button>
           <button id="dtzHubLesenBtn" type="button" class="dtz-module-btn">Lesen</button>
+          <button id="dtzHubModelltestBtn" type="button" class="dtz-module-btn">Modelltest</button>
           <button id="dtzHubWriteBtn" type="button" class="dtz-module-btn">Schreiben</button>
           <button id="dtzHubSpeakingBtn" type="button" class="dtz-module-btn">Sprechen</button>
         </div>
@@ -5644,6 +5645,35 @@
       setAccordionOpen("dtzLesenAccordion", false);
       setDtzModuleButtonActive("");
       initDtzTrainingUi();
+    }
+
+    function openDtzModelltestView() {
+      showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
+      updateHeroHomeVisibility("dtz");
+      setHomeDashboardSection("dtz");
+      setAccordionOpen("dtzHoerenAccordion", true);
+      setAccordionOpen("dtzLesenAccordion", true);
+      setAccordionOpen("workAccordion", true);
+      setAccordionOpen("speakingAccordion", true);
+      setDtzModuleButtonActive("");
+      initDtzTrainingUi();
+
+      const hoerenUi = getDtzUi("hoeren");
+      if (hoerenUi.teilSelect) hoerenUi.teilSelect.value = "1";
+      syncDtzTeilFromSelect("hoeren");
+      updateDtzTeilButtons("hoeren");
+      updateDtzPartMeta("hoeren");
+
+      const lesenUi = getDtzUi("lesen");
+      if (lesenUi.teilSelect) lesenUi.teilSelect.value = "1";
+      syncDtzTeilFromSelect("lesen");
+      updateDtzTeilButtons("lesen");
+      updateDtzPartMeta("lesen");
+
+      loadDtzTrainingSet("hoeren");
+      loadDtzTrainingSet("lesen");
+      generateSpeakingSet();
+      setSpeakingTab(1);
     }
 
     function openDtzModuleView(module) {
@@ -8255,6 +8285,7 @@
       { key: "write", label: "Schreiben öffnen", hint: "Mail schreiben und prüfen", keywords: "schreiben brief mail korrektur", action: () => navigateToSection("write") },
       { key: "niveau", label: "Niveau öffnen", hint: "A1, A2, B1, B2", keywords: "niveau a1 a2 b1 b2", action: () => navigateToSection("niveau") },
       { key: "dtz", label: "DTZ öffnen", hint: "Hören, Lesen, Sprechen", keywords: "dtz hoeren lesen sprechen", action: () => navigateToSection("dtz") },
+      { key: "modelltest", label: "DTZ Modelltest", hint: "Komplett starten", keywords: "dtz modelltest mock komplett pruefung", action: () => openDtzModelltestView() },
       { key: "speaking", label: "Sprechen öffnen", hint: "Sprechen Teil 1-3", keywords: "sprechen muendlich", action: () => navigateToSection("speaking") },
       { key: "lid", label: "LiD öffnen", hint: "Leben in Deutschland", keywords: "lid leben in deutschland", action: () => navigateToSection("lid") },
       { key: "hoeren", label: "DTZ Hören öffnen", hint: "Hören Training", keywords: "dtz hoeren b1", action: () => navigateToSection("dtz-hoeren") },
@@ -11454,6 +11485,8 @@
     if (dtzHubHoerenBtn) dtzHubHoerenBtn.addEventListener("click", () => openDtzModuleView("hoeren"));
     const dtzHubLesenBtn = document.getElementById("dtzHubLesenBtn");
     if (dtzHubLesenBtn) dtzHubLesenBtn.addEventListener("click", () => openDtzModuleView("lesen"));
+    const dtzHubModelltestBtn = document.getElementById("dtzHubModelltestBtn");
+    if (dtzHubModelltestBtn) dtzHubModelltestBtn.addEventListener("click", () => openDtzModelltestView());
     const dtzHubWriteBtn = document.getElementById("dtzHubWriteBtn");
     if (dtzHubWriteBtn) dtzHubWriteBtn.addEventListener("click", () => openCorrectionView());
     const dtzHubSpeakingBtn = document.getElementById("dtzHubSpeakingBtn");
