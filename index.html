@@ -3391,6 +3391,17 @@
         </details>
       </section>
 
+      <section id="niveauCard" class="card hidden">
+        <h2 class="section-title">Niveau auswählen</h2>
+        <p class="section-subtitle">Bitte Niveau wählen: A1, A2, B1 oder B2.</p>
+        <div class="dtz-training-modules">
+          <button id="niveauA1Btn" type="button" class="dtz-module-btn">A1</button>
+          <button id="niveauA2Btn" type="button" class="dtz-module-btn">A2</button>
+          <button id="niveauB1Btn" type="button" class="dtz-module-btn">B1</button>
+          <button id="niveauB2Btn" type="button" class="dtz-module-btn">B2</button>
+        </div>
+      </section>
+
       <section id="dtzHubCard" class="card hidden">
         <h2 class="section-title">DTZ Training</h2>
         <p class="section-subtitle">Bitte Bereich auswählen: Hören, Lesen, Schreiben oder Sprechen.</p>
@@ -5160,7 +5171,7 @@
       return arr;
     }
 
-    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
+    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
 
     function hideMainCards() {
       MAIN_CARDS.forEach(id => {
@@ -5203,6 +5214,7 @@
         room: "roomCard",
         simulation: "simulationCard",
         lid: "lidClassicCard",
+        niveau: "niveauCard",
         dtz: "dtzHubCard",
         speaking: "speakingCard"
       };
@@ -5276,6 +5288,10 @@
 
     function openDtzHubView() {
       setMainView("dtz");
+    }
+
+    function openNiveauView() {
+      setMainView("niveau");
     }
 
     function openB1View() {
@@ -7861,6 +7877,7 @@
     const QUICK_ACTIONS = [
       { key: "portal", label: "Portal öffnen", hint: "Hausaufgaben, Schreiben, Korrekturen", keywords: "portal hausaufgaben korrekturen", action: () => navigateToSection("portal") },
       { key: "write", label: "Schreiben öffnen", hint: "Mail schreiben und prüfen", keywords: "schreiben brief mail korrektur", action: () => navigateToSection("write") },
+      { key: "niveau", label: "Niveau öffnen", hint: "A1, A2, B1, B2", keywords: "niveau a1 a2 b1 b2", action: () => navigateToSection("niveau") },
       { key: "dtz", label: "DTZ öffnen", hint: "Hören, Lesen, Sprechen", keywords: "dtz hoeren lesen sprechen", action: () => navigateToSection("dtz") },
       { key: "speaking", label: "Sprechen öffnen", hint: "Sprechen Teil 1-3", keywords: "sprechen muendlich", action: () => navigateToSection("speaking") },
       { key: "lid", label: "LiD öffnen", hint: "Leben in Deutschland", keywords: "lid leben in deutschland", action: () => navigateToSection("lid") },
@@ -7979,6 +7996,8 @@
         openLidView();
       } else if (target === "speaking") {
         openSpeakingView();
+      } else if (target === "niveau") {
+        openNiveauView();
       } else if (target === "dtz") {
         openDtzHubView();
       } else if (target === "b1") {
@@ -10737,9 +10756,25 @@
     const levelA2Btn = document.getElementById("levelA2Btn");
     if (levelA2Btn) {
       levelA2Btn.addEventListener("click", () => {
-        window.location.href = "./a2-themen.html";
+        navigateToSection("niveau");
       });
     }
+    const niveauA1Btn = document.getElementById("niveauA1Btn");
+    if (niveauA1Btn) niveauA1Btn.addEventListener("click", () => {
+      window.location.href = "./a1-themen.html";
+    });
+    const niveauA2Btn = document.getElementById("niveauA2Btn");
+    if (niveauA2Btn) niveauA2Btn.addEventListener("click", () => {
+      window.location.href = "./a2-themen.html";
+    });
+    const niveauB1Btn = document.getElementById("niveauB1Btn");
+    if (niveauB1Btn) niveauB1Btn.addEventListener("click", () => {
+      openDtzHubView();
+    });
+    const niveauB2Btn = document.getElementById("niveauB2Btn");
+    if (niveauB2Btn) niveauB2Btn.addEventListener("click", () => {
+      openCorrectionView();
+    });
     const levelPortalBtn = document.getElementById("levelPortalBtn");
     if (levelPortalBtn) levelPortalBtn.addEventListener("click", () => navigateToSection("portal"));
     removeArchivedBskFrontend();
