@@ -42,6 +42,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -50,6 +51,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -315,6 +318,8 @@ fun WebAppScreen() {
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var canGoBack by remember { mutableStateOf(false) }
     var canGoForward by remember { mutableStateOf(false) }
+    var showNavChrome by remember { mutableStateOf(true) }
+    var lastScrollY by remember { mutableStateOf(0) }
     var pageScrollPercent by remember { mutableStateOf(0) }
     var loading by remember { mutableStateOf(true) }
     var loadProgress by remember { mutableStateOf(0) }
@@ -678,26 +683,32 @@ fun WebAppScreen() {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Row(
+            AnimatedVisibility(
+                visible = showNavChrome,
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopStart)
-                    .padding(start = 8.dp, end = 8.dp, top = 2.dp)
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                AssistChip(onClick = { openSafeUrl(WEB_BASE_URL) }, label = { Text("Start") })
-                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#dtz") }, label = { Text("DTZ") })
-                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#schreiben") }, label = { Text("Schreiben") })
-                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#portal") }, label = { Text("Portal") })
-                AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/admin.html") }, label = { Text("Dozent") })
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp, top = 2.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    AssistChip(onClick = { openSafeUrl(WEB_BASE_URL) }, label = { Text("Start") })
+                    AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#dtz") }, label = { Text("DTZ") })
+                    AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#schreiben") }, label = { Text("Schreiben") })
+                    AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#portal") }, label = { Text("Portal") })
+                    AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/admin.html") }, label = { Text("Dozent") })
+                }
             }
             if (showFindBar) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.TopStart)
-                        .padding(start = 8.dp, end = 8.dp, top = 42.dp),
+                        .padding(start = 8.dp, end = 8.dp, top = if (showNavChrome) 42.dp else 2.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -721,7 +732,15 @@ fun WebAppScreen() {
                 AndroidView(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = if (showFindBar) 94.dp else 42.dp, bottom = 58.dp),
+                        .padding(
+                            top = when {
+                                showFindBar && showNavChrome -> 94.dp
+                                showFindBar && !showNavChrome -> 52.dp
+                                !showFindBar && showNavChrome -> 42.dp
+                                else -> 0.dp
+                            },
+                            bottom = if (showNavChrome) 58.dp else 0.dp
+                        ),
                     factory = {
                         WebView(context).apply {
                         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
@@ -748,6 +767,13 @@ fun WebAppScreen() {
                             settings.safeBrowsingEnabled = true
                         }
                         setOnScrollChangeListener { _, _, scrollY, _, _ ->
+                            val delta = scrollY - lastScrollY
+                            if (delta > 18 && scrollY > 220) {
+                                showNavChrome = false
+                            } else if (delta < -18) {
+                                showNavChrome = true
+                            }
+                            lastScrollY = scrollY
                             showScrollTop = scrollY > 600
                             val normalized = normalizeAllowedWebUrl(url.orEmpty())
                             if (normalized != null) {
@@ -938,8 +964,10 @@ fun WebAppScreen() {
                                 loading = true
                                 loadProgress = 0
                                 loadTimedOut = false
+                                showNavChrome = true
                                 showScrollTop = false
                                 pageScrollPercent = 0
+                                lastScrollY = 0
                             }
 
                             override fun onReceivedError(
@@ -1113,63 +1141,68 @@ fun WebAppScreen() {
                         .padding(start = 12.dp, bottom = 70.dp)
                 )
             }
-            Surface(
-                tonalElevation = 4.dp,
-                shadowElevation = 6.dp,
+            AnimatedVisibility(
+                visible = showNavChrome,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    tonalElevation = 4.dp,
+                    shadowElevation = 6.dp,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    IconButton(
-                        onClick = {
-                            rememberCurrentScroll(webViewRef)
-                            persistScrollPositions(webPrefs, pageScrollMap)
-                            webViewRef?.goBack()
-                            webViewRef?.post {
-                                canGoBack = webViewRef?.canGoBack() == true
-                                canGoForward = webViewRef?.canGoForward() == true
-                            }
-                        },
-                        enabled = canGoBack
-                    ) { Icon(Icons.Default.ArrowBack, contentDescription = "Geri") }
-                    IconButton(
-                        onClick = {
-                            rememberCurrentScroll(webViewRef)
-                            persistScrollPositions(webPrefs, pageScrollMap)
-                            webViewRef?.goForward()
-                            webViewRef?.post {
-                                canGoBack = webViewRef?.canGoBack() == true
-                                canGoForward = webViewRef?.canGoForward() == true
-                            }
-                        },
-                        enabled = canGoForward
-                    ) { Icon(Icons.Default.ArrowForward, contentDescription = "İleri") }
-                    IconButton(
-                        onClick = { openSafeUrl(WEB_BASE_URL) }
-                    ) { Icon(Icons.Default.Home, contentDescription = "Ana Sayfa") }
-                    IconButton(
-                        onClick = {
-                            if (loading) webViewRef?.stopLoading() else webViewRef?.reload()
-                        }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            if (loading) Icons.Default.Close else Icons.Default.Refresh,
-                            contentDescription = if (loading) "Yüklemeyi Durdur" else "Yenile"
-                        )
+                        IconButton(
+                            onClick = {
+                                rememberCurrentScroll(webViewRef)
+                                persistScrollPositions(webPrefs, pageScrollMap)
+                                webViewRef?.goBack()
+                                webViewRef?.post {
+                                    canGoBack = webViewRef?.canGoBack() == true
+                                    canGoForward = webViewRef?.canGoForward() == true
+                                }
+                            },
+                            enabled = canGoBack
+                        ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri") }
+                        IconButton(
+                            onClick = {
+                                rememberCurrentScroll(webViewRef)
+                                persistScrollPositions(webPrefs, pageScrollMap)
+                                webViewRef?.goForward()
+                                webViewRef?.post {
+                                    canGoBack = webViewRef?.canGoBack() == true
+                                    canGoForward = webViewRef?.canGoForward() == true
+                                }
+                            },
+                            enabled = canGoForward
+                        ) { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "İleri") }
+                        IconButton(
+                            onClick = { openSafeUrl(WEB_BASE_URL) }
+                        ) { Icon(Icons.Default.Home, contentDescription = "Ana Sayfa") }
+                        IconButton(
+                            onClick = {
+                                if (loading) webViewRef?.stopLoading() else webViewRef?.reload()
+                            }
+                        ) {
+                            Icon(
+                                if (loading) Icons.Default.Close else Icons.Default.Refresh,
+                                contentDescription = if (loading) "Yüklemeyi Durdur" else "Yenile"
+                            )
+                        }
+                        IconButton(
+                            onClick = { showFavorites = true }
+                        ) { Icon(Icons.Default.Favorite, contentDescription = "Favoriler") }
+                        IconButton(
+                            onClick = { showRecentPages = true }
+                        ) { Icon(Icons.Default.History, contentDescription = "Son Sayfalar") }
                     }
-                    IconButton(
-                        onClick = { showFavorites = true }
-                    ) { Icon(Icons.Default.Favorite, contentDescription = "Favoriler") }
-                    IconButton(
-                        onClick = { showRecentPages = true }
-                    ) { Icon(Icons.Default.History, contentDescription = "Son Sayfalar") }
                 }
             }
         }
