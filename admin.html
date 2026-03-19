@@ -3334,7 +3334,8 @@
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
-    const DOCENT_ALLOWED_PANES = new Set(["homeworks"]);
+    const DOCENT_ALLOWED_PANES = new Set(["homeworks", "coursebuilder"]);
+    const DOCENT_QUICK_PANES = new Set(["homeworks", "coursebuilder"]);
     const DOCENT_HIDE_MENU_IDS = [
       "jumpAccountsBtn",
       "jumpCourseBuilderBtn",
@@ -3794,7 +3795,7 @@
       document.querySelectorAll(".admin-quick-btn").forEach(btn => {
         const pane = String(btn.getAttribute("data-pane") || "");
         if (!pane) return;
-        btn.classList.toggle("hidden", enabled && pane !== "homeworks");
+        btn.classList.toggle("hidden", enabled && !DOCENT_QUICK_PANES.has(pane));
       });
       const andere = document.getElementById("adminAndereGroup");
       if (enabled && andere) andere.classList.add("hidden");
@@ -4035,10 +4036,10 @@
       const topCourseJump = document.getElementById("topCourseJumpSelect");
       if (topCourseJump) topCourseJump.disabled = false;
       const preferredPane = getStoredPreference(ADMIN_LAST_PANE_KEY);
-      if (isDocentSimpleMode()) {
-        activeAdminPane = "homeworks";
-      } else if (preferredPane && canAccessPane(preferredPane)) {
+      if (preferredPane && canAccessPane(preferredPane)) {
         activeAdminPane = preferredPane;
+      } else if (isDocentSimpleMode()) {
+        activeAdminPane = "homeworks";
       }
       const preferredCourse = getStoredPreference(ADMIN_LAST_COURSE_KEY);
       if (preferredCourse) {
