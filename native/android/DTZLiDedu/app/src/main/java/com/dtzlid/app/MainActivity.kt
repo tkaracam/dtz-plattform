@@ -130,6 +130,7 @@ private const val WEB_MEDIA_AUTOPLAY = "media_autoplay"
 private const val WEB_READER_MODE = "reader_mode"
 private const val WEB_REDUCE_MOTION = "reduce_motion"
 private const val WEB_AUTO_NET_OPT = "auto_net_opt"
+private const val WEB_AUTO_REFRESH_SEC = "auto_refresh_sec"
 private const val WEB_START_URL = "start_url"
 private const val WEB_USE_LAST_URL = "use_last_url"
 private const val WEB_RECENT_PAGES = "recent_pages"
@@ -394,6 +395,7 @@ fun WebAppScreen() {
             normalizeAllowedWebUrl(webPrefs.getString(WEB_START_URL, WEB_BASE_URL) ?: WEB_BASE_URL) ?: WEB_BASE_URL
         )
     }
+    var autoRefreshSeconds by remember { mutableStateOf(webPrefs.getInt(WEB_AUTO_REFRESH_SEC, 0).coerceAtLeast(0)) }
     var textZoom by remember { mutableStateOf(webPrefs.getInt(WEB_TEXT_ZOOM, 100).coerceIn(70, 180)) }
     var keepScreenOn by remember { mutableStateOf(webPrefs.getBoolean(WEB_KEEP_SCREEN_ON, false)) }
     var dataSaver by remember { mutableStateOf(webPrefs.getBoolean(WEB_DATA_SAVER, false)) }
@@ -635,6 +637,7 @@ fun WebAppScreen() {
             .put("readerMode", readerMode)
             .put("reduceMotion", reduceMotion)
             .put("autoNetworkOptimize", autoNetworkOptimize)
+            .put("autoRefreshSeconds", autoRefreshSeconds)
             .put("useLastUrlOnLaunch", useLastUrlOnLaunch)
             .put("startPageUrl", startPageUrl)
             .toString()
@@ -652,6 +655,7 @@ fun WebAppScreen() {
         readerMode = obj.optBoolean("readerMode", readerMode)
         reduceMotion = obj.optBoolean("reduceMotion", reduceMotion)
         autoNetworkOptimize = obj.optBoolean("autoNetworkOptimize", autoNetworkOptimize)
+        autoRefreshSeconds = obj.optInt("autoRefreshSeconds", autoRefreshSeconds).coerceIn(0, 3600)
         useLastUrlOnLaunch = obj.optBoolean("useLastUrlOnLaunch", useLastUrlOnLaunch)
         startPageUrl = importedStart
 
@@ -660,6 +664,7 @@ fun WebAppScreen() {
             .putInt(WEB_TEXT_ZOOM, textZoom)
             .putBoolean(WEB_KEEP_SCREEN_ON, keepScreenOn)
             .putBoolean(WEB_AUTO_NET_OPT, autoNetworkOptimize)
+            .putInt(WEB_AUTO_REFRESH_SEC, autoRefreshSeconds)
             .apply()
         persistAdvancedWebToggles()
         persistLaunchPrefs()
@@ -739,6 +744,15 @@ fun WebAppScreen() {
             }
         } else {
             loadTimedOut = false
+        }
+    }
+
+    LaunchedEffect(autoRefreshSeconds, offline, webViewGeneration) {
+        while (autoRefreshSeconds > 0 && !offline) {
+            delay(autoRefreshSeconds * 1000L)
+            if (!loading && !offline) {
+                webViewRef?.post { webViewRef?.reload() }
+            }
         }
     }
 
@@ -1480,6 +1494,18 @@ fun WebAppScreen() {
                         .padding(start = 12.dp, bottom = if (pageScrollPercent > 0) 108.dp else 70.dp)
                 )
             }
+            if (autoRefreshSeconds > 0 && !offline) {
+                AssistChip(
+                    onClick = {
+                        autoRefreshSeconds = 0
+                        webPrefs.edit().putInt(WEB_AUTO_REFRESH_SEC, 0).apply()
+                    },
+                    label = { Text("Auto Yenile ${autoRefreshSeconds}sn") },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 12.dp, bottom = if (showNavChrome) 70.dp else 12.dp)
+                )
+            }
             AnimatedVisibility(
                 visible = showNavChrome,
                 modifier = Modifier
@@ -1775,6 +1801,46 @@ fun WebAppScreen() {
                                 importSettingsInput = ""
                                 showImportSettingsDialog = true
                             }) { Text("İçe Aktar") }
+                        }
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Otomatik Yenile", fontWeight = FontWeight.SemiBold)
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = autoRefreshSeconds == 0,
+                                onClick = {
+                                    autoRefreshSeconds = 0
+                                    webPrefs.edit().putInt(WEB_AUTO_REFRESH_SEC, 0).apply()
+                                },
+                                label = { Text("Kapalı") }
+                            )
+                            FilterChip(
+                                selected = autoRefreshSeconds == 30,
+                                onClick = {
+                                    autoRefreshSeconds = 30
+                                    webPrefs.edit().putInt(WEB_AUTO_REFRESH_SEC, 30).apply()
+                                },
+                                label = { Text("30 sn") }
+                            )
+                            FilterChip(
+                                selected = autoRefreshSeconds == 60,
+                                onClick = {
+                                    autoRefreshSeconds = 60
+                                    webPrefs.edit().putInt(WEB_AUTO_REFRESH_SEC, 60).apply()
+                                },
+                                label = { Text("60 sn") }
+                            )
+                            FilterChip(
+                                selected = autoRefreshSeconds == 300,
+                                onClick = {
+                                    autoRefreshSeconds = 300
+                                    webPrefs.edit().putInt(WEB_AUTO_REFRESH_SEC, 300).apply()
+                                },
+                                label = { Text("5 dk") }
+                            )
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
