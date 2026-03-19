@@ -2768,6 +2768,18 @@
                 <span class="docent-flow-step">3. Starten & veröffentlichen</span>
               </div>
               <div>
+                <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
+                <select id="hwTaskTemplatesMulti" multiple size="10">
+                  <option value="">Bitte Aufgaben wählen</option>
+                </select>
+                <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
+                <label for="hwTaskPreviewMulti" style="margin-top:8px;">Ausgewählte Aufgaben</label>
+                <textarea id="hwTaskPreviewMulti" rows="6" readonly></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
+                </div>
+              </div>
+              <div>
                 <label for="hwTaskTemplateHoeren"><strong>Hören</strong> · Aufgabe zuweisen</label>
                 <select id="hwTaskTemplateHoeren">
                   <option value="">Bitte Aufgabe wählen</option>
@@ -6174,10 +6186,14 @@
       const templateLesen = String(document.getElementById("hwTaskTemplateLesen")?.value || "").trim();
       const templateMail = String(document.getElementById("hwTaskTemplateMail")?.value || "").trim();
       const templateMock = String(document.getElementById("hwTaskTemplateMock")?.value || "").trim();
+      const templateMulti = Array.from(document.getElementById("hwTaskTemplatesMulti")?.selectedOptions || [])
+        .map(option => String(option.value || "").trim())
+        .filter(Boolean);
       setStoredPreference("admin_hw_template_hoeren", templateHoeren || null);
       setStoredPreference("admin_hw_template_lesen", templateLesen || null);
       setStoredPreference("admin_hw_template_mail", templateMail || null);
       setStoredPreference("admin_hw_template_mock", templateMock || null);
+      setStoredPreference("admin_hw_templates_multi", templateMulti.length ? templateMulti.join(",") : null);
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
       setStoredPreference(ADMIN_HW_DURATION_UNIT_KEY, durationUnit || null);
@@ -6188,6 +6204,10 @@
       const templateLesen = getStoredPreference("admin_hw_template_lesen");
       const templateMail = getStoredPreference("admin_hw_template_mail");
       const templateMock = getStoredPreference("admin_hw_template_mock");
+      const templateMultiRaw = getStoredPreference("admin_hw_templates_multi");
+      const templateMulti = templateMultiRaw
+        ? templateMultiRaw.split(",").map(v => String(v || "").trim()).filter(Boolean)
+        : [];
       const courseId = getStoredPreference(ADMIN_HW_COURSE_KEY);
       const durationValue = getStoredPreference(ADMIN_HW_DURATION_VALUE_KEY);
       const durationUnit = getStoredPreference(ADMIN_HW_DURATION_UNIT_KEY);
@@ -6198,6 +6218,7 @@
       const lesenSelect = document.getElementById("hwTaskTemplateLesen");
       const mailSelect = document.getElementById("hwTaskTemplateMail");
       const mockSelect = document.getElementById("hwTaskTemplateMock");
+      const multiSelect = document.getElementById("hwTaskTemplatesMulti");
       if (hoerenSelect && templateHoeren && Array.from(hoerenSelect.options).some(o => o.value === templateHoeren)) {
         hoerenSelect.value = templateHoeren;
       }
@@ -6209,6 +6230,12 @@
       }
       if (mockSelect && templateMock && Array.from(mockSelect.options).some(o => o.value === templateMock)) {
         mockSelect.value = templateMock;
+      }
+      if (multiSelect && templateMulti.length) {
+        const selectedSet = new Set(templateMulti);
+        Array.from(multiSelect.options).forEach(option => {
+          option.selected = selectedSet.has(String(option.value || ""));
+        });
       }
 
       const courseSelect = document.getElementById("hwCourseId");
@@ -6231,6 +6258,7 @@
       updateHomeworkTemplatePreview("lesen");
       updateHomeworkTemplatePreview("mail");
       updateHomeworkTemplatePreview("mock");
+      updateHomeworkTemplateMultiPreview();
     }
 
     function getHomeworkTemplateCategory(template) {
@@ -6307,11 +6335,64 @@
       updateHomeworkTemplatePreview(category);
     }
 
+    function updateHomeworkTemplateMultiPreview() {
+      const preview = document.getElementById("hwTaskPreviewMulti");
+      const select = document.getElementById("hwTaskTemplatesMulti");
+      if (!preview || !select) return;
+      const selectedIds = Array.from(select.selectedOptions)
+        .map(option => String(option.value || "").trim())
+        .filter(Boolean);
+      if (!selectedIds.length) {
+        preview.value = "";
+        return;
+      }
+      const templates = selectedIds
+        .map(id => HOMEWORK_MAIL_TEMPLATES.find(item => String(item.id || "") === id))
+        .filter(Boolean);
+      preview.value = templates
+        .map((template, idx) => `${idx + 1}. ${String(template.title || "Aufgabe")}`)
+        .join("\n");
+    }
+
+    function renderHomeworkTemplateMultiOptions() {
+      const select = document.getElementById("hwTaskTemplatesMulti");
+      if (!select) return;
+      const currentValues = new Set(
+        Array.from(select.selectedOptions)
+          .map(option => String(option.value || "").trim())
+          .filter(Boolean)
+      );
+      const labels = {
+        hoeren: "Hören",
+        lesen: "Lesen",
+        mail: "Mail-Aufgabe",
+        mock: "Mock-Prüfung"
+      };
+      const sorted = ["hoeren", "lesen", "mail", "mock"];
+      const groups = sorted.map(category => {
+        const templates = HOMEWORK_MAIL_TEMPLATES
+          .filter(template => getHomeworkTemplateCategory(template) === category);
+        if (!templates.length) return "";
+        const options = templates.map((template, idx) => {
+          const id = String(template.id || `task-${idx + 1}`);
+          const title = String(template.title || `Aufgabe ${idx + 1}`);
+          return `<option value="${escapeHtml(id)}">${escapeHtml(title)}</option>`;
+        }).join("");
+        return `<optgroup label="${escapeHtml(labels[category] || category)}">${options}</optgroup>`;
+      }).filter(Boolean);
+      select.innerHTML = groups.join("");
+      Array.from(select.options).forEach(option => {
+        option.selected = currentValues.has(String(option.value || ""));
+      });
+      updateHomeworkTemplateMultiPreview();
+    }
+
     function renderAllHomeworkTemplateOptions() {
       renderHomeworkTemplateOptions("hoeren");
       renderHomeworkTemplateOptions("lesen");
       renderHomeworkTemplateOptions("mail");
       renderHomeworkTemplateOptions("mock");
+      renderHomeworkTemplateMultiOptions();
     }
 
     function normalizeHomeworkReminderLevel(level) {
@@ -7636,6 +7717,103 @@
         listHomeworkAssignments();
       } catch (err) {
         setBox("homeworkStatus", "error", `Aufgabe konnte nicht gespeichert werden: ${err.message}`);
+      }
+    }
+
+    async function createHomeworkBatchAssignments() {
+      clearBox("homeworkStatus");
+      const select = document.getElementById("hwTaskTemplatesMulti");
+      const selectedTemplateIds = Array.from(select?.selectedOptions || [])
+        .map(option => String(option.value || "").trim())
+        .filter(Boolean);
+      if (!selectedTemplateIds.length) {
+        setBox("homeworkStatus", "error", "Bitte mindestens eine Aufgabe auswählen.");
+        return;
+      }
+      const selectedTemplates = selectedTemplateIds
+        .map(id => HOMEWORK_MAIL_TEMPLATES.find(item => String(item.id || "") === id))
+        .filter(Boolean);
+      if (!selectedTemplates.length) {
+        setBox("homeworkStatus", "error", "Ausgewählte Aufgaben konnten nicht gelesen werden.");
+        return;
+      }
+
+      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
+      const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
+      const effectiveCourseId = targetType === "course" ? (courseId || String(selectedCourseId || "").trim()) : "";
+      const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
+      const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
+      const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
+      const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
+        .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
+        .filter(Boolean);
+
+      let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
+      if (durationUnit === "hours") durationMinutes *= 60;
+      durationMinutes = Math.max(5, Math.min(24 * 60, durationMinutes));
+
+      if (!startsAtRaw) {
+        setBox("homeworkStatus", "error", "Bitte eine Startzeit festlegen.");
+        return;
+      }
+      const ts = Date.parse(startsAtRaw);
+      if (!Number.isFinite(ts)) {
+        setBox("homeworkStatus", "error", "Ungültige Startzeit.");
+        return;
+      }
+      const startsAt = new Date(ts).toISOString();
+
+      if (targetType === "course" && !effectiveCourseId) {
+        setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
+        return;
+      }
+      if (targetType === "users" && !usernames.length) {
+        setBox("homeworkStatus", "error", "Bitte mindestens eine teilnehmende Person auswählen.");
+        return;
+      }
+
+      let successCount = 0;
+      let totalAssignedTargets = 0;
+      const failures = [];
+      for (const template of selectedTemplates) {
+        const title = String(template?.title || "").trim();
+        const description = buildHomeworkTemplateDescription(template);
+        if (!title || !description) {
+          failures.push(`${String(template?.id || "aufgabe")}: ungültige Vorlage`);
+          continue;
+        }
+        try {
+          const payload = await callHomeworkAssignApi({
+            action: "create",
+            template_id: String(template?.id || ""),
+            title,
+            description,
+            attachment: "",
+            target_type: targetType,
+            course_id: targetType === "course" ? effectiveCourseId : "",
+            usernames: targetType === "users" ? usernames : [],
+            duration_minutes: durationMinutes,
+            starts_at: startsAt
+          });
+          successCount += 1;
+          totalAssignedTargets += Number(payload?.target_count || 0);
+        } catch (err) {
+          failures.push(`${title}: ${err.message}`);
+        }
+      }
+
+      persistHomeworkQuickDefaults();
+      if (successCount > 0 && failures.length === 0) {
+        setBox("homeworkStatus", "ok", `${successCount} Aufgabe(n) gespeichert. Zugewiesen gesamt: ${totalAssignedTargets}`);
+      } else if (successCount > 0) {
+        setBox("homeworkStatus", "error", `${successCount} Aufgabe(n) gespeichert, ${failures.length} fehlgeschlagen: ${failures.join(" | ")}`);
+      } else {
+        setBox("homeworkStatus", "error", `Keine Aufgabe gespeichert: ${failures.join(" | ") || "unbekannter Fehler"}`);
+      }
+      if (successCount > 0) {
+        document.getElementById("hwStartsAt").value = "";
+        Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
+        await refreshAllHomeworkLists();
       }
     }
 
@@ -9971,6 +10149,7 @@
     document.getElementById("createHomeworkLesenBtn").addEventListener("click", () => createHomeworkAssignment("lesen"));
     document.getElementById("createHomeworkMailBtn").addEventListener("click", () => createHomeworkAssignment("mail"));
     document.getElementById("createHomeworkMockBtn").addEventListener("click", () => createHomeworkAssignment("mock"));
+    document.getElementById("createHomeworkBatchBtn").addEventListener("click", createHomeworkBatchAssignments);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
@@ -10012,6 +10191,10 @@
     });
     document.getElementById("hwTaskTemplateMock").addEventListener("change", () => {
       updateHomeworkTemplatePreview("mock");
+      persistHomeworkQuickDefaults();
+    });
+    document.getElementById("hwTaskTemplatesMulti").addEventListener("change", () => {
+      updateHomeworkTemplateMultiPreview();
       persistHomeworkQuickDefaults();
     });
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
