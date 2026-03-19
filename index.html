@@ -553,6 +553,42 @@
       min-width: 0;
     }
 
+    .home-dashboard-grid {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .home-dash-tile {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #fff8f3);
+      padding: 12px;
+    }
+
+    .home-dash-label {
+      margin: 0;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #8f7767;
+      font-weight: 700;
+    }
+
+    .home-dash-value {
+      margin: 8px 0 0;
+      font-size: 1.04rem;
+      font-weight: 700;
+      color: #5a4336;
+    }
+
+    .home-dash-meta {
+      margin: 8px 0 0;
+      font-size: 0.86rem;
+      color: #7f6657;
+    }
+
     .card {
       background: var(--paper);
       border: 1px solid #e8e9ed;
@@ -2916,6 +2952,39 @@
       </div>
       </section>
     <div class="shell">
+      <section id="homeDashboardCard" class="card hidden">
+        <h2 class="section-title">Startpanel</h2>
+        <p class="section-subtitle">Schneller Überblick für heute.</p>
+        <div class="home-dashboard-grid">
+          <article class="home-dash-tile">
+            <p class="home-dash-label">Son Kaldığın Yer</p>
+            <p id="dashLastSection" class="home-dash-value">-</p>
+          </article>
+          <article class="home-dash-tile">
+            <p class="home-dash-label">Bugünkü Görev</p>
+            <p id="dashTodayTask" class="home-dash-value">-</p>
+            <div class="row-end" style="margin-top:8px;">
+              <div class="btn-wrap" style="max-width:none;">
+                <button id="dashStartTaskBtn" type="button">Göreve Başla</button>
+              </div>
+            </div>
+          </article>
+          <article class="home-dash-tile">
+            <p class="home-dash-label">Hızlı İstatistik</p>
+            <p id="dashStatsMain" class="home-dash-value">-</p>
+            <p id="dashStatsMeta" class="home-dash-meta">-</p>
+          </article>
+          <article class="home-dash-tile">
+            <p class="home-dash-label">Önerilen Çalışma</p>
+            <p id="dashRecommendation" class="home-dash-value">-</p>
+          </article>
+          <article class="home-dash-tile">
+            <p class="home-dash-label">Duyuru</p>
+            <p id="dashAnnouncement" class="home-dash-value">-</p>
+          </article>
+        </div>
+      </section>
+
       <section id="studentAuthCard" class="card auth-card">
         <h2 class="section-title">Schüler-Login</h2>
         <p class="section-subtitle">Zugangsdaten von der Lehrkraft eingeben.</p>
@@ -3652,6 +3721,155 @@
       durationMinutes: 45,
       taskPrompt: ""
     };
+
+    const HOME_DASHBOARD_KEY = "dtz_home_dashboard_v1";
+    const HOME_ANNOUNCEMENT_KEY = "dtz_home_announcement_v1";
+    const DASHBOARD_FALLBACK_ANNOUNCEMENT = "Bugün 20 dakika DTZ + 1 kısa LiD tekrar önerilir.";
+
+    function isoDateLocal(inputDate = new Date()) {
+      const d = inputDate instanceof Date ? inputDate : new Date(inputDate);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function loadHomeDashboardState() {
+      const fallback = {
+        last_section: "Portal",
+        solved_total: 0,
+        answered_total: 0,
+        correct_total: 0,
+        streak_days: 0,
+        last_practice_date: "",
+        module_stats: {}
+      };
+      try {
+        const raw = window.localStorage.getItem(HOME_DASHBOARD_KEY);
+        if (!raw) return fallback;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return fallback;
+        return {
+          ...fallback,
+          ...parsed,
+          module_stats: parsed.module_stats && typeof parsed.module_stats === "object" ? parsed.module_stats : {}
+        };
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function saveHomeDashboardState() {
+      try {
+        window.localStorage.setItem(HOME_DASHBOARD_KEY, JSON.stringify(homeDashboardState));
+      } catch (_) {
+        // ignore storage errors
+      }
+    }
+
+    function updatePracticeStreak() {
+      const today = isoDateLocal();
+      const last = String(homeDashboardState.last_practice_date || "");
+      if (last === today) return;
+      const yesterday = isoDateLocal(new Date(Date.now() - 24 * 60 * 60 * 1000));
+      if (last === yesterday) {
+        homeDashboardState.streak_days = Number(homeDashboardState.streak_days || 0) + 1;
+      } else {
+        homeDashboardState.streak_days = 1;
+      }
+      homeDashboardState.last_practice_date = today;
+    }
+
+    function setHomeDashboardSection(target) {
+      const labels = {
+        home: "Start",
+        portal: "Portal",
+        write: "Schreiben",
+        lid: "LiD",
+        speaking: "Sprechen",
+        dtz: "DTZ",
+        niveau: "Niveau",
+        "dtz-hoeren": "DTZ Hören",
+        "dtz-lesen": "DTZ Lesen"
+      };
+      homeDashboardState.last_section = labels[target] || "Portal";
+      saveHomeDashboardState();
+      renderHomeDashboard();
+    }
+
+    function registerHomePractice(moduleKey, correct, total) {
+      const safeTotal = Math.max(0, Number(total || 0));
+      const safeCorrect = Math.max(0, Math.min(safeTotal, Number(correct || 0)));
+      if (safeTotal <= 0) return;
+      homeDashboardState.solved_total = Number(homeDashboardState.solved_total || 0) + 1;
+      homeDashboardState.answered_total = Number(homeDashboardState.answered_total || 0) + safeTotal;
+      homeDashboardState.correct_total = Number(homeDashboardState.correct_total || 0) + safeCorrect;
+      const moduleStats = homeDashboardState.module_stats[moduleKey] || { attempts: 0, correct: 0, total: 0 };
+      moduleStats.attempts += 1;
+      moduleStats.correct += safeCorrect;
+      moduleStats.total += safeTotal;
+      homeDashboardState.module_stats[moduleKey] = moduleStats;
+      updatePracticeStreak();
+      saveHomeDashboardState();
+      renderHomeDashboard();
+    }
+
+    function getHomeRecommendation() {
+      const candidates = [
+        { key: "dtz-lesen", label: "DTZ Lesen Teil 1", route: "dtz-lesen" },
+        { key: "dtz-hoeren", label: "DTZ Hören Teil 1", route: "dtz-hoeren" },
+        { key: "lid", label: "LiD Übungstest", route: "lid" },
+        { key: "schreiben", label: "Schreiben Aufgabe", route: "write" }
+      ];
+      let picked = null;
+      candidates.forEach(item => {
+        const stats = homeDashboardState.module_stats[item.key];
+        if (!stats || !stats.total) return;
+        const ratio = stats.correct / Math.max(1, stats.total);
+        if (!picked || ratio < picked.ratio) picked = { ...item, ratio };
+      });
+      if (picked) return picked;
+      return candidates[0];
+    }
+
+    function getTodayTaskLabel() {
+      const fromAssignment = String(currentAssignedHomework && currentAssignedHomework.title ? currentAssignedHomework.title : "").trim();
+      if (fromAssignment) return fromAssignment;
+      const rec = getHomeRecommendation();
+      return rec.label;
+    }
+
+    function getDashboardStartRoute() {
+      if (currentAssignedHomework && currentAssignedHomework.id) return "write";
+      const rec = getHomeRecommendation();
+      return rec.route;
+    }
+
+    function renderHomeDashboard() {
+      const lastSectionNode = document.getElementById("dashLastSection");
+      const todayTaskNode = document.getElementById("dashTodayTask");
+      const statsMainNode = document.getElementById("dashStatsMain");
+      const statsMetaNode = document.getElementById("dashStatsMeta");
+      const recNode = document.getElementById("dashRecommendation");
+      const annNode = document.getElementById("dashAnnouncement");
+      if (!lastSectionNode || !todayTaskNode || !statsMainNode || !statsMetaNode || !recNode || !annNode) return;
+
+      const solved = Number(homeDashboardState.solved_total || 0);
+      const answered = Number(homeDashboardState.answered_total || 0);
+      const correct = Number(homeDashboardState.correct_total || 0);
+      const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+      const rec = getHomeRecommendation();
+
+      lastSectionNode.textContent = String(homeDashboardState.last_section || "Portal");
+      todayTaskNode.textContent = getTodayTaskLabel();
+      statsMainNode.textContent = `${solved} Test · %${accuracy}`;
+      statsMetaNode.textContent = `Streak: ${Number(homeDashboardState.streak_days || 0)} gün · Doğru: ${correct}/${answered}`;
+      recNode.textContent = rec.label;
+      const ann = String(window.localStorage.getItem(HOME_ANNOUNCEMENT_KEY) || DASHBOARD_FALLBACK_ANNOUNCEMENT).trim();
+      annNode.textContent = ann || DASHBOARD_FALLBACK_ANNOUNCEMENT;
+    }
+
+    const homeDashboardState = loadHomeDashboardState();
 
     const DTZ_PART_CONFIG = {
       hoeren: {
@@ -5107,6 +5325,7 @@
         unanswered,
         details
       };
+      registerHomePractice("schreiben", correct, currentBskPack.tasks.length);
       return currentBskResult;
     }
 
@@ -5182,7 +5401,7 @@
       return arr;
     }
 
-    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
+    const MAIN_CARDS = ["homeDashboardCard", "workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
 
     function hideMainCards() {
       MAIN_CARDS.forEach(id => {
@@ -5222,6 +5441,7 @@
 
     function setMainView(mode) {
       const map = {
+        home: "homeDashboardCard",
         correction: "workCard",
         portal: "portalCard",
         room: "roomCard",
@@ -5249,22 +5469,26 @@
       renderAssignmentPlaceholder("Zugewiesene Aufgabe wird geladen...", "Wird geladen");
       loadStudentPortal();
       loadCurrentAssignedHomework();
+      renderHomeDashboard();
     }
 
     function openCorrectionView() {
       setMainView("correction");
+      setHomeDashboardSection("write");
       setAccordionOpen("workAccordion", true);
       loadCurrentAssignedHomework();
     }
 
     function openPortalView() {
       setMainView("portal");
+      setHomeDashboardSection("portal");
       openPortalPanel("homework", false);
       refreshPortalData();
     }
 
     function openHomeView() {
-      setMainView("");
+      setMainView("home");
+      setHomeDashboardSection("home");
       updateHeroHomeVisibility("home");
     }
 
@@ -5289,11 +5513,13 @@
 
     function openLidView() {
       setMainView("lid");
+      setHomeDashboardSection("lid");
       generateClassicLidExam();
     }
 
     function openSpeakingView() {
       setMainView("speaking");
+      setHomeDashboardSection("speaking");
       setAccordionOpen("speakingAccordion", false);
       generateSpeakingSet();
       setSpeakingTab(1);
@@ -5301,10 +5527,12 @@
 
     function openDtzHubView() {
       setMainView("dtz");
+      setHomeDashboardSection("dtz");
     }
 
     function openNiveauView() {
       setMainView("niveau");
+      setHomeDashboardSection("niveau");
     }
 
     function openB1View() {
@@ -5335,6 +5563,7 @@
       const targetAccordion = normalized === "lesen" ? "dtzLesenAccordion" : "dtzHoerenAccordion";
 
       openDtzTrainingOnlyView();
+      setHomeDashboardSection(normalized === "lesen" ? "dtz-lesen" : "dtz-hoeren");
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
       // Her açılışta yeniden yükle: "boş state / stale state" sorunlarını önler.
@@ -7625,6 +7854,7 @@
       const points = correct * 2;
       const maxPoints = total * 2;
       state.evaluated = true;
+      registerHomePractice(module === "lesen" ? "dtz-lesen" : "dtz-hoeren", correct, total);
       const isPartial = module === "hoeren" && unanswered > 0;
 
       if (ui.summary) {
@@ -8030,6 +8260,7 @@
         const hero = document.querySelector(".hero");
         if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
       }
+      setHomeDashboardSection(target);
       closeNavOnMobile();
     }
 
@@ -8789,6 +9020,7 @@
       const summary = document.getElementById("classicLidSummary");
       summary.className = "lid-summary";
       summary.textContent = `Ergebnis: ${correct}/33 richtig | Falsch: ${wrong} | Offen: ${unanswered}. Für die nächste Übung bitte "Neue Prüfung" klicken.`;
+      registerHomePractice("lid", correct, 33);
     }
 
     function formatSeconds(totalSeconds) {
@@ -8968,6 +9200,7 @@
         if (attachWrap) attachWrap.classList.add("hidden");
       });
       setAssignmentEditorLocked(true);
+      renderHomeDashboard();
     }
 
     function pickAssignmentAutoSubmitContext() {
@@ -9163,6 +9396,7 @@
       ) {
         assignmentCountdownTimerId = setInterval(updateAssignmentCountdown, 1000);
       }
+      renderHomeDashboard();
     }
 
     async function loadCurrentAssignedHomework() {
@@ -10790,6 +11024,14 @@
     });
     const levelPortalBtn = document.getElementById("levelPortalBtn");
     if (levelPortalBtn) levelPortalBtn.addEventListener("click", () => navigateToSection("portal"));
+    const dashStartTaskBtn = document.getElementById("dashStartTaskBtn");
+    if (dashStartTaskBtn) {
+      dashStartTaskBtn.addEventListener("click", () => {
+        const route = getDashboardStartRoute();
+        navigateToSection(route);
+      });
+    }
+    renderHomeDashboard();
     removeArchivedBskFrontend();
     checkStudentSession();
   </script>
