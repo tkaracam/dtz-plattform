@@ -2767,18 +2767,6 @@
                 <span class="docent-flow-step">2. Kurs wählen</span>
                 <span class="docent-flow-step">3. Starten & veröffentlichen</span>
               </div>
-              <div>
-                <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
-                <select id="hwTaskTemplatesMulti" multiple size="10">
-                  <option value="">Bitte Aufgaben wählen</option>
-                </select>
-                <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
-                <label for="hwTaskPreviewMulti" style="margin-top:8px;">Ausgewählte Aufgaben</label>
-                <textarea id="hwTaskPreviewMulti" rows="6" readonly></textarea>
-                <div class="actions" style="margin-top:8px;">
-                  <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
-                </div>
-              </div>
               <div id="hwCourseWrap">
                 <label for="hwCourseId">Kurs / Gruppe auswählen</label>
                 <select id="hwCourseId">
@@ -2825,6 +2813,18 @@
                   </div>
                 </div>
               </details>
+              <div>
+                <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
+                <select id="hwTaskTemplatesMulti" multiple size="10">
+                  <option value="">Bitte Aufgaben wählen</option>
+                </select>
+                <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
+                <label for="hwTaskPreviewMulti" style="margin-top:8px;">Ausgewählte Aufgaben</label>
+                <textarea id="hwTaskPreviewMulti" rows="6" readonly></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
+                </div>
+              </div>
               <div id="homeworkStatus" class="hidden"></div>
             </div>
           </details>
