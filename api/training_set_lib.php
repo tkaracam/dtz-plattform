@@ -107,6 +107,102 @@ function format_training_text(string $text): string
     return trim($text);
 }
 
+function build_structured_variant_maps(): array
+{
+    return [
+        ['Montag' => 'Dienstag', 'montags' => 'dienstags', 'Montags' => 'Dienstags'],
+        ['Dienstag' => 'Mittwoch', 'dienstags' => 'mittwochs', 'Dienstags' => 'Mittwochs'],
+        ['Mittwoch' => 'Donnerstag', 'mittwochs' => 'donnerstags', 'Mittwochs' => 'Donnerstags'],
+        ['Donnerstag' => 'Freitag', 'donnerstags' => 'freitags', 'Donnerstags' => 'Freitags'],
+        ['Freitag' => 'Samstag', 'freitags' => 'samstags', 'Freitags' => 'Samstags'],
+        ['9 Uhr' => '10 Uhr', '9:00 Uhr' => '10:00 Uhr', '9:15 Uhr' => '10:15 Uhr'],
+        ['10 Uhr' => '11 Uhr', '10:00 Uhr' => '11:00 Uhr', '10:30 Uhr' => '11:30 Uhr'],
+        ['11 Uhr' => '12 Uhr', '11:00 Uhr' => '12:00 Uhr', '11:30 Uhr' => '12:30 Uhr'],
+        ['Raum 2' => 'Raum 3', 'Raum 3' => 'Raum 4', 'Zimmer 2' => 'Zimmer 3'],
+        ['Raum 7' => 'Raum 9', 'Raum 8' => 'Raum 11', 'Raum 12' => 'Raum 14'],
+        ['Bahnhof' => 'ZOB', 'Marktplatz' => 'Rathausplatz', 'Rathaus' => 'Bürgerzentrum'],
+        ['Apotheke' => 'Filiale', 'Bürgeramt' => 'Einwohnermeldeamt', 'Sprachschule' => 'Bildungszentrum'],
+    ];
+}
+
+function apply_structured_variant($value, array $map)
+{
+    if (is_string($value)) {
+        return strtr($value, $map);
+    }
+    if (is_array($value)) {
+        $out = [];
+        foreach ($value as $key => $row) {
+            $out[$key] = apply_structured_variant($row, $map);
+        }
+        return $out;
+    }
+    return $value;
+}
+
+function expand_structured_scenarios(array $basePool, int $targetCount, string $variantPrefix = ''): array
+{
+    $pool = array_values(array_filter($basePool, static fn($row) => is_array($row)));
+    if (!$pool) {
+        return [];
+    }
+    if ($targetCount <= 0) {
+        return $pool;
+    }
+
+    $out = [];
+    $seen = [];
+    $push = static function (array $row) use (&$out, &$seen): void {
+        $fingerprint = sha1((string)json_encode($row));
+        if (isset($seen[$fingerprint])) {
+            return;
+        }
+        $seen[$fingerprint] = true;
+        $out[] = $row;
+    };
+
+    foreach ($pool as $row) {
+        $push($row);
+    }
+    if (count($out) >= $targetCount) {
+        return array_slice($out, 0, $targetCount);
+    }
+
+    $variantMaps = build_structured_variant_maps();
+    foreach ($variantMaps as $mapIndex => $map) {
+        foreach ($pool as $row) {
+            $variant = apply_structured_variant($row, $map);
+            if ($variantPrefix !== '' && isset($variant['title'])) {
+                $variant['title'] = trim((string)$variant['title']);
+            }
+            $push((array)$variant);
+            if (count($out) >= $targetCount) {
+                return array_slice($out, 0, $targetCount);
+            }
+        }
+    }
+
+    $cursor = 0;
+    while (count($out) < $targetCount) {
+        $base = $pool[$cursor % count($pool)];
+        $round = (int)floor($cursor / max(1, count($pool))) + 2;
+        $clone = $base;
+        if (isset($clone['title'])) {
+            $clone['title'] = trim((string)$clone['title']) . ' (Variante ' . $round . ')';
+        }
+        if (isset($clone['instructions'])) {
+            $clone['instructions'] = trim((string)$clone['instructions']) . ' Achten Sie besonders auf Zeiten, Orte und Fristen.';
+        }
+        $push($clone);
+        $cursor++;
+        if ($cursor > 2000) {
+            break;
+        }
+    }
+
+    return array_slice($out, 0, $targetCount);
+}
+
 function build_clean_hoeren_templates(): array
 {
     $entries = [
@@ -2067,6 +2163,8 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
 {
     $pools = build_hoeren_teil_structured_pools();
     $pool = (array)($pools[$teil] ?? []);
+    $targetByTeil = [1 => 10, 2 => 10, 3 => 10, 4 => 10];
+    $pool = expand_structured_scenarios($pool, (int)($targetByTeil[$teil] ?? 10), 'hoeren_t' . $teil);
     if (!$pool) {
         throw new RuntimeException('Für diesen Hören-Teil sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2353,6 +2451,7 @@ function build_lesen_teil3_textblock_pools(): array
 function create_lesen_teil3_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil3_textblock_pools();
+    $pool = expand_structured_scenarios($pool, 12, 'lesen_t3');
     if (!$pool) {
         throw new RuntimeException('Für Lesen Teil 3 sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2525,6 +2624,7 @@ function build_lesen_teil4_richtig_falsch_pools(): array
 function create_lesen_teil4_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil4_richtig_falsch_pools();
+    $pool = expand_structured_scenarios($pool, 12, 'lesen_t4');
     if (!$pool) {
         throw new RuntimeException('Für Lesen Teil 4 sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2654,6 +2754,7 @@ function build_lesen_teil5_cloze_pools(): array
 function create_lesen_teil5_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil5_cloze_pools();
+    $pool = expand_structured_scenarios($pool, 12, 'lesen_t5');
     if (!$pool) {
         throw new RuntimeException('Fuer Lesen Teil 5 sind keine strukturierten Aufgaben verfuegbar.');
     }
@@ -2871,6 +2972,7 @@ function build_lesen_teil1_wegweiser_pools(): array
 function create_lesen_teil1_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil1_wegweiser_pools();
+    $pool = expand_structured_scenarios($pool, 12, 'lesen_t1');
     if (!$pool) {
         throw new RuntimeException('Keine Lesen-Teil-1-Pools verfügbar.');
     }
@@ -2977,6 +3079,7 @@ function build_lesen_teil2_matching_pools(): array
 function create_lesen_teil2_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil2_matching_pools();
+    $pool = expand_structured_scenarios($pool, 12, 'lesen_t2');
     if (!$pool) {
         throw new RuntimeException('Keine Lesen-Teil-2-Pools verfügbar.');
     }
