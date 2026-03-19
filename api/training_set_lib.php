@@ -93,6 +93,20 @@ function germanize_umlauts_text(string $text): string
     return preg_replace($patterns, $replacements, $text);
 }
 
+function format_training_text(string $text): string
+{
+    if ($text === '') {
+        return '';
+    }
+
+    $text = str_replace(["\\r\\n", "\\n", "\\r"], "\n", $text);
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    $text = preg_replace("/[ \t]+\n/u", "\n", $text) ?? $text;
+    $text = preg_replace("/\n{3,}/u", "\n\n", $text) ?? $text;
+
+    return trim($text);
+}
+
 function build_clean_hoeren_templates(): array
 {
     $entries = [
@@ -1448,70 +1462,70 @@ function build_hoeren_independent_question_bank(): array
     return [
         1 => [
             [
-                'audio_script' => 'Guten Tag, hier spricht die Praxis am Markt. Ihr Termin am Dienstag fällt aus. Neuer Termin ist Donnerstag um 9 Uhr in Zimmer 3.',
+                'audio_script' => 'Guten Tag, hier spricht die Praxis am Markt. Ihr Termin am Dienstag um 9 Uhr bei Frau Keller fällt leider aus, weil die Ärztin kurzfristig nicht da ist. Ein neuer Termin ist am Donnerstag um 9 Uhr in Zimmer 3. Bitte kommen Sie zehn Minuten früher zur Anmeldung.',
                 'question' => 'Wann ist der neue Termin?',
                 'options' => ['A' => 'am Dienstag um 9 Uhr', 'B' => 'am Donnerstag um 9 Uhr', 'C' => 'am Donnerstag um 10 Uhr'],
                 'correct' => 'B',
                 'rationale' => 'In der Ansage wird Donnerstag um 9 Uhr genannt.',
             ],
             [
-                'audio_script' => 'Information der Sprachschule: Der B1-Kurs findet heute in Raum 12 statt, nicht in Raum 8.',
+                'audio_script' => 'Information der Sprachschule: Der B1-Kurs findet heute wegen einer technischen Störung nicht in Raum 8, sondern in Raum 12 statt. Die Uhrzeit bleibt 18:00 Uhr. Bitte holen Sie das Arbeitsblatt vor Kursbeginn am Empfang ab.',
                 'question' => 'Wo findet der Kurs heute statt?',
-                'options' => ['A' => 'in Raum 8', 'B' => 'in Raum 10', 'C' => 'in Raum 12'],
-                'correct' => 'C',
+                'options' => ['A' => 'in Raum 8', 'B' => 'in Raum 12', 'C' => 'in Raum 21'],
+                'correct' => 'B',
                 'rationale' => 'Der neue Raum ist 12.',
             ],
             [
-                'audio_script' => 'Achtung Eltern: Die Kita Sonnenweg schließt heute schon um 15 Uhr wegen einer Teamfortbildung.',
+                'audio_script' => 'Achtung Eltern: Die Kita Sonnenweg schließt heute schon um 15 Uhr. Grund ist eine interne Teamfortbildung am Nachmittag. Morgen öffnet die Kita wieder wie gewohnt um 7 Uhr.',
                 'question' => 'Warum schließt die Kita früher?',
                 'options' => ['A' => 'wegen einer Teamfortbildung', 'B' => 'wegen eines Stromausfalls', 'C' => 'wegen eines Feiertags'],
                 'correct' => 'A',
                 'rationale' => 'Genannt wird eine Teamfortbildung.',
             ],
             [
-                'audio_script' => 'Im Supermarkt Nord ist Kasse 2 defekt. Bitte nutzen Sie Kasse 1 oder 3.',
+                'audio_script' => 'Im Supermarkt Nord ist Kasse 2 im Moment defekt und bleibt bis zur Reparatur geschlossen. Bitte nutzen Sie Kasse 1 oder Kasse 3. Kundinnen mit nur wenigen Artikeln können auch zur Expresskasse gehen.',
                 'question' => 'Welche Kasse ist defekt?',
                 'options' => ['A' => 'Kasse 1', 'B' => 'Kasse 2', 'C' => 'Kasse 3'],
                 'correct' => 'B',
                 'rationale' => 'Defekt ist Kasse 2.',
             ],
             [
-                'audio_script' => 'Mitteilung vom Jobcenter: Ihr Termin morgen um 11 Uhr wird auf Freitag 11:30 Uhr verschoben.',
+                'audio_script' => 'Mitteilung vom Jobcenter: Ihr Termin morgen um 11 Uhr muss leider verschoben werden. Der neue Termin ist am Freitag um 11:30 Uhr bei Frau Neumann in Zimmer 14. Bitte bringen Sie die letzten drei Gehaltsabrechnungen mit.',
                 'question' => 'Auf wann wird der Termin verschoben?',
                 'options' => ['A' => 'auf Freitag um 11:30 Uhr', 'B' => 'auf Donnerstag um 11:30 Uhr', 'C' => 'auf Freitag um 10:30 Uhr'],
                 'correct' => 'A',
                 'rationale' => 'Neuer Termin ist Freitag 11:30 Uhr.',
             ],
             [
-                'audio_script' => 'Durchsage am Bahnhof: Der Zug nach Kassel fährt heute 20 Minuten später von Gleis 6.',
+                'audio_script' => 'Durchsage am Bahnhof: Der RE nach Kassel hat heute etwa 20 Minuten Verspätung und fährt abweichend von Gleis 6. Der Intercity nach Kassel fährt weiterhin von Gleis 4. Bitte beachten Sie die Anzeige am Bahnsteig.',
                 'question' => 'Von welchem Gleis fährt der Zug?',
                 'options' => ['A' => 'von Gleis 4', 'B' => 'von Gleis 5', 'C' => 'von Gleis 6'],
                 'correct' => 'C',
                 'rationale' => 'Gleis 6 wird genannt.',
             ],
             [
-                'audio_script' => 'Stadtbibliothek: Rückgaben sind heute nur bis 17 Uhr möglich. Danach ist der Automat außer Betrieb.',
+                'audio_script' => 'Stadtbibliothek: Rückgaben sind heute nur bis 17 Uhr möglich. Danach ist der Rückgabeautomat wegen Wartung außer Betrieb. Ab morgen funktioniert der Automat wieder ab 8 Uhr.',
                 'question' => 'Bis wann sind Rückgaben möglich?',
                 'options' => ['A' => 'bis 16 Uhr', 'B' => 'bis 17 Uhr', 'C' => 'bis 18 Uhr'],
                 'correct' => 'B',
                 'rationale' => 'Rückgaben sind bis 17 Uhr möglich.',
             ],
             [
-                'audio_script' => 'Hausverwaltung Lindenhof: Morgen wird das Wasser zwischen 8 und 11 Uhr abgestellt.',
+                'audio_script' => 'Hausverwaltung Lindenhof: Morgen wird das Wasser wegen Reparaturarbeiten zwischen 8 und 11 Uhr abgestellt. Betroffen sind die Häuser 10 bis 18. Bitte füllen Sie heute Abend ausreichend Trinkwasser ab.',
                 'question' => 'Wie lange ist das Wasser abgestellt?',
                 'options' => ['A' => 'von 8 bis 10 Uhr', 'B' => 'von 8 bis 11 Uhr', 'C' => 'von 9 bis 11 Uhr'],
                 'correct' => 'B',
                 'rationale' => 'Genannt wird 8 bis 11 Uhr.',
             ],
             [
-                'audio_script' => 'Teamleitung Logistik: Die Frühschicht beginnt morgen schon um 5:30 Uhr statt um 6 Uhr.',
+                'audio_script' => 'Teamleitung Logistik: Die Frühschicht beginnt morgen ausnahmsweise schon um 5:30 Uhr statt wie sonst um 6 Uhr. Hintergrund ist eine frühere LKW-Anlieferung. Das Teammeeting startet direkt um 5:35 Uhr.',
                 'question' => 'Wann beginnt die Frühschicht morgen?',
                 'options' => ['A' => 'um 5:30 Uhr', 'B' => 'um 6 Uhr', 'C' => 'um 6:30 Uhr'],
                 'correct' => 'A',
                 'rationale' => 'Die neue Zeit ist 5:30 Uhr.',
             ],
             [
-                'audio_script' => 'Paketstation Mitte: Ihr Paket liegt in Fach 14 und kann bis Samstag abgeholt werden.',
+                'audio_script' => 'Paketstation Mitte: Ihr Paket liegt ab sofort in Fach 14 bereit. Sie können es bis Samstag, 20 Uhr, mit Ihrem Abholcode abholen. Danach geht die Sendung automatisch an den Absender zurück.',
                 'question' => 'Bis wann kann das Paket abgeholt werden?',
                 'options' => ['A' => 'bis Freitag', 'B' => 'bis Samstag', 'C' => 'bis Sonntag'],
                 'correct' => 'B',
@@ -1520,70 +1534,70 @@ function build_hoeren_independent_question_bank(): array
         ],
         2 => [
             [
-                'audio_script' => 'Radio Stadtverkehr: Auf der A3 gibt es zwischen Nord und West einen Stau von zehn Kilometern. Nutzen Sie die Umleitung über B12.',
+                'audio_script' => 'Radio Stadtverkehr: Auf der A3 gibt es zwischen Nord und West nach einem Unfall einen Stau von etwa zehn Kilometern. Die Polizei empfiehlt die Umleitung über die B12. Im Stadtzentrum ist zusätzlich die Ausfahrt Mitte gesperrt.',
                 'question' => 'Welche Umleitung wird empfohlen?',
                 'options' => ['A' => 'über B10', 'B' => 'über B11', 'C' => 'über B12'],
                 'correct' => 'C',
                 'rationale' => 'Empfohlen wird B12.',
             ],
             [
-                'audio_script' => 'Wetterservice: Vormittags bleibt es trocken, ab 14 Uhr regnet es. Die Temperaturen liegen zwischen 8 und 13 Grad.',
+                'audio_script' => 'Wetterservice: Vormittags bleibt es in der Region trocken und leicht bewölkt. Ab 14 Uhr setzt aus Westen Regen ein. Die Temperaturen liegen zwischen 8 und 13 Grad, in höheren Lagen etwas kühler.',
                 'question' => 'Ab wann wird Regen gemeldet?',
                 'options' => ['A' => 'ab 12 Uhr', 'B' => 'ab 13 Uhr', 'C' => 'ab 14 Uhr'],
                 'correct' => 'C',
                 'rationale' => 'Regen beginnt ab 14 Uhr.',
             ],
             [
-                'audio_script' => 'Servicehinweis der Stadt: Das Bürgeramt öffnet heute erst um 10 Uhr. Bereits vereinbarte Termine bleiben gültig.',
+                'audio_script' => 'Servicehinweis der Stadt: Das Bürgeramt öffnet heute wegen Systemarbeiten erst um 10 Uhr statt um 8 Uhr. Bereits vereinbarte Termine bleiben gültig. Ohne Termin müssen Sie mit längeren Wartezeiten rechnen.',
                 'question' => 'Was gilt für bereits vereinbarte Termine?',
                 'options' => ['A' => 'Sie bleiben gültig.', 'B' => 'Sie werden abgesagt.', 'C' => 'Sie werden verschoben.'],
                 'correct' => 'A',
                 'rationale' => 'Die Termine bleiben gültig.',
             ],
             [
-                'audio_script' => 'Gesundheitszentrum Süd: Am Freitag gibt es kostenlose Blutdruckmessungen von 9 bis 12 Uhr, ohne Anmeldung.',
+                'audio_script' => 'Gesundheitszentrum Süd: Am Freitag gibt es kostenlose Blutdruckmessungen von 9 bis 12 Uhr, eine Anmeldung ist nicht nötig. Die Aktion findet im Foyer statt. Bitte bringen Sie, wenn möglich, Ihren Medikamentenplan mit.',
                 'question' => 'Wann finden die Messungen statt?',
                 'options' => ['A' => 'Freitag von 9 bis 12 Uhr', 'B' => 'Freitag von 10 bis 12 Uhr', 'C' => 'Samstag von 9 bis 12 Uhr'],
                 'correct' => 'A',
                 'rationale' => 'Genannt wird Freitag 9 bis 12 Uhr.',
             ],
             [
-                'audio_script' => 'Abfallwirtschaft: Wegen Feiertag wird die Müllabfuhr von Montag auf Dienstag verschoben.',
+                'audio_script' => 'Abfallwirtschaft: Wegen des Feiertags wird die Müllabfuhr in Ihrem Bezirk von Montag auf Dienstag verschoben. Bitte stellen Sie die Tonnen bis spätestens 6 Uhr morgens bereit. Die Biotonne bleibt beim regulären Termin.',
                 'question' => 'Auf welchen Tag wird die Abfuhr verschoben?',
                 'options' => ['A' => 'auf Dienstag', 'B' => 'auf Mittwoch', 'C' => 'auf Freitag'],
                 'correct' => 'A',
                 'rationale' => 'Die Abfuhr ist am Dienstag.',
             ],
             [
-                'audio_script' => 'Schwimmbad Ost: Das Hallenbad ist am Wochenende von 8 bis 20 Uhr geöffnet. Montag bleibt es geschlossen.',
+                'audio_script' => 'Schwimmbad Ost: Das Hallenbad ist am Wochenende jeweils von 8 bis 20 Uhr geöffnet. Am Montag bleibt es für Reinigungsarbeiten komplett geschlossen. Ab Dienstag gelten wieder die normalen Öffnungszeiten.',
                 'question' => 'Wie ist das Hallenbad am Montag geöffnet?',
                 'options' => ['A' => 'von 8 bis 20 Uhr', 'B' => 'geschlossen', 'C' => 'nur bis 12 Uhr'],
                 'correct' => 'B',
                 'rationale' => 'Montag ist geschlossen.',
             ],
             [
-                'audio_script' => 'Stadtwerke: In der Gartenstraße gibt es morgen zwischen 13 und 15 Uhr eine geplante Stromunterbrechung.',
+                'audio_script' => 'Stadtwerke: In der Gartenstraße gibt es morgen zwischen 13 und 15 Uhr eine geplante Stromunterbrechung wegen Wartungsarbeiten am Netz. Betroffen sind die Hausnummern 2 bis 28. Aufzüge und elektrische Heizungen stehen in dieser Zeit nicht zur Verfügung.',
                 'question' => 'Wie lange dauert die Unterbrechung?',
                 'options' => ['A' => 'eine Stunde', 'B' => 'zwei Stunden', 'C' => 'drei Stunden'],
                 'correct' => 'B',
                 'rationale' => '13 bis 15 Uhr sind zwei Stunden.',
             ],
             [
-                'audio_script' => 'Stadtfest-Info: Linie 4 fährt am Samstag nicht durch die Innenstadt. Bitte nutzen Sie Linie 7.',
+                'audio_script' => 'Stadtfest-Info: Wegen einer Sperrung fährt die Linie 4 am Samstag nicht durch die Innenstadt. Fahrgäste sollen zwischen Hauptbahnhof und Rathaus bitte die Linie 7 nutzen. Ab Sonntag fährt Linie 4 wieder normal.',
                 'question' => 'Welche Linie soll man stattdessen nehmen?',
                 'options' => ['A' => 'Linie 5', 'B' => 'Linie 6', 'C' => 'Linie 7'],
                 'correct' => 'C',
                 'rationale' => 'Empfohlen wird Linie 7.',
             ],
             [
-                'audio_script' => 'Arbeitsagentur: Der Infoabend zum Thema Bewerbung beginnt am Mittwoch um 18:30 Uhr im Raum A2.',
+                'audio_script' => 'Arbeitsagentur: Der Infoabend zum Thema Bewerbung beginnt am Mittwoch um 18:30 Uhr im Raum A2, Einlass ist ab 18 Uhr. Der Vortrag dauert etwa 90 Minuten. Im Anschluss gibt es eine kurze Fragerunde.',
                 'question' => 'Wo findet der Infoabend statt?',
                 'options' => ['A' => 'im Raum A2', 'B' => 'im Raum B2', 'C' => 'im Raum A3'],
                 'correct' => 'A',
                 'rationale' => 'Der Raum ist A2.',
             ],
             [
-                'audio_script' => 'Apothekennotdienst: Heute hat die Adler-Apotheke in der Ringstraße 8 bis 22 Uhr geöffnet.',
+                'audio_script' => 'Apothekennotdienst: Heute hat die Adler-Apotheke in der Ringstraße 8 bis 22 Uhr geöffnet. Nach 22 Uhr übernimmt die Notdienst-Apotheke am Bahnhof. Bitte bringen Sie für rezeptpflichtige Medikamente das Rezept mit.',
                 'question' => 'Wie lange ist die Adler-Apotheke heute geöffnet?',
                 'options' => ['A' => 'bis 20 Uhr', 'B' => 'bis 22 Uhr', 'C' => 'bis 24 Uhr'],
                 'correct' => 'B',
@@ -2206,7 +2220,7 @@ function build_lesen_teil3_textblock_pools(): array
             'instructions' => 'Lesen Sie die drei Texte. Zu jedem Text gibt es zwei Aufgaben. Entscheiden Sie bei jedem Text, ob die Aussage richtig oder falsch ist und welche Antwort (a, b oder c) am besten passt. Markieren Sie Ihre Lösungen für die Aufgaben 31-36.',
             'blocks' => [
                 [
-                    'text' => 'Lust auf Spiele? Das Jugendzentrum Pelikan lädt Jugendliche ab zehn Jahren jeden Mittwoch und Freitag von 15 bis 18 Uhr zum „Spieltreff“ ein. In den Sommerferien startet das Angebot täglich ab 10 Uhr. Es gibt Brett- und Kartenspiele sowie bei gutem Wetter Ballspiele im Garten. Ein Quiz findet nur freitags im Computerraum statt. Geld kann man dabei nicht gewinnen, aber man lernt viel und hat Spaß. Wer mitmachen möchte, meldet sich per E-Mail oder telefonisch an.',
+                    'text' => 'Lust auf Spiele? Das Jugendzentrum Pelikan lädt Jugendliche ab zehn Jahren jeden Mittwoch und Freitag von 15 bis 18 Uhr zum „Spieltreff“ ein. In den Sommerferien startet das Angebot täglich ab 10 Uhr. Es gibt Brett- und Kartenspiele sowie bei gutem Wetter Ballspiele im Garten. Ein Quiz findet nur freitags im Computerraum statt. Geld kann man dabei nicht gewinnen, aber man lernt viel und hat Spaß. Getränke stehen im Cafébereich günstig bereit, und neue Besucherinnen und Besucher bekommen am ersten Tag eine kurze Einführung. Wer mitmachen möchte, meldet sich per E-Mail oder telefonisch an.',
                     'true_false' => [
                         'no' => 31,
                         'statement' => 'Das Quiz gibt es jeden Tag im Jugendzentrum.',
@@ -2226,7 +2240,7 @@ function build_lesen_teil3_textblock_pools(): array
                     ],
                 ],
                 [
-                    'text' => 'Liebe Eltern, die Klassenfahrt der 5a, die im Herbst ausgefallen ist, wird vom 12. bis 17. Mai nachgeholt. Zusammen mit der 5c fährt die Klasse in den Naturpark Bayerischer Wald. Die Kinder übernachten in einer Jugendherberge und machen Ausflüge. Am 20.2. um 18 Uhr gibt es einen Informationsabend über das Schulportal. Dort werden Packliste, Regeln und Organisation besprochen. Bitte schreiben Sie kurz per E-Mail, ob Sie teilnehmen können.',
+                    'text' => 'Liebe Eltern, die Klassenfahrt der 5a, die im Herbst ausgefallen ist, wird vom 12. bis 17. Mai nachgeholt. Zusammen mit der 5c fährt die Klasse in den Naturpark Bayerischer Wald. Die Kinder übernachten in einer Jugendherberge und machen Ausflüge. Geplant sind eine geführte Wanderung, ein Besuch im Tierpark und ein gemeinsamer Sportnachmittag. Am 20.2. um 18 Uhr gibt es einen Informationsabend über das Schulportal. Dort werden Packliste, Regeln und Organisation besprochen. Bitte schreiben Sie kurz per E-Mail, ob Sie teilnehmen können.',
                     'true_false' => [
                         'no' => 33,
                         'statement' => 'Die Klassenfahrt wurde endgültig abgesagt.',
@@ -2246,7 +2260,7 @@ function build_lesen_teil3_textblock_pools(): array
                     ],
                 ],
                 [
-                    'text' => 'Sehr geehrter Herr Ronin, vielen Dank für Ihre Anmeldung zu unserem Gesundheits-Plus-Service. Mit der Karte erhalten Sie 2 % Sofortrabatt auf Einkäufe (außer rezeptpflichtige Medikamente), kostenlosen Versand bei Online-Bestellungen und Erinnerungen für Folgerezepte. Zusätzlich bieten wir Serviceleistungen wie Blutdruck- und Blutzuckermessung an. Ein Kundenmagazin und ein monatlicher Newsletter kommen per E-Mail. Der Service ist kostenlos und kann jederzeit schriftlich gekündigt werden.',
+                    'text' => 'Sehr geehrter Herr Ronin, vielen Dank für Ihre Anmeldung zu unserem Gesundheits-Plus-Service. Mit der Karte erhalten Sie 2 % Sofortrabatt auf Einkäufe (außer rezeptpflichtige Medikamente), kostenlosen Versand bei Online-Bestellungen und Erinnerungen für Folgerezepte. Zusätzlich bieten wir Serviceleistungen wie Blutdruck- und Blutzuckermessung an. Ein Kundenmagazin und ein monatlicher Newsletter kommen per E-Mail. Außerdem können Sie an ausgewählten Aktionstagen kostenlose Beratungsgespräche zu Ernährung und Bewegung nutzen. Der Service ist kostenlos und kann jederzeit schriftlich gekündigt werden.',
                     'true_false' => [
                         'no' => 35,
                         'statement' => 'Die Nachricht kommt vom Apothekenverbund.',
@@ -2272,7 +2286,7 @@ function build_lesen_teil3_textblock_pools(): array
             'instructions' => 'Lesen Sie die drei Texte. Zu jedem Text gibt es zwei Aufgaben. Entscheiden Sie bei jedem Text, ob die Aussage richtig oder falsch ist und welche Antwort (a, b oder c) am besten passt. Markieren Sie Ihre Lösungen für die Aufgaben 31-36.',
             'blocks' => [
                 [
-                    'text' => 'Die Stadtbibliothek erweitert ab Mai ihre Öffnungszeiten. Von Montag bis Freitag ist jetzt von 8 bis 20 Uhr geöffnet, samstags von 10 bis 16 Uhr. Die Rückgabe am Automaten bleibt rund um die Uhr möglich. Für neue Nutzerinnen und Nutzer ist ein Ausweis nötig; die Ausstellung kostet einmalig 10 Euro. Wer den Ausweis online verlängern möchte, kann dies im Kundenkonto machen und die Gebühr per Lastschrift bezahlen.',
+                    'text' => 'Die Stadtbibliothek erweitert ab Mai ihre Öffnungszeiten. Von Montag bis Freitag ist jetzt von 8 bis 20 Uhr geöffnet, samstags von 10 bis 16 Uhr. Die Rückgabe am Automaten bleibt rund um die Uhr möglich. Für neue Nutzerinnen und Nutzer ist ein Ausweis nötig; die Ausstellung kostet einmalig 10 Euro. Wer den Ausweis online verlängern möchte, kann dies im Kundenkonto machen und die Gebühr per Lastschrift bezahlen. Ab sofort gibt es im ersten Stock auch mehr Arbeitsplätze mit Steckdosen, die besonders in Prüfungszeiten stark nachgefragt sind.',
                     'true_false' => [
                         'no' => 31,
                         'statement' => 'Samstags ist die Bibliothek bis 20 Uhr geöffnet.',
@@ -2292,7 +2306,7 @@ function build_lesen_teil3_textblock_pools(): array
                     ],
                 ],
                 [
-                    'text' => 'Liebe Eltern, unser Elternabend findet am Donnerstag, den 14. März, um 19 Uhr statt. Wir sprechen über den Lernstand der Klasse und die Vorbereitung auf die Projektwoche. Der Abend findet in Raum 2 der Schule statt; ein Online-Zugang ist diesmal nicht vorgesehen. Wenn Sie nicht teilnehmen können, schreiben Sie bitte bis Mittwochmittag eine kurze Nachricht an das Sekretariat.',
+                    'text' => 'Liebe Eltern, unser Elternabend findet am Donnerstag, den 14. März, um 19 Uhr statt. Wir sprechen über den Lernstand der Klasse und die Vorbereitung auf die Projektwoche. Außerdem informieren wir Sie über die neuen Arbeitsgemeinschaften im kommenden Halbjahr. Der Abend findet in Raum 2 der Schule statt; ein Online-Zugang ist diesmal nicht vorgesehen. Wenn Sie nicht teilnehmen können, schreiben Sie bitte bis Mittwochmittag eine kurze Nachricht an das Sekretariat.',
                     'true_false' => [
                         'no' => 33,
                         'statement' => 'Der Elternabend findet online statt.',
@@ -2312,7 +2326,7 @@ function build_lesen_teil3_textblock_pools(): array
                     ],
                 ],
                 [
-                    'text' => 'Sehr geehrte Kundin, sehr geehrter Kunde, unser Fitnessstudio bietet ab April neue Tarife an. Der Basic-Tarif kostet 24 Euro monatlich und beinhaltet die Nutzung von Montag bis Freitag. Im Plus-Tarif für 34 Euro ist zusätzlich der Wochenendzugang enthalten. Bei Abschluss bis 30. April entfällt die Aufnahmegebühr. Verträge können jeweils zum Monatsende mit einer Frist von vier Wochen gekündigt werden.',
+                    'text' => 'Sehr geehrte Kundin, sehr geehrter Kunde, unser Fitnessstudio bietet ab April neue Tarife an. Der Basic-Tarif kostet 24 Euro monatlich und beinhaltet die Nutzung von Montag bis Freitag. Im Plus-Tarif für 34 Euro ist zusätzlich der Wochenendzugang enthalten. Bei Abschluss bis 30. April entfällt die Aufnahmegebühr. Neue Mitglieder erhalten in den ersten zwei Wochen außerdem eine kostenlose Einführung an den Geräten. Verträge können jeweils zum Monatsende mit einer Frist von vier Wochen gekündigt werden.',
                     'true_false' => [
                         'no' => 35,
                         'statement' => 'Im Basic-Tarif kann man auch am Wochenende trainieren.',
@@ -2363,19 +2377,19 @@ function create_lesen_teil3_structured_set(bool $includeExplanation): array
         $blocks[] = [
             'id' => 'b_' . $blockNo,
             'title' => 'Text ' . $blockNo,
-            'text' => germanize_umlauts_text((string)($block['text'] ?? '')),
+            'text' => format_training_text((string)($block['text'] ?? '')),
             'true_false' => [
                 'no' => (int)($tf['no'] ?? (31 + ($idx * 2))),
-                'statement' => germanize_umlauts_text((string)($tf['statement'] ?? '')),
+                'statement' => format_training_text((string)($tf['statement'] ?? '')),
                 'correct' => strtoupper((string)($tf['correct'] ?? 'B')),
-                'explanation' => $includeExplanation ? germanize_umlauts_text((string)($tf['rationale'] ?? '')) : '',
+                'explanation' => $includeExplanation ? format_training_text((string)($tf['rationale'] ?? '')) : '',
             ],
             'mc' => [
                 'no' => (int)($mc['no'] ?? (32 + ($idx * 2))),
-                'question' => germanize_umlauts_text((string)($mc['question'] ?? 'Welche Antwort passt?')),
-                'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
+                'question' => format_training_text((string)($mc['question'] ?? 'Welche Antwort passt?')),
+                'options' => array_map(static fn($v) => format_training_text((string)$v), (array)$prepared['options']),
                 'correct' => strtoupper((string)$prepared['correct']),
-                'explanation' => $includeExplanation ? germanize_umlauts_text((string)($mc['rationale'] ?? '')) : '',
+                'explanation' => $includeExplanation ? format_training_text((string)($mc['rationale'] ?? '')) : '',
             ],
         ];
     }
@@ -2387,8 +2401,8 @@ function create_lesen_teil3_structured_set(bool $includeExplanation): array
         'dtz_part' => 'L3 Drei Texte',
         'task_type' => 'Richtig/Falsch + A/B/C',
         'context' => 'Alltag A2-B1',
-        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 3')),
-        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
+        'title' => format_training_text((string)($picked['title'] ?? 'Lesen Teil 3')),
+        'instructions' => format_training_text((string)($picked['instructions'] ?? '')),
         'blocks' => $blocks,
     ];
 
@@ -2408,7 +2422,7 @@ function build_lesen_teil4_richtig_falsch_pools(): array
         [
             'title' => 'Kundendienst: Filmplattform',
             'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
-            'text' => 'ViewNow - Mitgliedschaft\n\nBei ViewNow können Sie Filme, Serien und Sportübertragungen live oder später ansehen. Das Angebot ist ab 14 Jahren nutzbar. Jugendliche unter 18 Jahren dürfen den Dienst nur mit Zustimmung der Erziehungsberechtigten nutzen. \n\nEin Basis-Abo kostet 7,99 Euro pro Monat und enthält Werbung. Das Plus-Abo kostet 13,99 Euro und ist ohne Werbung auf zwei Geräten gleichzeitig nutzbar.\n\nDie Zahlung ist jeweils am Tag des Vertragsabschlusses für den nächsten Monat fällig. Geht das Geld nicht rechtzeitig ein, wird der Zugang vorübergehend gesperrt.\n\nDas Abo ist monatlich kündbar. Die Kündigung ist über das Kundenkonto oder per E-Mail möglich.',
+            'text' => 'ViewNow - Mitgliedschaft\n\nBei ViewNow können Sie Filme, Serien und Sportübertragungen live oder später ansehen. Das Angebot ist ab 14 Jahren nutzbar. Jugendliche unter 18 Jahren dürfen den Dienst nur mit Zustimmung der Erziehungsberechtigten nutzen.\n\nEin Basis-Abo kostet 7,99 Euro pro Monat und enthält Werbung. Das Plus-Abo kostet 13,99 Euro und ist ohne Werbung auf zwei Geräten gleichzeitig nutzbar.\n\nDie Zahlung ist jeweils am Tag des Vertragsabschlusses für den nächsten Monat fällig. Geht das Geld nicht rechtzeitig ein, wird der Zugang vorübergehend gesperrt.\n\nNutzerinnen und Nutzer können ihr Paket jederzeit im Kundenkonto wechseln. Der neue Preis gilt dann ab dem nächsten Abrechnungsmonat.\n\nDas Abo ist monatlich kündbar. Die Kündigung ist über das Kundenkonto oder per E-Mail möglich.',
             'statements' => [
                 [
                     'no' => 37,
@@ -2433,7 +2447,7 @@ function build_lesen_teil4_richtig_falsch_pools(): array
         [
             'title' => 'Information vom Wohnungsservice',
             'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
-            'text' => 'WohnService Nord - Mieterinformation\n\nUnser Reparaturdienst ist montags bis freitags zwischen 8:00 und 17:00 Uhr erreichbar. Notfälle (zum Beispiel ein Rohrbruch) melden Sie bitte sofort über die Notfallnummer.\n\nFür normale Reparaturen können Sie online einen Termin buchen. Geben Sie dabei bitte Ihre Wohnungsnummer und eine aktuelle Telefonnummer an.\n\nDie jährliche Wartung der Heizungen findet zwischen Oktober und November statt. Sie erhalten den genauen Termin mindestens sieben Tage vorher per E-Mail.\n\nWenn Sie den Termin nicht wahrnehmen können, melden Sie sich bitte spätestens 24 Stunden vorher. Sonst kann eine Servicegebühr von 25 Euro entstehen.',
+            'text' => 'WohnService Nord - Mieterinformation\n\nUnser Reparaturdienst ist montags bis freitags zwischen 8:00 und 17:00 Uhr erreichbar. Notfälle (zum Beispiel ein Rohrbruch) melden Sie bitte sofort über die Notfallnummer.\n\nFür normale Reparaturen können Sie online einen Termin buchen. Geben Sie dabei bitte Ihre Wohnungsnummer und eine aktuelle Telefonnummer an.\n\nDie jährliche Wartung der Heizungen findet zwischen Oktober und November statt. Sie erhalten den genauen Termin mindestens sieben Tage vorher per E-Mail.\n\nFalls ein Handwerker Zugang zum Keller oder zu Gemeinschaftsräumen benötigt, informieren wir alle betroffenen Hausparteien zusätzlich mit einem Aushang im Eingangsbereich.\n\nWenn Sie den Termin nicht wahrnehmen können, melden Sie sich bitte spätestens 24 Stunden vorher. Sonst kann eine Servicegebühr von 25 Euro entstehen.',
             'statements' => [
                 [
                     'no' => 37,
@@ -2458,7 +2472,7 @@ function build_lesen_teil4_richtig_falsch_pools(): array
         [
             'title' => 'Hinweis vom Integrationskurs',
             'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
-            'text' => 'Bildungszentrum am Park - Kursregelung\n\nDer Deutschkurs B1 findet montags, mittwochs und freitags von 9:00 bis 12:15 Uhr statt. Bitte kommen Sie pünktlich, weil wichtige Informationen immer am Anfang gegeben werden.\n\nWenn Sie krank sind, informieren Sie das Sekretariat bis 8:30 Uhr telefonisch oder per E-Mail. Bei längerer Krankheit ab drei Tagen brauchen wir eine ärztliche Bescheinigung.\n\nHausaufgaben werden jeden Freitag im Online-Portal veröffentlicht und sollen bis Montagabend hochgeladen werden. Wer technische Probleme hat, meldet sich bitte direkt bei der Lehrkraft.\n\nFehlende Unterlagen können im Sekretariat zwischen 13:00 und 15:00 Uhr abgegeben werden.',
+            'text' => 'Bildungszentrum am Park - Kursregelung\n\nDer Deutschkurs B1 findet montags, mittwochs und freitags von 9:00 bis 12:15 Uhr statt. Bitte kommen Sie pünktlich, weil wichtige Informationen immer am Anfang gegeben werden.\n\nWenn Sie krank sind, informieren Sie das Sekretariat bis 8:30 Uhr telefonisch oder per E-Mail. Bei längerer Krankheit ab drei Tagen brauchen wir eine ärztliche Bescheinigung.\n\nHausaufgaben werden jeden Freitag im Online-Portal veröffentlicht und sollen bis Montagabend hochgeladen werden. Wer technische Probleme hat, meldet sich bitte direkt bei der Lehrkraft.\n\nZusätzlich bieten wir dienstags von 13:00 bis 14:00 Uhr eine freiwillige Lernberatung an. Dort können offene Fragen aus dem Unterricht in kleinen Gruppen besprochen werden.\n\nFehlende Unterlagen können im Sekretariat zwischen 13:00 und 15:00 Uhr abgegeben werden.',
             'statements' => [
                 [
                     'no' => 37,
@@ -2483,7 +2497,7 @@ function build_lesen_teil4_richtig_falsch_pools(): array
         [
             'title' => 'Serviceinfo einer Bank',
             'instructions' => 'Lesen Sie den Text. Entscheiden Sie, ob die Aussagen 37-39 richtig oder falsch sind. Markieren Sie Ihre Lösungen für die Aufgaben 37-39.',
-            'text' => 'StadtBank - Aktuelle Servicezeiten\n\nUnsere Filiale am Rathausplatz ist montags bis freitags von 9:00 bis 16:00 Uhr geöffnet. Am Donnerstag bieten wir zusätzlich eine Abendberatung bis 18:30 Uhr an.\n\nFür Überweisungen und Kontoauszüge können Sie auch die Automaten im Eingangsbereich nutzen. Dieser Bereich ist täglich von 6:00 bis 22:00 Uhr zugänglich.\n\nWenn Sie eine neue Bankkarte bestellen möchten, können Sie das online im Kundenportal erledigen. Die Karte wird in der Regel innerhalb von fünf Werktagen per Post zugestellt.\n\nBei Verlust der Karte rufen Sie bitte sofort unsere Sperrhotline an, damit keine unberechtigten Zahlungen erfolgen.',
+            'text' => 'StadtBank - Aktuelle Servicezeiten\n\nUnsere Filiale am Rathausplatz ist montags bis freitags von 9:00 bis 16:00 Uhr geöffnet. Am Donnerstag bieten wir zusätzlich eine Abendberatung bis 18:30 Uhr an.\n\nFür Überweisungen und Kontoauszüge können Sie auch die Automaten im Eingangsbereich nutzen. Dieser Bereich ist täglich von 6:00 bis 22:00 Uhr zugänglich.\n\nWenn Sie eine neue Bankkarte bestellen möchten, können Sie das online im Kundenportal erledigen. Die Karte wird in der Regel innerhalb von fünf Werktagen per Post zugestellt.\n\nFür Beratungsgespräche zu Kredit oder Finanzierung empfehlen wir eine Terminbuchung vorab, damit Wartezeiten in der Filiale vermieden werden.\n\nBei Verlust der Karte rufen Sie bitte sofort unsere Sperrhotline an, damit keine unberechtigten Zahlungen erfolgen.',
             'statements' => [
                 [
                     'no' => 37,
@@ -2526,9 +2540,9 @@ function create_lesen_teil4_structured_set(bool $includeExplanation): array
         $statements[] = [
             'id' => 's_' . $no,
             'no' => $no,
-            'statement' => germanize_umlauts_text((string)($row['statement'] ?? '')),
+            'statement' => format_training_text((string)($row['statement'] ?? '')),
             'correct' => $correct,
-            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($row['rationale'] ?? '')) : '',
+            'explanation' => $includeExplanation ? format_training_text((string)($row['rationale'] ?? '')) : '',
         ];
     }
 
@@ -2539,9 +2553,9 @@ function create_lesen_teil4_structured_set(bool $includeExplanation): array
         'dtz_part' => 'L4 Richtig/Falsch',
         'task_type' => 'Textverständnis',
         'context' => 'Alltag A2-B1',
-        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 4')),
-        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
-        'text' => germanize_umlauts_text((string)($picked['text'] ?? '')),
+        'title' => format_training_text((string)($picked['title'] ?? 'Lesen Teil 4')),
+        'instructions' => format_training_text((string)($picked['instructions'] ?? '')),
+        'text' => format_training_text((string)($picked['text'] ?? '')),
         'statements' => $statements,
     ];
 
@@ -2656,9 +2670,9 @@ function create_lesen_teil5_structured_set(bool $includeExplanation): array
         $gaps[] = [
             'id' => 'gap_' . $no,
             'no' => $no,
-            'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$prepared['options']),
+            'options' => array_map(static fn($v) => format_training_text((string)$v), (array)$prepared['options']),
             'correct' => (string)$prepared['correct'],
-            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($gap['rationale'] ?? '')) : '',
+            'explanation' => $includeExplanation ? format_training_text((string)($gap['rationale'] ?? '')) : '',
         ];
     }
 
@@ -2676,14 +2690,14 @@ function create_lesen_teil5_structured_set(bool $includeExplanation): array
         'dtz_part' => 'L5 Formeller Lueckentext',
         'task_type' => 'Formeller Text mit Luecken',
         'context' => 'Alltag A2-B1',
-        'title' => germanize_umlauts_text((string)($picked['title'] ?? 'Lesen Teil 5')),
-        'instructions' => germanize_umlauts_text((string)($picked['instructions'] ?? '')),
-        'text_template' => germanize_umlauts_text((string)($picked['text_template'] ?? '')),
+        'title' => format_training_text((string)($picked['title'] ?? 'Lesen Teil 5')),
+        'instructions' => format_training_text((string)($picked['instructions'] ?? '')),
+        'text_template' => format_training_text((string)($picked['text_template'] ?? '')),
         'example' => [
             'no' => (int)($example['no'] ?? 0),
-            'options' => array_map(static fn($v) => germanize_umlauts_text((string)$v), (array)$examplePrepared['options']),
+            'options' => array_map(static fn($v) => format_training_text((string)$v), (array)$examplePrepared['options']),
             'correct' => (string)$examplePrepared['correct'],
-            'explanation' => $includeExplanation ? germanize_umlauts_text((string)($example['rationale'] ?? '')) : '',
+            'explanation' => $includeExplanation ? format_training_text((string)($example['rationale'] ?? '')) : '',
         ],
         'gaps' => $gaps,
     ];
