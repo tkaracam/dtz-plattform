@@ -323,7 +323,9 @@ fun WebAppScreen() {
     var canGoForward by remember { mutableStateOf(false) }
     var showNavChrome by remember { mutableStateOf(true) }
     var lastScrollY by remember { mutableStateOf(0) }
+    var lastScrollPersistAt by remember { mutableStateOf(0L) }
     var pageScrollPercent by remember { mutableStateOf(0) }
+    var estimatedReadMinutes by remember { mutableStateOf(0) }
     var loading by remember { mutableStateOf(true) }
     var loadProgress by remember { mutableStateOf(0) }
     var offline by remember { mutableStateOf(false) }
@@ -477,6 +479,17 @@ fun WebAppScreen() {
         if (normalized != null) return normalized
         val withBase = if (text.startsWith("http://") || text.startsWith("https://")) text else "$WEB_BASE_URL/$text"
         return normalizeAllowedWebUrl(withBase)
+    }
+
+    fun refreshReadingStats(view: WebView?) {
+        val safeView = view ?: return
+        safeView.evaluateJavascript(
+            "(function(){var t=document.body?document.body.innerText:'';var w=t.trim().split(/\\s+/).filter(Boolean).length;return String(w);})();"
+        ) { jsResult ->
+            val raw = jsResult.orEmpty().trim().trim('"')
+            val words = raw.filter { it.isDigit() }.toIntOrNull() ?: 0
+            estimatedReadMinutes = if (words <= 0) 0 else maxOf(1, Math.ceil(words / 180.0).toInt())
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -704,6 +717,14 @@ fun WebAppScreen() {
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text("Okuma Analizini Yenile") },
+                            onClick = {
+                                topMenuExpanded = false
+                                refreshReadingStats(webViewRef)
+                                Toast.makeText(context, "Okuma analizi güncellendi", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("Güvenli Oturumu Sıfırla") },
                             onClick = {
                                 topMenuExpanded = false
@@ -841,6 +862,11 @@ fun WebAppScreen() {
                             val normalized = normalizeAllowedWebUrl(url.orEmpty())
                             if (normalized != null) {
                                 pageScrollMap[normalized] = scrollY.coerceAtLeast(0)
+                                val now = System.currentTimeMillis()
+                                if (now - lastScrollPersistAt > 1500) {
+                                    persistScrollPositions(webPrefs, pageScrollMap)
+                                    lastScrollPersistAt = now
+                                }
                             }
                             val viewport = (height / resources.displayMetrics.density).toInt().coerceAtLeast(1)
                             val maxScroll = (contentHeight - viewport).coerceAtLeast(1)
@@ -1030,6 +1056,7 @@ fun WebAppScreen() {
                                 showNavChrome = true
                                 showScrollTop = false
                                 pageScrollPercent = 0
+                                estimatedReadMinutes = 0
                                 lastScrollY = 0
                                 findMatchCount = 0
                                 findActiveMatch = 0
@@ -1102,6 +1129,7 @@ fun WebAppScreen() {
                                 }
                                 rememberCurrentScroll(view)
                                 persistScrollPositions(webPrefs, pageScrollMap)
+                                refreshReadingStats(view)
                                 scope.launch {
                                     Api.syncFcmTokenWithCurrentSession(context)
                                 }
@@ -1200,7 +1228,10 @@ fun WebAppScreen() {
                             pageScrollPercent = 0
                         }
                     },
-                    label = { Text("Okuma %$pageScrollPercent") },
+                    label = {
+                        val eta = if (estimatedReadMinutes > 0) " • ~$estimatedReadMinutes dk" else ""
+                        Text("Okuma %$pageScrollPercent$eta")
+                    },
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(start = 12.dp, bottom = 70.dp)
