@@ -2687,8 +2687,8 @@
                   </select>
                 </div>
                 <div>
-                  <label for="kursHwTaskPreview">Aufgabenstellung</label>
-                  <textarea id="kursHwTaskPreview" rows="6" readonly></textarea>
+                  <label for="kursHwTaskPreview">Aufgabenstellung (bearbeitbar)</label>
+                  <textarea id="kursHwTaskPreview" rows="6"></textarea>
                 </div>
                 <div class="grid">
                   <div>
@@ -2783,8 +2783,8 @@
                 </select>
               </div>
               <div>
-                <label for="hwTaskPreview">Aufgabenstellung</label>
-                <textarea id="hwTaskPreview" rows="6" readonly></textarea>
+                <label for="hwTaskPreview">Aufgabenstellung (bearbeitbar)</label>
+                <textarea id="hwTaskPreview" rows="6"></textarea>
               </div>
               <div id="hwCourseWrap">
                 <label for="hwCourseId">Kurs / Gruppe auswählen</label>
@@ -5843,7 +5843,8 @@
       }
       const selectedTemplate = getSelectedKursHomeworkTemplate();
       const title = String(selectedTemplate?.title || "").trim();
-      const description = selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "";
+      const customDescription = String(document.getElementById("kursHwTaskPreview")?.value || "").trim();
+      const description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
       const durationValue = Number(document.getElementById("kursHwDurationValue")?.value || 0);
       const durationUnit = String(document.getElementById("kursHwDurationUnit")?.value || "minutes");
       const startsAtRaw = String(document.getElementById("kursHwStartsAt")?.value || "").trim();
@@ -7513,7 +7514,8 @@
       clearBox("homeworkStatus");
       const selectedTemplate = getSelectedHomeworkTemplate();
       const title = String(selectedTemplate?.title || "").trim();
-      const description = selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "";
+      const customDescription = String(document.getElementById("hwTaskPreview")?.value || "").trim();
+      const description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
       const attachment = "";
       const targetType = String(document.getElementById("hwTargetType")?.value || "course");
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
