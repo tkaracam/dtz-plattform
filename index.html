@@ -5623,13 +5623,20 @@
     }
 
     function openDtzModuleView(module) {
-      const normalized = module === "lesen" ? "lesen" : "hoeren";
+      const requested = module === "lesen" ? "lesen" : "hoeren";
+      const requirement = getActiveAssignedDtzRequirement();
+      const normalized = requirement ? requirement.module : requested;
       const targetAccordion = normalized === "lesen" ? "dtzLesenAccordion" : "dtzHoerenAccordion";
 
       openDtzTrainingOnlyView();
       setHomeDashboardSection(normalized === "lesen" ? "dtz-lesen" : "dtz-hoeren");
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
+      if (requirement) {
+        const ui = getDtzUi(requirement.module);
+        if (ui.teilSelect) ui.teilSelect.value = String(requirement.teil);
+      }
+      applyAssignedDtzLock();
       // Bei jedem Öffnen neu laden, um leere oder veraltete Zustände zu vermeiden.
       loadDtzTrainingSet(normalized);
     }
@@ -7964,13 +7971,30 @@
     }
 
     async function loadDtzTrainingSet(module) {
-      const ui = getDtzUi(module);
-      const teil = syncDtzTeilFromSelect(module);
-      const state = ensureDtzTeilState(module, teil);
-      const count = getDtzQuestionCount(module, teil);
+      const normalizedModule = module === "lesen" ? "lesen" : "hoeren";
+      const requirement = getActiveAssignedDtzRequirement();
+      if (requirement && requirement.module !== normalizedModule) {
+        setDtzModuleStatus(normalizedModule, "error", `Für diese Aufgabe ist nur ${requirement.module === "hoeren" ? "Hören" : "Lesen"} Teil ${requirement.teil} freigegeben.`);
+        return;
+      }
+
+      const ui = getDtzUi(normalizedModule);
+      const forcedTeil = requirement ? requirement.teil : null;
+      if (forcedTeil && ui.teilSelect) {
+        ui.teilSelect.value = String(forcedTeil);
+      }
+      const teil = forcedTeil || syncDtzTeilFromSelect(normalizedModule);
+      const state = ensureDtzTeilState(normalizedModule, teil);
+      const count = getDtzQuestionCount(normalizedModule, teil);
+      if (forcedTeil) {
+        const moduleState = getDtzModuleState(normalizedModule);
+        moduleState.selectedTeil = forcedTeil;
+        updateDtzTeilButtons(normalizedModule);
+        updateDtzPartMeta(normalizedModule);
+      }
 
       stopDtzAudio(true);
-      clearDtzModuleStatus(module);
+      clearDtzModuleStatus(normalizedModule);
       if (ui.evaluateBtn) ui.evaluateBtn.disabled = true;
       if (ui.newBtn) ui.newBtn.disabled = true;
 
@@ -7979,7 +8003,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            module,
+            module: normalizedModule,
             count,
             teil
           })
@@ -7992,26 +8016,27 @@
         if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
 
         state.set = items;
-        state.tasks = buildDtzTasks(module, teil, items);
+        state.tasks = buildDtzTasks(normalizedModule, teil, items);
         state.answers = {};
         state.evaluated = false;
         state.lastLoadedAt = new Date().toISOString();
 
-        resetDtzModuleResultUi(module, true);
-        renderDtzTrainingSet(module);
+        resetDtzModuleResultUi(normalizedModule, true);
+        renderDtzTrainingSet(normalizedModule);
         const resolvedCount = getDtzResolvedTaskCount(state);
-        setDtzModuleStatus(module, "ok", `${resolvedCount} Aufgaben geladen (${module === "hoeren" ? "Hören" : "Lesen"} Teil ${teil}).`);
+        setDtzModuleStatus(normalizedModule, "ok", `${resolvedCount} Aufgaben geladen (${normalizedModule === "hoeren" ? "Hören" : "Lesen"} Teil ${teil}).`);
       } catch (err) {
         state.set = [];
         state.tasks = [];
         state.answers = {};
         state.evaluated = false;
         state.lastLoadedAt = "";
-        resetDtzModuleResultUi(module, false);
-        setDtzModuleStatus(module, "error", err.message || "DTZ-Aufgaben konnten nicht geladen werden.");
+        resetDtzModuleResultUi(normalizedModule, false);
+        setDtzModuleStatus(normalizedModule, "error", err.message || "DTZ-Aufgaben konnten nicht geladen werden.");
       } finally {
-        if (ui.evaluateBtn) ui.evaluateBtn.disabled = false;
-        if (ui.newBtn) ui.newBtn.disabled = false;
+        const blockedByRequirement = !!(requirement && requirement.module !== normalizedModule);
+        if (ui.evaluateBtn) ui.evaluateBtn.disabled = blockedByRequirement;
+        if (ui.newBtn) ui.newBtn.disabled = blockedByRequirement;
       }
     }
 
@@ -8036,7 +8061,15 @@
       renderDtzTrainingSet(module);
 
       ui.teilSelect.addEventListener("change", () => {
+        const requirement = getActiveAssignedDtzRequirement();
+        if (requirement && requirement.module === module) {
+          ui.teilSelect.value = String(requirement.teil);
+        }
         const teil = syncDtzTeilFromSelect(module);
+        if (requirement && teil !== requirement.teil) {
+          setDtzModuleStatus(module, "error", `Für diese Aufgabe ist nur Teil ${requirement.teil} freigegeben.`);
+          return;
+        }
         const teilState = ensureDtzTeilState(module, teil);
         updateDtzTeilButtons(module);
         updateDtzPartMeta(module);
@@ -8054,6 +8087,11 @@
         btn.addEventListener("click", () => {
           const targetTeil = Number(btn.getAttribute("data-dtz-teil") || "0");
           if (!Number.isFinite(targetTeil) || targetTeil < 1) return;
+          const requirement = getActiveAssignedDtzRequirement();
+          if (requirement && (requirement.module !== module || requirement.teil !== targetTeil)) {
+            setDtzModuleStatus(module, "error", `Für diese Aufgabe ist nur Teil ${requirement.teil} freigegeben.`);
+            return;
+          }
           if (ui.teilSelect) ui.teilSelect.value = String(targetTeil);
           const teil = syncDtzTeilFromSelect(module);
           const teilState = ensureDtzTeilState(module, teil);
@@ -8071,6 +8109,7 @@
 
       ui.evaluateBtn.addEventListener("click", () => evaluateDtzTrainingSet(module, true));
       ui.newBtn.addEventListener("click", () => loadDtzTrainingSet(module));
+      applyAssignedDtzLock();
     }
 
     function DtzTrainingPage() {
@@ -9226,14 +9265,29 @@
       return parseRequiredPointsFromText(String(currentAssignedHomework.description || ""));
     }
 
-    function resolveHoerenTeilRequirement() {
+    function resolveAssignedDtzRequirement() {
       if (!currentAssignedHomework) return null;
       const templateId = String(currentAssignedHomework.template_id || "").trim().toLowerCase();
-      const match = templateId.match(/^dtz-hoeren-teil([1-4])-fragenpaket$/);
+      const match = templateId.match(/^dtz-(hoeren|lesen)-teil([1-5])-fragenpaket$/);
       if (!match) return null;
-      const teil = Number.parseInt(match[1], 10);
-      if (!Number.isFinite(teil) || teil < 1 || teil > 4) return null;
-      return { type: "hoeren_teil", teil };
+      const module = match[1] === "lesen" ? "lesen" : "hoeren";
+      const teil = Number.parseInt(match[2], 10);
+      if (!Number.isFinite(teil) || teil < 1) return null;
+      if (module === "hoeren" && teil > 4) return null;
+      if (module === "lesen" && teil > 5) return null;
+      return { module, teil };
+    }
+
+    function getActiveAssignedDtzRequirement() {
+      if (!currentAssignedHomework || !currentAssignedHomeworkState) return null;
+      if (currentAssignedHomeworkState.submitted_at) return null;
+      return resolveAssignedDtzRequirement();
+    }
+
+    function resolveHoerenTeilRequirement() {
+      const requirement = getActiveAssignedDtzRequirement();
+      if (!requirement || requirement.module !== "hoeren") return null;
+      return { type: "hoeren_teil", teil: requirement.teil };
     }
 
     function splitChecklistLines(raw, maxCount = 30) {
@@ -9277,6 +9331,53 @@
           if (difficultInput) difficultInput.value = "";
         }
       });
+    }
+
+    function applyAssignedDtzLock() {
+      const requirement = getActiveAssignedDtzRequirement();
+      const hoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
+      const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
+      if (hoerenOpenBtn) {
+        hoerenOpenBtn.disabled = !!(requirement && requirement.module !== "hoeren");
+      }
+      if (lesenOpenBtn) {
+        lesenOpenBtn.disabled = !!(requirement && requirement.module !== "lesen");
+      }
+
+      ["hoeren", "lesen"].forEach(module => {
+        const ui = getDtzUi(module);
+        const forcedForModule = !!(requirement && requirement.module === module);
+        if (ui.teilSelect) {
+          if (forcedForModule) {
+            ui.teilSelect.value = String(requirement.teil);
+          }
+          ui.teilSelect.disabled = !!requirement;
+        }
+        if (ui.evaluateBtn) {
+          ui.evaluateBtn.disabled = !!(requirement && requirement.module !== module);
+        }
+        if (ui.newBtn) {
+          ui.newBtn.disabled = !!(requirement && requirement.module !== module);
+        }
+        const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
+        teilButtons.forEach(btn => {
+          const btnTeil = Number(btn.getAttribute("data-dtz-teil") || "0");
+          const allowed = !requirement || (module === requirement.module && btnTeil === requirement.teil);
+          btn.disabled = !allowed;
+        });
+      });
+
+      if (requirement) {
+        const moduleState = getDtzModuleState(requirement.module);
+        moduleState.selectedTeil = requirement.teil;
+        updateDtzTeilButtons(requirement.module);
+        updateDtzPartMeta(requirement.module);
+      } else {
+        updateDtzTeilButtons("hoeren");
+        updateDtzTeilButtons("lesen");
+        updateDtzPartMeta("hoeren");
+        updateDtzPartMeta("lesen");
+      }
     }
 
     function getAssignmentUiSets() {
@@ -9399,6 +9500,7 @@
       });
       setAssignmentEditorLocked(true);
       updateHoerenChecklistVisibility();
+      applyAssignedDtzLock();
       renderHomeDashboard();
     }
 
@@ -9589,6 +9691,7 @@
       });
       applyAssignmentStartButtonState();
       updateHoerenChecklistVisibility();
+      applyAssignedDtzLock();
 
       stopAssignmentCountdown();
       updateAssignmentCountdown();
