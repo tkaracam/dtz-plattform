@@ -2940,14 +2940,6 @@
       <div class="hero-top">
         <div id="heroHomeContent">
           <h1>Herzlich willkommen beim DTZ-Training</h1>
-          <p>Wählen Sie unten Ihren Bereich und starten Sie direkt mit dem Üben.</p>
-          <div class="level-bar">
-            <button type="button" class="level-tile b1" id="levelDtzBtn">DTZ</button>
-            <button type="button" class="level-tile lid" id="levelLidBtn">LiD</button>
-            <button type="button" class="level-tile b1" id="levelA2Btn">Niveau</button>
-            <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal</button>
-          </div>
-          <div class="hero-cta" aria-hidden="true"></div>
         </div>
       </div>
       </section>
@@ -10957,7 +10949,8 @@
     if (navAdminBtn) navAdminBtn.addEventListener("click", () => {
       window.location.href = "./admin.html";
     });
-    document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
+    const levelLidBtn = document.getElementById("levelLidBtn");
+    if (levelLidBtn) levelLidBtn.addEventListener("click", () => navigateToSection("lid"));
     const levelDtzBtn = document.getElementById("levelDtzBtn");
     if (levelDtzBtn) levelDtzBtn.addEventListener("click", () => navigateToSection("dtz"));
     const dtzHubHoerenBtn = document.getElementById("dtzHubHoerenBtn");
