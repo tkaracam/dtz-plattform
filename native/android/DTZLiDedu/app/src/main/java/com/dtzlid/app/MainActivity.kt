@@ -129,6 +129,7 @@ private const val WEB_TEXT_AUTOSIZE = "text_autosize"
 private const val WEB_MEDIA_AUTOPLAY = "media_autoplay"
 private const val WEB_READER_MODE = "reader_mode"
 private const val WEB_REDUCE_MOTION = "reduce_motion"
+private const val WEB_AUTO_NET_OPT = "auto_net_opt"
 private const val WEB_RECENT_PAGES = "recent_pages"
 private const val WEB_SCROLL_POSITIONS = "scroll_positions"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
@@ -218,6 +219,23 @@ private fun hasActiveInternet(context: Context): Boolean {
     val network = connectivity.activeNetwork ?: return false
     val capabilities = connectivity.getNetworkCapabilities(network) ?: return false
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+}
+
+private fun currentNetworkLabel(context: Context): String {
+    val connectivity = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivity.activeNetwork ?: return "Çevrimdışı"
+    val caps = connectivity.getNetworkCapabilities(network) ?: return "Çevrimdışı"
+    return when {
+        caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "Wi-Fi"
+        caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Mobil Veri"
+        caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
+        else -> "Ağ"
+    }
+}
+
+private fun isMeteredNetwork(context: Context): Boolean {
+    val connectivity = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    return connectivity.isActiveNetworkMetered
 }
 
 @Composable
@@ -336,6 +354,8 @@ fun WebAppScreen() {
     var offline by remember { mutableStateOf(false) }
     var loadTimedOut by remember { mutableStateOf(false) }
     var webViewGeneration by remember { mutableStateOf(0) }
+    var networkLabel by remember { mutableStateOf(currentNetworkLabel(context)) }
+    var meteredNetwork by remember { mutableStateOf(isMeteredNetwork(context)) }
     var showHistory by remember { mutableStateOf(false) }
     var historyItems by remember { mutableStateOf(NotificationCenter.list(context)) }
     var historyFilter by remember { mutableStateOf("all") }
@@ -365,6 +385,7 @@ fun WebAppScreen() {
     var mediaAutoplay by remember { mutableStateOf(webPrefs.getBoolean(WEB_MEDIA_AUTOPLAY, true)) }
     var readerMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_READER_MODE, false)) }
     var reduceMotion by remember { mutableStateOf(webPrefs.getBoolean(WEB_REDUCE_MOTION, false)) }
+    var autoNetworkOptimize by remember { mutableStateOf(webPrefs.getBoolean(WEB_AUTO_NET_OPT, false)) }
     val pageScrollMap = remember { loadScrollPositions(webPrefs).toMutableMap() }
     val recentPages = remember { loadRecentPages(webPrefs).toMutableStateList() }
     val favorites = remember {
@@ -571,8 +592,14 @@ fun WebAppScreen() {
         }
     }
 
+    fun applyNetworkOptimizedProfile() {
+        applyWebProfile(if (meteredNetwork) "fast" else "balanced")
+    }
+
     LaunchedEffect(Unit) {
         offline = !hasActiveInternet(context)
+        networkLabel = currentNetworkLabel(context)
+        meteredNetwork = isMeteredNetwork(context)
         PushNotificationWorker.ensureScheduled(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = ContextCompat.checkSelfPermission(
@@ -585,6 +612,9 @@ fun WebAppScreen() {
         }
         scope.launch {
             Api.syncFcmTokenWithCurrentSession(context)
+        }
+        if (autoNetworkOptimize) {
+            applyNetworkOptimizedProfile()
         }
     }
 
@@ -602,14 +632,21 @@ fun WebAppScreen() {
         val connectivity = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
+                networkLabel = currentNetworkLabel(context)
+                meteredNetwork = isMeteredNetwork(context)
                 if (offline) {
                     offline = false
                     webViewRef?.post { webViewRef?.reload() }
+                }
+                if (autoNetworkOptimize) {
+                    applyNetworkOptimizedProfile()
                 }
             }
 
             override fun onLost(network: Network) {
                 offline = !hasActiveInternet(context)
+                networkLabel = currentNetworkLabel(context)
+                meteredNetwork = isMeteredNetwork(context)
             }
         }
         runCatching { connectivity.registerDefaultNetworkCallback(callback) }
@@ -801,6 +838,14 @@ fun WebAppScreen() {
                                 topMenuExpanded = false
                                 refreshReadingStats(webViewRef)
                                 Toast.makeText(context, "Okuma analizi güncellendi", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Ağa Göre Optimize Et") },
+                            onClick = {
+                                topMenuExpanded = false
+                                applyNetworkOptimizedProfile()
+                                Toast.makeText(context, "Ağ profili uygulandı: ${if (meteredNetwork) "Hızlı" else "Dengeli"}", Toast.LENGTH_SHORT).show()
                             }
                         )
                         DropdownMenuItem(
@@ -1331,6 +1376,15 @@ fun WebAppScreen() {
                         .padding(start = 12.dp, bottom = 70.dp)
                 )
             }
+            if (!offline) {
+                AssistChip(
+                    onClick = { showPageInfoDialog = true },
+                    label = { Text("$networkLabel${if (meteredNetwork) " • Metered" else ""}") },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 12.dp, bottom = if (pageScrollPercent > 0) 108.dp else 70.dp)
+                )
+            }
             AnimatedVisibility(
                 visible = showNavChrome,
                 modifier = Modifier
@@ -1617,6 +1671,26 @@ fun WebAppScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(Modifier.weight(1f)) {
+                            Text("Ağa Göre Otomatik Optimize", fontWeight = FontWeight.SemiBold)
+                            Text("Bağlantı tipine göre profil otomatik uygulanır.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = autoNetworkOptimize,
+                            onCheckedChange = { checked ->
+                                autoNetworkOptimize = checked
+                                webPrefs.edit().putBoolean(WEB_AUTO_NET_OPT, checked).apply()
+                                if (checked) {
+                                    applyNetworkOptimizedProfile()
+                                }
+                            }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
                             Text("Reader Mode", fontWeight = FontWeight.SemiBold)
                             Text("Metin odaklı sade ve rahat okuma görünümü.", style = MaterialTheme.typography.bodySmall)
                         }
@@ -1750,6 +1824,7 @@ fun WebAppScreen() {
                     Text("Başlık: ${currentPageTitle.ifBlank { "Bilinmiyor" }}")
                     Text("URL: ${if (normalized.isBlank()) "-" else normalized}")
                     Text("Bağlantı: ${if (isHttps) "Güvenli (HTTPS)" else "Kontrol edin"}")
+                    Text("Ağ: $networkLabel${if (meteredNetwork) " (Metered)" else ""}")
                     Text("Yükleme Süresi: ${"%.2f".format(Locale.US, lastPageLoadDurationMs / 1000.0)} sn")
                     Text("Kelime Sayısı: $estimatedWordCount")
                     Text("Tahmini Okuma: ${if (estimatedReadMinutes > 0) "~$estimatedReadMinutes dk" else "-"}")
