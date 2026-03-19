@@ -72,7 +72,7 @@
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-weight: 700;
       color: #4a3a32;
       letter-spacing: 0.02em;
@@ -82,9 +82,17 @@
     }
     .nav-brand img {
       width: auto;
-      height: 27px;
+      height: 51px;
       max-width: 46vw;
       display: block;
+    }
+    .nav-brand-text {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #5a4438;
     }
     .nav-right {
       margin-left: auto;
@@ -642,8 +650,11 @@
         padding: 8px 9px;
       }
       .nav-brand img {
-        height: 27px;
+        height: 36px;
         max-width: 40vw;
+      }
+      .nav-brand-text {
+        font-size: 0.84rem;
       }
       .wrap {
         padding: 10px;
@@ -656,6 +667,7 @@
     <nav id="topNav" class="top-nav">
       <a id="navLogoBtn" class="nav-brand" href="./index.html" aria-label="Zur Startseite">
         <img src="./assets/dtzlib-logo-v3.png" alt="DTZ-LID Logo">
+        <span class="nav-brand-text">DTZ-LiD edu</span>
       </a>
       <div class="nav-right">
         <div class="nav-links">

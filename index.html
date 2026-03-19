@@ -96,7 +96,7 @@
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-weight: 700;
       color: #4a4454;
       letter-spacing: 0.02em;
@@ -107,9 +107,18 @@
 
     .nav-brand img {
       width: auto;
-      height: 27px;
+      height: 51px;
       max-width: 46vw;
       display: block;
+    }
+
+    .nav-brand-text {
+      display: inline-flex;
+      align-items: center;
+      line-height: 1;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #5a4438;
     }
 
     .nav-toggle {
@@ -2816,8 +2825,12 @@
       }
 
       .nav-brand img {
-        height: 34px;
+        height: 44px;
         max-width: 44vw;
+      }
+
+      .nav-brand-text {
+        font-size: 0.92rem;
       }
 
       .nav-toggle {
@@ -2938,8 +2951,12 @@
       }
 
       .nav-brand img {
-        height: 27px;
+        height: 36px;
         max-width: 40vw;
+      }
+
+      .nav-brand-text {
+        font-size: 0.84rem;
       }
 
       .hero {
@@ -2961,6 +2978,7 @@
     <nav id="topNav" class="top-nav">
       <div id="navLogoBtn" class="nav-brand" role="button" tabindex="0" aria-label="Zum Hauptmenü">
         <img src="./assets/logosonson.svg" alt="DTZ-LiD edu Logo">
+        <span class="nav-brand-text">DTZ-LiD edu</span>
       </div>
       <div class="nav-right">
         <div id="memberPanel" class="nav-member hidden">
