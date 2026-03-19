@@ -3223,6 +3223,18 @@
                   <div id="portalHomeworkWrap" class="portal-list">Noch keine Hausaufgaben.</div>
                 </div>
               </details>
+              <details id="portalHoerenHomeworkAccordion" class="card-accordion" style="margin-top:12px;">
+                <summary class="card-accordion-summary">
+                  <div class="title-wrap">
+                    <h3 style="margin:0;">Hören</h3>
+                    <p class="section-subtitle">Hören-Aufgaben öffnen und direkt den passenden Teil lösen.</p>
+                  </div>
+                  <span class="card-accordion-icon">▾</span>
+                </summary>
+                <div class="card-accordion-body">
+                  <div id="portalHoerenHomeworkWrap" class="portal-list">Keine Hören-Aufgaben vorhanden.</div>
+                </div>
+              </details>
               <details id="portalWriteAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
@@ -8130,6 +8142,7 @@
 
     const PORTAL_PANEL_TO_ACCORDION = {
       homework: "portalHomeworkAccordion",
+      hoerenHomework: "portalHoerenHomeworkAccordion",
       write: "portalWriteAccordion",
       corrections: "portalCorrectionsAccordion"
     };
@@ -9799,6 +9812,9 @@
     }
 
     function detectStudentHomeworkCategory(row) {
+      const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
+      if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(templateId)) return "hoeren";
+      if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(templateId)) return "lesen";
       const title = String(row && row.title ? row.title : "").toLowerCase();
       const description = String(row && row.description ? row.description : "").toLowerCase();
       const bag = `${title} ${description}`;
@@ -9809,12 +9825,46 @@
       return "schreiben";
     }
 
+    function parseDtzHomeworkTemplate(templateIdRaw) {
+      const templateId = String(templateIdRaw || "").trim().toLowerCase();
+      const match = templateId.match(/^dtz-(hoeren|lesen)-teil([1-5])-fragenpaket$/);
+      if (!match) return null;
+      const module = match[1] === "lesen" ? "lesen" : "hoeren";
+      const teil = Number.parseInt(match[2], 10);
+      if (!Number.isFinite(teil) || teil < 1) return null;
+      if (module === "hoeren" && teil > 4) return null;
+      if (module === "lesen" && teil > 5) return null;
+      return { module, teil };
+    }
+
+    function openHomeworkDtzTeil(templateIdRaw) {
+      const parsed = parseDtzHomeworkTemplate(templateIdRaw);
+      if (!parsed || parsed.module !== "hoeren") {
+        setStatus("error", "Für diese Aufgabe ist kein Hören-Teil verknüpft.", "portalStatus");
+        return;
+      }
+      const hoerenUi = getDtzUi("hoeren");
+      if (hoerenUi.teilSelect) {
+        hoerenUi.teilSelect.value = String(parsed.teil);
+      }
+      const moduleState = getDtzModuleState("hoeren");
+      moduleState.selectedTeil = parsed.teil;
+      navigateToSection("dtz-hoeren");
+      window.setTimeout(() => {
+        const ui = getDtzUi("hoeren");
+        if (ui.teilSelect) ui.teilSelect.value = String(parsed.teil);
+        loadDtzTrainingSet("hoeren");
+      }, 0);
+    }
+
     function renderPortalHomeworksGrouped(homeworks) {
       const wrap = document.getElementById("portalHomeworkWrap");
+      const hoerenWrap = document.getElementById("portalHoerenHomeworkWrap");
       if (!wrap) return;
       const rows = Array.isArray(homeworks) ? homeworks.filter(item => item && typeof item === "object") : [];
       if (!rows.length) {
         wrap.textContent = "Noch keine Hausaufgaben.";
+        if (hoerenWrap) hoerenWrap.textContent = "Keine Hören-Aufgaben vorhanden.";
         return;
       }
 
@@ -9844,16 +9894,21 @@
         const reminderLevel = String(row.reminder_level || "none").toLowerCase();
         const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
         const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
+        const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
+        const hoerenAction = parsedTemplate && parsedTemplate.module === "hoeren"
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-hoeren-teil="${escapeHtml(String(row.template_id || ""))}">Hören Teil ${parsedTemplate.teil} öffnen</button></div>`
+          : "";
         return `
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
             <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
+            ${hoerenAction}
           </div>
         `;
       };
 
-      const sections = ["hoeren", "lesen", "schreiben", "sprechen"]
+      const sections = ["lesen", "schreiben", "sprechen"]
         .filter(key => grouped[key].length > 0)
         .map(key => `
           <section class="portal-homework-group">
@@ -9863,6 +9918,15 @@
         `);
 
       wrap.innerHTML = sections.join("") || "Noch keine Hausaufgaben.";
+      if (hoerenWrap) {
+        hoerenWrap.innerHTML = grouped.hoeren.length ? grouped.hoeren.map(itemHtml).join("") : "Keine Hören-Aufgaben vorhanden.";
+        hoerenWrap.querySelectorAll("[data-open-hoeren-teil]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const templateId = String(btn.getAttribute("data-open-hoeren-teil") || "");
+            openHomeworkDtzTeil(templateId);
+          });
+        });
+      }
     }
 
     function renderPortalData(payload) {
@@ -9880,6 +9944,10 @@
       updateTaskNotifyBadges(homeworks);
 
       renderPortalHomeworksGrouped(homeworks);
+      const assigned = getActiveAssignedDtzRequirement();
+      if (assigned && assigned.module === "hoeren") {
+        openPortalPanel("hoerenHomework", false);
+      }
 
       renderPortalList(
         "portalNotesWrap",

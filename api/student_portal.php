@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur GET wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur GET wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -191,6 +191,7 @@ foreach (load_homework_assignments() as $assignment) {
 
     $homeworks[] = [
         'id' => (string)($assignment['id'] ?? ''),
+        'template_id' => (string)($assignment['template_id'] ?? ''),
         'title' => (string)($assignment['title'] ?? 'Aufgabe'),
         'description' => (string)($assignment['description'] ?? ''),
         'duration_minutes' => (int)($assignment['duration_minutes'] ?? 0),
