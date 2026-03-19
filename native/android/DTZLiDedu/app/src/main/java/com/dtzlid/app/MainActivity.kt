@@ -124,6 +124,9 @@ private const val WEB_FAVORITES = "favorites"
 private const val WEB_DESKTOP_MODE = "desktop_mode"
 private const val WEB_TEXT_ZOOM = "text_zoom"
 private const val WEB_KEEP_SCREEN_ON = "keep_screen_on"
+private const val WEB_DATA_SAVER = "data_saver"
+private const val WEB_TEXT_AUTOSIZE = "text_autosize"
+private const val WEB_MEDIA_AUTOPLAY = "media_autoplay"
 private const val WEB_RECENT_PAGES = "recent_pages"
 private const val WEB_SCROLL_POSITIONS = "scroll_positions"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
@@ -349,6 +352,9 @@ fun WebAppScreen() {
     var desktopMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_DESKTOP_MODE, false)) }
     var textZoom by remember { mutableStateOf(webPrefs.getInt(WEB_TEXT_ZOOM, 100).coerceIn(70, 180)) }
     var keepScreenOn by remember { mutableStateOf(webPrefs.getBoolean(WEB_KEEP_SCREEN_ON, false)) }
+    var dataSaver by remember { mutableStateOf(webPrefs.getBoolean(WEB_DATA_SAVER, false)) }
+    var textAutosize by remember { mutableStateOf(webPrefs.getBoolean(WEB_TEXT_AUTOSIZE, true)) }
+    var mediaAutoplay by remember { mutableStateOf(webPrefs.getBoolean(WEB_MEDIA_AUTOPLAY, true)) }
     val pageScrollMap = remember { loadScrollPositions(webPrefs).toMutableMap() }
     val recentPages = remember { loadRecentPages(webPrefs).toMutableStateList() }
     val favorites = remember {
@@ -430,6 +436,14 @@ fun WebAppScreen() {
         }
         settings.textZoom = textZoom
         settings.userAgentString = buildUserAgent(defaultUserAgent)
+        settings.mediaPlaybackRequiresUserGesture = !mediaAutoplay
+        settings.loadsImagesAutomatically = !dataSaver
+        settings.blockNetworkImage = dataSaver
+        settings.layoutAlgorithm = if (textAutosize) {
+            WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
+        } else {
+            WebSettings.LayoutAlgorithm.NORMAL
+        }
     }
 
     fun persistFavorites() {
@@ -1441,6 +1455,60 @@ fun WebAppScreen() {
                                 webViewRef?.let { applyRuntimeWebPreferences(it) }
                             },
                             valueRange = 70f..180f
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Data Saver", fontWeight = FontWeight.SemiBold)
+                            Text("Görüntüleri kısıp veri kullanımını azaltır.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = dataSaver,
+                            onCheckedChange = { checked ->
+                                dataSaver = checked
+                                webPrefs.edit().putBoolean(WEB_DATA_SAVER, checked).apply()
+                                webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
+                            }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Metni Otomatik Sığdır", fontWeight = FontWeight.SemiBold)
+                            Text("Uzun satırları ekrana göre optimize eder.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = textAutosize,
+                            onCheckedChange = { checked ->
+                                textAutosize = checked
+                                webPrefs.edit().putBoolean(WEB_TEXT_AUTOSIZE, checked).apply()
+                                webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
+                            }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Medya Otomatik Oynat", fontWeight = FontWeight.SemiBold)
+                            Text("Video/ses içeriği dokunmadan başlayabilir.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = mediaAutoplay,
+                            onCheckedChange = { checked ->
+                                mediaAutoplay = checked
+                                webPrefs.edit().putBoolean(WEB_MEDIA_AUTOPLAY, checked).apply()
+                                webViewRef?.let { applyRuntimeWebPreferences(it) }
+                            }
                         )
                     }
                     Row(
