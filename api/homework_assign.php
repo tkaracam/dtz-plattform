@@ -18,6 +18,137 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
+require_once __DIR__ . '/training_set_lib.php';
+
+function homework_used_dtz_questions_file(): string
+{
+    return __DIR__ . '/storage/homework_used_dtz_questions.json';
+}
+
+function load_used_dtz_question_ids(): array
+{
+    $file = homework_used_dtz_questions_file();
+    if (!is_file($file)) {
+        return [];
+    }
+    $raw = file_get_contents($file);
+    if (!is_string($raw) || trim($raw) === '') {
+        return [];
+    }
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function save_used_dtz_question_ids(array $payload): bool
+{
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+    $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if (!is_string($json)) {
+        return false;
+    }
+    return file_put_contents(homework_used_dtz_questions_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function parse_dtz_template_id(string $templateId): ?array
+{
+    if (preg_match('/^dtz\-(hoeren|lesen)\-teil([1-5])\-fragenpaket$/', $templateId, $m) !== 1) {
+        return null;
+    }
+    $module = (string)$m[1];
+    $teil = (int)$m[2];
+    if ($module === 'hoeren' && ($teil < 1 || $teil > 4)) {
+        return null;
+    }
+    if ($module === 'lesen' && ($teil < 1 || $teil > 5)) {
+        return null;
+    }
+    return ['module' => $module, 'teil' => $teil];
+}
+
+function build_unique_dtz_bundle(string $module, int $teil): array
+{
+    $set = create_training_set($module, 50, false, $teil);
+    $items = is_array($set['items'] ?? null) ? $set['items'] : [];
+    $used = load_used_dtz_question_ids();
+    $bucketKey = $module . '_teil_' . $teil;
+    $usedIds = is_array($used[$bucketKey] ?? null) ? $used[$bucketKey] : [];
+    $usedLookup = [];
+    foreach ($usedIds as $qid) {
+        $key = trim((string)$qid);
+        if ($key !== '') {
+            $usedLookup[$key] = true;
+        }
+    }
+
+    $available = [];
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $qid = trim((string)($item['template_id'] ?? ''));
+        if ($qid === '' || isset($usedLookup[$qid])) {
+            continue;
+        }
+        $available[] = $item;
+    }
+
+    if (!$available) {
+        throw new RuntimeException('Für dieses Teil sind aktuell keine neuen Fragen mehr verfügbar (ohne Wiederholung).');
+    }
+
+    $targetCount = $module === 'hoeren' ? 8 : 10;
+    if ($targetCount > count($available)) {
+        $targetCount = count($available);
+    }
+    $picked = array_slice($available, 0, $targetCount);
+
+    foreach ($picked as $row) {
+        $qid = trim((string)($row['template_id'] ?? ''));
+        if ($qid !== '') {
+            $usedLookup[$qid] = true;
+        }
+    }
+
+    $nextUsedIds = array_keys($usedLookup);
+    sort($nextUsedIds, SORT_STRING);
+    $used[$bucketKey] = $nextUsedIds;
+    if (!save_used_dtz_question_ids($used)) {
+        throw new RuntimeException('Fragen-Status konnte nicht gespeichert werden.');
+    }
+
+    return [
+        'module' => $module,
+        'teil' => $teil,
+        'items' => $picked,
+    ];
+}
+
+function format_dtz_bundle_description(string $baseDescription, array $bundle): string
+{
+    $module = (string)($bundle['module'] ?? '');
+    $teil = (int)($bundle['teil'] ?? 0);
+    $items = is_array($bundle['items'] ?? null) ? $bundle['items'] : [];
+    $moduleLabel = $module === 'hoeren' ? 'Hören' : 'Lesen';
+    $lines = [];
+    $lines[] = trim($baseDescription);
+    $lines[] = '';
+    $lines[] = '--- Automatisch zugewiesenes Fragenpaket ---';
+    $lines[] = "Bereich: {$moduleLabel} Teil {$teil}";
+    $lines[] = 'Hinweis: Diese Fragen wurden für diese Aufgabe neu vergeben (ohne Wiederholung).';
+    foreach ($items as $idx => $item) {
+        $qid = trim((string)($item['template_id'] ?? ''));
+        $question = trim((string)($item['question'] ?? $item['title'] ?? ''));
+        if ($qid === '' && $question === '') {
+            continue;
+        }
+        $shortQuestion = mb_substr($question, 0, 180);
+        $lines[] = ($idx + 1) . '. [' . $qid . '] ' . $shortQuestion;
+    }
+    return trim(implode("\n", array_filter($lines, static fn($v) => $v !== null)));
+}
 
 $admin = require_admin_role_json(['hauptadmin', 'docent']);
 $raw = file_get_contents('php://input') ?: '';
@@ -78,6 +209,7 @@ if ($action === 'list') {
 }
 
 if ($action === 'create') {
+    $templateId = trim((string)($body['template_id'] ?? ''));
     $title = trim((string)($body['title'] ?? ''));
     $description = trim((string)($body['description'] ?? ''));
     $attachment = trim((string)($body['attachment'] ?? ''));
@@ -166,6 +298,19 @@ if ($action === 'create') {
         exit;
     }
 
+    $dtzBundle = null;
+    $dtzTemplate = parse_dtz_template_id($templateId);
+    if (is_array($dtzTemplate)) {
+        try {
+            $dtzBundle = build_unique_dtz_bundle((string)$dtzTemplate['module'], (int)$dtzTemplate['teil']);
+            $description = format_dtz_bundle_description($description, $dtzBundle);
+        } catch (Throwable $e) {
+            http_response_code(409);
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
+
     try {
         $suffix = bin2hex(random_bytes(4));
     } catch (Throwable $e) {
@@ -188,6 +333,7 @@ if ($action === 'create') {
 
     $item = [
         'id' => $id,
+        'template_id' => $templateId,
         'title' => $title,
         'description' => $description,
         'attachment' => $attachment,
@@ -202,6 +348,7 @@ if ($action === 'create') {
         'created_at' => $createdAt,
         'updated_at' => $createdAt,
         'assignees' => $assignees,
+        'dtz_bundle' => $dtzBundle,
     ];
 
     $items[] = $item;

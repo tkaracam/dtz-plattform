@@ -3396,6 +3396,60 @@
 
     const HOMEWORK_MAIL_TEMPLATES = [
       {
+        id: "dtz-hoeren-teil1-fragenpaket",
+        title: "DTZ Hören Teil 1: Fragenpaket",
+        prompt: "Bearbeiten Sie das Hören-Training Teil 1 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 1.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-hoeren-teil2-fragenpaket",
+        title: "DTZ Hören Teil 2: Fragenpaket",
+        prompt: "Bearbeiten Sie das Hören-Training Teil 2 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 2.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-hoeren-teil3-fragenpaket",
+        title: "DTZ Hören Teil 3: Fragenpaket",
+        prompt: "Bearbeiten Sie das Hören-Training Teil 3 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 3.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-hoeren-teil4-fragenpaket",
+        title: "DTZ Hören Teil 4: Fragenpaket",
+        prompt: "Bearbeiten Sie das Hören-Training Teil 4 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 4.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-lesen-teil1-fragenpaket",
+        title: "DTZ Lesen Teil 1: Fragenpaket",
+        prompt: "Bearbeiten Sie das Lesen-Training Teil 1 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 1.", "Notieren Sie 5 Schlüsselwörter.", "Begründen Sie 2 Antworten."]
+      },
+      {
+        id: "dtz-lesen-teil2-fragenpaket",
+        title: "DTZ Lesen Teil 2: Fragenpaket",
+        prompt: "Bearbeiten Sie das Lesen-Training Teil 2 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 2.", "Notieren Sie 5 Schlüsselwörter.", "Begründen Sie 2 Antworten."]
+      },
+      {
+        id: "dtz-lesen-teil3-fragenpaket",
+        title: "DTZ Lesen Teil 3: Fragenpaket",
+        prompt: "Bearbeiten Sie das Lesen-Training Teil 3 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 3.", "Notieren Sie 5 Schlüsselwörter.", "Begründen Sie 2 Antworten."]
+      },
+      {
+        id: "dtz-lesen-teil4-fragenpaket",
+        title: "DTZ Lesen Teil 4: Fragenpaket",
+        prompt: "Bearbeiten Sie das Lesen-Training Teil 4 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 4.", "Notieren Sie 5 Schlüsselwörter.", "Begründen Sie 2 Antworten."]
+      },
+      {
+        id: "dtz-lesen-teil5-fragenpaket",
+        title: "DTZ Lesen Teil 5: Fragenpaket",
+        prompt: "Bearbeiten Sie das Lesen-Training Teil 5 und dokumentieren Sie Ihre Lösungen.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 5.", "Notieren Sie 5 Schlüsselwörter.", "Begründen Sie 2 Antworten."]
+      },
+      {
         id: "dtz-hoeren-kurzprotokoll",
         title: "DTZ Hören: Kurzprotokoll + Schlüsselwörter",
         prompt: "Bearbeiten Sie ein DTZ-Hören-Training (Teil 1-4) und erstellen Sie danach ein kurzes Hören-Protokoll.",
@@ -5867,6 +5921,7 @@
       try {
         const payload = await callHomeworkAssignApi({
           action: "create",
+          template_id: String(selectedTemplate?.id || ""),
           title,
           description,
           attachment: "",
@@ -7560,6 +7615,7 @@
       try {
         const payload = await callHomeworkAssignApi({
           action: "create",
+          template_id: String(selectedTemplate?.id || ""),
           title,
           description,
           attachment,
