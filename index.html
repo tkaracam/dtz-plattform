@@ -5316,7 +5316,8 @@
         workplace: "Fokus auf Alltag am Arbeitsplatz",
         qualification: "Fokus auf fachsprachliche Vertiefung"
       };
-      const diffRaw = String(document.getElementById("bskDifficulty")?.value || "auto");
+      const bskDifficultyNode = document.getElementById("bskDifficulty");
+      const diffRaw = String((bskDifficultyNode && bskDifficultyNode.value) || "auto");
       const difficulty = normalizeDifficulty(level, diffRaw);
       return `Empfehlung: ${level}-BSK (${field}, ${difficulty}). ${goalText[goal] || ""}. Hinweis: Inhalte sind eigenständig erstellt (kein Original-Prüfungsmaterial).`;
     }
@@ -8814,8 +8815,10 @@
     }
 
     function getSpeakingActivePartNo() {
-      if (document.getElementById("speakTab3")?.classList.contains("active")) return 3;
-      if (document.getElementById("speakTab2")?.classList.contains("active")) return 2;
+      const speakTab3 = document.getElementById("speakTab3");
+      if (speakTab3 && speakTab3.classList.contains("active")) return 3;
+      const speakTab2 = document.getElementById("speakTab2");
+      if (speakTab2 && speakTab2.classList.contains("active")) return 2;
       return 1;
     }
 
@@ -8852,7 +8855,8 @@
         return ["heisse", "jahre", "komme", "wohne", "spreche", "beruf", "freizeit"];
       }
       if (partNo === 2) {
-        const points = Array.isArray(currentSpeakingSet?.part2?.points) ? currentSpeakingSet.part2.points : [];
+        const part2Points = currentSpeakingSet && currentSpeakingSet.part2 ? currentSpeakingSet.part2.points : [];
+        const points = Array.isArray(part2Points) ? part2Points : [];
         const base = [];
         points.forEach((line) => {
           String(line || "").split(/[^A-Za-zÄÖÜäöüß]+/).forEach((word) => {
@@ -8863,7 +8867,8 @@
         base.push("bild", "personen");
         return Array.from(new Set(base));
       }
-      const points = Array.isArray(currentSpeakingSet?.part3?.points) ? currentSpeakingSet.part3.points : [];
+      const part3Points = currentSpeakingSet && currentSpeakingSet.part3 ? currentSpeakingSet.part3.points : [];
+      const points = Array.isArray(part3Points) ? part3Points : [];
       const base = [];
       points.forEach((line) => {
         String(line || "").split(/[^A-Za-zÄÖÜäöüß]+/).forEach((word) => {
@@ -8879,7 +8884,7 @@
       const box = document.getElementById("speakFeedbackBox");
       if (!box) return;
       const transcriptNode = document.getElementById("speakTranscript");
-      const raw = String(transcriptNode?.value || "").trim();
+      const raw = String((transcriptNode && transcriptNode.value) || "").trim();
       if (!raw) {
         box.textContent = "Noch kein Feedback. Starten Sie eine Aufnahme oder fügen Sie ein Transkript ein.";
         return;
@@ -10029,14 +10034,14 @@
       };
 
       rows.forEach(row => {
-        const status = String(row?.status || "").toLowerCase();
+        const status = String((row && row.status) || "").toLowerCase();
         if (status === "abgegeben") return;
         const category = detectStudentHomeworkCategory(row);
         const key = category === "hoeren"
           ? "hoeren"
           : (category === "lesen" ? "lesen" : (category === "a2" ? "a2" : "schreiben"));
         counts[key].pending += 1;
-        const level = String(row?.reminder_level || "").toLowerCase();
+        const level = String((row && row.reminder_level) || "").toLowerCase();
         if (level === "warn2" || level === "expired") {
           counts[key].urgent += 1;
         }
@@ -10053,8 +10058,8 @@
       badgeConfig.forEach(({ id, key, label }) => {
         const badge = document.getElementById(id);
         if (!badge) return;
-        const pendingCount = Number(counts[key]?.pending || 0);
-        const urgentCount = Number(counts[key]?.urgent || 0);
+        const pendingCount = Number((counts[key] && counts[key].pending) || 0);
+        const urgentCount = Number((counts[key] && counts[key].urgent) || 0);
         if (pendingCount > 0) {
           badge.textContent = String(pendingCount);
           badge.classList.remove("hidden");
@@ -10075,18 +10080,18 @@
       const expiredNode = document.getElementById("portalTodayExpired");
       if (activeNode || warn24Node || expiredNode) {
         const activeCount = rows.reduce((sum, row) => {
-          const status = String(row?.status || "").toLowerCase();
+          const status = String((row && row.status) || "").toLowerCase();
           return status === "abgegeben" ? sum : (sum + 1);
         }, 0);
         const warn24Count = rows.reduce((sum, row) => {
-          const status = String(row?.status || "").toLowerCase();
-          const level = String(row?.reminder_level || "").toLowerCase();
+          const status = String((row && row.status) || "").toLowerCase();
+          const level = String((row && row.reminder_level) || "").toLowerCase();
           if (status === "abgegeben") return sum;
           return level === "warn24" ? (sum + 1) : sum;
         }, 0);
         const expiredCount = rows.reduce((sum, row) => {
-          const status = String(row?.status || "").toLowerCase();
-          const level = String(row?.reminder_level || "").toLowerCase();
+          const status = String((row && row.status) || "").toLowerCase();
+          const level = String((row && row.reminder_level) || "").toLowerCase();
           if (status === "abgegeben") return sum;
           return level === "expired" ? (sum + 1) : sum;
         }, 0);
@@ -10285,7 +10290,7 @@
         openPortalPanel("hoerenHomework", false);
       } else if (assigned && assigned.module === "lesen") {
         openPortalPanel("lesenHomework", false);
-      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && String(row?.status || "").toLowerCase() !== "abgegeben")) {
+      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && String((row && row.status) || "").toLowerCase() !== "abgegeben")) {
         openPortalPanel("a2Homework", false);
       }
 
@@ -11046,8 +11051,10 @@
       const fromPortal = textareaId === "portalLetterText";
       const keywordId = fromPortal ? "portalHoerenKeywordsInput" : "hoerenKeywordsInput";
       const difficultId = fromPortal ? "portalHoerenDifficultInput" : "hoerenDifficultInput";
-      const keywords = splitChecklistLines(document.getElementById(keywordId)?.value || "");
-      const difficultQuestions = splitChecklistLines(document.getElementById(difficultId)?.value || "");
+      const keywordNode = document.getElementById(keywordId);
+      const difficultNode = document.getElementById(difficultId);
+      const keywords = splitChecklistLines((keywordNode && keywordNode.value) || "");
+      const difficultQuestions = splitChecklistLines((difficultNode && difficultNode.value) || "");
       return {
         studentName,
         letterText,
