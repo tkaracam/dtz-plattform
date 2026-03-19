@@ -156,6 +156,24 @@
       font-weight: 600;
     }
 
+    .docent-flow-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .docent-flow-step {
+      border: 1px solid #eadce2;
+      background: #fff7fa;
+      color: #5f4a56;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
     .hero-course-switch {
       margin-top: 10px;
       display: grid;
@@ -2739,6 +2757,11 @@
           <details id="homeworksAssignDetails" class="fold-section">
             <summary>+ Aufgabe zuweisen</summary>
             <div class="fold-section-content">
+              <div class="docent-flow-steps" aria-hidden="true">
+                <span class="docent-flow-step">1. Vorlage wählen</span>
+                <span class="docent-flow-step">2. Kurs wählen</span>
+                <span class="docent-flow-step">3. Starten & veröffentlichen</span>
+              </div>
               <div>
                 <label for="hwTaskTemplate">Mail-Aufgabe auswählen</label>
                 <select id="hwTaskTemplate">
@@ -2749,48 +2772,53 @@
                 <label for="hwTaskPreview">Aufgabenstellung</label>
                 <textarea id="hwTaskPreview" rows="6" readonly></textarea>
               </div>
-              <div class="grid">
-                <div>
-                  <label for="hwTargetType">Zuweisungstyp</label>
-                  <select id="hwTargetType">
-                    <option value="course" selected>Kurs / Gruppe</option>
-                    <option value="users">Ausgewählte Teilnehmende</option>
-                  </select>
-                </div>
-                <div id="hwCourseWrap">
-                  <label for="hwCourseId">Kurs / Gruppe auswählen</label>
-                  <select id="hwCourseId">
-                    <option value="">Bitte zuerst Kurs auswählen</option>
-                  </select>
-                </div>
-              </div>
-              <div id="hwUsersWrap" class="fold-section" style="margin-top:10px; display:none;">
-                <summary>Teilnehmende auswählen</summary>
-                <div class="fold-section-content">
-                  <div class="hw-user-actions">
-                    <button id="hwSelectAllUsersBtn" type="button" class="ghost-btn">Alle auswählen</button>
-                    <button id="hwClearUsersBtn" type="button" class="ghost-btn">Auswahl löschen</button>
-                  </div>
-                  <div id="hwUsersList" class="portal-list">Noch keine Teilnehmenden vorhanden.</div>
-                </div>
+              <div id="hwCourseWrap">
+                <label for="hwCourseId">Kurs / Gruppe auswählen</label>
+                <select id="hwCourseId">
+                  <option value="">Bitte zuerst Kurs auswählen</option>
+                </select>
               </div>
               <div class="grid">
-                <div>
-                  <label for="hwDurationValue">Dauer</label>
-                  <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
-                </div>
-                <div>
-                  <label for="hwDurationUnit">Einheit</label>
-                  <select id="hwDurationUnit">
-                    <option value="minutes" selected>Minuten</option>
-                    <option value="hours">Stunden</option>
-                  </select>
-                </div>
                 <div>
                   <label for="hwStartsAt">Startzeit</label>
                   <input id="hwStartsAt" type="datetime-local" required>
                 </div>
               </div>
+              <details id="hwAdvancedDetails" class="fold-section" style="margin-top:10px;">
+                <summary>Erweitert</summary>
+                <div class="fold-section-content">
+                  <div class="grid">
+                    <div>
+                      <label for="hwTargetType">Zuweisungstyp</label>
+                      <select id="hwTargetType">
+                        <option value="course" selected>Kurs / Gruppe</option>
+                        <option value="users">Ausgewählte Teilnehmende</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="hwDurationValue">Dauer</label>
+                      <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
+                    </div>
+                    <div>
+                      <label for="hwDurationUnit">Einheit</label>
+                      <select id="hwDurationUnit">
+                        <option value="minutes" selected>Minuten</option>
+                        <option value="hours">Stunden</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div id="hwUsersWrap" class="fold-section" style="margin-top:10px; display:none;">
+                    <summary>Teilnehmende auswählen</summary>
+                    <div class="fold-section-content">
+                      <div class="hw-user-actions">
+                        <button id="hwSelectAllUsersBtn" type="button" class="ghost-btn">Alle auswählen</button>
+                        <button id="hwClearUsersBtn" type="button" class="ghost-btn">Auswahl löschen</button>
+                      </div>
+                      <div id="hwUsersList" class="portal-list">Noch keine Teilnehmenden vorhanden.</div>
+                    </div>
+                  </div>
+                </div>
+              </details>
               <div class="actions">
                 <button id="createHomeworkBtn" type="button">Veröffentlichen / Speichern</button>
               </div>
@@ -3273,6 +3301,10 @@
     const ROOM_RECENT_TASKS_KEY = "dtz_room_recent_tasks_v1";
     const ADMIN_LAST_PANE_KEY = "dtz_admin_last_pane_v1";
     const ADMIN_LAST_COURSE_KEY = "dtz_admin_last_course_v1";
+    const ADMIN_HW_TEMPLATE_KEY = "dtz_admin_hw_template_v1";
+    const ADMIN_HW_COURSE_KEY = "dtz_admin_hw_course_v1";
+    const ADMIN_HW_DURATION_VALUE_KEY = "dtz_admin_hw_duration_value_v1";
+    const ADMIN_HW_DURATION_UNIT_KEY = "dtz_admin_hw_duration_unit_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
@@ -3731,8 +3763,10 @@
       if (homeworksSubtitle) homeworksSubtitle.classList.toggle("hidden", enabled);
       const homeworksAssignDetails = document.getElementById("homeworksAssignDetails");
       const homeworksListDetails = document.getElementById("homeworksListDetails");
+      const hwAdvancedDetails = document.getElementById("hwAdvancedDetails");
       if (homeworksAssignDetails && enabled) homeworksAssignDetails.open = true;
       if (homeworksListDetails && enabled) homeworksListDetails.open = false;
+      if (hwAdvancedDetails && enabled) hwAdvancedDetails.open = false;
       const kursUsersDetails = document.getElementById("kursUsersDetails");
       const kursHomeworkDetails = document.getElementById("kursHomeworkDetails");
       const kursAssignedHomeworkDetails = document.getElementById("kursAssignedHomeworkDetails");
@@ -3962,10 +3996,10 @@
       const topCourseJump = document.getElementById("topCourseJumpSelect");
       if (topCourseJump) topCourseJump.disabled = false;
       const preferredPane = getStoredPreference(ADMIN_LAST_PANE_KEY);
-      if (preferredPane && canAccessPane(preferredPane)) {
-        activeAdminPane = preferredPane;
-      } else if (isDocentSimpleMode()) {
+      if (isDocentSimpleMode()) {
         activeAdminPane = "homeworks";
+      } else if (preferredPane && canAccessPane(preferredPane)) {
+        activeAdminPane = preferredPane;
       }
       const preferredCourse = getStoredPreference(ADMIN_LAST_COURSE_KEY);
       if (preferredCourse) {
@@ -4812,7 +4846,7 @@
 
       const homeworkCourse = document.getElementById("hwCourseId");
       if (homeworkCourse) {
-        const prevHw = homeworkCourse.value;
+        const prevHw = homeworkCourse.value || getStoredPreference(ADMIN_HW_COURSE_KEY);
         homeworkCourse.innerHTML = options.join("");
         if (prevHw && Array.from(homeworkCourse.options).some(o => o.value === prevHw)) {
           homeworkCourse.value = prevHw;
@@ -5828,6 +5862,7 @@
         if (preferredCourseId !== selectedCourseId) {
           setSelectedCourse(preferredCourseId, false);
         }
+        restoreHomeworkQuickDefaults();
         renderStudents(getScopedStudentsForAccounts());
         renderHomeworkUserPicker();
       } catch (err) {
@@ -6063,6 +6098,47 @@
         if (courseWrap) courseWrap.style.display = "block";
         if (usersWrap) usersWrap.style.display = "none";
       }
+    }
+
+    function persistHomeworkQuickDefaults() {
+      const template = String(document.getElementById("hwTaskTemplate")?.value || "").trim();
+      const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
+      const durationValue = String(document.getElementById("hwDurationValue")?.value || "").trim();
+      const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes").trim();
+      setStoredPreference(ADMIN_HW_TEMPLATE_KEY, template || null);
+      setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
+      setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
+      setStoredPreference(ADMIN_HW_DURATION_UNIT_KEY, durationUnit || null);
+    }
+
+    function restoreHomeworkQuickDefaults() {
+      const template = getStoredPreference(ADMIN_HW_TEMPLATE_KEY);
+      const courseId = getStoredPreference(ADMIN_HW_COURSE_KEY);
+      const durationValue = getStoredPreference(ADMIN_HW_DURATION_VALUE_KEY);
+      const durationUnit = getStoredPreference(ADMIN_HW_DURATION_UNIT_KEY);
+
+      const templateSelect = document.getElementById("hwTaskTemplate");
+      if (templateSelect && template && Array.from(templateSelect.options).some(o => o.value === template)) {
+        templateSelect.value = template;
+      }
+
+      const courseSelect = document.getElementById("hwCourseId");
+      if (courseSelect && courseId && Array.from(courseSelect.options).some(o => o.value === courseId)) {
+        courseSelect.value = courseId;
+      }
+
+      const durationInput = document.getElementById("hwDurationValue");
+      if (durationInput && durationValue) {
+        const numeric = Number.parseInt(durationValue, 10);
+        if (!Number.isNaN(numeric)) durationInput.value = String(Math.max(5, Math.min(1440, numeric)));
+      }
+
+      const unitSelect = document.getElementById("hwDurationUnit");
+      if (unitSelect && (durationUnit === "minutes" || durationUnit === "hours")) {
+        unitSelect.value = durationUnit;
+      }
+
+      updateHomeworkTemplatePreview();
     }
 
     function buildHomeworkTemplateDescription(template) {
@@ -7410,6 +7486,7 @@
           duration_minutes: durationMinutes,
           starts_at: startsAt
         });
+        persistHomeworkQuickDefaults();
         setBox("homeworkStatus", "ok", `Aufgabe gespeichert. Zugewiesen: ${payload.target_count || 0}`);
         const templateSelect = document.getElementById("hwTaskTemplate");
         if (templateSelect) templateSelect.value = "";
@@ -9774,8 +9851,17 @@
     document.getElementById("progressReportPdfBtn").addEventListener("click", openProgressReportPdf);
     document.getElementById("hwSelectAllUsersBtn").addEventListener("click", () => setHomeworkUserSelection(true));
     document.getElementById("hwClearUsersBtn").addEventListener("click", () => setHomeworkUserSelection(false));
-    document.getElementById("hwTargetType").addEventListener("change", syncHomeworkTargetVisibility);
-    document.getElementById("hwTaskTemplate").addEventListener("change", updateHomeworkTemplatePreview);
+    document.getElementById("hwTargetType").addEventListener("change", () => {
+      syncHomeworkTargetVisibility();
+      persistHomeworkQuickDefaults();
+    });
+    document.getElementById("hwTaskTemplate").addEventListener("change", () => {
+      updateHomeworkTemplatePreview();
+      persistHomeworkQuickDefaults();
+    });
+    document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
+    document.getElementById("hwDurationValue").addEventListener("change", persistHomeworkQuickDefaults);
+    document.getElementById("hwDurationUnit").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
     document.getElementById("kursRefreshHomeworkBtn").addEventListener("click", listKursHomeworkAssignments);
@@ -10010,6 +10096,7 @@
     initProgressDateRangeDefaults();
     updateKursProgressRiskButton();
     renderHomeworkTemplateOptions();
+    restoreHomeworkQuickDefaults();
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
     checkSession();
