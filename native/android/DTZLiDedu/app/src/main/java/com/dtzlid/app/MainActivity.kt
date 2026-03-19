@@ -529,6 +529,48 @@ fun WebAppScreen() {
         safeView.evaluateJavascript(js, null)
     }
 
+    fun persistAdvancedWebToggles() {
+        webPrefs.edit()
+            .putBoolean(WEB_DATA_SAVER, dataSaver)
+            .putBoolean(WEB_TEXT_AUTOSIZE, textAutosize)
+            .putBoolean(WEB_MEDIA_AUTOPLAY, mediaAutoplay)
+            .putBoolean(WEB_READER_MODE, readerMode)
+            .putBoolean(WEB_REDUCE_MOTION, reduceMotion)
+            .apply()
+    }
+
+    fun applyWebProfile(profile: String) {
+        when (profile) {
+            "fast" -> {
+                dataSaver = true
+                textAutosize = true
+                mediaAutoplay = false
+                readerMode = false
+                reduceMotion = true
+            }
+            "quality" -> {
+                dataSaver = false
+                textAutosize = true
+                mediaAutoplay = true
+                readerMode = false
+                reduceMotion = false
+            }
+            else -> {
+                dataSaver = false
+                textAutosize = true
+                mediaAutoplay = true
+                readerMode = true
+                reduceMotion = false
+            }
+        }
+        persistAdvancedWebToggles()
+        webViewRef?.let {
+            applyRuntimeWebPreferences(it)
+            applyWebContentStyles(it)
+            it.reload()
+        }
+    }
+
     LaunchedEffect(Unit) {
         offline = !hasActiveInternet(context)
         PushNotificationWorker.ensureScheduled(context)
@@ -1528,6 +1570,17 @@ fun WebAppScreen() {
                             }
                         )
                     }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Profil", fontWeight = FontWeight.SemiBold)
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(onClick = { applyWebProfile("fast") }) { Text("Hızlı") }
+                            OutlinedButton(onClick = { applyWebProfile("balanced") }) { Text("Dengeli") }
+                            OutlinedButton(onClick = { applyWebProfile("quality") }) { Text("Kalite") }
+                        }
+                    }
                     Column {
                         Text("Yazı Boyutu: %$textZoom", fontWeight = FontWeight.SemiBold)
                         Slider(
@@ -1553,7 +1606,7 @@ fun WebAppScreen() {
                             checked = dataSaver,
                             onCheckedChange = { checked ->
                                 dataSaver = checked
-                                webPrefs.edit().putBoolean(WEB_DATA_SAVER, checked).apply()
+                                persistAdvancedWebToggles()
                                 webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
                             }
                         )
@@ -1571,7 +1624,7 @@ fun WebAppScreen() {
                             checked = readerMode,
                             onCheckedChange = { checked ->
                                 readerMode = checked
-                                webPrefs.edit().putBoolean(WEB_READER_MODE, checked).apply()
+                                persistAdvancedWebToggles()
                                 applyWebContentStyles(webViewRef)
                             }
                         )
@@ -1589,7 +1642,7 @@ fun WebAppScreen() {
                             checked = reduceMotion,
                             onCheckedChange = { checked ->
                                 reduceMotion = checked
-                                webPrefs.edit().putBoolean(WEB_REDUCE_MOTION, checked).apply()
+                                persistAdvancedWebToggles()
                                 applyWebContentStyles(webViewRef)
                             }
                         )
@@ -1607,7 +1660,7 @@ fun WebAppScreen() {
                             checked = textAutosize,
                             onCheckedChange = { checked ->
                                 textAutosize = checked
-                                webPrefs.edit().putBoolean(WEB_TEXT_AUTOSIZE, checked).apply()
+                                persistAdvancedWebToggles()
                                 webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
                             }
                         )
@@ -1625,7 +1678,7 @@ fun WebAppScreen() {
                             checked = mediaAutoplay,
                             onCheckedChange = { checked ->
                                 mediaAutoplay = checked
-                                webPrefs.edit().putBoolean(WEB_MEDIA_AUTOPLAY, checked).apply()
+                                persistAdvancedWebToggles()
                                 webViewRef?.let { applyRuntimeWebPreferences(it) }
                             }
                         )
