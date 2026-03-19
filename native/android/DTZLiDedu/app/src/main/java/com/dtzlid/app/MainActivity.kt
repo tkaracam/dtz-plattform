@@ -332,9 +332,13 @@ fun WebAppScreen() {
     var showFavorites by remember { mutableStateOf(false) }
     var showRecentPages by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showJumpDialog by remember { mutableStateOf(false) }
     var showScrollTop by remember { mutableStateOf(false) }
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
+    var findMatchCount by remember { mutableStateOf(0) }
+    var findActiveMatch by remember { mutableStateOf(0) }
+    var jumpInput by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
     var defaultUserAgent by remember { mutableStateOf("") }
@@ -450,6 +454,17 @@ fun WebAppScreen() {
         pageScrollMap[normalized] = safeView.scrollY.coerceAtLeast(0)
     }
 
+    fun resolveJumpInput(raw: String): String? {
+        val text = raw.trim()
+        if (text.isBlank()) return null
+        if (text.startsWith("#")) return "$WEB_BASE_URL/$text"
+        if (text.startsWith("/")) return "$WEB_BASE_URL$text"
+        val normalized = normalizeAllowedWebUrl(text)
+        if (normalized != null) return normalized
+        val withBase = if (text.startsWith("http://") || text.startsWith("https://")) text else "$WEB_BASE_URL/$text"
+        return normalizeAllowedWebUrl(withBase)
+    }
+
     LaunchedEffect(Unit) {
         offline = !hasActiveInternet(context)
         PushNotificationWorker.ensureScheduled(context)
@@ -519,6 +534,8 @@ fun WebAppScreen() {
             webViewRef?.findAllAsync(q)
         } else {
             webViewRef?.clearMatches()
+            findMatchCount = 0
+            findActiveMatch = 0
         }
     }
 
@@ -533,7 +550,15 @@ fun WebAppScreen() {
                     }) {
                         Icon(Icons.Default.Notifications, contentDescription = "Bildirim Geçmişi")
                     }
-                    IconButton(onClick = { showFindBar = !showFindBar }) {
+                    IconButton(onClick = {
+                        showFindBar = !showFindBar
+                        if (!showFindBar) {
+                            findQuery = ""
+                            findMatchCount = 0
+                            findActiveMatch = 0
+                            webViewRef?.clearMatches()
+                        }
+                    }) {
                         Icon(Icons.Default.Search, contentDescription = "Sayfada Ara")
                     }
                     IconButton(onClick = { topMenuExpanded = true }) {
@@ -657,6 +682,14 @@ fun WebAppScreen() {
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text("Hızlı Git") },
+                            onClick = {
+                                topMenuExpanded = false
+                                jumpInput = webViewRef?.url.orEmpty()
+                                showJumpDialog = true
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("Güvenli Oturumu Sıfırla") },
                             onClick = {
                                 topMenuExpanded = false
@@ -719,11 +752,23 @@ fun WebAppScreen() {
                         placeholder = { Text("Sayfada ara...") },
                         singleLine = true
                     )
-                    OutlinedButton(onClick = { webViewRef?.findNext(false) }) { Text("Yukarı") }
-                    OutlinedButton(onClick = { webViewRef?.findNext(true) }) { Text("Aşağı") }
+                    OutlinedButton(
+                        onClick = { webViewRef?.findNext(false) },
+                        enabled = findMatchCount > 0
+                    ) { Text("Yukarı") }
+                    OutlinedButton(
+                        onClick = { webViewRef?.findNext(true) },
+                        enabled = findMatchCount > 0
+                    ) { Text("Aşağı") }
+                    Text(
+                        text = if (findMatchCount > 0) "${findActiveMatch + 1}/$findMatchCount" else "0/0",
+                        style = MaterialTheme.typography.labelSmall
+                    )
                     TextButton(onClick = {
                         showFindBar = false
                         findQuery = ""
+                        findMatchCount = 0
+                        findActiveMatch = 0
                         webViewRef?.clearMatches()
                     }) { Text("Kapat") }
                 }
@@ -765,6 +810,10 @@ fun WebAppScreen() {
                         applyRuntimeWebPreferences(this)
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             settings.safeBrowsingEnabled = true
+                        }
+                        setFindListener { activeMatchOrdinal, numberOfMatches, _ ->
+                            findMatchCount = numberOfMatches.coerceAtLeast(0)
+                            findActiveMatch = activeMatchOrdinal.coerceAtLeast(0)
                         }
                         setOnScrollChangeListener { _, _, scrollY, _, _ ->
                             val delta = scrollY - lastScrollY
@@ -968,6 +1017,8 @@ fun WebAppScreen() {
                                 showScrollTop = false
                                 pageScrollPercent = 0
                                 lastScrollY = 0
+                                findMatchCount = 0
+                                findActiveMatch = 0
                             }
 
                             override fun onReceivedError(
@@ -1413,6 +1464,36 @@ fun WebAppScreen() {
             },
             confirmButton = {
                 TextButton(onClick = { showSettings = false }) { Text("Kapat") }
+            }
+        )
+    }
+
+    if (showJumpDialog) {
+        AlertDialog(
+            onDismissRequest = { showJumpDialog = false },
+            title = { Text("Hızlı Git") },
+            text = {
+                OutlinedTextField(
+                    value = jumpInput,
+                    onValueChange = { jumpInput = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Örn: /portal, #dtz veya tam URL") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val target = resolveJumpInput(jumpInput)
+                    if (target != null) {
+                        openSafeUrl(target)
+                        showJumpDialog = false
+                    } else {
+                        Toast.makeText(context, "Geçersiz adres", Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text("Git") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showJumpDialog = false }) { Text("Kapat") }
             }
         )
     }
