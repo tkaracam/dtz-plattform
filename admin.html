@@ -2682,13 +2682,14 @@
               <summary>Kurs-Hausaufgaben</summary>
               <div class="fold-section-content">
                 <div>
-                  <label for="kursHwTaskCategory">Kategorie</label>
-                  <select id="kursHwTaskCategory">
-                    <option value="hoeren" selected>Hören</option>
-                    <option value="lesen">Lesen</option>
-                    <option value="mail">Mail-Aufgabe</option>
-                  </select>
-                </div>
+                <label for="kursHwTaskCategory">Kategorie</label>
+                <select id="kursHwTaskCategory">
+                  <option value="hoeren" selected>Hören</option>
+                  <option value="lesen">Lesen</option>
+                  <option value="a2">A2-Themen</option>
+                  <option value="mail">Mail-Aufgabe</option>
+                </select>
+              </div>
                 <div>
                   <label for="kursHwTaskTemplate">Aufgabenvorlage auswählen</label>
                   <select id="kursHwTaskTemplate">
@@ -3468,6 +3469,86 @@
           "Schreiben: Verfassen Sie eine formelle E-Mail (80-120 Wörter) mit klarer Struktur und höflichem Abschluss.",
           "Sprechen: Nehmen Sie eine kurze Antwort zu Teil 1 und eine Bildbeschreibung zu Teil 2 auf.",
           "Reflexion: Schreiben Sie am Ende 5 Zeilen: Was lief gut, was verbessern Sie bis zur nächsten Prüfung?"
+        ]
+      },
+      {
+        id: "a2-thema-alltag-routine",
+        title: "A2-Thema: Alltag und Routine",
+        prompt: "Bearbeiten Sie das A2-Thema „Alltag und Routine“ in der A2-Themen-Übersicht.",
+        points: [
+          "Öffnen Sie A2-Themen und lernen Sie den Abschnitt „Alltag und Routine“.",
+          "Schreiben Sie 10 wichtige Wörter mit einem eigenen Beispielsatz.",
+          "Schreiben Sie einen kurzen Text (60-80 Wörter) über Ihren Tagesablauf."
+        ]
+      },
+      {
+        id: "a2-thema-arbeit-beruf",
+        title: "A2-Thema: Arbeit und Beruf",
+        prompt: "Bearbeiten Sie das A2-Thema „Arbeit und Beruf“ in der A2-Themen-Übersicht.",
+        points: [
+          "Lernen Sie die wichtigsten Begriffe zu Arbeit und Beruf.",
+          "Notieren Sie 8 Sätze zu Arbeitszeiten, Aufgaben und Pausen.",
+          "Formulieren Sie 5 Fragen, die man im Job stellen kann."
+        ]
+      },
+      {
+        id: "a2-thema-wohnung-haushalt",
+        title: "A2-Thema: Wohnung und Haushalt",
+        prompt: "Bearbeiten Sie das A2-Thema „Wohnung und Haushalt“ in der A2-Themen-Übersicht.",
+        points: [
+          "Wiederholen Sie Wortschatz zu Zimmern, Möbeln und Haushalt.",
+          "Schreiben Sie 8 Sätze mit Wechselpräpositionen (in, auf, unter ...).",
+          "Verfassen Sie eine kurze Wohnungsbeschreibung (50-70 Wörter)."
+        ]
+      },
+      {
+        id: "a2-thema-gesundheit-arzt",
+        title: "A2-Thema: Gesundheit und Arzt",
+        prompt: "Bearbeiten Sie das A2-Thema „Gesundheit und Arzt“ in der A2-Themen-Übersicht.",
+        points: [
+          "Lernen Sie typische Redemittel für Arztbesuch und Beschwerden.",
+          "Schreiben Sie 6 Sätze mit „weil“ oder „deshalb“.",
+          "Erstellen Sie einen kurzen Dialog: Patientin/Patient und Praxis."
+        ]
+      },
+      {
+        id: "a2-thema-einkaufen-service",
+        title: "A2-Thema: Einkaufen und Service",
+        prompt: "Bearbeiten Sie das A2-Thema „Einkaufen und Service“ in der A2-Themen-Übersicht.",
+        points: [
+          "Wiederholen Sie Mengenangaben und Einkaufsfragen.",
+          "Notieren Sie 8 nützliche Sätze für Geschäft und Supermarkt.",
+          "Schreiben Sie eine kurze Reklamation (40-60 Wörter)."
+        ]
+      },
+      {
+        id: "a2-thema-amt-formulare",
+        title: "A2-Thema: Amt und Formulare",
+        prompt: "Bearbeiten Sie das A2-Thema „Amt und Formulare“ in der A2-Themen-Übersicht.",
+        points: [
+          "Lernen Sie wichtige Begriffe für Termin, Formular und Unterlagen.",
+          "Schreiben Sie 6 höfliche Fragen für das Bürgeramt.",
+          "Üben Sie einen kurzen E-Mail-Text für einen Behördentermin."
+        ]
+      },
+      {
+        id: "a2-thema-mobilitaet-verkehr",
+        title: "A2-Thema: Mobilität und Verkehr",
+        prompt: "Bearbeiten Sie das A2-Thema „Mobilität und Verkehr“ in der A2-Themen-Übersicht.",
+        points: [
+          "Wiederholen Sie Wortschatz zu Bus, Bahn, Ticket und Fahrplan.",
+          "Notieren Sie 8 Sätze mit Uhrzeit und Richtung.",
+          "Schreiben Sie eine Wegbeschreibung in 6-8 Schritten."
+        ]
+      },
+      {
+        id: "a2-thema-freizeit-termine",
+        title: "A2-Thema: Freizeit und Termine",
+        prompt: "Bearbeiten Sie das A2-Thema „Freizeit und Termine“ in der A2-Themen-Übersicht.",
+        points: [
+          "Sammeln Sie Redemittel zum Verabreden und Verschieben von Terminen.",
+          "Schreiben Sie 8 Sätze mit Modalverben (können, wollen, müssen).",
+          "Erstellen Sie zwei kurze WhatsApp-/Mail-Nachrichten für Termine."
         ]
       },
       {
@@ -6230,11 +6311,13 @@
       const id = String(template.id || "").toLowerCase();
       if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(id)) return "hoeren";
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(id)) return "lesen";
+      if (id.startsWith("a2-thema-")) return "a2";
       if (id === "dtz-mock-pruefung-komplett") return "mock";
       if (id.startsWith("dtz-")) return "mail";
       const text = `${id} ${String(template.title || "").toLowerCase()} ${String(template.prompt || "").toLowerCase()}`;
       if (text.includes("hoeren") || text.includes("hören")) return "hoeren";
       if (text.includes("lesen")) return "lesen";
+      if (text.includes("a2") || text.includes("thema")) return "a2";
       if (text.includes("mock-prüfung") || text.includes("mock-pruefung") || text.includes("komplett")) return "mock";
       return "mail";
     }
@@ -6253,6 +6336,7 @@
     function homeworkTemplateSelectIdByCategory(category) {
       const key = String(category || "").toLowerCase();
       if (key === "lesen") return "hwTaskTemplateLesen";
+      if (key === "a2") return "hwTaskTemplateA2";
       if (key === "mail") return "hwTaskTemplateMail";
       if (key === "mock") return "hwTaskTemplateMock";
       return "hwTaskTemplateHoeren";
@@ -6261,6 +6345,7 @@
     function homeworkTemplatePreviewIdByCategory(category) {
       const key = String(category || "").toLowerCase();
       if (key === "lesen") return "hwTaskPreviewLesen";
+      if (key === "a2") return "hwTaskPreviewA2";
       if (key === "mail") return "hwTaskPreviewMail";
       if (key === "mock") return "hwTaskPreviewMock";
       return "hwTaskPreviewHoeren";
@@ -6329,10 +6414,11 @@
       const labels = {
         hoeren: "Hören",
         lesen: "Lesen",
+        a2: "A2-Themen",
         mail: "Mail-Aufgabe",
         mock: "Mock-Prüfung"
       };
-      const sorted = ["hoeren", "lesen", "mail", "mock"];
+      const sorted = ["hoeren", "lesen", "a2", "mail", "mock"];
       const groups = sorted.map(category => {
         const templates = HOMEWORK_MAIL_TEMPLATES
           .filter(template => getHomeworkTemplateCategory(template) === category);
