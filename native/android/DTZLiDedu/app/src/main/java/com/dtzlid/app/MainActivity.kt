@@ -122,6 +122,7 @@ private const val WEB_DESKTOP_MODE = "desktop_mode"
 private const val WEB_TEXT_ZOOM = "text_zoom"
 private const val WEB_KEEP_SCREEN_ON = "keep_screen_on"
 private const val WEB_RECENT_PAGES = "recent_pages"
+private const val WEB_SCROLL_POSITIONS = "scroll_positions"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
 private const val WEBVIEW_TAG_UA = "DTZLiDWebView/1.0"
 private const val WEB_RECENT_PAGES_LIMIT = 50
@@ -160,6 +161,33 @@ private fun persistRecentPages(
         )
     }
     prefs.edit().putString(WEB_RECENT_PAGES, arr.toString()).apply()
+}
+
+private fun loadScrollPositions(
+    prefs: android.content.SharedPreferences
+): Map<String, Int> {
+    val raw = prefs.getString(WEB_SCROLL_POSITIONS, "{}").orEmpty()
+    val obj = runCatching { JSONObject(raw) }.getOrElse { JSONObject() }
+    val out = mutableMapOf<String, Int>()
+    val keys = obj.keys()
+    while (keys.hasNext()) {
+        val key = keys.next()
+        val normalized = normalizeAllowedWebUrl(key) ?: continue
+        val y = obj.optInt(key, 0).coerceAtLeast(0)
+        out[normalized] = y
+    }
+    return out
+}
+
+private fun persistScrollPositions(
+    prefs: android.content.SharedPreferences,
+    positions: Map<String, Int>
+) {
+    val obj = JSONObject()
+    positions.forEach { (url, y) ->
+        obj.put(url, y.coerceAtLeast(0))
+    }
+    prefs.edit().putString(WEB_SCROLL_POSITIONS, obj.toString()).apply()
 }
 
 private fun isAllowedWebUrl(url: String): Boolean {
@@ -287,6 +315,7 @@ fun WebAppScreen() {
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var canGoBack by remember { mutableStateOf(false) }
     var canGoForward by remember { mutableStateOf(false) }
+    var pageScrollPercent by remember { mutableStateOf(0) }
     var loading by remember { mutableStateOf(true) }
     var loadProgress by remember { mutableStateOf(0) }
     var offline by remember { mutableStateOf(false) }
@@ -311,6 +340,7 @@ fun WebAppScreen() {
     var desktopMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_DESKTOP_MODE, false)) }
     var textZoom by remember { mutableStateOf(webPrefs.getInt(WEB_TEXT_ZOOM, 100).coerceIn(70, 180)) }
     var keepScreenOn by remember { mutableStateOf(webPrefs.getBoolean(WEB_KEEP_SCREEN_ON, false)) }
+    val pageScrollMap = remember { loadScrollPositions(webPrefs).toMutableMap() }
     val recentPages = remember { loadRecentPages(webPrefs).toMutableStateList() }
     val favorites = remember {
         val raw = webPrefs.getString(WEB_FAVORITES, "") ?: ""
@@ -407,6 +437,12 @@ fun WebAppScreen() {
             recentPages.removeLast()
         }
         persistRecentPages(webPrefs, recentPages)
+    }
+
+    fun rememberCurrentScroll(view: WebView?) {
+        val safeView = view ?: return
+        val normalized = normalizeAllowedWebUrl(safeView.url.orEmpty()) ?: return
+        pageScrollMap[normalized] = safeView.scrollY.coerceAtLeast(0)
     }
 
     LaunchedEffect(Unit) {
@@ -713,6 +749,13 @@ fun WebAppScreen() {
                         }
                         setOnScrollChangeListener { _, _, scrollY, _, _ ->
                             showScrollTop = scrollY > 600
+                            val normalized = normalizeAllowedWebUrl(url.orEmpty())
+                            if (normalized != null) {
+                                pageScrollMap[normalized] = scrollY.coerceAtLeast(0)
+                            }
+                            val viewport = (height / resources.displayMetrics.density).toInt().coerceAtLeast(1)
+                            val maxScroll = (contentHeight - viewport).coerceAtLeast(1)
+                            pageScrollPercent = ((scrollY * 100f) / maxScroll).toInt().coerceIn(0, 100)
                         }
                         setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
                             runCatching {
@@ -896,6 +939,7 @@ fun WebAppScreen() {
                                 loadProgress = 0
                                 loadTimedOut = false
                                 showScrollTop = false
+                                pageScrollPercent = 0
                             }
 
                             override fun onReceivedError(
@@ -958,7 +1002,13 @@ fun WebAppScreen() {
                                 if (normalized != null) {
                                     webPrefs.edit().putString(WEB_LAST_URL, normalized).apply()
                                     addRecentPage(normalized, currentPageTitle)
+                                    val restoreY = pageScrollMap[normalized] ?: 0
+                                    if (restoreY > 0) {
+                                        view?.postDelayed({ view.scrollTo(0, restoreY) }, 120)
+                                    }
                                 }
+                                rememberCurrentScroll(view)
+                                persistScrollPositions(webPrefs, pageScrollMap)
                                 scope.launch {
                                     Api.syncFcmTokenWithCurrentSession(context)
                                 }
@@ -981,6 +1031,9 @@ fun WebAppScreen() {
                         canGoBack = view.canGoBack()
                         canGoForward = view.canGoForward()
                         showScrollTop = view.scrollY > 600
+                        val viewport = (view.height / view.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+                        val maxScroll = (view.contentHeight - viewport).coerceAtLeast(1)
+                        pageScrollPercent = ((view.scrollY * 100f) / maxScroll).toInt().coerceIn(0, 100)
                         applyRuntimeWebPreferences(view)
                     }
                 )
@@ -1036,6 +1089,7 @@ fun WebAppScreen() {
                         webViewRef?.post {
                             webViewRef?.pageUp(true)
                             webViewRef?.scrollTo(0, 0)
+                            pageScrollPercent = 0
                         }
                     },
                     modifier = Modifier
@@ -1044,6 +1098,20 @@ fun WebAppScreen() {
                 ) {
                     Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Yukarı Çık")
                 }
+            }
+            if (!loading && pageScrollPercent > 0) {
+                AssistChip(
+                    onClick = {
+                        webViewRef?.post {
+                            webViewRef?.scrollTo(0, 0)
+                            pageScrollPercent = 0
+                        }
+                    },
+                    label = { Text("Okuma %$pageScrollPercent") },
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 12.dp, bottom = 70.dp)
+                )
             }
             Surface(
                 tonalElevation = 4.dp,
@@ -1061,6 +1129,8 @@ fun WebAppScreen() {
                 ) {
                     IconButton(
                         onClick = {
+                            rememberCurrentScroll(webViewRef)
+                            persistScrollPositions(webPrefs, pageScrollMap)
                             webViewRef?.goBack()
                             webViewRef?.post {
                                 canGoBack = webViewRef?.canGoBack() == true
@@ -1071,6 +1141,8 @@ fun WebAppScreen() {
                     ) { Icon(Icons.Default.ArrowBack, contentDescription = "Geri") }
                     IconButton(
                         onClick = {
+                            rememberCurrentScroll(webViewRef)
+                            persistScrollPositions(webPrefs, pageScrollMap)
                             webViewRef?.goForward()
                             webViewRef?.post {
                                 canGoBack = webViewRef?.canGoBack() == true
@@ -1314,6 +1386,8 @@ fun WebAppScreen() {
 
     DisposableEffect(Unit) {
         onDispose {
+            rememberCurrentScroll(webViewRef)
+            persistScrollPositions(webPrefs, pageScrollMap)
             pendingWebPermissionRequest?.deny()
             pendingWebPermissionRequest = null
             pendingGeoCallback = null
