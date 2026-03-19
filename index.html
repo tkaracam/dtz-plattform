@@ -2957,29 +2957,29 @@
         <p class="section-subtitle">Schneller Überblick für heute.</p>
         <div class="home-dashboard-grid">
           <article class="home-dash-tile">
-            <p class="home-dash-label">Son Kaldığın Yer</p>
+            <p class="home-dash-label">Zuletzt geöffnet</p>
             <p id="dashLastSection" class="home-dash-value">-</p>
           </article>
           <article class="home-dash-tile">
-            <p class="home-dash-label">Bugünkü Görev</p>
+            <p class="home-dash-label">Heutige Aufgabe</p>
             <p id="dashTodayTask" class="home-dash-value">-</p>
             <div class="row-end" style="margin-top:8px;">
               <div class="btn-wrap" style="max-width:none;">
-                <button id="dashStartTaskBtn" type="button">Göreve Başla</button>
+                <button id="dashStartTaskBtn" type="button">Aufgabe starten</button>
               </div>
             </div>
           </article>
           <article class="home-dash-tile">
-            <p class="home-dash-label">Hızlı İstatistik</p>
+            <p class="home-dash-label">Kurze Statistik</p>
             <p id="dashStatsMain" class="home-dash-value">-</p>
             <p id="dashStatsMeta" class="home-dash-meta">-</p>
           </article>
           <article class="home-dash-tile">
-            <p class="home-dash-label">Önerilen Çalışma</p>
+            <p class="home-dash-label">Empfohlenes Training</p>
             <p id="dashRecommendation" class="home-dash-value">-</p>
           </article>
           <article class="home-dash-tile">
-            <p class="home-dash-label">Duyuru</p>
+            <p class="home-dash-label">Hinweis</p>
             <p id="dashAnnouncement" class="home-dash-value">-</p>
           </article>
         </div>
@@ -3675,9 +3675,9 @@
     let currentSpeakingSet = null;
     let currentBskPack = null;
     let currentBskResult = null;
-    // DTZ Audit (Phase 2): Eski yapı tek modül-state'e bağlıydı (hoeren/lesen),
-    // Teil değişince state sıfırlanıyordu. Yeni yapı Teil-bazlı state registry kullanır.
-    // Böylece her Teil kendi cevapları ve değerlendirmesiyle bağımsız kalır.
+    // DTZ Audit (Phase 2): Früher war der State an ein einzelnes Modul (hoeren/lesen) gebunden.
+    // Beim Teilwechsel wurde der Zustand zurückgesetzt. Jetzt gibt es ein teilbasiertes State-Register.
+    // So bleiben Antworten und Auswertung pro Teil unabhängig erhalten.
     let currentDtzStates = null;
     let dtzUiInitialized = false;
     // Hinweis: Name historisch "Index", jetzt bewusst als eindeutiger Audio-Key genutzt.
@@ -3724,7 +3724,7 @@
 
     const HOME_DASHBOARD_KEY = "dtz_home_dashboard_v1";
     const HOME_ANNOUNCEMENT_KEY = "dtz_home_announcement_v1";
-    const DASHBOARD_FALLBACK_ANNOUNCEMENT = "Bugün 20 dakika DTZ + 1 kısa LiD tekrar önerilir.";
+    const DASHBOARD_FALLBACK_ANNOUNCEMENT = "Empfehlung: heute 20 Minuten DTZ plus eine kurze LiD-Wiederholung.";
 
     function isoDateLocal(inputDate = new Date()) {
       const d = inputDate instanceof Date ? inputDate : new Date(inputDate);
@@ -3863,7 +3863,7 @@
       lastSectionNode.textContent = String(homeDashboardState.last_section || "Portal");
       todayTaskNode.textContent = getTodayTaskLabel();
       statsMainNode.textContent = `${solved} Test · %${accuracy}`;
-      statsMetaNode.textContent = `Streak: ${Number(homeDashboardState.streak_days || 0)} gün · Doğru: ${correct}/${answered}`;
+      statsMetaNode.textContent = `Serie: ${Number(homeDashboardState.streak_days || 0)} Tage · Richtig: ${correct}/${answered}`;
       recNode.textContent = rec.label;
       const ann = String(window.localStorage.getItem(HOME_ANNOUNCEMENT_KEY) || DASHBOARD_FALLBACK_ANNOUNCEMENT).trim();
       annNode.textContent = ann || DASHBOARD_FALLBACK_ANNOUNCEMENT;
@@ -5566,7 +5566,7 @@
       setHomeDashboardSection(normalized === "lesen" ? "dtz-lesen" : "dtz-hoeren");
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
-      // Her açılışta yeniden yükle: "boş state / stale state" sorunlarını önler.
+      // Bei jedem Öffnen neu laden, um leere oder veraltete Zustände zu vermeiden.
       loadDtzTrainingSet(normalized);
     }
 
@@ -8173,7 +8173,7 @@
       if (!results) return;
       const filtered = getFilteredActions(query);
       if (!filtered.length) {
-        results.innerHTML = '<div class="command-empty">Sonuç bulunamadı. Farklı bir arama yazın.</div>';
+        results.innerHTML = '<div class="command-empty">Keine Treffer. Bitte mit einem anderen Begriff suchen.</div>';
         paletteSelectionIndex = 0;
         return;
       }
