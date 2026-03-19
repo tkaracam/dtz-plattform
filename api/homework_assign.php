@@ -497,5 +497,52 @@ if ($action === 'delete') {
     exit;
 }
 
+if ($action === 'delete_group') {
+    $groupId = trim((string)($body['batch_group_id'] ?? ''));
+    if ($groupId === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'batch_group_id fehlt.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $next = [];
+    $removed = 0;
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $itemGroupId = trim((string)($item['batch_group_id'] ?? ''));
+        if ($itemGroupId !== $groupId) {
+            $next[] = $item;
+            continue;
+        }
+        if (!assignment_visibility_for_admin($item, $admin)) {
+            $next[] = $item;
+            continue;
+        }
+        $removed++;
+    }
+
+    if ($removed <= 0) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Gruppe nicht gefunden oder keine Berechtigung.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if (!write_homework_assignments($next)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Aufgabengruppe konnte nicht gelöscht werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    append_audit_log('homework_assign_delete_group', [
+        'batch_group_id' => $groupId,
+        'removed_count' => $removed,
+    ]);
+
+    echo json_encode(['ok' => true, 'removed_count' => $removed], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 http_response_code(400);
 echo json_encode(['error' => 'Ungültige Aktion.'], JSON_UNESCAPED_UNICODE);

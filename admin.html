@@ -6509,6 +6509,10 @@
       };
     }
 
+    function isCompactHomeworkLayout() {
+      return !!(window.matchMedia && window.matchMedia("(max-width: 920px)").matches);
+    }
+
     function renderHomeworkAssignments(rows) {
       currentHomeworkAssignments = Array.isArray(rows) ? rows.slice() : [];
       const wrap = document.getElementById("homeworkListWrap");
@@ -6526,26 +6530,40 @@
         });
         return;
       }
-      const tableHead = `
-        <table>
-          <thead>
-            <tr>
-              <th>Titel</th>
-              <th>Ziel</th>
-              <th>Dauer</th>
-              <th>Start</th>
-              <th>Erstellt</th>
-              <th>Status</th>
-              <th>Zugewiesen</th>
-              <th>Gestartet</th>
-              <th>Abgegeben</th>
-              <th>Erinnerung</th>
-              <th>Aktion</th>
-            </tr>
-          </thead>
-          <tbody>{{ROWS}}</tbody>
-        </table>
-      `;
+      const compact = isCompactHomeworkLayout();
+      const tableHead = compact
+        ? `
+          <table>
+            <thead>
+              <tr>
+                <th>Aufgabe</th>
+                <th>Fortschritt</th>
+                <th>Aktion</th>
+              </tr>
+            </thead>
+            <tbody>{{ROWS}}</tbody>
+          </table>
+        `
+        : `
+          <table>
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Ziel</th>
+                <th>Dauer</th>
+                <th>Start</th>
+                <th>Erstellt</th>
+                <th>Status</th>
+                <th>Zugewiesen</th>
+                <th>Gestartet</th>
+                <th>Abgegeben</th>
+                <th>Erinnerung</th>
+                <th>Aktion</th>
+              </tr>
+            </thead>
+            <tbody>{{ROWS}}</tbody>
+          </table>
+        `;
       const rowHtml = item => {
         const assignmentId = String(item.id || "");
         const active = String(item.status || "active") === "active";
@@ -6554,6 +6572,35 @@
         const createdAt = formatDisplayDateTime(String(item.created_at || ""));
         const targetLabel = String(item.target_label || item.course_id || "-");
         const reminder = buildHomeworkReminderMeta(item);
+        if (compact) {
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(String(item.title || "-"))}</strong>
+                <div class="muted" style="font-size:0.78rem; margin-top:4px;">
+                  ${escapeHtml(targetLabel)} · ${escapeHtml(String(item.duration_minutes || 0))} Min
+                </div>
+                <div class="muted mono" style="font-size:0.74rem; margin-top:2px;">
+                  ${escapeHtml(startsAt || "-")}
+                </div>
+              </td>
+              <td>
+                <div class="mono">${escapeHtml(`${item.submitted_total || 0}`)}/${escapeHtml(`${item.assigned_total || 0}`)} abgegeben</div>
+                <div class="muted mono" style="font-size:0.74rem; margin-top:2px;">Gestartet: ${escapeHtml(`${item.started_total || 0}`)}</div>
+                <div style="margin-top:4px;">
+                  <span class="progress-risk-pill ${escapeHtml(reminder.cls)}">${escapeHtml(reminder.label)}</span>
+                </div>
+              </td>
+              <td>
+                <div class="course-row-actions">
+                  <button type="button" data-hw-toggle="${escapeHtml(assignmentId)}" data-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">${toggleText}</button>
+                  <button type="button" data-hw-analysis="${escapeHtml(assignmentId)}" class="ghost-btn">Analyse</button>
+                  <button type="button" data-hw-delete="${escapeHtml(assignmentId)}" class="danger-btn">Löschen</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
         return `
           <tr>
             <td>${escapeHtml(String(item.title || "-"))}</td>
@@ -6604,7 +6651,7 @@
         ? groups.map(group => {
           const rowsHtml = group.items.map(rowHtml).join("");
           const titleHtml = group.groupId
-            ? `<div class="homework-reminder-chip" style="margin:10px 0 8px;"><strong>Gruppe:</strong> ${escapeHtml(group.label)} · <span class="mono">${escapeHtml(group.groupId)}</span> · ${group.items.length} Aufgabe(n)</div>`
+            ? `<div class="homework-reminder-chip" style="margin:10px 0 8px; display:flex; align-items:center; gap:8px; justify-content:space-between; flex-wrap:wrap;"><span><strong>Gruppe:</strong> ${escapeHtml(group.label)} · <span class="mono">${escapeHtml(group.groupId)}</span> · ${group.items.length} Aufgabe(n)</span><button type="button" class="danger-btn" data-hw-delete-group="${escapeHtml(group.groupId)}">Gruppe löschen</button></div>`
             : "";
           return `${titleHtml}${tableHead.replace("{{ROWS}}", rowsHtml)}`;
         }).join("")
@@ -6628,6 +6675,10 @@
       wrap.querySelectorAll("button[data-hw-analysis]").forEach(btn => {
         const id = String(btn.getAttribute("data-hw-analysis") || "");
         btn.addEventListener("click", () => openHomeworkAssignmentAnalysisReport(id));
+      });
+      wrap.querySelectorAll("button[data-hw-delete-group]").forEach(btn => {
+        const groupId = String(btn.getAttribute("data-hw-delete-group") || "");
+        btn.addEventListener("click", () => deleteHomeworkGroup(groupId));
       });
       applyResponsiveTableLabels(wrap);
     }
@@ -7614,6 +7665,7 @@
         });
         return;
       }
+      const compact = isCompactHomeworkLayout();
       const tableRows = filteredRows.map(item => {
         const assignmentId = String(item.id || "");
         const active = String(item.status || "active") === "active";
@@ -7621,6 +7673,31 @@
         const startsAt = formatDisplayDateTime(String(item.starts_at || ""));
         const createdAt = formatDisplayDateTime(String(item.created_at || ""));
         const reminder = buildHomeworkReminderMeta(item);
+        if (compact) {
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(String(item.title || "-"))}</strong>
+                <div class="muted mono" style="font-size:0.74rem; margin-top:2px;">${escapeHtml(startsAt || "-")}</div>
+                <div class="muted" style="font-size:0.78rem; margin-top:4px;">${escapeHtml(String(item.duration_minutes || 0))} Min · ${active ? "Aktiv" : "Archiv"}</div>
+              </td>
+              <td>
+                <div class="mono">${escapeHtml(`${item.submitted_total || 0}`)}/${escapeHtml(`${item.assigned_total || 0}`)} abgegeben</div>
+                <div class="muted mono" style="font-size:0.74rem; margin-top:2px;">Gestartet: ${escapeHtml(`${item.started_total || 0}`)}</div>
+                <div style="margin-top:4px;">
+                  <span class="progress-risk-pill ${escapeHtml(reminder.cls)}">${escapeHtml(reminder.label)}</span>
+                </div>
+              </td>
+              <td>
+                <div class="course-row-actions">
+                  <button type="button" data-kurs-hw-toggle="${escapeHtml(assignmentId)}" data-kurs-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">${toggleText}</button>
+                  <button type="button" data-kurs-hw-analysis="${escapeHtml(assignmentId)}" class="ghost-btn">Analyse</button>
+                  <button type="button" data-kurs-hw-delete="${escapeHtml(assignmentId)}" class="danger-btn">Löschen</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
         return `
           <tr>
             <td>${escapeHtml(String(item.title || "-"))}</td>
@@ -7651,18 +7728,21 @@
         ? `
           <table>
             <thead>
-              <tr>
-                <th>Titel</th>
-                <th>Dauer</th>
-                <th>Start</th>
-                <th>Erstellt</th>
-                <th>Status</th>
-                <th>Zugewiesen</th>
-                <th>Gestartet</th>
-                <th>Abgegeben</th>
-                <th>Erinnerung</th>
-                <th>Aktion</th>
-              </tr>
+              ${compact
+                ? `<tr><th>Aufgabe</th><th>Fortschritt</th><th>Aktion</th></tr>`
+                : `<tr>
+                    <th>Titel</th>
+                    <th>Dauer</th>
+                    <th>Start</th>
+                    <th>Erstellt</th>
+                    <th>Status</th>
+                    <th>Zugewiesen</th>
+                    <th>Gestartet</th>
+                    <th>Abgegeben</th>
+                    <th>Erinnerung</th>
+                    <th>Aktion</th>
+                  </tr>`
+              }
             </thead>
             <tbody>${tableRows}</tbody>
           </table>
@@ -7687,6 +7767,10 @@
       wrap.querySelectorAll("button[data-kurs-hw-analysis]").forEach(btn => {
         const id = String(btn.getAttribute("data-kurs-hw-analysis") || "");
         btn.addEventListener("click", () => openHomeworkAssignmentAnalysisReport(id));
+      });
+      wrap.querySelectorAll("button[data-kurs-hw-delete-group]").forEach(btn => {
+        const groupId = String(btn.getAttribute("data-kurs-hw-delete-group") || "");
+        btn.addEventListener("click", () => deleteHomeworkGroup(groupId, { statusBoxId: "kursHomeworkStatus", refresh: refreshAllHomeworkLists }));
       });
       applyResponsiveTableLabels(wrap);
     }
@@ -7746,6 +7830,26 @@
         await refreshFn();
       } catch (err) {
         setBox(statusBoxId, "error", `Löschen fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function deleteHomeworkGroup(batchGroupId, options = {}) {
+      const statusBoxId = String(options.statusBoxId || "homeworkStatus");
+      const refreshFn = typeof options.refresh === "function" ? options.refresh : refreshAllHomeworkLists;
+      clearBox(statusBoxId);
+      if (!batchGroupId) return;
+      const confirmed = window.confirm("Diese Mehrfachzuweisung als Gruppe löschen?");
+      if (!confirmed) return;
+      try {
+        const result = await callHomeworkAssignApi({
+          action: "delete_group",
+          batch_group_id: batchGroupId
+        });
+        const removed = Number(result?.removed_count || 0);
+        setBox(statusBoxId, "ok", `Gruppe gelöscht (${removed} Aufgabe(n)).`);
+        await refreshFn();
+      } catch (err) {
+        setBox(statusBoxId, "error", `Gruppen-Löschen fehlgeschlagen: ${err.message}`);
       }
     }
 
