@@ -2410,6 +2410,7 @@
           <p class="admin-fastlane-head">Schnellzugriff</p>
           <div class="admin-fastlane-actions">
             <button id="fastAccountsBtn" type="button" class="admin-fastlane-btn">Schülerzugänge</button>
+            <button id="fastCourseBuilderBtn" type="button" class="admin-fastlane-btn">Kurs erstellen</button>
             <button id="fastCoursesBtn" type="button" class="admin-fastlane-btn">Kurse</button>
             <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
@@ -10092,6 +10093,10 @@
     const fastAccountsBtn = document.getElementById("fastAccountsBtn");
     if (fastAccountsBtn) {
       fastAccountsBtn.addEventListener("click", () => openAdminPane("accounts"));
+    }
+    const fastCourseBuilderBtn = document.getElementById("fastCourseBuilderBtn");
+    if (fastCourseBuilderBtn) {
+      fastCourseBuilderBtn.addEventListener("click", () => openAdminPane("coursebuilder"));
     }
     const fastCoursesBtn = document.getElementById("fastCoursesBtn");
     if (fastCoursesBtn) {
