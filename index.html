@@ -465,13 +465,10 @@
 
     .level-bar {
       margin-top: 12px;
-      display: flex;
-      gap: 6px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: stretch;
-      justify-content: center;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      padding-bottom: 2px;
     }
 
     .portal-wide {
@@ -479,7 +476,7 @@
       letter-spacing: 0.04em;
       padding: 6px 9px;
       max-width: none;
-      justify-self: auto;
+      justify-self: stretch;
     }
 
     .level-tile {
@@ -499,9 +496,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: auto;
-      min-width: 88px;
-      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
     }
 
     .level-tile:hover {
@@ -2739,7 +2735,7 @@
       }
 
       .level-bar {
-        justify-content: flex-start;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .hero-media {
