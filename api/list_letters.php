@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -47,7 +47,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -213,6 +213,7 @@ foreach ($files as $file) {
             'student_username' => (string)($record['student_username'] ?? ''),
             'task_prompt' => $taskPrompt,
             'required_points' => is_array($record['required_points'] ?? null) ? $record['required_points'] : [],
+            'homework_checklist' => is_array($record['homework_checklist'] ?? null) ? $record['homework_checklist'] : null,
             'letter_text' => $letterText,
             'writing_duration_seconds' => $writingDurationSeconds,
             'writing_started_at' => $writingStartedAt,

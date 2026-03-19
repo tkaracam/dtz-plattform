@@ -215,6 +215,9 @@ function homework_assignment_metrics(array $assignment, int $nowTs): array
 {
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
     $assignedTotal = count($assignees);
+    $checklistRequired = assignment_requires_hoeren_checklist($assignment);
+    $checklistRequiredTotal = $checklistRequired ? $assignedTotal : 0;
+    $checklistCompleteTotal = 0;
     $startedTotal = 0;
     $submittedTotal = 0;
     $expiredTotal = 0;
@@ -229,6 +232,9 @@ function homework_assignment_metrics(array $assignment, int $nowTs): array
         $state = assignment_state_from_raw($assignment, $rawState);
         if (trim((string)($state['started_at'] ?? '')) !== '') {
             $startedTotal++;
+        }
+        if ($checklistRequired && !empty($rawState['checklist_complete'])) {
+            $checklistCompleteTotal++;
         }
 
         if (trim((string)($state['submitted_at'] ?? '')) !== '') {
@@ -253,6 +259,8 @@ function homework_assignment_metrics(array $assignment, int $nowTs): array
 
     return [
         'assigned_total' => $assignedTotal,
+        'checklist_required_total' => $checklistRequiredTotal,
+        'checklist_complete_total' => $checklistCompleteTotal,
         'started_total' => $startedTotal,
         'submitted_total' => $submittedTotal,
         'expired_total' => $expiredTotal,
@@ -275,6 +283,12 @@ function assignment_visibility_for_admin(array $assignment, array $adminCtx): bo
         return true;
     }
     return false;
+}
+
+function assignment_requires_hoeren_checklist(array $assignment): bool
+{
+    $templateId = mb_strtolower(trim((string)($assignment['template_id'] ?? '')));
+    return preg_match('/^dtz-hoeren-teil([1-4])-fragenpaket$/', $templateId) === 1;
 }
 
 function pick_current_assignment_for_student(array $assignments, string $username, int $nowTs): ?array

@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -25,7 +25,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -37,6 +37,7 @@ $writingStartedAt = trim((string)($body['writing_started_at'] ?? ''));
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 $requiredPoints = $body['required_points'] ?? [];
 $autoSubmitOnExpiry = !empty($body['auto_submit_on_expiry']);
+$homeworkChecklist = is_array($body['homework_checklist'] ?? null) ? $body['homework_checklist'] : [];
 
 if ($letterText === '') {
     http_response_code(400);
@@ -53,6 +54,24 @@ if (mb_strlen($letterText) > 12000) {
 if (!is_array($requiredPoints)) {
     $requiredPoints = [];
 }
+
+$normalizeChecklistItems = static function ($items, int $maxCount = 30): array {
+    if (!is_array($items)) {
+        return [];
+    }
+    $out = [];
+    foreach ($items as $item) {
+        $value = trim((string)$item);
+        if ($value === '') {
+            continue;
+        }
+        $out[] = mb_substr($value, 0, 200);
+        if (count($out) >= $maxCount) {
+            break;
+        }
+    }
+    return array_values(array_unique($out));
+};
 
 if ($assignmentId === '') {
     http_response_code(400);
@@ -103,6 +122,38 @@ if (!assignment_is_active_now($assignment, time())) {
     http_response_code(400);
     echo json_encode(['error' => 'Diese Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
     exit;
+}
+
+$templateId = trim((string)($assignment['template_id'] ?? ''));
+$isHoerenTeilChecklistRequired = preg_match('/^dtz-hoeren-teil([1-4])-fragenpaket$/', mb_strtolower($templateId), $templateMatch) === 1;
+$requiredTeil = $isHoerenTeilChecklistRequired ? (int)($templateMatch[1] ?? 0) : 0;
+$validatedChecklist = null;
+if ($isHoerenTeilChecklistRequired) {
+    $checkType = trim((string)($homeworkChecklist['type'] ?? ''));
+    $checkTeil = (int)($homeworkChecklist['teil'] ?? 0);
+    $keywords = $normalizeChecklistItems($homeworkChecklist['keywords'] ?? []);
+    $difficultQuestions = $normalizeChecklistItems($homeworkChecklist['difficult_questions'] ?? []);
+    if ($checkType !== 'hoeren_teil' || $checkTeil !== $requiredTeil) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Hören-Checkliste für diese Aufgabe.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (count($keywords) < 5) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Bitte mindestens 5 Schlüsselwörter eintragen.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (count($difficultQuestions) < 2) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Bitte mindestens 2 schwierige Fragen eintragen.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $validatedChecklist = [
+        'type' => 'hoeren_teil',
+        'teil' => $requiredTeil,
+        'keywords' => $keywords,
+        'difficult_questions' => $difficultQuestions,
+    ];
 }
 
 $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
@@ -171,6 +222,7 @@ $record = [
     'writing_duration_seconds' => $writingDurationSeconds,
     'writing_started_at' => $writingStartedAt,
     'auto_submitted_on_expiry' => $autoSubmitOnExpiry,
+    'homework_checklist' => $validatedChecklist,
     'meta' => [
         'remote_addr' => (string)($_SERVER['REMOTE_ADDR'] ?? ''),
         'user_agent' => (string)($_SERVER['HTTP_USER_AGENT'] ?? ''),
@@ -194,6 +246,9 @@ foreach ($homeworks as $i => $item) {
     $state['submitted_at'] = $createdAt;
     $state['last_upload_id'] = $uploadId;
     $state['submission_count'] = (int)($state['submission_count'] ?? 0) + 1;
+    $state['checklist_required'] = $isHoerenTeilChecklistRequired;
+    $state['checklist_complete'] = $isHoerenTeilChecklistRequired ? true : false;
+    $state['checklist_validated_at'] = $isHoerenTeilChecklistRequired ? $createdAt : '';
     if (trim((string)($state['started_at'] ?? '')) === '') {
         $state['started_at'] = $createdAt;
     }

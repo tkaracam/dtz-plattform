@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur GET wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur GET wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -48,6 +48,8 @@ foreach ($items as $item) {
         'created_at' => (string)($item['created_at'] ?? ''),
         'updated_at' => (string)($item['updated_at'] ?? ''),
         'assigned_total' => (int)($metrics['assigned_total'] ?? 0),
+        'checklist_required_total' => (int)($metrics['checklist_required_total'] ?? 0),
+        'checklist_complete_total' => (int)($metrics['checklist_complete_total'] ?? 0),
         'started_total' => (int)($metrics['started_total'] ?? 0),
         'submitted_total' => (int)($metrics['submitted_total'] ?? 0),
         'expired_total' => (int)($metrics['expired_total'] ?? 0),

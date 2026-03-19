@@ -3086,6 +3086,14 @@
             <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind gesperrt.</div>
             <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
           </div>
+          <div id="hoerenChecklistWrap" class="hidden" style="margin-top:10px;">
+            <strong>Hören-Abgabe (Pflichtfelder)</strong>
+            <p class="muted" style="margin:6px 0 8px;">Bitte mindestens 5 Schlüsselwörter und 2 schwierige Fragen eintragen.</p>
+            <label for="hoerenKeywordsInput">Schlüsselwörter (mind. 5, pro Zeile eins)</label>
+            <textarea id="hoerenKeywordsInput" rows="4" placeholder="z. B. Termin&#10;Anmeldung&#10;Bestätigung"></textarea>
+            <label for="hoerenDifficultInput" style="margin-top:8px;">Schwierige Fragen (mind. 2, pro Zeile eins)</label>
+            <textarea id="hoerenDifficultInput" rows="3" placeholder="z. B. Frage 3 war schwer wegen ..."></textarea>
+          </div>
             </div>
 
             <div class="row-end">
@@ -3251,6 +3259,14 @@
                     <div class="meta-strip">
                       <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind gesperrt.</div>
                       <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
+                    </div>
+                    <div id="portalHoerenChecklistWrap" class="hidden" style="margin-top:10px;">
+                      <strong>Hören-Abgabe (Pflichtfelder)</strong>
+                      <p class="muted" style="margin:6px 0 8px;">Bitte mindestens 5 Schlüsselwörter und 2 schwierige Fragen eintragen.</p>
+                      <label for="portalHoerenKeywordsInput">Schlüsselwörter (mind. 5, pro Zeile eins)</label>
+                      <textarea id="portalHoerenKeywordsInput" rows="4" placeholder="z. B. Termin&#10;Anmeldung&#10;Bestätigung"></textarea>
+                      <label for="portalHoerenDifficultInput" style="margin-top:8px;">Schwierige Fragen (mind. 2, pro Zeile eins)</label>
+                      <textarea id="portalHoerenDifficultInput" rows="3" placeholder="z. B. Frage 3 war schwer wegen ..."></textarea>
                     </div>
                   </div>
                   <div class="row-end">
@@ -9143,6 +9159,59 @@
       return parseRequiredPointsFromText(String(currentAssignedHomework.description || ""));
     }
 
+    function resolveHoerenTeilRequirement() {
+      if (!currentAssignedHomework) return null;
+      const templateId = String(currentAssignedHomework.template_id || "").trim().toLowerCase();
+      const match = templateId.match(/^dtz-hoeren-teil([1-4])-fragenpaket$/);
+      if (!match) return null;
+      const teil = Number.parseInt(match[1], 10);
+      if (!Number.isFinite(teil) || teil < 1 || teil > 4) return null;
+      return { type: "hoeren_teil", teil };
+    }
+
+    function splitChecklistLines(raw, maxCount = 30) {
+      const lines = String(raw || "")
+        .split(/\r?\n|[,;]+/)
+        .map(line => line.trim())
+        .filter(Boolean);
+      return lines.slice(0, maxCount);
+    }
+
+    function updateHoerenChecklistVisibility() {
+      const requirement = resolveHoerenTeilRequirement();
+      const isRequired = !!requirement;
+      const uiSets = [
+        {
+          wrapId: "hoerenChecklistWrap",
+          keywordId: "hoerenKeywordsInput",
+          difficultId: "hoerenDifficultInput"
+        },
+        {
+          wrapId: "portalHoerenChecklistWrap",
+          keywordId: "portalHoerenKeywordsInput",
+          difficultId: "portalHoerenDifficultInput"
+        }
+      ];
+      uiSets.forEach(set => {
+        const wrap = document.getElementById(set.wrapId);
+        const keywordInput = document.getElementById(set.keywordId);
+        const difficultInput = document.getElementById(set.difficultId);
+        if (wrap) {
+          if (isRequired) {
+            wrap.classList.remove("hidden");
+          } else {
+            wrap.classList.add("hidden");
+          }
+        }
+        if (keywordInput) keywordInput.required = isRequired;
+        if (difficultInput) difficultInput.required = isRequired;
+        if (!isRequired) {
+          if (keywordInput) keywordInput.value = "";
+          if (difficultInput) difficultInput.value = "";
+        }
+      });
+    }
+
     function getAssignmentUiSets() {
       return [
         {
@@ -9218,6 +9287,15 @@
         if (textarea) textarea.readOnly = !!locked;
         if (uploadBtn) uploadBtn.disabled = !!locked;
       });
+      [
+        "hoerenKeywordsInput",
+        "hoerenDifficultInput",
+        "portalHoerenKeywordsInput",
+        "portalHoerenDifficultInput"
+      ].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.readOnly = !!locked;
+      });
     }
 
     function renderAssignmentPlaceholder(message, stateText) {
@@ -9250,6 +9328,7 @@
         if (attachWrap) attachWrap.classList.add("hidden");
       });
       setAssignmentEditorLocked(true);
+      updateHoerenChecklistVisibility();
       renderHomeDashboard();
     }
 
@@ -9437,6 +9516,7 @@
         if (startBtn) startBtn.disabled = true;
       });
       applyAssignmentStartButtonState();
+      updateHoerenChecklistVisibility();
 
       stopAssignmentCountdown();
       updateAssignmentCountdown();
@@ -10377,6 +10457,12 @@
       const letterText = textarea ? String(textarea.value || "").trim() : "";
       const writingMeta = collectWritingMeta(letterText);
       const assignmentId = currentAssignedHomework ? String(currentAssignedHomework.id || "") : "";
+      const requirement = resolveHoerenTeilRequirement();
+      const fromPortal = textareaId === "portalLetterText";
+      const keywordId = fromPortal ? "portalHoerenKeywordsInput" : "hoerenKeywordsInput";
+      const difficultId = fromPortal ? "portalHoerenDifficultInput" : "hoerenDifficultInput";
+      const keywords = splitChecklistLines(document.getElementById(keywordId)?.value || "");
+      const difficultQuestions = splitChecklistLines(document.getElementById(difficultId)?.value || "");
       return {
         studentName,
         letterText,
@@ -10384,7 +10470,13 @@
         requiredPoints: assignedRequiredPoints(),
         assignmentId,
         writingDurationSeconds: writingMeta.writingDurationSeconds,
-        writingStartedAt: writingMeta.writingStartedAt
+        writingStartedAt: writingMeta.writingStartedAt,
+        homeworkChecklist: requirement ? {
+          type: requirement.type,
+          teil: requirement.teil,
+          keywords,
+          difficult_questions: difficultQuestions
+        } : null
       };
     }
 
@@ -10427,6 +10519,18 @@
           setStatus("error", "Bitte geben Sie den Schülerbrief ein.", statusBoxId);
           return false;
         }
+        if (data.homeworkChecklist) {
+          const keywordCount = Array.isArray(data.homeworkChecklist.keywords) ? data.homeworkChecklist.keywords.length : 0;
+          const difficultCount = Array.isArray(data.homeworkChecklist.difficult_questions) ? data.homeworkChecklist.difficult_questions.length : 0;
+          if (keywordCount < 5) {
+            setStatus("error", "Bitte mindestens 5 Schlüsselwörter eintragen.", statusBoxId);
+            return false;
+          }
+          if (difficultCount < 2) {
+            setStatus("error", "Bitte mindestens 2 schwierige Fragen eintragen.", statusBoxId);
+            return false;
+          }
+        }
 
         const response = await fetch(resolveSaveUrl(), {
           method: "POST",
@@ -10439,6 +10543,7 @@
             assignment_id: data.assignmentId,
             writing_duration_seconds: data.writingDurationSeconds,
             writing_started_at: data.writingStartedAt,
+            homework_checklist: data.homeworkChecklist,
             auto_submit_on_expiry: autoSubmitOnExpiry
           })
         });
@@ -10474,7 +10579,8 @@
           required_points: formData.requiredPoints,
           assignment_id: formData.assignmentId,
           writing_duration_seconds: formData.writingDurationSeconds,
-          writing_started_at: formData.writingStartedAt
+          writing_started_at: formData.writingStartedAt,
+          homework_checklist: formData.homeworkChecklist
         })
       });
 
