@@ -145,6 +145,17 @@
       font-weight: 600;
     }
 
+    .docent-simple-hint {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(163, 199, 255, 0.65);
+      background: rgba(238, 246, 255, 0.18);
+      color: #e2f0ff;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
     .hero-course-switch {
       margin-top: 10px;
       display: grid;
@@ -2324,6 +2335,7 @@
         <div id="adminIdentityLine" class="admin-identity-line">Nicht angemeldet</div>
       </div>
       <div id="ownerOnlyHint" class="owner-role-hint hidden">Hinweis: Der Bereich „Lehrkräfte“ ist nur für Haupt-Admin sichtbar.</div>
+      <div id="docentSimpleHint" class="docent-simple-hint hidden">Docent Schnellmodus aktiv: Schülerzugänge, Kurs, Hausaufgaben und Mail Korrekturen.</div>
     </section>
 
     <nav class="admin-topbar">
@@ -3265,6 +3277,10 @@
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
+    const DOCENT_ALLOWED_PANES = new Set(["accounts", "kurs", "homeworks", "archive"]);
+    const DOCENT_HIDE_MENU_IDS = ["jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpProgressBtn", "jumpJessBtn", "toggleAndereBtn"];
+    const DOCENT_HIDE_FAST_IDS = ["fastCoursesBtn", "fastMod6Btn"];
+    const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection"];
 
     const adminPaneMap = {
       coursebuilder: "paneCourseBuilder",
@@ -3601,6 +3617,43 @@
       return String(adminContext.role || "") === "owner";
     }
 
+    function isDocentSimpleMode() {
+      return !!adminContext.role && !isOwnerAdmin();
+    }
+
+    function canAccessPane(paneName) {
+      if (!adminPaneMap[paneName]) return false;
+      if (ARCHIVED_ADMIN_PANES.has(paneName)) return false;
+      if (isOwnerAdmin()) return true;
+      return DOCENT_ALLOWED_PANES.has(paneName);
+    }
+
+    function applyDocentSimpleUi() {
+      const enabled = isDocentSimpleMode();
+      const hint = document.getElementById("docentSimpleHint");
+      if (hint) hint.classList.toggle("hidden", !enabled);
+      DOCENT_HIDE_MENU_IDS.forEach(id => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.classList.toggle("hidden", enabled);
+      });
+      DOCENT_HIDE_FAST_IDS.forEach(id => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.classList.toggle("hidden", enabled);
+      });
+      DOCENT_HIDE_SECTION_IDS.forEach(id => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.classList.toggle("hidden", enabled);
+      });
+      const andere = document.getElementById("adminAndereGroup");
+      if (enabled && andere) andere.classList.add("hidden");
+      if (enabled && !canAccessPane(activeAdminPane)) {
+        activeAdminPane = "homeworks";
+      }
+    }
+
     function applyAdminRoleUi() {
       const owner = isOwnerAdmin();
       document.querySelectorAll(".owner-only").forEach(node => {
@@ -3613,8 +3666,9 @@
         activeAdminPane = "accounts";
       }
       if (!owner && (activeAdminPane === "teachers" || activeAdminPane === "audit" || activeAdminPane === "mod6")) {
-        activeAdminPane = "accounts";
+        activeAdminPane = "homeworks";
       }
+      applyDocentSimpleUi();
     }
 
     function updateAdminIdentityLine() {
@@ -3642,7 +3696,7 @@
         setBox("panelStatus", "error", "Dieses Modul ist archiviert und nicht mehr verfügbar.");
         return;
       }
-      if ((paneName === "teachers" || paneName === "audit" || paneName === "mod6") && !isOwnerAdmin()) return;
+      if (!canAccessPane(paneName)) return;
       activeAdminPane = paneName;
       setStoredPreference(ADMIN_LAST_PANE_KEY, paneName);
       Object.values(adminPaneMap).forEach(id => {
@@ -3812,10 +3866,10 @@
       const topCourseJump = document.getElementById("topCourseJumpSelect");
       if (topCourseJump) topCourseJump.disabled = false;
       const preferredPane = getStoredPreference(ADMIN_LAST_PANE_KEY);
-      if (preferredPane && adminPaneMap[preferredPane] && !ARCHIVED_ADMIN_PANES.has(preferredPane)) {
-        if (isOwnerAdmin() || (preferredPane !== "teachers" && preferredPane !== "audit")) {
-          activeAdminPane = preferredPane;
-        }
+      if (preferredPane && canAccessPane(preferredPane)) {
+        activeAdminPane = preferredPane;
+      } else if (isDocentSimpleMode()) {
+        activeAdminPane = "homeworks";
       }
       const preferredCourse = getStoredPreference(ADMIN_LAST_COURSE_KEY);
       if (preferredCourse) {
@@ -9775,6 +9829,26 @@
       closeAdminMenu();
       window.location.href = "./jess.html";
     });
+    const fastAccountsBtn = document.getElementById("fastAccountsBtn");
+    if (fastAccountsBtn) {
+      fastAccountsBtn.addEventListener("click", () => openAdminPane("accounts"));
+    }
+    const fastCoursesBtn = document.getElementById("fastCoursesBtn");
+    if (fastCoursesBtn) {
+      fastCoursesBtn.addEventListener("click", () => openAdminPane("courses"));
+    }
+    const fastKursBtn = document.getElementById("fastKursBtn");
+    if (fastKursBtn) {
+      fastKursBtn.addEventListener("click", () => openAdminPane("kurs"));
+    }
+    const fastHomeworksBtn = document.getElementById("fastHomeworksBtn");
+    if (fastHomeworksBtn) {
+      fastHomeworksBtn.addEventListener("click", () => openAdminPane("homeworks"));
+    }
+    const fastArchiveBtn = document.getElementById("fastArchiveBtn");
+    if (fastArchiveBtn) {
+      fastArchiveBtn.addEventListener("click", () => openAdminPane("archive"));
+    }
     const fastMod6Btn = document.getElementById("fastMod6Btn");
     if (fastMod6Btn) {
       fastMod6Btn.addEventListener("click", () => openAdminPane("mod6"));

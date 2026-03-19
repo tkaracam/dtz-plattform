@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="dtz-build" content="2026-03-15-2">
+  <meta name="dtz-build" content="2026-03-19-1">
   <title>DTZ Schreiben Korrektur</title>
   <style>
     @font-face {
@@ -215,6 +215,120 @@
       border-color: #f2b7c9;
     }
 
+    .command-palette-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: clamp(16px, 6vh, 52px) 14px 18px;
+      background: rgba(32, 24, 37, 0.4);
+      backdrop-filter: blur(6px);
+    }
+
+    .command-palette {
+      width: min(760px, 100%);
+      border-radius: 18px;
+      border: 1px solid #f0d5df;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 26px 62px rgba(55, 39, 53, 0.24);
+      padding: 14px;
+    }
+
+    .command-palette-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .command-palette-title {
+      margin: 0;
+      font-size: 1rem;
+      color: #4a4454;
+    }
+
+    .command-palette-hint {
+      color: #8a8693;
+      font-size: 0.78rem;
+      letter-spacing: 0.03em;
+    }
+
+    .command-palette-input {
+      width: 100%;
+      border: 1px solid #e5cad6;
+      border-radius: 11px;
+      padding: 12px 13px;
+      font-size: 0.96rem;
+      font-family: "Comfortaa", "Trebuchet MS", sans-serif;
+      color: #4c4657;
+      background: #fff;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    .command-palette-input:focus {
+      border-color: #f2b3c5;
+      box-shadow: 0 0 0 3px rgba(242, 132, 158, 0.17);
+    }
+
+    .command-palette-results {
+      display: grid;
+      gap: 8px;
+      max-height: min(52vh, 460px);
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .command-action {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #efd7e0;
+      background: #fff7fa;
+      color: #5f5568;
+      text-align: left;
+      padding: 11px 12px;
+      letter-spacing: 0;
+      text-transform: none;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.92rem;
+    }
+
+    .command-action.active,
+    .command-action:hover {
+      border-color: #f2b7c9;
+      color: #f2849e;
+      box-shadow: 0 8px 20px rgba(167, 94, 121, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .command-action strong {
+      color: #4b4354;
+      font-size: 0.9rem;
+    }
+
+    .command-action small {
+      color: #7f768b;
+      font-size: 0.74rem;
+      letter-spacing: 0.02em;
+    }
+
+    .command-empty {
+      border-radius: 12px;
+      border: 1px dashed #dfd4dd;
+      background: #fff;
+      color: #837b8f;
+      padding: 12px;
+      font-size: 0.86rem;
+      text-align: center;
+    }
+
     .hero {
       position: relative;
       border: 1px solid rgba(255, 214, 226, 0.36);
@@ -350,20 +464,22 @@
     }
 
     .level-bar {
-      margin-top: 16px;
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      justify-items: center;
+      margin-top: 12px;
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+      justify-content: center;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 2px;
     }
 
     .portal-wide {
-      font-size: 1.02rem;
-      letter-spacing: 0.06em;
-      padding: 12px 18px;
-      grid-column: 1 / -1;
-      max-width: 520px;
-      justify-self: center;
+      font-size: 0.52rem;
+      letter-spacing: 0.04em;
+      padding: 6px 9px;
+      max-width: none;
+      justify-self: auto;
     }
 
     .level-tile {
@@ -371,19 +487,21 @@
       border: none;
       background: linear-gradient(120deg, var(--accent), var(--accent-2));
       color: #fff;
-      padding: 14px 16px;
+      padding: 7px 8px;
       text-align: center;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      font-size: 0.52rem;
       box-shadow: 0 12px 24px rgba(189, 91, 120, 0.28);
       transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
       display: inline-flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%;
+      width: auto;
+      min-width: 88px;
+      flex: 0 0 auto;
     }
 
     .level-tile:hover {
@@ -404,9 +522,9 @@
 
     .level-tile small {
       display: block;
-      margin-top: 6px;
-      font-size: 0.5rem;
-      letter-spacing: 0.06em;
+      margin-top: 3px;
+      font-size: 0.33rem;
+      letter-spacing: 0.04em;
       color: rgba(255, 236, 244, 0.9);
     }
 
@@ -2389,6 +2507,80 @@
       background: #fff;
     }
 
+    .speak-recorder {
+      border: 1px solid #ead9e0;
+      border-radius: 14px;
+      background: #fffafc;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .speak-recorder-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .speak-recorder-title {
+      margin: 0;
+      font-size: 1rem;
+      color: #4b4150;
+      font-weight: 700;
+    }
+
+    .speak-recorder-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .speak-rec-timer {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #5f3c4b;
+      background: #ffeef4;
+      border: 1px solid #efc8d6;
+    }
+
+    .speak-rec-timer.live {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(120deg, #ef5f88, #f497b2);
+    }
+
+    .speak-transcript {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid #ead7df;
+      border-radius: 10px;
+      padding: 10px 11px;
+      font: inherit;
+      color: #4f4b58;
+      background: #fff;
+      resize: vertical;
+    }
+
+    .speak-audio-preview {
+      width: 100%;
+    }
+
+    .speak-feedback {
+      border: 1px solid #e8d7dd;
+      border-radius: 10px;
+      background: #fff;
+      padding: 11px 12px;
+      color: #4f4b58;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      min-height: 92px;
+    }
+
     .floating-badge {
       margin-top: 16px;
       font-size: 0.82rem;
@@ -2534,12 +2726,20 @@
         white-space: normal;
       }
 
+      .command-palette {
+        padding: 12px;
+      }
+
+      .command-palette-hint {
+        display: none;
+      }
+
       .hero-top {
         flex-direction: column;
       }
 
       .level-bar {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-content: flex-start;
       }
 
       .hero-media {
@@ -2612,6 +2812,14 @@
       .hero {
         padding: 18px 14px;
       }
+
+      .command-palette-backdrop {
+        padding: 10px 8px;
+      }
+
+      .command-palette {
+        border-radius: 14px;
+      }
     }
   </style>
 </head>
@@ -2633,15 +2841,26 @@
           <button id="navWriteBtn" class="nav-link" type="button">Schreiben</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
           <button id="navSpeakingBtn" class="nav-link" type="button">Sprechen</button>
+          <button id="navQuickActionsBtn" class="nav-link" type="button">Schnellzugriff</button>
           <button id="navAdminBtn" class="nav-link" type="button">Lehrer-Panel</button>
         </div>
       </div>
       <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
     </nav>
+    <div id="commandPaletteBackdrop" class="command-palette-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+      <div id="commandPalette" class="command-palette" role="document">
+        <div class="command-palette-head">
+          <h2 id="commandPaletteTitle" class="command-palette-title">Schnellzugriff</h2>
+          <span class="command-palette-hint">Esc schließen · Enter ausführen</span>
+        </div>
+        <input id="commandPaletteInput" class="command-palette-input" type="text" autocomplete="off" spellcheck="false" placeholder="Bereich suchen (Portal, Schreiben, Sprechen, LiD, Admin)">
+        <div id="commandPaletteResults" class="command-palette-results"></div>
+      </div>
+    </div>
 
     <section id="internArea" class="hero">
       <div class="hero-top">
-        <div>
+        <div id="heroHomeContent">
           <h1>Willkommen im DTZ Training</h1>
           <p>
             Schreiben und Sprechen gezielt üben, klar strukturiert und sofort startklar.
@@ -2650,6 +2869,7 @@
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD<small>Leben in Deutschland</small></button>
             <button type="button" class="level-tile b1" id="levelHoerenBtn">Hören<small>DTZ Training</small></button>
             <button type="button" class="level-tile b1" id="levelLesenBtn">Lesen<small>DTZ Training</small></button>
+            <button type="button" class="level-tile b1" id="levelSpeakingBtn">Sprechen<small>Direkt öffnen</small></button>
             <button type="button" class="level-tile b1" id="levelA2Btn">A2<small>A2 Themen</small></button>
             <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal<small>Direkt öffnen</small></button>
           </div>
@@ -3054,6 +3274,28 @@
             </div>
           </div>
 
+          <section class="speak-recorder">
+            <div class="speak-recorder-head">
+              <h3 class="speak-recorder-title">Aufnahme und KI-Feedback</h3>
+              <div class="speak-recorder-actions">
+                <button id="speakRecStartBtn" type="button">Aufnahme starten</button>
+                <button id="speakRecStopBtn" type="button" class="secondary-btn" disabled>Stoppen</button>
+                <button id="speakRecClearBtn" type="button" class="secondary-btn">Zurücksetzen</button>
+                <span id="speakRecTimer" class="speak-rec-timer">00:00</span>
+              </div>
+            </div>
+            <p id="speakRecStatus" class="speak-muted">Mikrofon erlauben und direkt sprechen. Nach dem Stoppen erhalten Sie automatisches Feedback.</p>
+            <label for="speakTranscript">Transkript</label>
+            <textarea id="speakTranscript" class="speak-transcript" placeholder="Transkript erscheint automatisch (Browser-abhängig) oder hier manuell einfügen."></textarea>
+            <div class="row-end">
+              <div class="btn-wrap">
+                <button id="speakAnalyzeBtn" type="button" class="secondary-btn">Feedback aktualisieren</button>
+              </div>
+            </div>
+            <audio id="speakAudioPreview" class="speak-audio-preview hidden" controls></audio>
+            <div id="speakFeedbackBox" class="speak-feedback">Noch kein Feedback. Starten Sie eine Aufnahme oder fügen Sie ein Transkript ein.</div>
+          </section>
+
           <section id="speakPanel1" class="speak-panel">
             <h3 class="speak-title" id="speakPart1Title">Teil 1: Sich vorstellen</h3>
             <p class="speak-muted" id="speakPart1Lead"></p>
@@ -3332,6 +3574,15 @@
     let simulationTimerId = null;
     let roomPollTimerId = null;
     let currentRoom = null;
+    let speakingRecorderStream = null;
+    let speakingMediaRecorder = null;
+    let speakingRecognition = null;
+    let speakingRecordingChunks = [];
+    let speakingRecordingUrl = "";
+    let speakingRecordingStartMs = 0;
+    let speakingLastDurationSec = 0;
+    let speakingRecordingTimerId = null;
+    let speakingAutoTranscript = "";
     let simulationState = {
       active: false,
       locked: false,
@@ -4900,6 +5151,13 @@
       }
     }
 
+    function updateHeroHomeVisibility(mode) {
+      const heroHomeContent = document.getElementById("heroHomeContent");
+      if (!heroHomeContent) return;
+      const showHome = mode === "" || mode === "home";
+      heroHomeContent.classList.toggle("hidden", !showHome);
+    }
+
     function setMainView(mode) {
       const map = {
         correction: "workCard",
@@ -4910,6 +5168,7 @@
         speaking: "speakingCard"
       };
       showCards(map[mode] ? [map[mode]] : []);
+      updateHeroHomeVisibility(mode);
       const resultSection = document.getElementById("resultSection");
       if (mode !== "correction" && resultSection) {
         resultSection.classList.add("hidden");
@@ -4938,6 +5197,11 @@
       setMainView("portal");
       openPortalPanel("homework", false);
       refreshPortalData();
+    }
+
+    function openHomeView() {
+      setMainView("portal");
+      updateHeroHomeVisibility("home");
     }
 
     function openSimulationView() {
@@ -4973,6 +5237,7 @@
 
     function openB1View() {
       showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
+      updateHeroHomeVisibility("b1");
       setAccordionOpen("workAccordion", false);
       setAccordionOpen("speakingAccordion", false);
       setAccordionOpen("dtzHoerenAccordion", false);
@@ -7541,6 +7806,101 @@
       if (nav) nav.classList.remove("open");
     }
 
+    const QUICK_ACTIONS = [
+      { key: "portal", label: "Portal öffnen", hint: "Hausaufgaben, Schreiben, Korrekturen", keywords: "portal hausaufgaben korrekturen", action: () => navigateToSection("portal") },
+      { key: "write", label: "Schreiben öffnen", hint: "Mail schreiben und prüfen", keywords: "schreiben brief mail korrektur", action: () => navigateToSection("write") },
+      { key: "speaking", label: "Sprechen öffnen", hint: "Sprechen Teil 1-3", keywords: "sprechen muendlich", action: () => navigateToSection("speaking") },
+      { key: "lid", label: "LiD öffnen", hint: "Leben in Deutschland", keywords: "lid leben in deutschland", action: () => navigateToSection("lid") },
+      { key: "hoeren", label: "DTZ Hören öffnen", hint: "Hören Training", keywords: "dtz hoeren b1", action: () => navigateToSection("dtz-hoeren") },
+      { key: "lesen", label: "DTZ Lesen öffnen", hint: "Lesen Training", keywords: "dtz lesen b1", action: () => navigateToSection("dtz-lesen") },
+      { key: "home", label: "Startseite öffnen", hint: "Zum Hauptbereich", keywords: "start home", action: () => navigateToSection("home") },
+      { key: "admin", label: "Lehrer-Panel öffnen", hint: "Admin-Bereich", keywords: "admin lehrer panel", action: () => { window.location.href = "./admin.html"; } }
+    ];
+
+    let paletteSelectionIndex = 0;
+
+    function isCommandPaletteOpen() {
+      const backdrop = document.getElementById("commandPaletteBackdrop");
+      return !!(backdrop && !backdrop.classList.contains("hidden"));
+    }
+
+    function closeCommandPalette(restoreFocus = true) {
+      const backdrop = document.getElementById("commandPaletteBackdrop");
+      if (!backdrop) return;
+      const input = document.getElementById("commandPaletteInput");
+      backdrop.classList.add("hidden");
+      if (input) {
+        input.value = "";
+      }
+      paletteSelectionIndex = 0;
+      if (restoreFocus) {
+        const navQuickActionsBtn = document.getElementById("navQuickActionsBtn");
+        if (navQuickActionsBtn) navQuickActionsBtn.focus();
+      }
+    }
+
+    function getFilteredActions(query) {
+      const q = String(query || "").trim().toLowerCase();
+      if (!q) return QUICK_ACTIONS;
+      return QUICK_ACTIONS.filter(item => {
+        const bag = `${item.label} ${item.hint} ${item.keywords}`.toLowerCase();
+        return bag.includes(q);
+      });
+    }
+
+    function runCommandPaletteActionByIndex(filtered, index) {
+      const picked = filtered[index];
+      if (!picked || typeof picked.action !== "function") return;
+      closeCommandPalette(false);
+      picked.action();
+    }
+
+    function renderCommandPalette(query = "") {
+      const results = document.getElementById("commandPaletteResults");
+      if (!results) return;
+      const filtered = getFilteredActions(query);
+      if (!filtered.length) {
+        results.innerHTML = '<div class="command-empty">Sonuç bulunamadı. Farklı bir arama yazın.</div>';
+        paletteSelectionIndex = 0;
+        return;
+      }
+      if (paletteSelectionIndex >= filtered.length) {
+        paletteSelectionIndex = 0;
+      }
+      results.innerHTML = filtered.map((item, index) => `
+        <button type="button" class="command-action ${index === paletteSelectionIndex ? "active" : ""}" data-action-index="${index}">
+          <strong>${item.label}</strong>
+          <small>${item.hint}</small>
+        </button>
+      `).join("");
+      results.querySelectorAll(".command-action").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const actionIndex = Number(btn.getAttribute("data-action-index"));
+          runCommandPaletteActionByIndex(filtered, actionIndex);
+        });
+      });
+    }
+
+    function openCommandPalette() {
+      const backdrop = document.getElementById("commandPaletteBackdrop");
+      const input = document.getElementById("commandPaletteInput");
+      if (!backdrop || !input) return;
+      closeNavOnMobile();
+      backdrop.classList.remove("hidden");
+      paletteSelectionIndex = 0;
+      renderCommandPalette("");
+      input.value = "";
+      input.focus();
+    }
+
+    function isTypingTarget(target) {
+      if (!target || !(target instanceof Element)) return false;
+      if (target.closest("#commandPaletteBackdrop")) return false;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return true;
+      if (target.isContentEditable) return true;
+      return !!target.closest("[contenteditable='true']");
+    }
+
     function navigateToSection(target) {
       const loggedIn = document.getElementById("studentAuthCard").classList.contains("hidden");
       if (!loggedIn) {
@@ -7551,7 +7911,7 @@
       }
 
       if (target === "home") {
-        setMainView("portal");
+        openHomeView();
       } else if (target === "portal") {
         openPortalView();
       } else if (target === "simulation") {
@@ -7768,6 +8128,7 @@
           panel.classList.add("hidden");
         }
       });
+      renderSpeakingFeedback();
     }
 
     function generatePart1Draft() {
@@ -7821,6 +8182,272 @@
       ];
 
       document.getElementById("speakPart1Draft").textContent = lines.join("\n");
+    }
+
+    function getSpeakingActivePartNo() {
+      if (document.getElementById("speakTab3")?.classList.contains("active")) return 3;
+      if (document.getElementById("speakTab2")?.classList.contains("active")) return 2;
+      return 1;
+    }
+
+    function setSpeakingRecorderStatus(text) {
+      const node = document.getElementById("speakRecStatus");
+      if (node) node.textContent = String(text || "");
+    }
+
+    function setSpeakingTimer(seconds, isLive) {
+      const timer = document.getElementById("speakRecTimer");
+      if (!timer) return;
+      timer.textContent = formatSeconds(Math.max(0, Number(seconds) || 0));
+      timer.classList.toggle("live", !!isLive);
+    }
+
+    function stopSpeakingTimer() {
+      if (speakingRecordingTimerId) {
+        clearInterval(speakingRecordingTimerId);
+        speakingRecordingTimerId = null;
+      }
+      setSpeakingTimer(0, false);
+    }
+
+    function normalizeSpeakingWord(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[.,!?;:()"']/g, "")
+        .replace(/[^a-z0-9äöüß\s-]/gi, "")
+        .trim();
+    }
+
+    function collectSpeakingKeywords(partNo) {
+      if (partNo === 1) {
+        return ["heisse", "jahre", "komme", "wohne", "spreche", "beruf", "freizeit"];
+      }
+      if (partNo === 2) {
+        const points = Array.isArray(currentSpeakingSet?.part2?.points) ? currentSpeakingSet.part2.points : [];
+        const base = [];
+        points.forEach((line) => {
+          String(line || "").split(/[^A-Za-zÄÖÜäöüß]+/).forEach((word) => {
+            const w = normalizeSpeakingWord(word);
+            if (w.length >= 4) base.push(w);
+          });
+        });
+        base.push("bild", "personen");
+        return Array.from(new Set(base));
+      }
+      const points = Array.isArray(currentSpeakingSet?.part3?.points) ? currentSpeakingSet.part3.points : [];
+      const base = [];
+      points.forEach((line) => {
+        String(line || "").split(/[^A-Za-zÄÖÜäöüß]+/).forEach((word) => {
+          const w = normalizeSpeakingWord(word);
+          if (w.length >= 4) base.push(w);
+        });
+      });
+      base.push("vorschlag", "koennen", "machen", "planen");
+      return Array.from(new Set(base));
+    }
+
+    function renderSpeakingFeedback() {
+      const box = document.getElementById("speakFeedbackBox");
+      if (!box) return;
+      const transcriptNode = document.getElementById("speakTranscript");
+      const raw = String(transcriptNode?.value || "").trim();
+      if (!raw) {
+        box.textContent = "Noch kein Feedback. Starten Sie eine Aufnahme oder fügen Sie ein Transkript ein.";
+        return;
+      }
+
+      const partNo = getSpeakingActivePartNo();
+      const cleaned = normalizeSpeakingWord(raw);
+      const words = cleaned.split(/\s+/).filter(Boolean);
+      const uniqueCount = new Set(words).size;
+      const durationSec = speakingLastDurationSec > 0
+        ? speakingLastDurationSec
+        : Math.max(15, Math.round(words.length / 1.8));
+      const wpm = Math.round((words.length / durationSec) * 60);
+      const fillerWords = ["aeh", "aehm", "ehm", "hm", "also", "so"];
+      const fillerCount = words.filter((w) => fillerWords.includes(w)).length;
+      const fillerRate = words.length ? (fillerCount / words.length) : 0;
+
+      const keywordPool = collectSpeakingKeywords(partNo);
+      const matched = keywordPool.filter((kw) => cleaned.includes(kw)).length;
+      const coverage = keywordPool.length ? (matched / keywordPool.length) : 0;
+
+      let tempoText = "Tempo: gut.";
+      if (wpm < 60) tempoText = "Tempo: eher langsam. Etwas flüssiger sprechen.";
+      if (wpm > 150) tempoText = "Tempo: eher schnell. Etwas klarer und ruhiger sprechen.";
+
+      let fillerText = "Füllwörter: gut kontrolliert.";
+      if (fillerRate > 0.07) fillerText = "Füllwörter: relativ häufig. Kürzere Sätze mit klaren Pausen helfen.";
+
+      let coverageText = "Aufgabendeckung: stark.";
+      if (coverage < 0.35) coverageText = "Aufgabendeckung: zu wenig Punkte abgedeckt. Nutzen Sie die Stichpunkte systematisch.";
+      else if (coverage < 0.55) coverageText = "Aufgabendeckung: mittel. Mindestens 1-2 Punkte mehr einbauen.";
+
+      box.textContent =
+        `Teil ${partNo} Analyse\n` +
+        `Wörter: ${words.length} | Unterschiedliche Wörter: ${uniqueCount} | Tempo: ${wpm} WPM\n` +
+        `${tempoText}\n` +
+        `${fillerText}\n` +
+        `${coverageText}\n` +
+        `Nächster Schritt: Antwort in Einleitung - Hauptteil - Abschluss strukturieren.`;
+    }
+
+    function stopSpeakingRecognition() {
+      if (!speakingRecognition) return;
+      try {
+        speakingRecognition.onresult = null;
+        speakingRecognition.onerror = null;
+        speakingRecognition.onend = null;
+        speakingRecognition.stop();
+      } catch (_) {
+      }
+      speakingRecognition = null;
+    }
+
+    function startSpeakingRecognition() {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) {
+        setSpeakingRecorderStatus("Aufnahme läuft. Automatisches Transkript wird in diesem Browser nicht unterstützt.");
+        return;
+      }
+      speakingAutoTranscript = "";
+      try {
+        const rec = new Recognition();
+        rec.lang = "de-DE";
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.onresult = (event) => {
+          let text = "";
+          for (let i = 0; i < event.results.length; i += 1) {
+            text += `${event.results[i][0].transcript} `;
+          }
+          speakingAutoTranscript = text.trim();
+          const transcriptNode = document.getElementById("speakTranscript");
+          if (transcriptNode && !transcriptNode.matches(":focus")) {
+            transcriptNode.value = speakingAutoTranscript;
+          }
+        };
+        rec.onerror = () => {
+        };
+        rec.onend = () => {
+        };
+        rec.start();
+        speakingRecognition = rec;
+      } catch (_) {
+      }
+    }
+
+    async function startSpeakingRecording() {
+      if (speakingMediaRecorder && speakingMediaRecorder.state === "recording") return;
+      const startBtn = document.getElementById("speakRecStartBtn");
+      const stopBtn = document.getElementById("speakRecStopBtn");
+      if (startBtn) startBtn.disabled = true;
+      if (stopBtn) stopBtn.disabled = false;
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Dieser Browser unterstützt keine Mikrofonaufnahme.");
+        }
+        if (speakingRecordingUrl) {
+          URL.revokeObjectURL(speakingRecordingUrl);
+          speakingRecordingUrl = "";
+        }
+        speakingRecorderStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        speakingRecordingChunks = [];
+        speakingMediaRecorder = new MediaRecorder(speakingRecorderStream);
+        speakingMediaRecorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) speakingRecordingChunks.push(event.data);
+        };
+        speakingMediaRecorder.onstop = () => {
+          speakingMediaRecorder = null;
+          speakingLastDurationSec = Math.max(1, Math.round((Date.now() - speakingRecordingStartMs) / 1000));
+          const blob = new Blob(speakingRecordingChunks, { type: "audio/webm" });
+          if (blob.size > 0) {
+            speakingRecordingUrl = URL.createObjectURL(blob);
+            const audioNode = document.getElementById("speakAudioPreview");
+            if (audioNode) {
+              audioNode.src = speakingRecordingUrl;
+              audioNode.classList.remove("hidden");
+            }
+          }
+          if (speakingRecorderStream) {
+            speakingRecorderStream.getTracks().forEach(track => track.stop());
+            speakingRecorderStream = null;
+          }
+          stopSpeakingTimer();
+          stopSpeakingRecognition();
+          const transcriptNode = document.getElementById("speakTranscript");
+          if (transcriptNode && !String(transcriptNode.value || "").trim() && speakingAutoTranscript) {
+            transcriptNode.value = speakingAutoTranscript;
+          }
+          renderSpeakingFeedback();
+          setSpeakingRecorderStatus("Aufnahme beendet. Feedback wurde aktualisiert.");
+          if (startBtn) startBtn.disabled = false;
+          if (stopBtn) stopBtn.disabled = true;
+        };
+
+        speakingRecordingStartMs = Date.now();
+        speakingLastDurationSec = 0;
+        setSpeakingTimer(0, true);
+        speakingRecordingTimerId = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - speakingRecordingStartMs) / 1000);
+          setSpeakingTimer(elapsed, true);
+        }, 1000);
+        startSpeakingRecognition();
+        speakingMediaRecorder.start(250);
+        setSpeakingRecorderStatus("Aufnahme läuft...");
+      } catch (err) {
+        stopSpeakingTimer();
+        stopSpeakingRecognition();
+        if (speakingRecorderStream) {
+          speakingRecorderStream.getTracks().forEach(track => track.stop());
+          speakingRecorderStream = null;
+        }
+        if (startBtn) startBtn.disabled = false;
+        if (stopBtn) stopBtn.disabled = true;
+        setSpeakingRecorderStatus(`Aufnahme konnte nicht gestartet werden: ${err.message || "Mikrofon nicht verfügbar."}`);
+      }
+    }
+
+    function stopSpeakingRecording() {
+      if (speakingMediaRecorder && speakingMediaRecorder.state === "recording") {
+        try {
+          speakingMediaRecorder.stop();
+        } catch (_) {
+        }
+      }
+    }
+
+    function clearSpeakingRecording() {
+      stopSpeakingRecording();
+      stopSpeakingTimer();
+      stopSpeakingRecognition();
+      if (speakingRecorderStream) {
+        speakingRecorderStream.getTracks().forEach(track => track.stop());
+        speakingRecorderStream = null;
+      }
+      if (speakingRecordingUrl) {
+        URL.revokeObjectURL(speakingRecordingUrl);
+        speakingRecordingUrl = "";
+      }
+      speakingRecordingChunks = [];
+      speakingAutoTranscript = "";
+      speakingLastDurationSec = 0;
+      const audioNode = document.getElementById("speakAudioPreview");
+      if (audioNode) {
+        audioNode.pause();
+        audioNode.removeAttribute("src");
+        audioNode.classList.add("hidden");
+      }
+      const transcriptNode = document.getElementById("speakTranscript");
+      if (transcriptNode) transcriptNode.value = "";
+      const box = document.getElementById("speakFeedbackBox");
+      if (box) box.textContent = "Noch kein Feedback. Starten Sie eine Aufnahme oder fügen Sie ein Transkript ein.";
+      const startBtn = document.getElementById("speakRecStartBtn");
+      const stopBtn = document.getElementById("speakRecStopBtn");
+      if (startBtn) startBtn.disabled = false;
+      if (stopBtn) stopBtn.disabled = true;
+      setSpeakingRecorderStatus("Bereit für eine neue Aufnahme.");
     }
 
     function createExamQuestion(raw, index) {
@@ -9866,6 +10493,16 @@
     document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
     document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
     document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
+    const speakRecStartBtn = document.getElementById("speakRecStartBtn");
+    if (speakRecStartBtn) speakRecStartBtn.addEventListener("click", startSpeakingRecording);
+    const speakRecStopBtn = document.getElementById("speakRecStopBtn");
+    if (speakRecStopBtn) speakRecStopBtn.addEventListener("click", stopSpeakingRecording);
+    const speakRecClearBtn = document.getElementById("speakRecClearBtn");
+    if (speakRecClearBtn) speakRecClearBtn.addEventListener("click", clearSpeakingRecording);
+    const speakAnalyzeBtn = document.getElementById("speakAnalyzeBtn");
+    if (speakAnalyzeBtn) speakAnalyzeBtn.addEventListener("click", renderSpeakingFeedback);
+    const speakTranscript = document.getElementById("speakTranscript");
+    if (speakTranscript) speakTranscript.addEventListener("input", renderSpeakingFeedback);
     document.getElementById("refreshPortalBtn").addEventListener("click", refreshPortalData);
     const portalQuickHomeworkBtn = document.getElementById("portalQuickHomeworkBtn");
     if (portalQuickHomeworkBtn) {
@@ -9916,9 +10553,66 @@
     });
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") {
+        if (isCommandPaletteOpen()) {
+          closeCommandPalette(false);
+          return;
+        }
         closeNavOnMobile();
       }
     });
+    document.addEventListener("keydown", event => {
+      const pressed = String(event.key || "");
+      const lower = pressed.toLowerCase();
+      const mod = !!(event.ctrlKey || event.metaKey);
+      const shouldOpenViaMod = mod && lower === "k";
+      const shouldOpenViaSlash = !mod && pressed === "/";
+      if (!shouldOpenViaMod && !shouldOpenViaSlash) return;
+      if (isTypingTarget(event.target)) return;
+      event.preventDefault();
+      if (isCommandPaletteOpen()) {
+        closeCommandPalette(false);
+      } else {
+        openCommandPalette();
+      }
+    });
+    const commandPaletteBackdrop = document.getElementById("commandPaletteBackdrop");
+    const commandPalette = document.getElementById("commandPalette");
+    const commandPaletteInput = document.getElementById("commandPaletteInput");
+    if (commandPaletteBackdrop && commandPalette) {
+      commandPaletteBackdrop.addEventListener("click", event => {
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+        if (!commandPalette.contains(target)) {
+          closeCommandPalette(false);
+        }
+      });
+    }
+    if (commandPaletteInput) {
+      commandPaletteInput.addEventListener("input", () => {
+        paletteSelectionIndex = 0;
+        renderCommandPalette(commandPaletteInput.value || "");
+      });
+      commandPaletteInput.addEventListener("keydown", event => {
+        const items = getFilteredActions(commandPaletteInput.value || "");
+        if (!items.length) return;
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          paletteSelectionIndex = (paletteSelectionIndex + 1) % items.length;
+          renderCommandPalette(commandPaletteInput.value || "");
+          return;
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          paletteSelectionIndex = (paletteSelectionIndex - 1 + items.length) % items.length;
+          renderCommandPalette(commandPaletteInput.value || "");
+          return;
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          runCommandPaletteActionByIndex(items, paletteSelectionIndex);
+        }
+      });
+    }
     document.getElementById("navLogoBtn").addEventListener("click", () => navigateToSection("home"));
     document.getElementById("navLogoBtn").addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") {
@@ -9936,6 +10630,8 @@
     if (navLidBtn) navLidBtn.addEventListener("click", () => navigateToSection("lid"));
     const navSpeakingBtn = document.getElementById("navSpeakingBtn");
     if (navSpeakingBtn) navSpeakingBtn.addEventListener("click", () => navigateToSection("speaking"));
+    const navQuickActionsBtn = document.getElementById("navQuickActionsBtn");
+    if (navQuickActionsBtn) navQuickActionsBtn.addEventListener("click", () => openCommandPalette());
     const navAdminBtn = document.getElementById("navAdminBtn");
     if (navAdminBtn) navAdminBtn.addEventListener("click", () => {
       window.location.href = "./admin.html";
@@ -9945,6 +10641,8 @@
     if (levelHoerenBtn) levelHoerenBtn.addEventListener("click", () => navigateToSection("dtz-hoeren"));
     const levelLesenBtn = document.getElementById("levelLesenBtn");
     if (levelLesenBtn) levelLesenBtn.addEventListener("click", () => navigateToSection("dtz-lesen"));
+    const levelSpeakingBtn = document.getElementById("levelSpeakingBtn");
+    if (levelSpeakingBtn) levelSpeakingBtn.addEventListener("click", () => navigateToSection("speaking"));
     const dtzHoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
     if (dtzHoerenOpenBtn) dtzHoerenOpenBtn.addEventListener("click", () => openDtzModuleView("hoeren"));
     const dtzLesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
