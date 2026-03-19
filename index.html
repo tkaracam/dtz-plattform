@@ -8420,81 +8420,29 @@
         if (!photoId) return "";
         return `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=srgb&fit=crop&w=1200&h=560`;
       };
-      const pool = {
-        bahnhof: [
-          pexels("33983760"),
-          pexels("16487926"),
-          pexels("19091397"),
-          pexels("17621946"),
-          pexels("11218598")
-        ],
-        arzt: [
-          pexels("7108157"),
-          pexels("5215008"),
-          pexels("4266939"),
-          pexels("7659876")
-        ],
-        supermarkt: [
-          pexels("3985055"),
-          pexels("34175286"),
-          pexels("9016541"),
-          pexels("20157487")
-        ],
-        kurs: [
-          pexels("5676667"),
-          pexels("5676748"),
-          pexels("5676746"),
-          pexels("5756744")
-        ],
-        familie: [
-          pexels("5082867"),
-          pexels("5888370"),
-          pexels("4261791"),
-          pexels("4259136")
-        ],
-        bibliothek: [
-          pexels("159711/books-bookstore-book-reading-159711"),
-          pexels("1370295/pexels-photo-1370295"),
-          pexels("590493/pexels-photo-590493"),
-          pexels("256541/pexels-photo-256541")
-        ],
-        restaurant: [
-          pexels("262978/pexels-photo-262978"),
-          pexels("67468/pexels-photo-67468"),
-          pexels("776538/pexels-photo-776538"),
-          pexels("1581384/pexels-photo-1581384")
-        ],
-        buero: [
-          pexels("1181396/pexels-photo-1181396"),
-          pexels("3184291/pexels-photo-3184291"),
-          pexels("3184339/pexels-photo-3184339"),
-          pexels("3184465/pexels-photo-3184465")
-        ],
-        spielplatz: [
-          pexels("3662667/pexels-photo-3662667"),
-          pexels("3662820/pexels-photo-3662820"),
-          pexels("1128318/pexels-photo-1128318"),
-          pexels("3661241/pexels-photo-3661241")
-        ],
-        park: [
-          pexels("853168/pexels-photo-853168"),
-          pexels("842548/pexels-photo-842548"),
-          pexels("1462630/pexels-photo-1462630"),
-          pexels("775201/pexels-photo-775201")
-        ],
-        markt: [
-          pexels("264636/pexels-photo-264636"),
-          pexels("264507/pexels-photo-264507"),
-          pexels("2252584/pexels-photo-2252584"),
-          pexels("533325/pexels-photo-533325")
-        ],
-        sport: [
-          pexels("1552242/pexels-photo-1552242"),
-          pexels("1552106/pexels-photo-1552106"),
-          pexels("3764011/pexels-photo-3764011"),
-          pexels("936094/pexels-photo-936094")
-        ]
+      const extractPhotoId = (url) => {
+        const raw = String(url || "");
+        const match = raw.match(/\/photos\/(\d+)\//);
+        return match ? String(match[1]) : "";
       };
+      const SPEAKING_PHOTO_HISTORY_KEY = "dtz_speaking_photo_history_v1";
+      const SPEAKING_PHOTO_LAST_KEY = "dtz_speaking_photo_last_v1";
+
+      const poolIds = {
+        bahnhof: ["33983760", "16487926", "19091397", "17621946", "11218598", "8144994", "7803723", "1004584", "2694042", "2990650", "2387871", "2422461"],
+        arzt: ["7108157", "5215008", "4266939", "7659876", "6129237", "5998473", "3952241", "7089020", "6129683", "7089628", "5214950", "4270373"],
+        supermarkt: ["3985055", "34175286", "9016541", "20157487", "264547", "264636", "264507", "5632402", "7937539", "404280", "4110251", "6207748"],
+        kurs: ["5676667", "5676748", "5676746", "5756744", "6238010", "8471823", "5212700", "8471830", "7092613", "8613070", "1184572", "5427671"],
+        familie: ["5082867", "5888370", "4261791", "4259136", "755028", "3933024", "3933042", "2253879", "1130626", "6203777", "6203774", "7089401"],
+        bibliothek: ["159711", "1370295", "590493", "256541", "3747468", "3747470", "3747480", "590570", "4861365", "4861373", "267885", "267669"],
+        restaurant: ["262978", "67468", "776538", "1581384", "674574", "70497", "941861", "1267320", "1307698", "941864", "958545", "3616956"],
+        buero: ["1181396", "3184291", "3184339", "3184465", "3184325", "3183153", "3182812", "1181675", "1181605", "7693696", "3182781", "8378747"],
+        spielplatz: ["3662667", "3662820", "1128318", "3661241", "3933028", "1250452", "8535235", "8613081", "8422145", "8613312", "3933026", "1171084"],
+        park: ["853168", "842548", "1462630", "775201", "417173", "346529", "34950", "573277", "1271619", "1761279", "5725589", "2265634"],
+        markt: ["264636", "264507", "2252584", "533325", "264547", "533343", "264870", "5632399", "264537", "95425", "1004597", "2284166"],
+        sport: ["1552242", "1552106", "3764011", "936094", "863988", "4761798", "1552252", "1552101", "102448", "414029", "209977", "46798"]
+      };
+      const pool = Object.fromEntries(Object.entries(poolIds).map(([key, ids]) => [key, ids.map(pexels).filter(Boolean)]));
 
       function buildGeneratedFallback(label) {
         const safeLabel = String(label || "Bildthema").replace(/</g, "").replace(/>/g, "");
@@ -8519,8 +8467,56 @@
       }
 
       const scene = String(topic.scene || "kurs");
-      const items = pool[scene] || pool.kurs;
-      const primaryCandidates = (items || [])
+      const items = Array.isArray(pool[scene]) && pool[scene].length ? pool[scene] : pool.kurs;
+      const history = (() => {
+        try {
+          const raw = window.localStorage.getItem(SPEAKING_PHOTO_HISTORY_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed.slice(-24).map(v => String(v || "")).filter(Boolean) : [];
+        } catch (_) {
+          return [];
+        }
+      })();
+      let lastPhotoId = "";
+      try {
+        lastPhotoId = String(window.localStorage.getItem(SPEAKING_PHOTO_LAST_KEY) || "").trim();
+      } catch (_) {
+        lastPhotoId = "";
+      }
+      const withMeta = (items || [])
+        .map(url => ({ url, id: extractPhotoId(url) }))
+        .filter(row => row.url && row.id);
+      const dedupMap = new Map();
+      withMeta.forEach(row => {
+        if (!dedupMap.has(row.id)) dedupMap.set(row.id, row);
+      });
+      const dedup = Array.from(dedupMap.values());
+      const rank = row => {
+        const idx = history.lastIndexOf(row.id);
+        const recentPenalty = idx >= 0 ? (history.length - idx) : 0;
+        const immediatePenalty = row.id === lastPhotoId ? 1000 : 0;
+        return immediatePenalty + recentPenalty;
+      };
+      dedup.sort((a, b) => {
+        const ra = rank(a);
+        const rb = rank(b);
+        if (ra !== rb) return ra - rb;
+        return (Math.random() < 0.5 ? -1 : 1);
+      });
+      const picked = dedup.map(row => row.url);
+      const firstId = dedup[0] ? dedup[0].id : "";
+      if (firstId) {
+        const nextHistory = history.filter(id => id !== firstId);
+        nextHistory.push(firstId);
+        while (nextHistory.length > 24) nextHistory.shift();
+        try {
+          window.localStorage.setItem(SPEAKING_PHOTO_HISTORY_KEY, JSON.stringify(nextHistory));
+          window.localStorage.setItem(SPEAKING_PHOTO_LAST_KEY, firstId);
+        } catch (_) {
+          // ignore storage errors
+        }
+      }
+      const primaryCandidates = picked
         .map(url => (url ? `${url}&v=${Date.now()}` : ""))
         .filter(Boolean);
       const backup = buildGeneratedFallback(topic.title || scene);
