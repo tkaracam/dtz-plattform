@@ -3307,9 +3307,19 @@
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
-    const DOCENT_ALLOWED_PANES = new Set(["accounts", "kurs", "homeworks", "archive"]);
-    const DOCENT_HIDE_MENU_IDS = ["jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpProgressBtn", "jumpJessBtn", "toggleAndereBtn"];
-    const DOCENT_HIDE_FAST_IDS = ["fastCoursesBtn", "fastMod6Btn"];
+    const DOCENT_ALLOWED_PANES = new Set(["homeworks"]);
+    const DOCENT_HIDE_MENU_IDS = [
+      "jumpAccountsBtn",
+      "jumpCourseBuilderBtn",
+      "jumpCoursesBtn",
+      "jumpKursBtn",
+      "jumpProgressBtn",
+      "jumpArchiveBtn",
+      "jumpMod6Btn",
+      "jumpJessBtn",
+      "toggleAndereBtn"
+    ];
+    const DOCENT_HIDE_FAST_IDS = ["fastAccountsBtn", "fastCoursesBtn", "fastKursBtn", "fastArchiveBtn", "fastMod6Btn"];
     const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection", "trainingSetSection"];
 
     const adminPaneMap = {
@@ -3754,6 +3764,11 @@
         const node = document.getElementById(id);
         if (!node) return;
         node.classList.toggle("hidden", enabled);
+      });
+      document.querySelectorAll(".admin-quick-btn").forEach(btn => {
+        const pane = String(btn.getAttribute("data-pane") || "");
+        if (!pane) return;
+        btn.classList.toggle("hidden", enabled && pane !== "homeworks");
       });
       const andere = document.getElementById("adminAndereGroup");
       if (enabled && andere) andere.classList.add("hidden");
