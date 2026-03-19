@@ -112,15 +112,6 @@
       display: block;
     }
 
-    .nav-brand-text {
-      display: inline-flex;
-      align-items: center;
-      line-height: 1;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #5a4438;
-    }
-
     .nav-toggle {
       display: inline-flex;
       align-items: center;
@@ -993,6 +984,14 @@
       max-width: none;
       min-width: 0;
       flex: 1 1 0;
+    }
+
+    .a2-embed-frame {
+      width: 100%;
+      min-height: 76vh;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
     }
 
     .lid-top-actions {
@@ -2829,10 +2828,6 @@
         max-width: 44vw;
       }
 
-      .nav-brand-text {
-        font-size: 0.92rem;
-      }
-
       .nav-toggle {
         display: inline-flex;
       }
@@ -2955,10 +2950,6 @@
         max-width: 40vw;
       }
 
-      .nav-brand-text {
-        font-size: 0.84rem;
-      }
-
       .hero {
         padding: 18px 14px;
       }
@@ -2978,7 +2969,6 @@
     <nav id="topNav" class="top-nav">
       <div id="navLogoBtn" class="nav-brand" role="button" tabindex="0" aria-label="Zum Hauptmenü">
         <img src="./assets/logosonson.svg" alt="DTZ-LiD edu Logo">
-        <span class="nav-brand-text">DTZ-LiD edu</span>
       </div>
       <div class="nav-right">
         <div id="memberPanel" class="nav-member hidden">
@@ -3561,6 +3551,17 @@
           <button id="niveauB1Btn" type="button" class="dtz-module-btn">B1</button>
           <button id="niveauB2Btn" type="button" class="dtz-module-btn">B2</button>
         </div>
+      </section>
+
+      <section id="a2EmbedCard" class="card hidden">
+        <h2 class="section-title">A2-Themen</h2>
+        <p class="section-subtitle">A2-Übungen direkt in der Hauptseite.</p>
+        <div class="row-end">
+          <div class="btn-wrap">
+            <button id="backToPortalFromA2Btn" type="button" class="secondary-btn">Zurück zum Portal</button>
+          </div>
+        </div>
+        <iframe id="a2EmbedFrame" class="a2-embed-frame" title="A2-Themen"></iframe>
       </section>
 
       <section id="dtzHubCard" class="card hidden">
@@ -5639,6 +5640,7 @@
         simulation: "simulationCard",
         lid: "lidClassicCard",
         niveau: "niveauCard",
+        a2: "a2EmbedCard",
         dtz: "dtzHubCard",
         speaking: "speakingCard"
       };
@@ -5722,6 +5724,19 @@
     function openNiveauView() {
       setMainView("niveau");
       setHomeDashboardSection("niveau");
+    }
+
+    function openA2ThemesInApp(rawUrl = "./a2-themen.html") {
+      const frame = document.getElementById("a2EmbedFrame");
+      const fallback = new URL("./a2-themen.html", window.location.href).href;
+      const safeUrl = resolveSafeHttpUrl(rawUrl) || fallback;
+      setMainView("a2");
+      setHomeDashboardSection("niveau");
+      if (frame && frame.getAttribute("src") !== safeUrl) {
+        frame.setAttribute("src", safeUrl);
+      } else if (frame && !frame.getAttribute("src")) {
+        frame.setAttribute("src", safeUrl);
+      }
     }
 
     function openB1View() {
@@ -8481,7 +8496,11 @@
     }
 
     function navigateToSection(target) {
-      const loggedIn = document.getElementById("studentAuthCard").classList.contains("hidden");
+      const authCard = document.getElementById("studentAuthCard");
+      const loggedIn = !!(
+        (authCard && authCard.classList.contains("hidden")) ||
+        String(currentStudentUsername || "").trim()
+      );
       if (!loggedIn) {
         showStudentLogin();
         document.getElementById("studentAuthCard").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -8508,6 +8527,8 @@
         openSpeakingView();
       } else if (normalizedTarget === "niveau") {
         openNiveauView();
+      } else if (normalizedTarget === "a2") {
+        openA2ThemesInApp("./a2-themen.html");
       } else if (normalizedTarget === "dtz") {
         openDtzHubView();
       } else if (normalizedTarget === "b1") {
@@ -10179,7 +10200,7 @@
         setStatus("error", "Für diese Aufgabe ist kein A2-Test-Link hinterlegt.", "portalStatus");
         return;
       }
-      window.location.href = parsed.url;
+      openA2ThemesInApp(parsed.url);
     }
 
     function renderPortalHomeworksGrouped(homeworks) {
@@ -11828,7 +11849,7 @@
     const levelA2Btn = document.getElementById("levelA2Btn");
     if (levelA2Btn) {
       levelA2Btn.addEventListener("click", () => {
-        navigateToSection("niveau");
+        navigateToSection("a2");
       });
     }
     const niveauA1Btn = document.getElementById("niveauA1Btn");
@@ -11837,7 +11858,7 @@
     });
     const niveauA2Btn = document.getElementById("niveauA2Btn");
     if (niveauA2Btn) niveauA2Btn.addEventListener("click", () => {
-      window.location.href = "./a2-themen.html";
+      navigateToSection("a2");
     });
     const niveauB1Btn = document.getElementById("niveauB1Btn");
     if (niveauB1Btn) niveauB1Btn.addEventListener("click", () => {
@@ -11856,6 +11877,8 @@
         navigateToSection(route);
       });
     }
+    const backToPortalFromA2Btn = document.getElementById("backToPortalFromA2Btn");
+    if (backToPortalFromA2Btn) backToPortalFromA2Btn.addEventListener("click", () => navigateToSection("portal"));
     renderHomeDashboard();
     removeArchivedBskFrontend();
     checkStudentSession();
