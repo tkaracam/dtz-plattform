@@ -924,9 +924,17 @@
     }
 
     .homework-reminder-filters {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 8px;
+    }
+
+    .homework-reminder-filters .homework-reminder-filter-btn:nth-child(-n+2) {
+      grid-column: span 3;
+    }
+
+    .homework-reminder-filters .homework-reminder-filter-btn:nth-child(n+3) {
+      grid-column: span 2;
     }
 
     .homework-reminder-filter-btn {
