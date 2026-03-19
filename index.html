@@ -2449,6 +2449,10 @@
       color: #9a2f2f;
     }
 
+    .portal-homework-group + .portal-homework-group {
+      margin-top: 10px;
+    }
+
     .task-notify-badge {
       display: inline-flex;
       align-items: center;
@@ -9537,6 +9541,73 @@
       });
     }
 
+    function detectStudentHomeworkCategory(row) {
+      const title = String(row && row.title ? row.title : "").toLowerCase();
+      const description = String(row && row.description ? row.description : "").toLowerCase();
+      const bag = `${title} ${description}`;
+      if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
+      if (bag.includes("lesen")) return "lesen";
+      if (bag.includes("sprechen")) return "sprechen";
+      if (bag.includes("schreiben") || bag.includes("mail")) return "schreiben";
+      return "schreiben";
+    }
+
+    function renderPortalHomeworksGrouped(homeworks) {
+      const wrap = document.getElementById("portalHomeworkWrap");
+      if (!wrap) return;
+      const rows = Array.isArray(homeworks) ? homeworks.filter(item => item && typeof item === "object") : [];
+      if (!rows.length) {
+        wrap.textContent = "Noch keine Hausaufgaben.";
+        return;
+      }
+
+      const labels = {
+        hoeren: "Hören",
+        lesen: "Lesen",
+        schreiben: "Schreiben",
+        sprechen: "Sprechen"
+      };
+      const grouped = {
+        hoeren: [],
+        lesen: [],
+        schreiben: [],
+        sprechen: []
+      };
+
+      rows.forEach(row => {
+        const cat = detectStudentHomeworkCategory(row);
+        if (grouped[cat]) grouped[cat].push(row);
+        else grouped.schreiben.push(row);
+      });
+
+      const itemHtml = row => {
+        const statusRaw = String(row.status || "offen").toLowerCase();
+        const isDone = statusRaw === "abgegeben";
+        const stateClass = isDone ? "homework-done" : "homework-pending";
+        const reminderLevel = String(row.reminder_level || "none").toLowerCase();
+        const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
+        const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
+        return `
+          <div class="portal-item ${stateClass}">
+            <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
+            <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
+            <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
+          </div>
+        `;
+      };
+
+      const sections = ["hoeren", "lesen", "schreiben", "sprechen"]
+        .filter(key => grouped[key].length > 0)
+        .map(key => `
+          <section class="portal-homework-group">
+            <h4 class="section-title" style="font-size:1rem; margin:4px 0 8px;">${labels[key]}</h4>
+            ${grouped[key].map(itemHtml).join("")}
+          </section>
+        `);
+
+      wrap.innerHTML = sections.join("") || "Noch keine Hausaufgaben.";
+    }
+
     function renderPortalData(payload) {
       const results = Array.isArray(payload.results) ? payload.results : [];
       const homeworks = Array.isArray(payload.homeworks) ? payload.homeworks : [];
@@ -9551,26 +9622,7 @@
       applyAssignmentStartButtonState();
       updateTaskNotifyBadges(homeworks);
 
-      renderPortalList(
-        "portalHomeworkWrap",
-        homeworks,
-        "Noch keine Hausaufgaben.",
-        row => {
-          const statusRaw = String(row.status || "offen").toLowerCase();
-          const isDone = statusRaw === "abgegeben";
-          const stateClass = isDone ? "homework-done" : "homework-pending";
-          const reminderLevel = String(row.reminder_level || "none").toLowerCase();
-          const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
-          const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
-          return `
-          <div class="portal-item ${stateClass}">
-            <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
-            <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
-            <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
-          </div>
-        `;
-        }
-      );
+      renderPortalHomeworksGrouped(homeworks);
 
       renderPortalList(
         "portalNotesWrap",
