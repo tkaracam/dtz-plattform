@@ -177,6 +177,8 @@ if ($action === 'list') {
 
         $out[] = [
             'id' => (string)($item['id'] ?? ''),
+            'batch_group_id' => (string)($item['batch_group_id'] ?? ''),
+            'batch_group_label' => (string)($item['batch_group_label'] ?? ''),
             'title' => (string)($item['title'] ?? ''),
             'description' => (string)($item['description'] ?? ''),
             'attachment' => (string)($item['attachment'] ?? ''),
@@ -220,6 +222,8 @@ if ($action === 'create') {
     $usernamesRaw = $body['usernames'] ?? [];
     $durationMinutes = (int)($body['duration_minutes'] ?? 0);
     $startsAt = trim((string)($body['starts_at'] ?? ''));
+    $batchGroupId = trim((string)($body['batch_group_id'] ?? ''));
+    $batchGroupLabel = trim((string)($body['batch_group_label'] ?? ''));
 
     if ($title === '' || $description === '') {
         http_response_code(400);
@@ -236,6 +240,11 @@ if ($action === 'create') {
     if (strtotime($startsAt) === false) {
         http_response_code(400);
         echo json_encode(['error' => 'Ungültige Startzeit.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($batchGroupId !== '' && preg_match('/^[a-z0-9._-]{4,80}$/i', $batchGroupId) !== 1) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Gruppen-ID.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -349,6 +358,8 @@ if ($action === 'create') {
         'teacher_username' => (string)($admin['username'] ?? ''),
         'created_at' => $createdAt,
         'updated_at' => $createdAt,
+        'batch_group_id' => $batchGroupId,
+        'batch_group_label' => $batchGroupLabel,
         'assignees' => $assignees,
         'dtz_bundle' => $dtzBundle,
     ];

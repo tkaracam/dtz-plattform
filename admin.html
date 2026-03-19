@@ -6518,7 +6518,27 @@
         });
         return;
       }
-      const tableRows = filteredRows.map(item => {
+      const tableHead = `
+        <table>
+          <thead>
+            <tr>
+              <th>Titel</th>
+              <th>Ziel</th>
+              <th>Dauer</th>
+              <th>Start</th>
+              <th>Erstellt</th>
+              <th>Status</th>
+              <th>Zugewiesen</th>
+              <th>Gestartet</th>
+              <th>Abgegeben</th>
+              <th>Erinnerung</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody>{{ROWS}}</tbody>
+        </table>
+      `;
+      const rowHtml = item => {
         const assignmentId = String(item.id || "");
         const active = String(item.status || "active") === "active";
         const toggleText = active ? "Archivieren" : "Aktivieren";
@@ -6551,28 +6571,34 @@
             </td>
           </tr>
         `;
-      }).join("");
-      const tableHtml = filteredRows.length
-        ? `
-          <table>
-            <thead>
-              <tr>
-                <th>Titel</th>
-                <th>Ziel</th>
-                <th>Dauer</th>
-                <th>Start</th>
-                <th>Erstellt</th>
-                <th>Status</th>
-                <th>Zugewiesen</th>
-                <th>Gestartet</th>
-                <th>Abgegeben</th>
-                <th>Erinnerung</th>
-                <th>Aktion</th>
-              </tr>
-            </thead>
-            <tbody>${tableRows}</tbody>
-          </table>
-        `
+      };
+
+      const groups = [];
+      const groupMap = new Map();
+      filteredRows.forEach(item => {
+        const groupId = String(item.batch_group_id || "").trim();
+        const key = groupId !== "" ? `group:${groupId}` : `single:${String(item.id || "")}`;
+        if (!groupMap.has(key)) {
+          const labelRaw = String(item.batch_group_label || "").trim();
+          groupMap.set(key, {
+            key,
+            groupId,
+            label: labelRaw || (groupId ? `Gruppe ${groupId}` : ""),
+            items: []
+          });
+          groups.push(groupMap.get(key));
+        }
+        groupMap.get(key).items.push(item);
+      });
+
+      const tableHtml = groups.length
+        ? groups.map(group => {
+          const rowsHtml = group.items.map(rowHtml).join("");
+          const titleHtml = group.groupId
+            ? `<div class="homework-reminder-chip" style="margin:10px 0 8px;"><strong>Gruppe:</strong> ${escapeHtml(group.label)} · <span class="mono">${escapeHtml(group.groupId)}</span> · ${group.items.length} Aufgabe(n)</div>`
+            : "";
+          return `${titleHtml}${tableHead.replace("{{ROWS}}", rowsHtml)}`;
+        }).join("")
         : `<p>Für diesen Filter wurden keine Aufgaben gefunden.</p>`;
       wrap.innerHTML = `${toolbarHtml}${tableHtml}`;
       wrap.querySelectorAll("button[data-hw-reminder-filter]").forEach(btn => {
@@ -7731,6 +7757,8 @@
       let successCount = 0;
       let totalAssignedTargets = 0;
       const failures = [];
+      const groupId = `hwgrp-${Date.now().toString(36)}`;
+      const groupLabel = `Mehrfachzuweisung ${formatDisplayDateTime(new Date().toISOString()) || new Date().toLocaleString("de-DE")}`;
       for (const template of selectedTemplates) {
         const title = String(template?.title || "").trim();
         const description = buildHomeworkTemplateDescription(template);
@@ -7749,7 +7777,9 @@
             course_id: targetType === "course" ? effectiveCourseId : "",
             usernames: targetType === "users" ? usernames : [],
             duration_minutes: durationMinutes,
-            starts_at: startsAt
+            starts_at: startsAt,
+            batch_group_id: groupId,
+            batch_group_label: groupLabel
           });
           successCount += 1;
           totalAssignedTargets += Number(payload?.target_count || 0);
