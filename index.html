@@ -8397,7 +8397,8 @@
     }
 
     function showStudentLogin() {
-      setMainView("");
+      setMainView("portal");
+      openPortalPanel("homework", false);
       stopDtzAudio(true);
       const resultSection = document.getElementById("resultSection");
       if (resultSection) resultSection.classList.add("hidden");
