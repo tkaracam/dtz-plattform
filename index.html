@@ -3226,7 +3226,7 @@
               <details id="portalHoerenHomeworkAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
-                    <h3 style="margin:0;">Hören</h3>
+                    <h3 style="margin:0;">Hören <span id="portalHoerenTaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
                     <p class="section-subtitle">Hören-Aufgaben öffnen und direkt den passenden Teil lösen.</p>
                   </div>
                   <span class="card-accordion-icon">▾</span>
@@ -3238,7 +3238,7 @@
               <details id="portalLesenHomeworkAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
-                    <h3 style="margin:0;">Lesen</h3>
+                    <h3 style="margin:0;">Lesen <span id="portalLesenTaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
                     <p class="section-subtitle">Lesen-Aufgaben öffnen und direkt den passenden Teil lösen.</p>
                   </div>
                   <span class="card-accordion-icon">▾</span>
@@ -9830,22 +9830,43 @@
 
     function updateTaskNotifyBadges(homeworks) {
       const rows = Array.isArray(homeworks) ? homeworks : [];
-      const pendingCount = rows.filter(row => String(row?.status || "").toLowerCase() !== "abgegeben").length;
-      const urgentCount = rows.filter(row => {
-        if (String(row?.status || "").toLowerCase() === "abgegeben") return false;
+      const counts = {
+        schreiben: { pending: 0, urgent: 0 },
+        hoeren: { pending: 0, urgent: 0 },
+        lesen: { pending: 0, urgent: 0 }
+      };
+
+      rows.forEach(row => {
+        const status = String(row?.status || "").toLowerCase();
+        if (status === "abgegeben") return;
+        const category = detectStudentHomeworkCategory(row);
+        const key = category === "hoeren" ? "hoeren" : (category === "lesen" ? "lesen" : "schreiben");
+        counts[key].pending += 1;
         const level = String(row?.reminder_level || "").toLowerCase();
-        return level === "warn2" || level === "expired";
-      }).length;
-      ["workTaskNotifyBadge", "portalTaskNotifyBadge"].forEach(id => {
+        if (level === "warn2" || level === "expired") {
+          counts[key].urgent += 1;
+        }
+      });
+
+      const badgeConfig = [
+        { id: "workTaskNotifyBadge", key: "schreiben", label: "Schreiben" },
+        { id: "portalTaskNotifyBadge", key: "schreiben", label: "Schreiben" },
+        { id: "portalHoerenTaskNotifyBadge", key: "hoeren", label: "Hören" },
+        { id: "portalLesenTaskNotifyBadge", key: "lesen", label: "Lesen" }
+      ];
+
+      badgeConfig.forEach(({ id, key, label }) => {
         const badge = document.getElementById(id);
         if (!badge) return;
+        const pendingCount = Number(counts[key]?.pending || 0);
+        const urgentCount = Number(counts[key]?.urgent || 0);
         if (pendingCount > 0) {
           badge.textContent = String(pendingCount);
           badge.classList.remove("hidden");
           badge.classList.toggle("urgent", urgentCount > 0);
           badge.title = urgentCount > 0
-            ? `${urgentCount} Aufgabe(n) sind dringend oder überfällig.`
-            : `${pendingCount} offene Aufgabe(n).`;
+            ? `${label}: ${urgentCount} Aufgabe(n) sind dringend oder überfällig.`
+            : `${label}: ${pendingCount} offene Aufgabe(n).`;
         } else {
           badge.textContent = "0";
           badge.classList.add("hidden");
