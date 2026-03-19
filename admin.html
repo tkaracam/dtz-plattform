@@ -2673,6 +2673,14 @@
               <summary>Kurs-Hausaufgaben</summary>
               <div class="fold-section-content">
                 <div>
+                  <label for="kursHwTaskCategory">Kategorie</label>
+                  <select id="kursHwTaskCategory">
+                    <option value="mail" selected>Mail-Aufgabe</option>
+                    <option value="hoeren">Hören</option>
+                    <option value="lesen">Lesen</option>
+                  </select>
+                </div>
+                <div>
                   <label for="kursHwTaskTemplate">Aufgabenvorlage auswählen</label>
                   <select id="kursHwTaskTemplate">
                     <option value="">Bitte Aufgabe wählen</option>
@@ -2759,6 +2767,14 @@
                 <span class="docent-flow-step">1. Vorlage wählen</span>
                 <span class="docent-flow-step">2. Kurs wählen</span>
                 <span class="docent-flow-step">3. Starten & veröffentlichen</span>
+              </div>
+              <div>
+                <label for="hwTaskCategory">Kategorie</label>
+                <select id="hwTaskCategory">
+                  <option value="mail" selected>Mail-Aufgabe</option>
+                  <option value="hoeren">Hören</option>
+                  <option value="lesen">Lesen</option>
+                </select>
               </div>
               <div>
                 <label for="hwTaskTemplate">Aufgabenvorlage auswählen</label>
@@ -3300,6 +3316,7 @@
     const ADMIN_LAST_PANE_KEY = "dtz_admin_last_pane_v1";
     const ADMIN_LAST_COURSE_KEY = "dtz_admin_last_course_v1";
     const ADMIN_HW_TEMPLATE_KEY = "dtz_admin_hw_template_v1";
+    const ADMIN_HW_CATEGORY_KEY = "dtz_admin_hw_category_v1";
     const ADMIN_HW_COURSE_KEY = "dtz_admin_hw_course_v1";
     const ADMIN_HW_DURATION_VALUE_KEY = "dtz_admin_hw_duration_value_v1";
     const ADMIN_HW_DURATION_UNIT_KEY = "dtz_admin_hw_duration_unit_v1";
@@ -5785,11 +5802,19 @@
     function populateKursHomeworkTemplates() {
       const select = document.getElementById("kursHwTaskTemplate");
       if (!select) return;
+      const category = String(document.getElementById("kursHwTaskCategory")?.value || "mail").toLowerCase();
+      const currentValue = String(select.value || "");
       const options = ['<option value="">Bitte Aufgabe wählen</option>'];
-      HOMEWORK_MAIL_TEMPLATES.forEach((template, index) => {
+      HOMEWORK_MAIL_TEMPLATES
+        .filter(template => getHomeworkTemplateCategory(template) === category)
+        .forEach((template, index) => {
         options.push(`<option value="${escapeHtml(template.id)}">${index + 1}. ${escapeHtml(template.title)}</option>`);
       });
       select.innerHTML = options.join("");
+      if (currentValue && HOMEWORK_MAIL_TEMPLATES.some(item => String(item.id || "") === currentValue && getHomeworkTemplateCategory(item) === category)) {
+        select.value = currentValue;
+      }
+      updateKursHomeworkTemplatePreview();
     }
 
     function getSelectedKursHomeworkTemplate() {
@@ -6136,10 +6161,12 @@
     }
 
     function persistHomeworkQuickDefaults() {
+      const category = String(document.getElementById("hwTaskCategory")?.value || "mail").trim().toLowerCase();
       const template = String(document.getElementById("hwTaskTemplate")?.value || "").trim();
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
       const durationValue = String(document.getElementById("hwDurationValue")?.value || "").trim();
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes").trim();
+      setStoredPreference(ADMIN_HW_CATEGORY_KEY, category || "mail");
       setStoredPreference(ADMIN_HW_TEMPLATE_KEY, template || null);
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
@@ -6147,10 +6174,17 @@
     }
 
     function restoreHomeworkQuickDefaults() {
+      const category = getStoredPreference(ADMIN_HW_CATEGORY_KEY) || "mail";
       const template = getStoredPreference(ADMIN_HW_TEMPLATE_KEY);
       const courseId = getStoredPreference(ADMIN_HW_COURSE_KEY);
       const durationValue = getStoredPreference(ADMIN_HW_DURATION_VALUE_KEY);
       const durationUnit = getStoredPreference(ADMIN_HW_DURATION_UNIT_KEY);
+
+      const categorySelect = document.getElementById("hwTaskCategory");
+      if (categorySelect && (category === "mail" || category === "hoeren" || category === "lesen")) {
+        categorySelect.value = category;
+      }
+      renderHomeworkTemplateOptions();
 
       const templateSelect = document.getElementById("hwTaskTemplate");
       if (templateSelect && template && Array.from(templateSelect.options).some(o => o.value === template)) {
@@ -6174,6 +6208,15 @@
       }
 
       updateHomeworkTemplatePreview();
+    }
+
+    function getHomeworkTemplateCategory(template) {
+      if (!template || typeof template !== "object") return "mail";
+      const id = String(template.id || "").toLowerCase();
+      const text = `${id} ${String(template.title || "").toLowerCase()} ${String(template.prompt || "").toLowerCase()}`;
+      if (text.includes("hoeren") || text.includes("hören")) return "hoeren";
+      if (text.includes("lesen")) return "lesen";
+      return "mail";
     }
 
     function buildHomeworkTemplateDescription(template) {
@@ -6204,15 +6247,18 @@
     function renderHomeworkTemplateOptions() {
       const select = document.getElementById("hwTaskTemplate");
       if (!select) return;
+      const category = String(document.getElementById("hwTaskCategory")?.value || "mail").toLowerCase();
       const currentValue = String(select.value || "");
       const options = ['<option value="">Bitte Aufgabe wählen</option>'];
-      HOMEWORK_MAIL_TEMPLATES.forEach((template, idx) => {
+      HOMEWORK_MAIL_TEMPLATES
+        .filter(template => getHomeworkTemplateCategory(template) === category)
+        .forEach((template, idx) => {
         const id = String(template.id || `task-${idx + 1}`);
         const title = String(template.title || `Aufgabe ${idx + 1}`);
         options.push(`<option value="${escapeHtml(id)}">${escapeHtml(`${idx + 1}. ${title}`)}</option>`);
       });
       select.innerHTML = options.join("");
-      if (currentValue && HOMEWORK_MAIL_TEMPLATES.some(item => String(item.id || "") === currentValue)) {
+      if (currentValue && HOMEWORK_MAIL_TEMPLATES.some(item => String(item.id || "") === currentValue && getHomeworkTemplateCategory(item) === category)) {
         select.value = currentValue;
       }
       updateHomeworkTemplatePreview();
@@ -9890,6 +9936,10 @@
       syncHomeworkTargetVisibility();
       persistHomeworkQuickDefaults();
     });
+    document.getElementById("hwTaskCategory").addEventListener("change", () => {
+      renderHomeworkTemplateOptions();
+      persistHomeworkQuickDefaults();
+    });
     document.getElementById("hwTaskTemplate").addEventListener("change", () => {
       updateHomeworkTemplatePreview();
       persistHomeworkQuickDefaults();
@@ -9897,6 +9947,7 @@
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationValue").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationUnit").addEventListener("change", persistHomeworkQuickDefaults);
+    document.getElementById("kursHwTaskCategory").addEventListener("change", populateKursHomeworkTemplates);
     document.getElementById("kursHwTaskTemplate").addEventListener("change", updateKursHomeworkTemplatePreview);
     document.getElementById("kursCreateHomeworkBtn").addEventListener("click", createHomeworkAssignmentForSelectedCourse);
     document.getElementById("kursRefreshHomeworkBtn").addEventListener("click", listKursHomeworkAssignments);
