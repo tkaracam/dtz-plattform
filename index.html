@@ -3809,7 +3809,43 @@
 
     const HOME_DASHBOARD_KEY = "dtz_home_dashboard_v1";
     const HOME_ANNOUNCEMENT_KEY = "dtz_home_announcement_v1";
+    const STUDENT_SESSION_CACHE_KEY = "dtz_student_session_cache_v1";
     const DASHBOARD_FALLBACK_ANNOUNCEMENT = "Empfehlung: heute 20 Minuten DTZ plus eine kurze LiD-Wiederholung.";
+
+    function persistStudentSessionCache(username, label) {
+      try {
+        const cleanUsername = String(username || "").trim();
+        if (!cleanUsername) return;
+        const payload = {
+          username: cleanUsername,
+          label: String(label || cleanUsername).trim() || cleanUsername,
+          saved_at: Date.now()
+        };
+        window.localStorage.setItem(STUDENT_SESSION_CACHE_KEY, JSON.stringify(payload));
+      } catch (_) {}
+    }
+
+    function readStudentSessionCache() {
+      try {
+        const raw = window.localStorage.getItem(STUDENT_SESSION_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        const username = String(parsed && parsed.username ? parsed.username : "").trim();
+        if (!username) return null;
+        return {
+          username,
+          label: String(parsed && parsed.label ? parsed.label : username).trim() || username
+        };
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function clearStudentSessionCache() {
+      try {
+        window.localStorage.removeItem(STUDENT_SESSION_CACHE_KEY);
+      } catch (_) {}
+    }
 
     function isoDateLocal(inputDate = new Date()) {
       const d = inputDate instanceof Date ? inputDate : new Date(inputDate);
@@ -5658,6 +5694,7 @@
       const memberPanel = document.getElementById("memberPanel");
       memberPanel.classList.remove("hidden");
       currentStudentLabel = identityText || "Angemeldet";
+      persistStudentSessionCache(currentStudentUsername, currentStudentLabel);
       approvedCorrectionUploadIds = new Set();
       renderAssignmentPlaceholder("Zugewiesene Aufgabe wird geladen...", "Wird geladen");
       loadStudentPortal();
@@ -8497,9 +8534,11 @@
 
     function navigateToSection(target) {
       const authCard = document.getElementById("studentAuthCard");
+      const cachedSession = readStudentSessionCache();
       const loggedIn = !!(
         (authCard && authCard.classList.contains("hidden")) ||
-        String(currentStudentUsername || "").trim()
+        String(currentStudentUsername || "").trim() ||
+        (cachedSession && cachedSession.username)
       );
       if (!loggedIn) {
         showStudentLogin();
@@ -8550,6 +8589,20 @@
       }
       setHomeDashboardSection(normalizedTarget);
       closeNavOnMobile();
+    }
+
+    function applyRouteFromQuery() {
+      let requested = "";
+      try {
+        const params = new URLSearchParams(window.location.search);
+        requested = String(params.get("route") || "").trim().toLowerCase();
+      } catch (_) {
+        requested = "";
+      }
+      if (!requested) return;
+      const allowed = new Set(["portal", "niveau", "dtz", "lid", "speaking", "a2", "write", "dtz-hoeren", "dtz-lesen"]);
+      if (!allowed.has(requested)) return;
+      navigateToSection(requested);
     }
 
     function pickOne(items) {
@@ -10658,14 +10711,26 @@
           currentStudentUsername = String(payload.username || "");
           showStudentApp(label);
         } else {
+          const cached = readStudentSessionCache();
+          if (cached && cached.username) {
+            currentStudentUsername = cached.username;
+            showStudentApp(cached.label || cached.username);
+          } else {
+            currentStudentUsername = "";
+            showStudentLogin();
+            resetRoomView();
+          }
+        }
+      } catch (_) {
+        const cached = readStudentSessionCache();
+        if (cached && cached.username) {
+          currentStudentUsername = cached.username;
+          showStudentApp(cached.label || cached.username);
+        } else {
           currentStudentUsername = "";
           showStudentLogin();
           resetRoomView();
         }
-      } catch (_) {
-        currentStudentUsername = "";
-        showStudentLogin();
-        resetRoomView();
       }
     }
 
@@ -10705,6 +10770,7 @@
         await fetch("./api/student_logout.php", { method: "POST" });
       } finally {
         resetLetterWritingTimer();
+        clearStudentSessionCache();
         currentStudentUsername = "";
         currentRoom = null;
         stopRoomPolling();
@@ -11881,7 +11947,9 @@
     if (backToPortalFromA2Btn) backToPortalFromA2Btn.addEventListener("click", () => navigateToSection("portal"));
     renderHomeDashboard();
     removeArchivedBskFrontend();
-    checkStudentSession();
+    checkStudentSession().finally(() => {
+      applyRouteFromQuery();
+    });
   </script>
 </body>
 </html>
