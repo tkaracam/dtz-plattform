@@ -2867,9 +2867,7 @@
         <div id="heroHomeContent">
           <div class="level-bar">
             <button type="button" class="level-tile lid" id="levelLidBtn">LiD</button>
-            <button type="button" class="level-tile b1" id="levelHoerenBtn">Hören</button>
-            <button type="button" class="level-tile b1" id="levelLesenBtn">Lesen</button>
-            <button type="button" class="level-tile b1" id="levelSpeakingBtn">Sprechen</button>
+            <button type="button" class="level-tile b1" id="levelDtzBtn">DTZ</button>
             <button type="button" class="level-tile b1" id="levelA2Btn">A2</button>
             <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal</button>
           </div>
@@ -3362,6 +3360,16 @@
     </div>
           </div>
         </details>
+      </section>
+
+      <section id="dtzHubCard" class="card hidden">
+        <h2 class="section-title">DTZ Training</h2>
+        <p class="section-subtitle">Bitte Bereich auswählen: Hören, Lesen oder Sprechen.</p>
+        <div class="dtz-training-modules">
+          <button id="dtzHubHoerenBtn" type="button" class="dtz-module-btn">Hören</button>
+          <button id="dtzHubLesenBtn" type="button" class="dtz-module-btn">Lesen</button>
+          <button id="dtzHubSpeakingBtn" type="button" class="dtz-module-btn">Sprechen</button>
+        </div>
       </section>
 
       <section id="dtzTrainingCard" class="card hidden">
@@ -5122,7 +5130,7 @@
       return arr;
     }
 
-    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "dtzTrainingCard", "lidClassicCard"];
+    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
 
     function hideMainCards() {
       MAIN_CARDS.forEach(id => {
@@ -5165,6 +5173,7 @@
         room: "roomCard",
         simulation: "simulationCard",
         lid: "lidClassicCard",
+        dtz: "dtzHubCard",
         speaking: "speakingCard"
       };
       showCards(map[mode] ? [map[mode]] : []);
@@ -5235,6 +5244,10 @@
       setSpeakingTab(1);
     }
 
+    function openDtzHubView() {
+      setMainView("dtz");
+    }
+
     function openB1View() {
       showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
       updateHeroHomeVisibility("b1");
@@ -5249,11 +5262,20 @@
       initDtzTrainingUi();
     }
 
+    function openDtzTrainingOnlyView() {
+      showCards(["dtzTrainingCard"]);
+      updateHeroHomeVisibility("dtz");
+      setAccordionOpen("dtzHoerenAccordion", false);
+      setAccordionOpen("dtzLesenAccordion", false);
+      setDtzModuleButtonActive("");
+      initDtzTrainingUi();
+    }
+
     function openDtzModuleView(module) {
       const normalized = module === "lesen" ? "lesen" : "hoeren";
       const targetAccordion = normalized === "lesen" ? "dtzLesenAccordion" : "dtzHoerenAccordion";
 
-      openB1View();
+      openDtzTrainingOnlyView();
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
       // Her açılışta yeniden yükle: "boş state / stale state" sorunlarını önler.
@@ -7809,6 +7831,7 @@
     const QUICK_ACTIONS = [
       { key: "portal", label: "Portal öffnen", hint: "Hausaufgaben, Schreiben, Korrekturen", keywords: "portal hausaufgaben korrekturen", action: () => navigateToSection("portal") },
       { key: "write", label: "Schreiben öffnen", hint: "Mail schreiben und prüfen", keywords: "schreiben brief mail korrektur", action: () => navigateToSection("write") },
+      { key: "dtz", label: "DTZ öffnen", hint: "Hören, Lesen, Sprechen", keywords: "dtz hoeren lesen sprechen", action: () => navigateToSection("dtz") },
       { key: "speaking", label: "Sprechen öffnen", hint: "Sprechen Teil 1-3", keywords: "sprechen muendlich", action: () => navigateToSection("speaking") },
       { key: "lid", label: "LiD öffnen", hint: "Leben in Deutschland", keywords: "lid leben in deutschland", action: () => navigateToSection("lid") },
       { key: "hoeren", label: "DTZ Hören öffnen", hint: "Hören Training", keywords: "dtz hoeren b1", action: () => navigateToSection("dtz-hoeren") },
@@ -7926,6 +7949,8 @@
         openLidView();
       } else if (target === "speaking") {
         openSpeakingView();
+      } else if (target === "dtz") {
+        openDtzHubView();
       } else if (target === "b1") {
         openB1View();
       } else if (target === "dtz-hoeren") {
@@ -10637,12 +10662,14 @@
       window.location.href = "./admin.html";
     });
     document.getElementById("levelLidBtn").addEventListener("click", () => navigateToSection("lid"));
-    const levelHoerenBtn = document.getElementById("levelHoerenBtn");
-    if (levelHoerenBtn) levelHoerenBtn.addEventListener("click", () => navigateToSection("dtz-hoeren"));
-    const levelLesenBtn = document.getElementById("levelLesenBtn");
-    if (levelLesenBtn) levelLesenBtn.addEventListener("click", () => navigateToSection("dtz-lesen"));
-    const levelSpeakingBtn = document.getElementById("levelSpeakingBtn");
-    if (levelSpeakingBtn) levelSpeakingBtn.addEventListener("click", () => navigateToSection("speaking"));
+    const levelDtzBtn = document.getElementById("levelDtzBtn");
+    if (levelDtzBtn) levelDtzBtn.addEventListener("click", () => navigateToSection("dtz"));
+    const dtzHubHoerenBtn = document.getElementById("dtzHubHoerenBtn");
+    if (dtzHubHoerenBtn) dtzHubHoerenBtn.addEventListener("click", () => openDtzModuleView("hoeren"));
+    const dtzHubLesenBtn = document.getElementById("dtzHubLesenBtn");
+    if (dtzHubLesenBtn) dtzHubLesenBtn.addEventListener("click", () => openDtzModuleView("lesen"));
+    const dtzHubSpeakingBtn = document.getElementById("dtzHubSpeakingBtn");
+    if (dtzHubSpeakingBtn) dtzHubSpeakingBtn.addEventListener("click", () => openSpeakingView());
     const dtzHoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
     if (dtzHoerenOpenBtn) dtzHoerenOpenBtn.addEventListener("click", () => openDtzModuleView("hoeren"));
     const dtzLesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
