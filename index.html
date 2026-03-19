@@ -4984,6 +4984,106 @@
         task: "eine gemeinsame Planung für Ferienaktivitäten mit Kindern machen",
         plan: "das Ferienprogramm",
         points: ["Termine", "Angebote", "Kosten", "Anmeldung", "Begleitung"]
+      },
+      {
+        task: "einen Flohmarkt im Stadtteil organisieren",
+        plan: "den Flohmarkt",
+        points: ["Standplätze", "Anmeldung", "Werbung", "Aufbau", "Abrechnung"]
+      },
+      {
+        task: "einen digitalen Elternabend vorbereiten",
+        plan: "den Online-Elternabend",
+        points: ["Plattform", "Einladung", "Tagesordnung", "Moderation", "Protokoll"]
+      },
+      {
+        task: "eine gemeinsame Zugfahrt zu einem Konzert planen",
+        plan: "die Konzertfahrt",
+        points: ["Tickets", "Abfahrtszeit", "Treffpunkt", "Rückfahrt", "Kosten"]
+      },
+      {
+        task: "eine Fahrrad-Sicherheitsaktion für Kinder organisieren",
+        plan: "die Sicherheitsaktion",
+        points: ["Ort", "Übungen", "Material", "Helfer", "Zeitplan"]
+      },
+      {
+        task: "einen Workshop zur stressfreien Prüfungsvorbereitung planen",
+        plan: "den Workshop",
+        points: ["Themen", "Referent", "Uhrzeit", "Material", "Anmeldung"]
+      },
+      {
+        task: "eine gemeinsame Spendenaktion im Kurs vorbereiten",
+        plan: "die Spendenaktion",
+        points: ["Ziel", "Sammelzeit", "Kommunikation", "Abgabe", "Dokumentation"]
+      },
+      {
+        task: "einen Familienausflug ins Naturmuseum organisieren",
+        plan: "den Museumsausflug",
+        points: ["Termin", "Tickets", "Anfahrt", "Programm", "Rückkehr"]
+      },
+      {
+        task: "einen Fahrradverleih-Ausflug für die Gruppe planen",
+        plan: "den Verleih-Ausflug",
+        points: ["Reservierung", "Strecke", "Sicherheit", "Pausen", "Kosten"]
+      },
+      {
+        task: "eine offene Fragerunde mit einer Beratungsstelle vorbereiten",
+        plan: "die Fragerunde",
+        points: ["Themen", "Einladung", "Raum", "Ablauf", "Nachbereitung"]
+      },
+      {
+        task: "einen Spielenachmittag für Familien im Kursraum organisieren",
+        plan: "den Spielenachmittag",
+        points: ["Spiele", "Gruppen", "Snacks", "Uhrzeit", "Aufräumen"]
+      },
+      {
+        task: "einen Besuch im Stadtarchiv gemeinsam planen",
+        plan: "den Archivbesuch",
+        points: ["Termin", "Führung", "Fragen", "Material", "Rückfahrt"]
+      },
+      {
+        task: "eine Lernnacht vor der Prüfung vorbereiten",
+        plan: "die Lernnacht",
+        points: ["Zeitplan", "Themenblöcke", "Pausen", "Verpflegung", "Regeln"]
+      },
+      {
+        task: "eine gemeinsame Besichtigung eines Ausbildungsbetriebs planen",
+        plan: "die Betriebsbesichtigung",
+        points: ["Kontakt", "Termin", "Fragen", "Anfahrt", "Feedback"]
+      },
+      {
+        task: "einen Informationstag zu Ehrenamt im Stadtteil organisieren",
+        plan: "den Informationstag",
+        points: ["Organisationen", "Programm", "Flyer", "Moderation", "Anmeldung"]
+      },
+      {
+        task: "eine interkulturelle Kochrunde mit Nachbarn vorbereiten",
+        plan: "die Kochrunde",
+        points: ["Gerichte", "Einkauf", "Küche", "Zeiten", "Aufgaben"]
+      },
+      {
+        task: "einen Umwelttag im Wohnviertel planen",
+        plan: "den Umwelttag",
+        points: ["Aktionen", "Treffpunkt", "Material", "Helfer", "Dokumentation"]
+      },
+      {
+        task: "eine gemeinsame Vorbereitung auf den Behördensprachtest organisieren",
+        plan: "die Testvorbereitung",
+        points: ["Themen", "Übungen", "Zeitfenster", "Material", "Feedback"]
+      },
+      {
+        task: "eine kleine Kulturwoche im Kurs planen",
+        plan: "die Kulturwoche",
+        points: ["Programmtage", "Räume", "Material", "Mitwirkende", "Ablauf"]
+      },
+      {
+        task: "einen Ausflug zum Berufskolleg für Interessierte vorbereiten",
+        plan: "den Berufskolleg-Ausflug",
+        points: ["Teilnehmende", "Anmeldung", "Hin- und Rückfahrt", "Fragen", "Nachbereitung"]
+      },
+      {
+        task: "eine gemeinsame Präsentationsübung für die Gruppe organisieren",
+        plan: "die Präsentationsübung",
+        points: ["Themenvergabe", "Zeit pro Person", "Feedback", "Material", "Moderation"]
       }
     ];
 
@@ -8402,6 +8502,55 @@
       return items[Math.floor(Math.random() * items.length)];
     }
 
+    function pickSpeakingPart3Topic() {
+      const items = Array.isArray(SPEAKING_PART3_TOPICS) ? SPEAKING_PART3_TOPICS : [];
+      if (!items.length) return null;
+      const HISTORY_KEY = "dtz_speaking_part3_history_v1";
+      const LAST_KEY = "dtz_speaking_part3_last_v1";
+      const idOf = (item) => String(item && item.task ? item.task : "").trim().toLowerCase();
+
+      let history = [];
+      try {
+        const raw = window.localStorage.getItem(HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        history = Array.isArray(parsed) ? parsed.map(v => String(v || "")).filter(Boolean).slice(-30) : [];
+      } catch (_) {
+        history = [];
+      }
+      let lastId = "";
+      try {
+        lastId = String(window.localStorage.getItem(LAST_KEY) || "").trim().toLowerCase();
+      } catch (_) {
+        lastId = "";
+      }
+
+      const ranked = items
+        .map(item => ({ item, id: idOf(item) }))
+        .filter(row => row.id)
+        .sort((a, b) => {
+          const aIdx = history.lastIndexOf(a.id);
+          const bIdx = history.lastIndexOf(b.id);
+          const aPenalty = (a.id === lastId ? 1000 : 0) + (aIdx >= 0 ? (history.length - aIdx) : 0);
+          const bPenalty = (b.id === lastId ? 1000 : 0) + (bIdx >= 0 ? (history.length - bIdx) : 0);
+          if (aPenalty !== bPenalty) return aPenalty - bPenalty;
+          return Math.random() < 0.5 ? -1 : 1;
+        });
+
+      const picked = ranked[0] ? ranked[0] : null;
+      if (!picked) return items[Math.floor(Math.random() * items.length)];
+
+      const nextHistory = history.filter(id => id !== picked.id);
+      nextHistory.push(picked.id);
+      while (nextHistory.length > 30) nextHistory.shift();
+      try {
+        window.localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+        window.localStorage.setItem(LAST_KEY, picked.id);
+      } catch (_) {
+        // ignore storage errors
+      }
+      return picked.item;
+    }
+
     function setList(nodeId, items) {
       const node = document.getElementById(nodeId);
       node.innerHTML = "";
@@ -8527,7 +8676,7 @@
       currentSpeakingSet = {
         part1: SPEAKING_PART1_FIXED,
         part2: pickOne(SPEAKING_PART2_TOPICS),
-        part3: pickOne(SPEAKING_PART3_TOPICS)
+        part3: pickSpeakingPart3Topic() || pickOne(SPEAKING_PART3_TOPICS)
       };
 
       document.getElementById("speakPart1Lead").textContent = currentSpeakingSet.part1.lead;
