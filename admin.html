@@ -2673,7 +2673,7 @@
               <summary>Kurs-Hausaufgaben</summary>
               <div class="fold-section-content">
                 <div>
-                  <label for="kursHwTaskTemplate">Mail-Aufgabe auswählen</label>
+                  <label for="kursHwTaskTemplate">Aufgabenvorlage auswählen</label>
                   <select id="kursHwTaskTemplate">
                     <option value="">Bitte Aufgabe wählen</option>
                   </select>
@@ -2748,7 +2748,7 @@
         <div id="paneHomeworks" class="admin-pane">
         <div id="homeworksSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Hausaufgaben</h2>
-          <p class="section-subtitle">Mail-Aufgabe auswählen, Kurs/Gruppe oder ausgewählten Teilnehmenden zuweisen und Fortschritt verfolgen.</p>
+          <p class="section-subtitle">Aufgabenvorlage auswählen, Kurs/Gruppe oder ausgewählten Teilnehmenden zuweisen und Fortschritt verfolgen.</p>
         </div>
 
         <div id="homeworksAssignSection" class="bulk-wrap">
@@ -2761,7 +2761,7 @@
                 <span class="docent-flow-step">3. Starten & veröffentlichen</span>
               </div>
               <div>
-                <label for="hwTaskTemplate">Mail-Aufgabe auswählen</label>
+                <label for="hwTaskTemplate">Aufgabenvorlage auswählen</label>
                 <select id="hwTaskTemplate">
                   <option value="">Bitte Aufgabe wählen</option>
                 </select>
@@ -2826,7 +2826,7 @@
         </div>
 
         <div id="homeworksListSection" class="bulk-wrap">
-          <h3 class="section-title" style="font-size: 1.2rem;">Mail-Aufgaben</h3>
+          <h3 class="section-title" style="font-size: 1.2rem;">Aufgaben</h3>
           <details id="homeworksListDetails" class="fold-section">
             <summary>Zugewiesene Aufgaben</summary>
             <div class="fold-section-content">
@@ -5823,7 +5823,7 @@
       const durationUnit = String(document.getElementById("kursHwDurationUnit")?.value || "minutes");
       const startsAtRaw = String(document.getElementById("kursHwStartsAt")?.value || "").trim();
       if (!selectedTemplate || !title || !description) {
-        setBox("kursHomeworkStatus", "error", "Bitte zuerst eine Mail-Aufgabe auswählen.");
+        setBox("kursHomeworkStatus", "error", "Bitte zuerst eine Aufgabenvorlage auswählen.");
         return;
       }
       let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
@@ -7476,7 +7476,7 @@
       const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
 
       if (!selectedTemplate || !title || !description) {
-        setBox("homeworkStatus", "error", "Bitte zuerst eine Mail-Aufgabe auswählen.");
+        setBox("homeworkStatus", "error", "Bitte zuerst eine Aufgabenvorlage auswählen.");
         return;
       }
 
