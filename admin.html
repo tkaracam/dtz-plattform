@@ -2768,22 +2768,37 @@
                 <span class="docent-flow-step">3. Starten & veröffentlichen</span>
               </div>
               <div>
-                <label for="hwTaskCategory">Kategorie</label>
-                <select id="hwTaskCategory">
-                  <option value="hoeren" selected>Hören</option>
-                  <option value="lesen">Lesen</option>
-                  <option value="mail">Mail-Aufgabe</option>
-                </select>
-              </div>
-              <div>
-                <label for="hwTaskTemplate">Aufgabenvorlage auswählen</label>
-                <select id="hwTaskTemplate">
+                <label for="hwTaskTemplateHoeren"><strong>Hören</strong> · Aufgabe zuweisen</label>
+                <select id="hwTaskTemplateHoeren">
                   <option value="">Bitte Aufgabe wählen</option>
                 </select>
+                <label for="hwTaskPreviewHoeren" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
+                <textarea id="hwTaskPreviewHoeren" rows="5"></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="createHomeworkHoerenBtn" type="button">Hören zuweisen</button>
+                </div>
               </div>
               <div>
-                <label for="hwTaskPreview">Aufgabenstellung (bearbeitbar)</label>
-                <textarea id="hwTaskPreview" rows="6"></textarea>
+                <label for="hwTaskTemplateLesen"><strong>Lesen</strong> · Aufgabe zuweisen</label>
+                <select id="hwTaskTemplateLesen">
+                  <option value="">Bitte Aufgabe wählen</option>
+                </select>
+                <label for="hwTaskPreviewLesen" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
+                <textarea id="hwTaskPreviewLesen" rows="5"></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="createHomeworkLesenBtn" type="button">Lesen zuweisen</button>
+                </div>
+              </div>
+              <div>
+                <label for="hwTaskTemplateMail"><strong>Mail-Aufgabe</strong> · Aufgabe zuweisen</label>
+                <select id="hwTaskTemplateMail">
+                  <option value="">Bitte Aufgabe wählen</option>
+                </select>
+                <label for="hwTaskPreviewMail" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
+                <textarea id="hwTaskPreviewMail" rows="5"></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="createHomeworkMailBtn" type="button">Mail-Aufgabe zuweisen</button>
+                </div>
               </div>
               <div id="hwCourseWrap">
                 <label for="hwCourseId">Kurs / Gruppe auswählen</label>
@@ -2831,9 +2846,6 @@
                   </div>
                 </div>
               </details>
-              <div class="actions">
-                <button id="createHomeworkBtn" type="button">Veröffentlichen / Speichern</button>
-              </div>
               <div id="homeworkStatus" class="hidden"></div>
             </div>
           </details>
@@ -6143,34 +6155,41 @@
     }
 
     function persistHomeworkQuickDefaults() {
-      const category = String(document.getElementById("hwTaskCategory")?.value || "hoeren").trim().toLowerCase();
-      const template = String(document.getElementById("hwTaskTemplate")?.value || "").trim();
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
       const durationValue = String(document.getElementById("hwDurationValue")?.value || "").trim();
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes").trim();
-      setStoredPreference(ADMIN_HW_CATEGORY_KEY, category || "hoeren");
-      setStoredPreference(ADMIN_HW_TEMPLATE_KEY, template || null);
+      const templateHoeren = String(document.getElementById("hwTaskTemplateHoeren")?.value || "").trim();
+      const templateLesen = String(document.getElementById("hwTaskTemplateLesen")?.value || "").trim();
+      const templateMail = String(document.getElementById("hwTaskTemplateMail")?.value || "").trim();
+      setStoredPreference("admin_hw_template_hoeren", templateHoeren || null);
+      setStoredPreference("admin_hw_template_lesen", templateLesen || null);
+      setStoredPreference("admin_hw_template_mail", templateMail || null);
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
       setStoredPreference(ADMIN_HW_DURATION_UNIT_KEY, durationUnit || null);
     }
 
     function restoreHomeworkQuickDefaults() {
-      const category = getStoredPreference(ADMIN_HW_CATEGORY_KEY) || "hoeren";
-      const template = getStoredPreference(ADMIN_HW_TEMPLATE_KEY);
+      const templateHoeren = getStoredPreference("admin_hw_template_hoeren");
+      const templateLesen = getStoredPreference("admin_hw_template_lesen");
+      const templateMail = getStoredPreference("admin_hw_template_mail");
       const courseId = getStoredPreference(ADMIN_HW_COURSE_KEY);
       const durationValue = getStoredPreference(ADMIN_HW_DURATION_VALUE_KEY);
       const durationUnit = getStoredPreference(ADMIN_HW_DURATION_UNIT_KEY);
 
-      const categorySelect = document.getElementById("hwTaskCategory");
-      if (categorySelect && (category === "mail" || category === "hoeren" || category === "lesen")) {
-        categorySelect.value = category;
-      }
-      renderHomeworkTemplateOptions();
+      renderAllHomeworkTemplateOptions();
 
-      const templateSelect = document.getElementById("hwTaskTemplate");
-      if (templateSelect && template && Array.from(templateSelect.options).some(o => o.value === template)) {
-        templateSelect.value = template;
+      const hoerenSelect = document.getElementById("hwTaskTemplateHoeren");
+      const lesenSelect = document.getElementById("hwTaskTemplateLesen");
+      const mailSelect = document.getElementById("hwTaskTemplateMail");
+      if (hoerenSelect && templateHoeren && Array.from(hoerenSelect.options).some(o => o.value === templateHoeren)) {
+        hoerenSelect.value = templateHoeren;
+      }
+      if (lesenSelect && templateLesen && Array.from(lesenSelect.options).some(o => o.value === templateLesen)) {
+        lesenSelect.value = templateLesen;
+      }
+      if (mailSelect && templateMail && Array.from(mailSelect.options).some(o => o.value === templateMail)) {
+        mailSelect.value = templateMail;
       }
 
       const courseSelect = document.getElementById("hwCourseId");
@@ -6189,7 +6208,9 @@
         unitSelect.value = durationUnit;
       }
 
-      updateHomeworkTemplatePreview();
+      updateHomeworkTemplatePreview("hoeren");
+      updateHomeworkTemplatePreview("lesen");
+      updateHomeworkTemplatePreview("mail");
     }
 
     function getHomeworkTemplateCategory(template) {
@@ -6215,38 +6236,57 @@
       return [prompt, ...pointLines].filter(Boolean).join("\n");
     }
 
-    function getSelectedHomeworkTemplate() {
-      const select = document.getElementById("hwTaskTemplate");
+    function homeworkTemplateSelectIdByCategory(category) {
+      const key = String(category || "").toLowerCase();
+      if (key === "lesen") return "hwTaskTemplateLesen";
+      if (key === "mail") return "hwTaskTemplateMail";
+      return "hwTaskTemplateHoeren";
+    }
+
+    function homeworkTemplatePreviewIdByCategory(category) {
+      const key = String(category || "").toLowerCase();
+      if (key === "lesen") return "hwTaskPreviewLesen";
+      if (key === "mail") return "hwTaskPreviewMail";
+      return "hwTaskPreviewHoeren";
+    }
+
+    function getSelectedHomeworkTemplate(category = "hoeren") {
+      const select = document.getElementById(homeworkTemplateSelectIdByCategory(category));
       const templateId = String(select?.value || "").trim();
       if (!templateId) return null;
       return HOMEWORK_MAIL_TEMPLATES.find(item => String(item.id || "") === templateId) || null;
     }
 
-    function updateHomeworkTemplatePreview() {
-      const preview = document.getElementById("hwTaskPreview");
+    function updateHomeworkTemplatePreview(category = "hoeren") {
+      const preview = document.getElementById(homeworkTemplatePreviewIdByCategory(category));
       if (!preview) return;
-      const selected = getSelectedHomeworkTemplate();
+      const selected = getSelectedHomeworkTemplate(category);
       preview.value = selected ? buildHomeworkTemplateDescription(selected) : "";
     }
 
-    function renderHomeworkTemplateOptions() {
-      const select = document.getElementById("hwTaskTemplate");
+    function renderHomeworkTemplateOptions(category = "hoeren") {
+      const select = document.getElementById(homeworkTemplateSelectIdByCategory(category));
       if (!select) return;
-      const category = String(document.getElementById("hwTaskCategory")?.value || "hoeren").toLowerCase();
       const currentValue = String(select.value || "");
       const options = ['<option value="">Bitte Aufgabe wählen</option>'];
       HOMEWORK_MAIL_TEMPLATES
-        .filter(template => getHomeworkTemplateCategory(template) === category)
+        .filter(template => getHomeworkTemplateCategory(template) === String(category || "").toLowerCase())
         .forEach((template, idx) => {
         const id = String(template.id || `task-${idx + 1}`);
         const title = String(template.title || `Aufgabe ${idx + 1}`);
         options.push(`<option value="${escapeHtml(id)}">${escapeHtml(`${idx + 1}. ${title}`)}</option>`);
       });
       select.innerHTML = options.join("");
-      if (currentValue && HOMEWORK_MAIL_TEMPLATES.some(item => String(item.id || "") === currentValue && getHomeworkTemplateCategory(item) === category)) {
+      if (currentValue && HOMEWORK_MAIL_TEMPLATES.some(item => String(item.id || "") === currentValue && getHomeworkTemplateCategory(item) === String(category || "").toLowerCase())) {
         select.value = currentValue;
       }
-      updateHomeworkTemplatePreview();
+      updateHomeworkTemplatePreview(category);
+    }
+
+    function renderAllHomeworkTemplateOptions() {
+      renderHomeworkTemplateOptions("hoeren");
+      renderHomeworkTemplateOptions("lesen");
+      renderHomeworkTemplateOptions("mail");
     }
 
     function normalizeHomeworkReminderLevel(level) {
@@ -7499,11 +7539,12 @@
       }
     }
 
-    async function createHomeworkAssignment() {
+    async function createHomeworkAssignment(category = "hoeren") {
       clearBox("homeworkStatus");
-      const selectedTemplate = getSelectedHomeworkTemplate();
+      const safeCategory = String(category || "hoeren").toLowerCase();
+      const selectedTemplate = getSelectedHomeworkTemplate(safeCategory);
       const title = String(selectedTemplate?.title || "").trim();
-      const customDescription = String(document.getElementById("hwTaskPreview")?.value || "").trim();
+      const customDescription = String(document.getElementById(homeworkTemplatePreviewIdByCategory(safeCategory))?.value || "").trim();
       const description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
       const attachment = "";
       const targetType = String(document.getElementById("hwTargetType")?.value || "course");
@@ -7562,9 +7603,9 @@
         });
         persistHomeworkQuickDefaults();
         setBox("homeworkStatus", "ok", `Aufgabe gespeichert. Zugewiesen: ${payload.target_count || 0}`);
-        const templateSelect = document.getElementById("hwTaskTemplate");
+        const templateSelect = document.getElementById(homeworkTemplateSelectIdByCategory(safeCategory));
         if (templateSelect) templateSelect.value = "";
-        updateHomeworkTemplatePreview();
+        updateHomeworkTemplatePreview(safeCategory);
         document.getElementById("hwStartsAt").value = "";
         Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
         listHomeworkAssignments();
@@ -9901,7 +9942,9 @@
       }
       setCourseActive(selectedCourseId, false);
     });
-    document.getElementById("createHomeworkBtn").addEventListener("click", createHomeworkAssignment);
+    document.getElementById("createHomeworkHoerenBtn").addEventListener("click", () => createHomeworkAssignment("hoeren"));
+    document.getElementById("createHomeworkLesenBtn").addEventListener("click", () => createHomeworkAssignment("lesen"));
+    document.getElementById("createHomeworkMailBtn").addEventListener("click", () => createHomeworkAssignment("mail"));
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
@@ -9929,12 +9972,16 @@
       syncHomeworkTargetVisibility();
       persistHomeworkQuickDefaults();
     });
-    document.getElementById("hwTaskCategory").addEventListener("change", () => {
-      renderHomeworkTemplateOptions();
+    document.getElementById("hwTaskTemplateHoeren").addEventListener("change", () => {
+      updateHomeworkTemplatePreview("hoeren");
       persistHomeworkQuickDefaults();
     });
-    document.getElementById("hwTaskTemplate").addEventListener("change", () => {
-      updateHomeworkTemplatePreview();
+    document.getElementById("hwTaskTemplateLesen").addEventListener("change", () => {
+      updateHomeworkTemplatePreview("lesen");
+      persistHomeworkQuickDefaults();
+    });
+    document.getElementById("hwTaskTemplateMail").addEventListener("change", () => {
+      updateHomeworkTemplatePreview("mail");
       persistHomeworkQuickDefaults();
     });
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
@@ -10178,7 +10225,7 @@
     ensureResponsiveTableObserver();
     initProgressDateRangeDefaults();
     updateKursProgressRiskButton();
-    renderHomeworkTemplateOptions();
+    renderAllHomeworkTemplateOptions();
     restoreHomeworkQuickDefaults();
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
