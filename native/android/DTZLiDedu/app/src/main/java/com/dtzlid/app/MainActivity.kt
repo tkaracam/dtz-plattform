@@ -127,6 +127,8 @@ private const val WEB_KEEP_SCREEN_ON = "keep_screen_on"
 private const val WEB_DATA_SAVER = "data_saver"
 private const val WEB_TEXT_AUTOSIZE = "text_autosize"
 private const val WEB_MEDIA_AUTOPLAY = "media_autoplay"
+private const val WEB_READER_MODE = "reader_mode"
+private const val WEB_REDUCE_MOTION = "reduce_motion"
 private const val WEB_RECENT_PAGES = "recent_pages"
 private const val WEB_SCROLL_POSITIONS = "scroll_positions"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
@@ -357,6 +359,8 @@ fun WebAppScreen() {
     var dataSaver by remember { mutableStateOf(webPrefs.getBoolean(WEB_DATA_SAVER, false)) }
     var textAutosize by remember { mutableStateOf(webPrefs.getBoolean(WEB_TEXT_AUTOSIZE, true)) }
     var mediaAutoplay by remember { mutableStateOf(webPrefs.getBoolean(WEB_MEDIA_AUTOPLAY, true)) }
+    var readerMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_READER_MODE, false)) }
+    var reduceMotion by remember { mutableStateOf(webPrefs.getBoolean(WEB_REDUCE_MOTION, false)) }
     val pageScrollMap = remember { loadScrollPositions(webPrefs).toMutableMap() }
     val recentPages = remember { loadRecentPages(webPrefs).toMutableStateList() }
     val favorites = remember {
@@ -490,6 +494,34 @@ fun WebAppScreen() {
             val words = raw.filter { it.isDigit() }.toIntOrNull() ?: 0
             estimatedReadMinutes = if (words <= 0) 0 else maxOf(1, Math.ceil(words / 180.0).toInt())
         }
+    }
+
+    fun applyWebContentStyles(view: WebView?) {
+        val safeView = view ?: return
+        val readerCss = if (readerMode) {
+            "html,body{max-width:920px!important;margin:0 auto!important;line-height:1.75!important;padding-left:12px!important;padding-right:12px!important;}p,li{font-size:1.04em!important;}"
+        } else {
+            ""
+        }
+        val motionCss = if (reduceMotion) {
+            "*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}"
+        } else {
+            ""
+        }
+        val style = (readerCss + motionCss).replace("\\", "\\\\").replace("'", "\\'")
+        val js = """
+            (function(){
+              var id='dtz-runtime-style';
+              var node=document.getElementById(id);
+              if(!node){
+                node=document.createElement('style');
+                node.id=id;
+                document.head.appendChild(node);
+              }
+              node.textContent='$style';
+            })();
+        """.trimIndent()
+        safeView.evaluateJavascript(js, null)
     }
 
     LaunchedEffect(Unit) {
@@ -1129,6 +1161,7 @@ fun WebAppScreen() {
                                 }
                                 rememberCurrentScroll(view)
                                 persistScrollPositions(webPrefs, pageScrollMap)
+                                applyWebContentStyles(view)
                                 refreshReadingStats(view)
                                 scope.launch {
                                     Api.syncFcmTokenWithCurrentSession(context)
@@ -1156,6 +1189,7 @@ fun WebAppScreen() {
                         val maxScroll = (view.contentHeight - viewport).coerceAtLeast(1)
                         pageScrollPercent = ((view.scrollY * 100f) / maxScroll).toInt().coerceIn(0, 100)
                         applyRuntimeWebPreferences(view)
+                        applyWebContentStyles(view)
                     }
                 )
             }
@@ -1503,6 +1537,42 @@ fun WebAppScreen() {
                                 dataSaver = checked
                                 webPrefs.edit().putBoolean(WEB_DATA_SAVER, checked).apply()
                                 webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
+                            }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Reader Mode", fontWeight = FontWeight.SemiBold)
+                            Text("Metin odaklı sade ve rahat okuma görünümü.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = readerMode,
+                            onCheckedChange = { checked ->
+                                readerMode = checked
+                                webPrefs.edit().putBoolean(WEB_READER_MODE, checked).apply()
+                                applyWebContentStyles(webViewRef)
+                            }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Hareketi Azalt", fontWeight = FontWeight.SemiBold)
+                            Text("Animasyon ve geçişleri kısarak daha stabil görünüm sağlar.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = reduceMotion,
+                            onCheckedChange = { checked ->
+                                reduceMotion = checked
+                                webPrefs.edit().putBoolean(WEB_REDUCE_MOTION, checked).apply()
+                                applyWebContentStyles(webViewRef)
                             }
                         )
                     }
