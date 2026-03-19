@@ -7980,6 +7980,7 @@
       const maxPoints = total * 2;
       state.evaluated = true;
       registerHomePractice(module === "lesen" ? "dtz-lesen" : "dtz-hoeren", correct, total);
+      void submitAssignedDtzResult(module, state.teil, { total, correct, unanswered, points, maxPoints });
       const isPartial = module === "hoeren" && unanswered > 0;
 
       if (ui.summary) {
@@ -9339,6 +9340,50 @@
       if (!currentAssignedHomework || !currentAssignedHomeworkState) return null;
       if (currentAssignedHomeworkState.submitted_at) return null;
       return resolveAssignedDtzRequirement();
+    }
+
+    async function submitAssignedDtzResult(module, teil, stats) {
+      const requirement = getActiveAssignedDtzRequirement();
+      if (!requirement) return;
+      if (requirement.module !== module || Number(requirement.teil) !== Number(teil)) return;
+
+      const assignmentId = String((currentAssignedHomework && currentAssignedHomework.id) || "").trim();
+      if (!assignmentId) return;
+
+      const total = Math.max(0, Number(stats.total || 0));
+      const correct = Math.max(0, Number(stats.correct || 0));
+      const unanswered = Math.max(0, Number(stats.unanswered || 0));
+      const wrong = Math.max(0, total - correct - unanswered);
+      if (total <= 0) return;
+
+      try {
+        const response = await fetch("./api/student_homework_result.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assignment_id: assignmentId,
+            module: module === "lesen" ? "lesen" : "hoeren",
+            teil: Number(teil || 0),
+            correct,
+            wrong,
+            unanswered,
+            total,
+            points: Math.max(0, Number(stats.points || 0)),
+            max_points: Math.max(0, Number(stats.maxPoints || 0))
+          })
+        });
+        const result = await parseJsonOrThrow(response, "DTZ-Ergebnis konnte nicht gespeichert werden");
+        if (result && result.submitted) {
+          await loadCurrentAssignedHomework();
+          await loadStudentPortal();
+          setDtzModuleStatus(module, "ok", "Aufgabe gespeichert und abgegeben.");
+        } else {
+          setDtzModuleStatus(module, "ok", "Zwischenstand gespeichert.");
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setDtzModuleStatus(module, "error", `Speichern fehlgeschlagen: ${message}`);
+      }
     }
 
     function resolveHoerenTeilRequirement() {

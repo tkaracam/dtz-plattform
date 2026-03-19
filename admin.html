@@ -6574,6 +6574,7 @@
                 <button type="button" data-hw-toggle="${escapeHtml(assignmentId)}" data-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
                   ${toggleText}
                 </button>
+                <button type="button" data-hw-analysis="${escapeHtml(assignmentId)}" class="ghost-btn">Analyse</button>
                 <button type="button" data-hw-delete="${escapeHtml(assignmentId)}" class="danger-btn">Löschen</button>
               </div>
             </td>
@@ -6623,6 +6624,10 @@
       wrap.querySelectorAll("button[data-hw-delete]").forEach(btn => {
         const id = String(btn.getAttribute("data-hw-delete") || "");
         btn.addEventListener("click", () => deleteHomeworkAssignment(id));
+      });
+      wrap.querySelectorAll("button[data-hw-analysis]").forEach(btn => {
+        const id = String(btn.getAttribute("data-hw-analysis") || "");
+        btn.addEventListener("click", () => openHomeworkAssignmentAnalysisReport(id));
       });
       applyResponsiveTableLabels(wrap);
     }
@@ -6697,6 +6702,110 @@
       }
 
       throw new Error(errors.join(" | "));
+    }
+
+    async function fetchHomeworkAssignmentAnalysis(assignmentId) {
+      const candidates = [
+        "./api/homework_assignment_analysis.php",
+        "/api/homework_assignment_analysis.php",
+        `${window.location.origin}/api/homework_assignment_analysis.php`
+      ];
+      const errors = [];
+      const body = JSON.stringify({ assignment_id: String(assignmentId || "") });
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          return payload;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${url}: ${msg}`);
+        }
+      }
+      throw new Error(errors.join(" | "));
+    }
+
+    function formatAnalysisDuration(seconds) {
+      const safe = Math.max(0, Number(seconds || 0));
+      if (!safe) return "-";
+      if (safe < 60) return `${Math.round(safe)}s`;
+      const mins = Math.floor(safe / 60);
+      const secs = Math.floor(safe % 60);
+      if (mins < 60) return secs ? `${mins}m ${secs}s` : `${mins}m`;
+      const hours = Math.floor(mins / 60);
+      const restMins = mins % 60;
+      return restMins ? `${hours}h ${restMins}m` : `${hours}h`;
+    }
+
+    async function openHomeworkAssignmentAnalysisReport(assignmentId) {
+      if (!assignmentId) return;
+      clearBox("homeworkStatus");
+      clearBox("kursHomeworkStatus");
+      try {
+        const payload = await fetchHomeworkAssignmentAnalysis(assignmentId);
+        const assignment = payload.assignment || {};
+        const summary = payload.summary || {};
+        const students = Array.isArray(payload.students) ? payload.students : [];
+        const title = String(assignment.title || assignmentId || "Aufgabenanalyse");
+        const summaryHtml = `
+          <p><strong>Aufgabe:</strong> ${escapeHtml(title)} (${escapeHtml(String(assignment.id || "-"))})</p>
+          <p><strong>Zugewiesen:</strong> ${escapeHtml(String(summary.assigned_total ?? 0))} · <strong>Gestartet:</strong> ${escapeHtml(String(summary.started_total ?? 0))} · <strong>Abgegeben:</strong> ${escapeHtml(String(summary.submitted_total ?? 0))}</p>
+          <p><strong>Versuche:</strong> ${escapeHtml(String(summary.attempted_total ?? 0))} · <strong>Ø Genauigkeit:</strong> ${summary.avg_accuracy_percent == null ? "-" : `${escapeHtml(String(summary.avg_accuracy_percent))}%`} · <strong>Ø Zeit:</strong> ${summary.avg_elapsed_seconds == null ? "-" : escapeHtml(formatAnalysisDuration(summary.avg_elapsed_seconds))}</p>
+          <p><strong>Pünktlich:</strong> ${escapeHtml(String(summary.ontime_total ?? 0))} · <strong>Verspätet:</strong> ${escapeHtml(String(summary.late_total ?? 0))}</p>
+        `;
+        const tableHtml = students.length ? `
+          <table style="margin-top:12px;">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Benutzername</th>
+                <th>Richtig</th>
+                <th>Falsch</th>
+                <th>Offen</th>
+                <th>Gesamt</th>
+                <th>Quote</th>
+                <th>Zeit</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${students.map(row => {
+                const name = String(row.student_name || "").trim() || String(row.student_username || "-");
+                const submitted = String(row.submitted_at || "").trim() !== "";
+                const status = submitted ? "Abgegeben" : (String(row.started_at || "").trim() ? "Gestartet" : "Offen");
+                return `
+                  <tr>
+                    <td>${escapeHtml(name)}</td>
+                    <td class="mono">${escapeHtml(String(row.student_username || "-"))}</td>
+                    <td class="mono">${row.correct == null ? "-" : escapeHtml(String(row.correct))}</td>
+                    <td class="mono">${row.wrong == null ? "-" : escapeHtml(String(row.wrong))}</td>
+                    <td class="mono">${row.unanswered == null ? "-" : escapeHtml(String(row.unanswered))}</td>
+                    <td class="mono">${row.total == null ? "-" : escapeHtml(String(row.total))}</td>
+                    <td class="mono">${row.accuracy_percent == null ? "-" : `${escapeHtml(String(row.accuracy_percent))}%`}</td>
+                    <td class="mono">${row.elapsed_seconds == null ? "-" : escapeHtml(formatAnalysisDuration(row.elapsed_seconds))}</td>
+                    <td>${escapeHtml(status)}</td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        ` : "<p>Keine Teilnehmerdaten verfügbar.</p>";
+
+        const win = window.open("", "_blank", "noopener,noreferrer,width=1120,height=760");
+        if (!win) throw new Error("Analysefenster konnte nicht geöffnet werden.");
+        win.document.open();
+        win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Aufgabenanalyse</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:18px;color:#1d3557}table{width:100%;border-collapse:collapse}th,td{border:1px solid #d2deea;padding:8px;font-size:13px;text-align:left}th{background:#f2f7fc}.mono{font-family:'SF Mono',Menlo,Consolas,monospace}.muted{color:#4f5f75}</style></head><body><h2 style="margin-top:0;">Aufgabenanalyse</h2>${summaryHtml}${tableHtml}<p class="muted" style="margin-top:12px;">Erstellt: ${escapeHtml(formatDisplayDateTime(new Date().toISOString()))}</p></body></html>`);
+        win.document.close();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", `Analyse konnte nicht geladen werden: ${message}`);
+        setBox("kursHomeworkStatus", "error", `Analyse konnte nicht geladen werden: ${message}`);
+      }
     }
 
     function getTrainingSetRequestOptions(module, teil = 0) {
@@ -7531,6 +7640,7 @@
                 <button type="button" data-kurs-hw-toggle="${escapeHtml(assignmentId)}" data-kurs-hw-active="${active ? "1" : "0"}" class="${active ? "ghost-btn" : ""}">
                   ${toggleText}
                 </button>
+                <button type="button" data-kurs-hw-analysis="${escapeHtml(assignmentId)}" class="ghost-btn">Analyse</button>
                 <button type="button" data-kurs-hw-delete="${escapeHtml(assignmentId)}" class="danger-btn">Löschen</button>
               </div>
             </td>
@@ -7573,6 +7683,10 @@
       wrap.querySelectorAll("button[data-kurs-hw-delete]").forEach(btn => {
         const id = String(btn.getAttribute("data-kurs-hw-delete") || "");
         btn.addEventListener("click", () => deleteHomeworkAssignment(id, { statusBoxId: "kursHomeworkStatus", refresh: refreshAllHomeworkLists }));
+      });
+      wrap.querySelectorAll("button[data-kurs-hw-analysis]").forEach(btn => {
+        const id = String(btn.getAttribute("data-kurs-hw-analysis") || "");
+        btn.addEventListener("click", () => openHomeworkAssignmentAnalysisReport(id));
       });
       applyResponsiveTableLabels(wrap);
     }
