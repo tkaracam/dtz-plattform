@@ -2800,6 +2800,17 @@
                   <button id="createHomeworkMailBtn" type="button">Mail-Aufgabe zuweisen</button>
                 </div>
               </div>
+              <div>
+                <label for="hwTaskTemplateMock"><strong>DTZ Mock-Prüfung (Komplett)</strong> · Aufgabe zuweisen</label>
+                <select id="hwTaskTemplateMock">
+                  <option value="">Bitte Aufgabe wählen</option>
+                </select>
+                <label for="hwTaskPreviewMock" style="margin-top:8px;">Aufgabenstellung (bearbeitbar)</label>
+                <textarea id="hwTaskPreviewMock" rows="5"></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="createHomeworkMockBtn" type="button">Mock-Prüfung zuweisen</button>
+                </div>
+              </div>
               <div id="hwCourseWrap">
                 <label for="hwCourseId">Kurs / Gruppe auswählen</label>
                 <select id="hwCourseId">
@@ -6162,9 +6173,11 @@
       const templateHoeren = String(document.getElementById("hwTaskTemplateHoeren")?.value || "").trim();
       const templateLesen = String(document.getElementById("hwTaskTemplateLesen")?.value || "").trim();
       const templateMail = String(document.getElementById("hwTaskTemplateMail")?.value || "").trim();
+      const templateMock = String(document.getElementById("hwTaskTemplateMock")?.value || "").trim();
       setStoredPreference("admin_hw_template_hoeren", templateHoeren || null);
       setStoredPreference("admin_hw_template_lesen", templateLesen || null);
       setStoredPreference("admin_hw_template_mail", templateMail || null);
+      setStoredPreference("admin_hw_template_mock", templateMock || null);
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
       setStoredPreference(ADMIN_HW_DURATION_UNIT_KEY, durationUnit || null);
@@ -6174,6 +6187,7 @@
       const templateHoeren = getStoredPreference("admin_hw_template_hoeren");
       const templateLesen = getStoredPreference("admin_hw_template_lesen");
       const templateMail = getStoredPreference("admin_hw_template_mail");
+      const templateMock = getStoredPreference("admin_hw_template_mock");
       const courseId = getStoredPreference(ADMIN_HW_COURSE_KEY);
       const durationValue = getStoredPreference(ADMIN_HW_DURATION_VALUE_KEY);
       const durationUnit = getStoredPreference(ADMIN_HW_DURATION_UNIT_KEY);
@@ -6183,6 +6197,7 @@
       const hoerenSelect = document.getElementById("hwTaskTemplateHoeren");
       const lesenSelect = document.getElementById("hwTaskTemplateLesen");
       const mailSelect = document.getElementById("hwTaskTemplateMail");
+      const mockSelect = document.getElementById("hwTaskTemplateMock");
       if (hoerenSelect && templateHoeren && Array.from(hoerenSelect.options).some(o => o.value === templateHoeren)) {
         hoerenSelect.value = templateHoeren;
       }
@@ -6191,6 +6206,9 @@
       }
       if (mailSelect && templateMail && Array.from(mailSelect.options).some(o => o.value === templateMail)) {
         mailSelect.value = templateMail;
+      }
+      if (mockSelect && templateMock && Array.from(mockSelect.options).some(o => o.value === templateMock)) {
+        mockSelect.value = templateMock;
       }
 
       const courseSelect = document.getElementById("hwCourseId");
@@ -6212,6 +6230,7 @@
       updateHomeworkTemplatePreview("hoeren");
       updateHomeworkTemplatePreview("lesen");
       updateHomeworkTemplatePreview("mail");
+      updateHomeworkTemplatePreview("mock");
     }
 
     function getHomeworkTemplateCategory(template) {
@@ -6219,10 +6238,12 @@
       const id = String(template.id || "").toLowerCase();
       if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(id)) return "hoeren";
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(id)) return "lesen";
+      if (id === "dtz-mock-pruefung-komplett") return "mock";
       if (id.startsWith("dtz-")) return "mail";
       const text = `${id} ${String(template.title || "").toLowerCase()} ${String(template.prompt || "").toLowerCase()}`;
       if (text.includes("hoeren") || text.includes("hören")) return "hoeren";
       if (text.includes("lesen")) return "lesen";
+      if (text.includes("mock-prüfung") || text.includes("mock-pruefung") || text.includes("komplett")) return "mock";
       return "mail";
     }
 
@@ -6241,6 +6262,7 @@
       const key = String(category || "").toLowerCase();
       if (key === "lesen") return "hwTaskTemplateLesen";
       if (key === "mail") return "hwTaskTemplateMail";
+      if (key === "mock") return "hwTaskTemplateMock";
       return "hwTaskTemplateHoeren";
     }
 
@@ -6248,6 +6270,7 @@
       const key = String(category || "").toLowerCase();
       if (key === "lesen") return "hwTaskPreviewLesen";
       if (key === "mail") return "hwTaskPreviewMail";
+      if (key === "mock") return "hwTaskPreviewMock";
       return "hwTaskPreviewHoeren";
     }
 
@@ -6288,6 +6311,7 @@
       renderHomeworkTemplateOptions("hoeren");
       renderHomeworkTemplateOptions("lesen");
       renderHomeworkTemplateOptions("mail");
+      renderHomeworkTemplateOptions("mock");
     }
 
     function normalizeHomeworkReminderLevel(level) {
@@ -9946,6 +9970,7 @@
     document.getElementById("createHomeworkHoerenBtn").addEventListener("click", () => createHomeworkAssignment("hoeren"));
     document.getElementById("createHomeworkLesenBtn").addEventListener("click", () => createHomeworkAssignment("lesen"));
     document.getElementById("createHomeworkMailBtn").addEventListener("click", () => createHomeworkAssignment("mail"));
+    document.getElementById("createHomeworkMockBtn").addEventListener("click", () => createHomeworkAssignment("mock"));
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
@@ -9983,6 +10008,10 @@
     });
     document.getElementById("hwTaskTemplateMail").addEventListener("change", () => {
       updateHomeworkTemplatePreview("mail");
+      persistHomeworkQuickDefaults();
+    });
+    document.getElementById("hwTaskTemplateMock").addEventListener("change", () => {
+      updateHomeworkTemplatePreview("mock");
       persistHomeworkQuickDefaults();
     });
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
