@@ -466,9 +466,11 @@
     .level-bar {
       margin-top: 12px;
       display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
       align-items: stretch;
+      max-width: 980px;
+      margin-inline: auto;
     }
 
     .portal-wide {
@@ -526,10 +528,17 @@
 
     #heroHomeContent .level-tile {
       aspect-ratio: 1 / 1;
-      width: 85%;
-      min-height: 44px;
-      margin-inline: auto;
+      width: 100%;
+      min-height: 150px;
+      margin-inline: 0;
       justify-content: center;
+    }
+
+    #heroHomeContent #levelPortalBtn {
+      grid-column: 1 / -1;
+      aspect-ratio: auto;
+      min-height: 98px;
+      width: 100%;
     }
 
 
