@@ -3218,6 +3218,18 @@
                   <div id="portalLesenHomeworkWrap" class="portal-list">Keine Lesen-Aufgaben vorhanden.</div>
                 </div>
               </details>
+              <details id="portalA2HomeworkAccordion" class="card-accordion" style="margin-top:12px;">
+                <summary class="card-accordion-summary">
+                  <div class="title-wrap">
+                    <h3 style="margin:0;">A2-Themen <span id="portalA2TaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
+                    <p class="section-subtitle">Zugewiesenen A2-Test öffnen und direkt lösen.</p>
+                  </div>
+                  <span class="card-accordion-icon">▾</span>
+                </summary>
+                <div class="card-accordion-body">
+                  <div id="portalA2HomeworkWrap" class="portal-list">Keine A2-Aufgaben vorhanden.</div>
+                </div>
+              </details>
               <details id="portalWriteAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
@@ -8255,6 +8267,7 @@
     const PORTAL_PANEL_TO_ACCORDION = {
       hoerenHomework: "portalHoerenHomeworkAccordion",
       lesenHomework: "portalLesenHomeworkAccordion",
+      a2Homework: "portalA2HomeworkAccordion",
       write: "portalWriteAccordion",
       corrections: "portalCorrectionsAccordion"
     };
@@ -8264,6 +8277,7 @@
     }
 
     function setPortalQuickActive(panel) {
+      const quickPanel = ["hoerenHomework", "lesenHomework", "a2Homework"].includes(panel) ? "homework" : panel;
       const mapping = {
         homework: "portalQuickHomeworkBtn",
         write: "portalQuickWriteBtn",
@@ -8272,7 +8286,7 @@
       Object.entries(mapping).forEach(([key, id]) => {
         const btn = document.getElementById(id);
         if (!btn) return;
-        btn.classList.toggle("active", key === panel);
+        btn.classList.toggle("active", key === quickPanel);
       });
     }
 
@@ -9992,14 +10006,17 @@
       const counts = {
         schreiben: { pending: 0, urgent: 0 },
         hoeren: { pending: 0, urgent: 0 },
-        lesen: { pending: 0, urgent: 0 }
+        lesen: { pending: 0, urgent: 0 },
+        a2: { pending: 0, urgent: 0 }
       };
 
       rows.forEach(row => {
         const status = String(row?.status || "").toLowerCase();
         if (status === "abgegeben") return;
         const category = detectStudentHomeworkCategory(row);
-        const key = category === "hoeren" ? "hoeren" : (category === "lesen" ? "lesen" : "schreiben");
+        const key = category === "hoeren"
+          ? "hoeren"
+          : (category === "lesen" ? "lesen" : (category === "a2" ? "a2" : "schreiben"));
         counts[key].pending += 1;
         const level = String(row?.reminder_level || "").toLowerCase();
         if (level === "warn2" || level === "expired") {
@@ -10011,7 +10028,8 @@
         { id: "workTaskNotifyBadge", key: "schreiben", label: "Schreiben" },
         { id: "portalTaskNotifyBadge", key: "schreiben", label: "Schreiben" },
         { id: "portalHoerenTaskNotifyBadge", key: "hoeren", label: "Hören" },
-        { id: "portalLesenTaskNotifyBadge", key: "lesen", label: "Lesen" }
+        { id: "portalLesenTaskNotifyBadge", key: "lesen", label: "Lesen" },
+        { id: "portalA2TaskNotifyBadge", key: "a2", label: "A2-Themen" }
       ];
 
       badgeConfig.forEach(({ id, key, label }) => {
@@ -10064,9 +10082,11 @@
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
       if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(templateId)) return "hoeren";
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(templateId)) return "lesen";
+      if (templateId.startsWith("a2-thema-") || templateId.startsWith("a2-test-") || templateId.startsWith("a2-test-generator-")) return "a2";
       const title = String(row && row.title ? row.title : "").toLowerCase();
       const description = String(row && row.description ? row.description : "").toLowerCase();
       const bag = `${title} ${description}`;
+      if (bag.includes("a2")) return "a2";
       if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
       if (bag.includes("lesen")) return "lesen";
       if (bag.includes("sprechen")) return "sprechen";
@@ -10084,6 +10104,30 @@
       if (module === "hoeren" && teil > 4) return null;
       if (module === "lesen" && teil > 5) return null;
       return { module, teil };
+    }
+
+    function parseA2HomeworkTemplate(assignment) {
+      const row = assignment && typeof assignment === "object" ? assignment : {};
+      const templateId = String(row.template_id || "").trim().toLowerCase();
+      const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
+      if (attachment && attachment.toLowerCase().includes("/a2-themen.html")) {
+        return { url: attachment };
+      }
+      const singleMap = {
+        "a2-thema-alltag-routine": "Perfekt",
+        "a2-thema-arbeit-beruf": "Nebensatz",
+        "a2-thema-wohnung-haushalt": "Präpositionen",
+        "a2-thema-gesundheit-arzt": "Modalverben",
+        "a2-thema-einkaufen-service": "Trennbare Verben",
+        "a2-thema-amt-formulare": "Kasus",
+        "a2-thema-mobilitaet-verkehr": "Präpositionen",
+        "a2-thema-freizeit-termine": "Nebensatz"
+      };
+      const topic = singleMap[templateId];
+      if (topic) {
+        return { url: `./a2-themen.html?hw=1&topics=${encodeURIComponent(topic)}&count=50` };
+      }
+      return null;
     }
 
     function openHomeworkDtzTeil(templateIdRaw) {
@@ -10106,13 +10150,24 @@
       }, 0);
     }
 
+    function openHomeworkA2Task(assignment) {
+      const parsed = parseA2HomeworkTemplate(assignment);
+      if (!parsed || !parsed.url) {
+        setStatus("error", "Für diese Aufgabe ist kein A2-Test-Link hinterlegt.", "portalStatus");
+        return;
+      }
+      window.location.href = parsed.url;
+    }
+
     function renderPortalHomeworksGrouped(homeworks) {
       const hoerenWrap = document.getElementById("portalHoerenHomeworkWrap");
       const lesenWrap = document.getElementById("portalLesenHomeworkWrap");
+      const a2Wrap = document.getElementById("portalA2HomeworkWrap");
       const rows = Array.isArray(homeworks) ? homeworks.filter(item => item && typeof item === "object") : [];
       if (!rows.length) {
         if (hoerenWrap) hoerenWrap.textContent = "Keine Hören-Aufgaben vorhanden.";
         if (lesenWrap) lesenWrap.textContent = "Keine Lesen-Aufgaben vorhanden.";
+        if (a2Wrap) a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
         return;
       }
 
@@ -10125,6 +10180,7 @@
       const grouped = {
         hoeren: [],
         lesen: [],
+        a2: [],
         schreiben: [],
         sprechen: []
       };
@@ -10143,8 +10199,12 @@
         const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
         const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
         const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
+        const parsedA2 = parseA2HomeworkTemplate(row);
         const dtzOpenAction = parsedTemplate
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}">${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen</button></div>`
+          : "";
+        const a2OpenAction = !parsedTemplate && parsedA2
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-a2-homework="${escapeHtml(String(row.id || ""))}">A2-Test öffnen</button></div>`
           : "";
         return `
           <div class="portal-item ${stateClass}">
@@ -10152,6 +10212,7 @@
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
             <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
             ${dtzOpenAction}
+            ${a2OpenAction}
           </div>
         `;
       };
@@ -10171,6 +10232,16 @@
           btn.addEventListener("click", () => {
             const templateId = String(btn.getAttribute("data-open-dtz-teil") || "");
             openHomeworkDtzTeil(templateId);
+          });
+        });
+      }
+      if (a2Wrap) {
+        a2Wrap.innerHTML = grouped.a2.length ? grouped.a2.map(itemHtml).join("") : "Keine A2-Aufgaben vorhanden.";
+        a2Wrap.querySelectorAll("[data-open-a2-homework]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const assignmentId = String(btn.getAttribute("data-open-a2-homework") || "");
+            const row = grouped.a2.find(item => String(item.id || "") === assignmentId);
+            openHomeworkA2Task(row || null);
           });
         });
       }
@@ -10196,6 +10267,8 @@
         openPortalPanel("hoerenHomework", false);
       } else if (assigned && assigned.module === "lesen") {
         openPortalPanel("lesenHomework", false);
+      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && String(row?.status || "").toLowerCase() !== "abgegeben")) {
+        openPortalPanel("a2Homework", false);
       }
 
       renderPortalList(
@@ -11523,9 +11596,21 @@
     const speakTranscript = document.getElementById("speakTranscript");
     if (speakTranscript) speakTranscript.addEventListener("input", renderSpeakingFeedback);
     document.getElementById("refreshPortalBtn").addEventListener("click", refreshPortalData);
+    function preferredHomeworkPanel() {
+      const badgeCount = id => {
+        const node = document.getElementById(id);
+        if (!node || node.classList.contains("hidden")) return 0;
+        const value = Number.parseInt(String(node.textContent || "0"), 10);
+        return Number.isFinite(value) ? value : 0;
+      };
+      if (badgeCount("portalHoerenTaskNotifyBadge") > 0) return "hoerenHomework";
+      if (badgeCount("portalLesenTaskNotifyBadge") > 0) return "lesenHomework";
+      if (badgeCount("portalA2TaskNotifyBadge") > 0) return "a2Homework";
+      return "hoerenHomework";
+    }
     const portalQuickHomeworkBtn = document.getElementById("portalQuickHomeworkBtn");
     if (portalQuickHomeworkBtn) {
-      portalQuickHomeworkBtn.addEventListener("click", () => openPortalPanel("hoerenHomework"));
+      portalQuickHomeworkBtn.addEventListener("click", () => openPortalPanel(preferredHomeworkPanel()));
     }
     const portalQuickWriteBtn = document.getElementById("portalQuickWriteBtn");
     if (portalQuickWriteBtn) {

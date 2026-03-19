@@ -872,6 +872,19 @@
     ];
 
     const topicKeys = ["Perfekt", "Nebensatz", "Modalverben", "Präpositionen", "Trennbare Verben", "Kasus"];
+    const topicAliases = {
+      "perfekt": "Perfekt",
+      "nebensatz": "Nebensatz",
+      "nebensaetze": "Nebensatz",
+      "modalverben": "Modalverben",
+      "modalverb": "Modalverben",
+      "praepositionen": "Präpositionen",
+      "präpositionen": "Präpositionen",
+      "trennbare-verben": "Trennbare Verben",
+      "trennbareverben": "Trennbare Verben",
+      "kasus": "Kasus",
+      "gemischt": "Gemischt"
+    };
 
     function cap(text) {
       const t = String(text || "");
@@ -1353,10 +1366,49 @@
       "Kasus": genKasus
     };
 
-    function generateQuestions(topic, total) {
+    function normalizeTopicFromQuery(value) {
+      const raw = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[ä]/g, "ae")
+        .replace(/[ö]/g, "oe")
+        .replace(/[ü]/g, "ue")
+        .replace(/[ß]/g, "ss")
+        .replace(/\s+/g, "-");
+      return topicAliases[raw] || null;
+    }
+
+    function parseHomeworkTopicPreset() {
+      const params = new URLSearchParams(window.location.search);
+      const rawTopics = String(params.get("topics") || "").trim();
+      if (!rawTopics) return [];
+      const parsed = rawTopics
+        .split(",")
+        .map(part => normalizeTopicFromQuery(part))
+        .filter(Boolean);
+      return parsed.filter((value, index, arr) => arr.indexOf(value) === index);
+    }
+
+    function parseHomeworkQuestionCount() {
+      const params = new URLSearchParams(window.location.search);
+      const raw = Number.parseInt(String(params.get("count") || "50"), 10);
+      if (!Number.isFinite(raw)) return 50;
+      return Math.max(10, Math.min(100, raw));
+    }
+
+    function isHomeworkMode() {
+      const params = new URLSearchParams(window.location.search);
+      const value = String(params.get("hw") || "").trim();
+      return value === "1" || value.toLowerCase() === "true";
+    }
+
+    function generateQuestions(topic, total, forcedTopics = null) {
       const list = [];
+      const topicPool = Array.isArray(forcedTopics) && forcedTopics.length
+        ? forcedTopics.filter(item => topicKeys.includes(item))
+        : topicKeys;
       for (let i = 0; i < total; i += 1) {
-        const currentTopic = topic === "Gemischt" ? pick(topicKeys) : topic;
+        const currentTopic = topic === "Gemischt" ? pick(topicPool) : topic;
         const q = generators[currentTopic]();
         q.topic = currentTopic;
         list.push(q);
@@ -1745,9 +1797,19 @@
       });
     }
 
-    function startTest() {
-      state.topic = String(topicSelect.value || "Perfekt");
-      state.questions = generateQuestions(state.topic, 50).map(q => ({
+    function startTest(options = {}) {
+      const forcedTopics = Array.isArray(options.topics) ? options.topics.filter(topic => topicKeys.includes(topic)) : [];
+      const questionCount = Math.max(10, Math.min(100, Number(options.count) || 50));
+      if (forcedTopics.length === 1) {
+        state.topic = forcedTopics[0];
+        topicSelect.value = forcedTopics[0];
+      } else if (forcedTopics.length > 1) {
+        state.topic = "Gemischt";
+        topicSelect.value = "Gemischt";
+      } else {
+        state.topic = String(topicSelect.value || "Perfekt");
+      }
+      state.questions = generateQuestions(state.topic, questionCount, forcedTopics).map(q => ({
         ...q,
         checked: false,
         correct: false,
@@ -1757,7 +1819,9 @@
       state.started = true;
       badgeTopic.textContent = `Thema: ${state.topic}`;
       badgeType.textContent = "Modus: A/B/C";
-      questionPrompt.textContent = "Jede richtige Antwort gibt 2 Punkte. Pro Frage gibt es genau eine richtige Lösung.";
+      questionPrompt.textContent = options.homeworkMode
+        ? "Hausaufgabe aktiv: Bitte alle Fragen lösen und danach auswerten."
+        : "Jede richtige Antwort gibt 2 Punkte. Pro Frage gibt es genau eine richtige Lösung.";
       renderAllQuestions();
       examActions.hidden = false;
       renderStats();
@@ -1766,6 +1830,16 @@
     startTestBtn.addEventListener("click", startTest);
     checkAllBtn.addEventListener("click", evaluateAllQuestions);
     showAllSolutionsBtn.addEventListener("click", showAllSolutions);
+
+    const presetTopics = parseHomeworkTopicPreset();
+    if (presetTopics.length) {
+      const presetCount = parseHomeworkQuestionCount();
+      startTest({
+        topics: presetTopics,
+        count: presetCount,
+        homeworkMode: isHomeworkMode()
+      });
+    }
   </script>
 </body>
 </html>

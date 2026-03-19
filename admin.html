@@ -2834,6 +2834,29 @@
                   <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
                 </div>
               </div>
+              <div>
+                <label for="hwA2TopicsMulti"><strong>A2-Test Generator</strong> · Themen (Mehrfachauswahl)</label>
+                <select id="hwA2TopicsMulti" multiple size="6">
+                  <option value="perfekt">Perfekt</option>
+                  <option value="nebensatz">Nebensätze</option>
+                  <option value="modalverben">Modalverben</option>
+                  <option value="praepositionen">Präpositionen</option>
+                  <option value="trennbare-verben">Trennbare Verben</option>
+                  <option value="kasus">Kasus</option>
+                </select>
+                <div class="grid" style="margin-top:8px;">
+                  <div>
+                    <label for="hwA2QuestionCount">Fragenzahl</label>
+                    <input id="hwA2QuestionCount" type="number" min="10" max="100" value="50">
+                  </div>
+                </div>
+                <label for="hwA2GeneratedPreview" style="margin-top:8px;">Generierte Aufgabenstellung</label>
+                <textarea id="hwA2GeneratedPreview" rows="7"></textarea>
+                <div class="actions" style="margin-top:8px;">
+                  <button id="generateA2HomeworkBtn" type="button" class="ghost-btn">A2-Test generieren</button>
+                  <button id="assignA2HomeworkBtn" type="button">A2-Test als Hausaufgabe zuweisen</button>
+                </div>
+              </div>
               <div id="homeworkStatus" class="hidden"></div>
             </div>
           </details>
@@ -3665,6 +3688,15 @@
         prompt: "Sie können einen Termin beim Jobcenter nicht wahrnehmen. Schreiben Sie eine E-Mail.",
         points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
       }
+    ];
+
+    const A2_HOMEWORK_TOPIC_MAP = [
+      { key: "perfekt", label: "Perfekt", a2Topic: "Perfekt" },
+      { key: "nebensatz", label: "Nebensätze", a2Topic: "Nebensatz" },
+      { key: "modalverben", label: "Modalverben", a2Topic: "Modalverben" },
+      { key: "praepositionen", label: "Präpositionen", a2Topic: "Präpositionen" },
+      { key: "trennbare-verben", label: "Trennbare Verben", a2Topic: "Trennbare Verben" },
+      { key: "kasus", label: "Kasus", a2Topic: "Kasus" }
     ];
 
     const roomTemplates = {
@@ -6331,6 +6363,140 @@
         .filter(Boolean)
         .map(item => `- ${item}`);
       return [prompt, ...pointLines].filter(Boolean).join("\n");
+    }
+
+    function getSelectedA2HomeworkTopics() {
+      const select = document.getElementById("hwA2TopicsMulti");
+      return Array.from(select?.selectedOptions || [])
+        .map(option => String(option.value || "").trim().toLowerCase())
+        .filter(Boolean)
+        .filter((value, index, arr) => arr.indexOf(value) === index)
+        .map(key => A2_HOMEWORK_TOPIC_MAP.find(item => item.key === key))
+        .filter(Boolean);
+    }
+
+    function buildA2HomeworkPreviewPayload() {
+      const selectedTopics = getSelectedA2HomeworkTopics();
+      if (!selectedTopics.length) {
+        throw new Error("Bitte mindestens ein A2-Thema auswählen.");
+      }
+
+      const countInput = Number(document.getElementById("hwA2QuestionCount")?.value || 50);
+      const questionCount = Math.max(10, Math.min(100, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+      const topicLabels = selectedTopics.map(item => item.label);
+      const topicKeys = selectedTopics.map(item => item.key);
+      const topicQueryValues = selectedTopics.map(item => item.a2Topic);
+      const shortTitle = topicLabels.length <= 3
+        ? topicLabels.join(" + ")
+        : `${topicLabels.slice(0, 3).join(" + ")} +${topicLabels.length - 3}`;
+      const title = `A2-Themen Test: ${shortTitle}`;
+      const params = new URLSearchParams();
+      params.set("hw", "1");
+      params.set("topics", topicQueryValues.join(","));
+      params.set("count", String(questionCount));
+      const attachment = `${window.location.origin}/a2-themen.html?${params.toString()}`;
+      const templateId = `a2-test-generator-${topicKeys.join("-")}`.slice(0, 120);
+      const lines = [
+        `Bearbeiten Sie den A2-Themen-Test (${questionCount} Fragen).`,
+        `Themen: ${topicLabels.join(", ")}`,
+        "",
+        "- Öffnen Sie den Link \"Material: Öffnen\" oder die A2-Taste im Portal.",
+        "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
+        "- Notieren Sie 8 neue Wörter aus den ausgewählten Themen.",
+        "- Schreiben Sie zu 4 Wörtern je einen eigenen Beispielsatz."
+      ];
+      return {
+        templateId,
+        title,
+        description: lines.join("\n"),
+        attachment,
+        selectedTopics,
+        questionCount
+      };
+    }
+
+    function generateA2HomeworkPreview() {
+      clearBox("homeworkStatus");
+      try {
+        const payload = buildA2HomeworkPreviewPayload();
+        const preview = document.getElementById("hwA2GeneratedPreview");
+        if (preview) preview.value = payload.description;
+        setBox("homeworkStatus", "ok", `A2-Test generiert: ${payload.selectedTopics.length} Thema/Themen · ${payload.questionCount} Fragen.`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", message);
+      }
+    }
+
+    async function assignGeneratedA2Homework() {
+      clearBox("homeworkStatus");
+      let generated;
+      try {
+        generated = buildA2HomeworkPreviewPayload();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", message);
+        return;
+      }
+
+      const customPreview = String(document.getElementById("hwA2GeneratedPreview")?.value || "").trim();
+      const description = customPreview || generated.description;
+      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
+      const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
+      const effectiveCourseId = targetType === "course" ? (courseId || String(selectedCourseId || "").trim()) : "";
+      const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
+      const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
+      const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
+      const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
+        .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
+        .filter(Boolean);
+
+      let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
+      if (durationUnit === "hours") durationMinutes *= 60;
+      durationMinutes = Math.max(5, Math.min(24 * 60, durationMinutes));
+
+      if (!startsAtRaw) {
+        setBox("homeworkStatus", "error", "Bitte eine Startzeit festlegen.");
+        return;
+      }
+      const ts = Date.parse(startsAtRaw);
+      if (!Number.isFinite(ts)) {
+        setBox("homeworkStatus", "error", "Ungültige Startzeit.");
+        return;
+      }
+      const startsAt = new Date(ts).toISOString();
+
+      if (targetType === "course" && !effectiveCourseId) {
+        setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
+        return;
+      }
+      if (targetType === "users" && !usernames.length) {
+        setBox("homeworkStatus", "error", "Bitte mindestens eine teilnehmende Person auswählen.");
+        return;
+      }
+
+      try {
+        const payload = await callHomeworkAssignApi({
+          action: "create",
+          template_id: generated.templateId,
+          title: generated.title,
+          description,
+          attachment: generated.attachment,
+          target_type: targetType,
+          course_id: targetType === "course" ? effectiveCourseId : "",
+          usernames: targetType === "users" ? usernames : [],
+          duration_minutes: durationMinutes,
+          starts_at: startsAt
+        });
+        persistHomeworkQuickDefaults();
+        setBox("homeworkStatus", "ok", `A2-Test gespeichert. Zugewiesen: ${payload.target_count || 0}`);
+        document.getElementById("hwStartsAt").value = "";
+        Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
+        await refreshAllHomeworkLists();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", `A2-Test konnte nicht gespeichert werden: ${message}`);
+      }
     }
 
     function homeworkTemplateSelectIdByCategory(category) {
@@ -10479,6 +10645,18 @@
         persistHomeworkQuickDefaults();
       });
     }
+    const hwA2TopicsMulti = document.getElementById("hwA2TopicsMulti");
+    if (hwA2TopicsMulti) {
+      hwA2TopicsMulti.addEventListener("change", generateA2HomeworkPreview);
+    }
+    const hwA2QuestionCount = document.getElementById("hwA2QuestionCount");
+    if (hwA2QuestionCount) {
+      hwA2QuestionCount.addEventListener("change", generateA2HomeworkPreview);
+    }
+    const generateA2HomeworkBtn = document.getElementById("generateA2HomeworkBtn");
+    if (generateA2HomeworkBtn) generateA2HomeworkBtn.addEventListener("click", generateA2HomeworkPreview);
+    const assignA2HomeworkBtn = document.getElementById("assignA2HomeworkBtn");
+    if (assignA2HomeworkBtn) assignA2HomeworkBtn.addEventListener("click", assignGeneratedA2Homework);
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationValue").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationUnit").addEventListener("change", persistHomeworkQuickDefaults);
