@@ -2736,7 +2736,7 @@
         </div>
 
         <div id="homeworksAssignSection" class="bulk-wrap">
-          <details class="fold-section">
+          <details id="homeworksAssignDetails" class="fold-section">
             <summary>+ Aufgabe zuweisen</summary>
             <div class="fold-section-content">
               <div>
@@ -2801,7 +2801,7 @@
 
         <div id="homeworksListSection" class="bulk-wrap">
           <h3 class="section-title" style="font-size: 1.2rem;">Mail-Aufgaben</h3>
-          <details class="fold-section">
+          <details id="homeworksListDetails" class="fold-section">
             <summary>Zugewiesene Aufgaben</summary>
             <div class="fold-section-content">
               <div class="actions" style="margin-top: 0;">
@@ -3280,7 +3280,7 @@
     const DOCENT_ALLOWED_PANES = new Set(["accounts", "kurs", "homeworks", "archive"]);
     const DOCENT_HIDE_MENU_IDS = ["jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpProgressBtn", "jumpJessBtn", "toggleAndereBtn"];
     const DOCENT_HIDE_FAST_IDS = ["fastCoursesBtn", "fastMod6Btn"];
-    const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection"];
+    const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection", "trainingSetSection"];
 
     const adminPaneMap = {
       coursebuilder: "paneCourseBuilder",
@@ -3727,6 +3727,24 @@
       });
       const andere = document.getElementById("adminAndereGroup");
       if (enabled && andere) andere.classList.add("hidden");
+      const homeworksSubtitle = document.querySelector("#homeworksSection .section-subtitle");
+      if (homeworksSubtitle) homeworksSubtitle.classList.toggle("hidden", enabled);
+      const homeworksAssignDetails = document.getElementById("homeworksAssignDetails");
+      const homeworksListDetails = document.getElementById("homeworksListDetails");
+      if (homeworksAssignDetails && enabled) homeworksAssignDetails.open = true;
+      if (homeworksListDetails && enabled) homeworksListDetails.open = false;
+      const kursUsersDetails = document.getElementById("kursUsersDetails");
+      const kursHomeworkDetails = document.getElementById("kursHomeworkDetails");
+      const kursAssignedHomeworkDetails = document.getElementById("kursAssignedHomeworkDetails");
+      const kursCorrectionsDetails = document.getElementById("kursCorrectionsDetails");
+      const kursProgressDetails = document.getElementById("kursProgressDetails");
+      if (enabled) {
+        if (kursUsersDetails) kursUsersDetails.open = false;
+        if (kursHomeworkDetails) kursHomeworkDetails.open = true;
+        if (kursAssignedHomeworkDetails) kursAssignedHomeworkDetails.open = false;
+        if (kursCorrectionsDetails) kursCorrectionsDetails.open = false;
+        if (kursProgressDetails) kursProgressDetails.open = false;
+      }
       if (enabled && !canAccessPane(activeAdminPane)) {
         activeAdminPane = "homeworks";
       }
