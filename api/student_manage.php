@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -24,7 +24,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -33,7 +33,7 @@ $username = mb_strtolower(trim((string)($body['username'] ?? '')));
 
 if (!preg_match('/^[a-z0-9._-]{3,32}$/', $username)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiger Benutzername.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiger Benutzername.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -54,7 +54,7 @@ if ($foundIndex < 0) {
 
 if (!admin_can_access_student_record((array)$users[$foundIndex], $admin)) {
     http_response_code(403);
-    echo json_encode(['error' => 'Keine Berechtigung fuer diesen Benutzer.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Keine Berechtigung für diesen Benutzer.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -82,7 +82,7 @@ if ($action === 'reset_password') {
     $teacherUsername = mb_strtolower(trim((string)($body['teacher_username'] ?? '')));
     if (!preg_match('/^[a-z0-9._-]{3,32}$/', $teacherUsername)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Ungültiger Docent-Benutzername.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Ungültiger Dozent-Benutzername.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     $teachers = load_teacher_users();
@@ -99,12 +99,12 @@ if ($action === 'reset_password') {
     }
     if (!is_array($teacherFound)) {
         http_response_code(404);
-        echo json_encode(['error' => 'Docent nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Dozent nicht gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     if (empty($teacherFound['active'])) {
         http_response_code(400);
-        echo json_encode(['error' => 'Docent ist deaktiviert.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Dozent ist deaktiviert.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     $users[$foundIndex]['teacher_username'] = $teacherUsername;
@@ -158,7 +158,7 @@ if ($action === 'reset_password') {
     exit;
 } else {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültige Aktion.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

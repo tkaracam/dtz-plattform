@@ -2577,7 +2577,7 @@
         <div id="paneTeachers" class="admin-pane owner-only hidden">
           <div class="bulk-wrap">
             <h2 class="section-title" style="font-size: 1.35rem;">Lehrkräfte verwalten</h2>
-            <p class="section-subtitle">Nur Haupt-Admin: Docent-Konten verwalten.</p>
+            <p class="section-subtitle">Nur Haupt-Admin: Dozent-Konten verwalten.</p>
             <div class="grid">
               <div>
                 <label for="newTeacherUsername">Benutzername</label>
@@ -3247,10 +3247,10 @@
   <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
   <div id="assignDocentModal" class="assign-docent-modal hidden" aria-hidden="true">
     <div class="assign-docent-card" role="dialog" aria-modal="true" aria-labelledby="assignDocentTitle">
-      <h3 id="assignDocentTitle">Docent zuweisen</h3>
-      <p id="assignDocentHint">Bitte Docent auswählen und speichern.</p>
+      <h3 id="assignDocentTitle">Dozent zuweisen</h3>
+      <p id="assignDocentHint">Bitte Dozent auswählen und speichern.</p>
       <div style="margin-top:10px;">
-        <label for="assignDocentSelect">Docent</label>
+        <label for="assignDocentSelect">Dozent</label>
         <select id="assignDocentSelect">
           <option value="">Bitte wählen</option>
         </select>
@@ -3835,7 +3835,7 @@
         node.textContent = "Nicht angemeldet";
         return;
       }
-      const roleLabel = isOwnerAdmin() ? "Haupt-Admin" : "Docent";
+      const roleLabel = isOwnerAdmin() ? "Haupt-Admin" : "Dozent";
       const name = String(adminContext.display_name || adminContext.username || "-");
       node.textContent = `${roleLabel}: ${name}`;
     }
@@ -4587,7 +4587,7 @@
         const assignDocentRow = canAssignDocent
           ? `
               <div class="student-action-row">
-                <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Docent zuweisen</button>
+                <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Dozent zuweisen</button>
                 <span class="action-spacer" aria-hidden="true"></span>
               </div>
             `
@@ -8163,7 +8163,7 @@
     async function assignDocentToStudentPrompt(username) {
       clearBox("userStatus");
       if (!isOwnerAdmin()) {
-        setBox("userStatus", "error", "Nur Haupt-Admin kann Docent-Zuweisungen ändern.");
+        setBox("userStatus", "error", "Nur Haupt-Admin kann Dozent-Zuweisungen ändern.");
         return;
       }
       if (!username) return;
@@ -8180,7 +8180,7 @@
         }));
 
       if (!activeTeachers.length) {
-        setBox("userStatus", "error", "Keine aktiven Docent-Konten verfügbar.");
+        setBox("userStatus", "error", "Keine aktiven Dozent-Konten verfügbar.");
         return;
       }
 
@@ -8194,8 +8194,8 @@
       }
 
       assignTeacherTargetUsername = username;
-      title.textContent = `Docent zuweisen: ${username}`;
-      hint.textContent = "Docent auswählen und mit Speichern bestätigen.";
+      title.textContent = `Dozent zuweisen: ${username}`;
+      hint.textContent = "Dozent auswählen und mit Speichern bestätigen.";
       select.innerHTML = activeTeachers.map(t => {
         const label = `${t.username}${t.display_name ? ` (${t.display_name})` : ""}`;
         return `<option value="${escapeHtml(t.username)}">${escapeHtml(label)}</option>`;
@@ -8208,14 +8208,14 @@
     async function submitAssignDocentSelection() {
       clearBox("userStatus");
       if (!isOwnerAdmin()) {
-        setBox("userStatus", "error", "Nur Haupt-Admin kann Docent-Zuweisungen ändern.");
+        setBox("userStatus", "error", "Nur Haupt-Admin kann Dozent-Zuweisungen ändern.");
         return;
       }
       const username = assignTeacherTargetUsername;
       const select = document.getElementById("assignDocentSelect");
       const teacherUsername = select ? String(select.value || "").trim().toLowerCase() : "";
       if (!username || !teacherUsername) {
-        setBox("userStatus", "error", "Bitte Docent auswählen.");
+        setBox("userStatus", "error", "Bitte Dozent auswählen.");
         return;
       }
       try {
@@ -8234,7 +8234,7 @@
         setBox("userStatus", "ok", `${username} wurde ${teacherUsername} zugewiesen.`);
         listStudents();
       } catch (err) {
-        setBox("userStatus", "error", `Docent-Zuweisung fehlgeschlagen: ${err.message}`);
+        setBox("userStatus", "error", `Dozent-Zuweisung fehlgeschlagen: ${err.message}`);
       }
     }
 
@@ -8280,7 +8280,7 @@
       const wrap = document.getElementById("teacherListWrap");
       if (!wrap) return;
       if (!teacherUsers.length) {
-        wrap.innerHTML = "<p>Noch keine Docent-Konten vorhanden.</p>";
+        wrap.innerHTML = "<p>Noch keine Dozent-Konten vorhanden.</p>";
         return;
       }
       const rows = teacherUsers.map(user => {

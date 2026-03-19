@@ -34,10 +34,19 @@ Beispiel mit PHP Built-in Server:
 php -S 127.0.0.1:8080 -t .
 ```
 
+Oder direkt mit Hilfsskript:
+
+```bash
+chmod +x tools/start-local.sh
+./tools/start-local.sh
+```
+
 Dann öffnen:
 
 - `http://127.0.0.1:8080/index.html`
 - `http://127.0.0.1:8080/admin.html`
+
+Das Skript zeigt zusätzlich die LAN-URL für iPhone/Safari im selben WLAN an.
 
 ## Deploy auf Render (Docker)
 
@@ -62,8 +71,8 @@ Dieses Repo enthält bereits:
 ## Rollen im Lehrerbereich
 
 - **Haupt-Admin (owner):** Login mit `ADMIN_PANEL_USERNAME` + `ADMIN_PANEL_PASSWORD`, volle Rechte.
-- **Docent:** Wird im Bereich **Lehrkräfte** angelegt und bekommt einen eigenen Lehrerzugang.
-- Docent-Zugriffe werden auf eigene Kurse/Benutzer eingeschraenkt.
+- **Dozent:** Wird im Bereich **Lehrkräfte** angelegt und bekommt einen eigenen Lehrerzugang.
+- Dozent-Zugriffe werden auf eigene Kurse/Benutzer eingeschraenkt.
 
 ## Deploy sonrası sağlık testi
 
