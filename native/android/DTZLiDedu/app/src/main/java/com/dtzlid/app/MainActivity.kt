@@ -598,6 +598,17 @@ fun WebAppScreen() {
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text("İndirilenler") },
+                            onClick = {
+                                topMenuExpanded = false
+                                runCatching {
+                                    context.startActivity(DownloadManager.ACTION_VIEW_DOWNLOADS.let { Intent(it) })
+                                }.onFailure {
+                                    Toast.makeText(context, "İndirilenler açılamadı", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("WebView Ayarları") },
                             onClick = {
                                 topMenuExpanded = false
@@ -626,7 +637,11 @@ fun WebAppScreen() {
             )
         }
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -890,6 +905,7 @@ fun WebAppScreen() {
                             ) {
                                 if (request?.isForMainFrame == true) {
                                     offline = true
+                                    loading = false
                                     loadTimedOut = false
                                     settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                                 }
