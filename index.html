@@ -3364,10 +3364,11 @@
 
       <section id="dtzHubCard" class="card hidden">
         <h2 class="section-title">DTZ Training</h2>
-        <p class="section-subtitle">Bitte Bereich auswählen: Hören, Lesen oder Sprechen.</p>
+        <p class="section-subtitle">Bitte Bereich auswählen: Hören, Lesen, Schreiben oder Sprechen.</p>
         <div class="dtz-training-modules">
           <button id="dtzHubHoerenBtn" type="button" class="dtz-module-btn">Hören</button>
           <button id="dtzHubLesenBtn" type="button" class="dtz-module-btn">Lesen</button>
+          <button id="dtzHubWriteBtn" type="button" class="dtz-module-btn">Schreiben</button>
           <button id="dtzHubSpeakingBtn" type="button" class="dtz-module-btn">Sprechen</button>
         </div>
       </section>
@@ -10668,6 +10669,8 @@
     if (dtzHubHoerenBtn) dtzHubHoerenBtn.addEventListener("click", () => openDtzModuleView("hoeren"));
     const dtzHubLesenBtn = document.getElementById("dtzHubLesenBtn");
     if (dtzHubLesenBtn) dtzHubLesenBtn.addEventListener("click", () => openDtzModuleView("lesen"));
+    const dtzHubWriteBtn = document.getElementById("dtzHubWriteBtn");
+    if (dtzHubWriteBtn) dtzHubWriteBtn.addEventListener("click", () => openCorrectionView());
     const dtzHubSpeakingBtn = document.getElementById("dtzHubSpeakingBtn");
     if (dtzHubSpeakingBtn) dtzHubSpeakingBtn.addEventListener("click", () => openSpeakingView());
     const dtzHoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
