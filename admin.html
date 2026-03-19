@@ -3396,6 +3396,30 @@
 
     const HOMEWORK_MAIL_TEMPLATES = [
       {
+        id: "dtz-hoeren-teil1-fragenpaket",
+        title: "Hören Teil 1",
+        prompt: "Bearbeiten Sie das DTZ-Hören Teil 1.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 1.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-hoeren-teil2-fragenpaket",
+        title: "Hören Teil 2",
+        prompt: "Bearbeiten Sie das DTZ-Hören Teil 2.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 2.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-hoeren-teil3-fragenpaket",
+        title: "Hören Teil 3",
+        prompt: "Bearbeiten Sie das DTZ-Hören Teil 3.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 3.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
+        id: "dtz-hoeren-teil4-fragenpaket",
+        title: "Hören Teil 4",
+        prompt: "Bearbeiten Sie das DTZ-Hören Teil 4.",
+        points: ["Lösen Sie alle Aufgaben aus Teil 4.", "Notieren Sie 5 Schlüsselwörter.", "Markieren Sie 2 schwierige Fragen."]
+      },
+      {
         id: "dtz-wortschatz-pruefung-fokus",
         title: "DTZ Wortschatz: Prüfung-Fokus",
         prompt: "Stellen Sie eine persönliche DTZ-Wortschatzliste für die Prüfung zusammen (Hören, Lesen, Schreiben, Sprechen).",
@@ -6138,6 +6162,9 @@
     function getHomeworkTemplateCategory(template) {
       if (!template || typeof template !== "object") return "mail";
       const id = String(template.id || "").toLowerCase();
+      if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(id)) return "hoeren";
+      if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(id)) return "lesen";
+      if (id.startsWith("dtz-")) return "mail";
       const text = `${id} ${String(template.title || "").toLowerCase()} ${String(template.prompt || "").toLowerCase()}`;
       if (text.includes("hoeren") || text.includes("hören")) return "hoeren";
       if (text.includes("lesen")) return "lesen";
