@@ -3752,6 +3752,7 @@
     let assignmentCountdownTimerId = null;
     let assignmentAutoSubmitInFlight = false;
     let assignmentAutoSubmittedFor = "";
+    let assignmentTimeWarningSent = {};
     let taskStatus = {};
     let currentTaskIndex = 0;
     let taskFilter = "all";
@@ -9103,6 +9104,60 @@
       }
     }
 
+    function assignmentWarningBucket(assignmentId) {
+      const key = String(assignmentId || "").trim();
+      if (!key) return null;
+      if (!assignmentTimeWarningSent[key]) {
+        assignmentTimeWarningSent[key] = {};
+      }
+      return assignmentTimeWarningSent[key];
+    }
+
+    function clearAssignmentWarningBucket(assignmentId) {
+      const key = String(assignmentId || "").trim();
+      if (!key) return;
+      delete assignmentTimeWarningSent[key];
+    }
+
+    function pushAssignmentTimeWarning(message) {
+      const text = `Zeitwarnung: ${String(message || "").trim()}`;
+      ["statusBox", "portalWriteStatus"].forEach(boxId => {
+        const box = document.getElementById(boxId);
+        if (!box) return;
+        const currentText = String(box.textContent || "").trim();
+        const boxVisible = !box.classList.contains("hidden");
+        if (boxVisible && currentText && !currentText.startsWith("Zeitwarnung:")) {
+          return;
+        }
+        setStatus("error", text, boxId);
+      });
+    }
+
+    function maybeEmitAssignmentTimeWarning(remainingSeconds, deadlineTs) {
+      if (!currentAssignedHomework || !currentAssignedHomeworkState) return;
+      if (!deadlineTs || deadlineTs <= 0) return;
+      if (!currentAssignedHomeworkState.started_at) return;
+      if (currentAssignedHomeworkState.submitted_at) return;
+      if (currentAssignedHomeworkState.not_active_yet) return;
+      const assignmentId = String(currentAssignedHomework.id || "").trim();
+      const bucket = assignmentWarningBucket(assignmentId);
+      if (!bucket) return;
+      const remaining = Math.max(0, Number(remainingSeconds || 0));
+      const thresholds = [
+        { key: "2m", seconds: 2 * 60, message: "nur noch 2 Minuten bis zur Abgabe. Bitte jetzt hochladen." },
+        { key: "10m", seconds: 10 * 60, message: "nur noch 10 Minuten bis zur Abgabe." },
+        { key: "30m", seconds: 30 * 60, message: "nur noch 30 Minuten bis zur Abgabe." },
+        { key: "60m", seconds: 60 * 60, message: "nur noch 60 Minuten bis zur Abgabe." }
+      ];
+      for (const item of thresholds) {
+        if (remaining <= item.seconds && !bucket[item.key]) {
+          bucket[item.key] = true;
+          pushAssignmentTimeWarning(item.message);
+          break;
+        }
+      }
+    }
+
     function formatDurationMinutes(minutes) {
       const value = Math.max(0, Number(minutes || 0));
       if (value <= 0) return "-";
@@ -9299,6 +9354,9 @@
     }
 
     function renderAssignmentPlaceholder(message, stateText) {
+      if (currentAssignedHomework && currentAssignedHomework.id) {
+        clearAssignmentWarningBucket(String(currentAssignedHomework.id));
+      }
       currentAssignedHomework = null;
       currentAssignedHomeworkState = null;
       assignmentAutoSubmitInFlight = false;
@@ -9404,6 +9462,7 @@
       }
       if (deadlineTs > 0) remaining = Math.max(0, deadlineTs - now);
       currentAssignedHomeworkState.remaining_seconds = remaining;
+      maybeEmitAssignmentTimeWarning(remaining, deadlineTs);
       const expired = remaining <= 0 && !!currentAssignedHomeworkState.started_at && !currentAssignedHomeworkState.submitted_at;
       if (expired) {
         currentAssignedHomeworkState.expired = true;
@@ -9465,6 +9524,7 @@
       currentAssignedHomeworkState = payload.state || {};
       const nextAssignmentId = String(currentAssignedHomework.id || "").trim();
       if (prevAssignmentId !== nextAssignmentId) {
+        clearAssignmentWarningBucket(prevAssignmentId);
         assignmentAutoSubmittedFor = "";
         assignmentAutoSubmitInFlight = false;
       }
