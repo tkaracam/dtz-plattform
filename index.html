@@ -2950,10 +2950,6 @@
         <p class="section-subtitle">Schneller Überblick für heute.</p>
         <div class="home-dashboard-grid">
           <article class="home-dash-tile">
-            <p class="home-dash-label">Zuletzt geöffnet</p>
-            <p id="dashLastSection" class="home-dash-value">-</p>
-          </article>
-          <article class="home-dash-tile">
             <p class="home-dash-label">Heutige Aufgabe</p>
             <p id="dashTodayTask" class="home-dash-value">-</p>
             <div class="row-end" style="margin-top:8px;">
@@ -2966,14 +2962,6 @@
             <p class="home-dash-label">Kurze Statistik</p>
             <p id="dashStatsMain" class="home-dash-value">-</p>
             <p id="dashStatsMeta" class="home-dash-meta">-</p>
-          </article>
-          <article class="home-dash-tile">
-            <p class="home-dash-label">Empfohlenes Training</p>
-            <p id="dashRecommendation" class="home-dash-value">-</p>
-          </article>
-          <article class="home-dash-tile">
-            <p class="home-dash-label">Hinweis</p>
-            <p id="dashAnnouncement" class="home-dash-value">-</p>
           </article>
         </div>
       </section>
@@ -3845,7 +3833,7 @@
       const statsMetaNode = document.getElementById("dashStatsMeta");
       const recNode = document.getElementById("dashRecommendation");
       const annNode = document.getElementById("dashAnnouncement");
-      if (!lastSectionNode || !todayTaskNode || !statsMainNode || !statsMetaNode || !recNode || !annNode) return;
+      if (!todayTaskNode || !statsMainNode || !statsMetaNode) return;
 
       const solved = Number(homeDashboardState.solved_total || 0);
       const answered = Number(homeDashboardState.answered_total || 0);
@@ -3853,13 +3841,13 @@
       const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
       const rec = getHomeRecommendation();
 
-      lastSectionNode.textContent = String(homeDashboardState.last_section || "Portal");
+      if (lastSectionNode) lastSectionNode.textContent = String(homeDashboardState.last_section || "Portal");
       todayTaskNode.textContent = getTodayTaskLabel();
       statsMainNode.textContent = `${solved} Test · %${accuracy}`;
       statsMetaNode.textContent = `Serie: ${Number(homeDashboardState.streak_days || 0)} Tage · Richtig: ${correct}/${answered}`;
-      recNode.textContent = rec.label;
+      if (recNode) recNode.textContent = rec.label;
       const ann = String(window.localStorage.getItem(HOME_ANNOUNCEMENT_KEY) || DASHBOARD_FALLBACK_ANNOUNCEMENT).trim();
-      annNode.textContent = ann || DASHBOARD_FALLBACK_ANNOUNCEMENT;
+      if (annNode) annNode.textContent = ann || DASHBOARD_FALLBACK_ANNOUNCEMENT;
     }
 
     const homeDashboardState = loadHomeDashboardState();
