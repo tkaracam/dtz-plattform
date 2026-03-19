@@ -372,12 +372,14 @@ fun WebAppScreen() {
     var showSettings by remember { mutableStateOf(false) }
     var showJumpDialog by remember { mutableStateOf(false) }
     var showPageInfoDialog by remember { mutableStateOf(false) }
+    var showImportSettingsDialog by remember { mutableStateOf(false) }
     var showScrollTop by remember { mutableStateOf(false) }
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
     var findMatchCount by remember { mutableStateOf(0) }
     var findActiveMatch by remember { mutableStateOf(0) }
     var jumpInput by remember { mutableStateOf("") }
+    var importSettingsInput by remember { mutableStateOf("") }
     var topMenuExpanded by remember { mutableStateOf(false) }
     var currentPageTitle by remember { mutableStateOf("DTZ-LID edu") }
     var defaultUserAgent by remember { mutableStateOf("") }
@@ -619,6 +621,54 @@ fun WebAppScreen() {
 
     fun applyNetworkOptimizedProfile() {
         applyWebProfile(if (meteredNetwork) "fast" else "balanced")
+    }
+
+    fun exportWebSettingsJson(): String {
+        return JSONObject()
+            .put("v", 1)
+            .put("desktopMode", desktopMode)
+            .put("textZoom", textZoom)
+            .put("keepScreenOn", keepScreenOn)
+            .put("dataSaver", dataSaver)
+            .put("textAutosize", textAutosize)
+            .put("mediaAutoplay", mediaAutoplay)
+            .put("readerMode", readerMode)
+            .put("reduceMotion", reduceMotion)
+            .put("autoNetworkOptimize", autoNetworkOptimize)
+            .put("useLastUrlOnLaunch", useLastUrlOnLaunch)
+            .put("startPageUrl", startPageUrl)
+            .toString()
+    }
+
+    fun importWebSettingsJson(raw: String): Boolean {
+        val obj = runCatching { JSONObject(raw.trim()) }.getOrNull() ?: return false
+        val importedStart = normalizeAllowedWebUrl(obj.optString("startPageUrl", WEB_BASE_URL)) ?: WEB_BASE_URL
+        desktopMode = obj.optBoolean("desktopMode", desktopMode)
+        textZoom = obj.optInt("textZoom", textZoom).coerceIn(70, 180)
+        keepScreenOn = obj.optBoolean("keepScreenOn", keepScreenOn)
+        dataSaver = obj.optBoolean("dataSaver", dataSaver)
+        textAutosize = obj.optBoolean("textAutosize", textAutosize)
+        mediaAutoplay = obj.optBoolean("mediaAutoplay", mediaAutoplay)
+        readerMode = obj.optBoolean("readerMode", readerMode)
+        reduceMotion = obj.optBoolean("reduceMotion", reduceMotion)
+        autoNetworkOptimize = obj.optBoolean("autoNetworkOptimize", autoNetworkOptimize)
+        useLastUrlOnLaunch = obj.optBoolean("useLastUrlOnLaunch", useLastUrlOnLaunch)
+        startPageUrl = importedStart
+
+        webPrefs.edit()
+            .putBoolean(WEB_DESKTOP_MODE, desktopMode)
+            .putInt(WEB_TEXT_ZOOM, textZoom)
+            .putBoolean(WEB_KEEP_SCREEN_ON, keepScreenOn)
+            .putBoolean(WEB_AUTO_NET_OPT, autoNetworkOptimize)
+            .apply()
+        persistAdvancedWebToggles()
+        persistLaunchPrefs()
+        webViewRef?.let {
+            applyRuntimeWebPreferences(it)
+            applyWebContentStyles(it)
+            it.reload()
+        }
+        return true
     }
 
     LaunchedEffect(Unit) {
@@ -1713,6 +1763,21 @@ fun WebAppScreen() {
                         }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Ayar Taşıma", fontWeight = FontWeight.SemiBold)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = {
+                                val payload = exportWebSettingsJson()
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                clipboard.setPrimaryClip(ClipData.newPlainText("DTZ-WEBVIEW-SETTINGS", payload))
+                                Toast.makeText(context, "Ayarlar panoya kopyalandı", Toast.LENGTH_SHORT).show()
+                            }) { Text("Dışa Aktar") }
+                            OutlinedButton(onClick = {
+                                importSettingsInput = ""
+                                showImportSettingsDialog = true
+                            }) { Text("İçe Aktar") }
+                        }
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("Profil", fontWeight = FontWeight.SemiBold)
                         Row(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -1896,6 +1961,36 @@ fun WebAppScreen() {
             },
             dismissButton = {
                 TextButton(onClick = { showJumpDialog = false }) { Text("Kapat") }
+            }
+        )
+    }
+
+    if (showImportSettingsDialog) {
+        AlertDialog(
+            onDismissRequest = { showImportSettingsDialog = false },
+            title = { Text("Ayarları İçe Aktar") },
+            text = {
+                OutlinedTextField(
+                    value = importSettingsInput,
+                    onValueChange = { importSettingsInput = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("{\"v\":1,...}") },
+                    minLines = 4
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val ok = importWebSettingsJson(importSettingsInput)
+                    if (ok) {
+                        showImportSettingsDialog = false
+                        Toast.makeText(context, "Ayarlar içe aktarıldı", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Geçersiz ayar verisi", Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text("Uygula") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showImportSettingsDialog = false }) { Text("Kapat") }
             }
         )
     }
