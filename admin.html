@@ -2675,9 +2675,9 @@
                 <div>
                   <label for="kursHwTaskCategory">Kategorie</label>
                   <select id="kursHwTaskCategory">
-                    <option value="mail" selected>Mail-Aufgabe</option>
-                    <option value="hoeren">Hören</option>
+                    <option value="hoeren" selected>Hören</option>
                     <option value="lesen">Lesen</option>
+                    <option value="mail">Mail-Aufgabe</option>
                   </select>
                 </div>
                 <div>
@@ -2771,9 +2771,9 @@
               <div>
                 <label for="hwTaskCategory">Kategorie</label>
                 <select id="hwTaskCategory">
-                  <option value="mail" selected>Mail-Aufgabe</option>
-                  <option value="hoeren">Hören</option>
+                  <option value="hoeren" selected>Hören</option>
                   <option value="lesen">Lesen</option>
+                  <option value="mail">Mail-Aufgabe</option>
                 </select>
               </div>
               <div>
@@ -6140,12 +6140,12 @@
     }
 
     function persistHomeworkQuickDefaults() {
-      const category = String(document.getElementById("hwTaskCategory")?.value || "mail").trim().toLowerCase();
+      const category = String(document.getElementById("hwTaskCategory")?.value || "hoeren").trim().toLowerCase();
       const template = String(document.getElementById("hwTaskTemplate")?.value || "").trim();
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
       const durationValue = String(document.getElementById("hwDurationValue")?.value || "").trim();
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes").trim();
-      setStoredPreference(ADMIN_HW_CATEGORY_KEY, category || "mail");
+      setStoredPreference(ADMIN_HW_CATEGORY_KEY, category || "hoeren");
       setStoredPreference(ADMIN_HW_TEMPLATE_KEY, template || null);
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
@@ -6153,7 +6153,7 @@
     }
 
     function restoreHomeworkQuickDefaults() {
-      const category = getStoredPreference(ADMIN_HW_CATEGORY_KEY) || "mail";
+      const category = getStoredPreference(ADMIN_HW_CATEGORY_KEY) || "hoeren";
       const template = getStoredPreference(ADMIN_HW_TEMPLATE_KEY);
       const courseId = getStoredPreference(ADMIN_HW_COURSE_KEY);
       const durationValue = getStoredPreference(ADMIN_HW_DURATION_VALUE_KEY);
@@ -6229,7 +6229,7 @@
     function renderHomeworkTemplateOptions() {
       const select = document.getElementById("hwTaskTemplate");
       if (!select) return;
-      const category = String(document.getElementById("hwTaskCategory")?.value || "mail").toLowerCase();
+      const category = String(document.getElementById("hwTaskCategory")?.value || "hoeren").toLowerCase();
       const currentValue = String(select.value || "");
       const options = ['<option value="">Bitte Aufgabe wählen</option>'];
       HOMEWORK_MAIL_TEMPLATES
