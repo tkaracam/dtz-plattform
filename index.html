@@ -3816,8 +3816,7 @@
     function getTodayTaskLabel() {
       const fromAssignment = String(currentAssignedHomework && currentAssignedHomework.title ? currentAssignedHomework.title : "").trim();
       if (fromAssignment) return fromAssignment;
-      const rec = getHomeRecommendation();
-      return rec.label;
+      return "Keine Aufgabe";
     }
 
     function getDashboardStartRoute() {
