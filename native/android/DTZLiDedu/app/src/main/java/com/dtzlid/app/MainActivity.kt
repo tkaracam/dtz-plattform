@@ -130,6 +130,8 @@ private const val WEB_MEDIA_AUTOPLAY = "media_autoplay"
 private const val WEB_READER_MODE = "reader_mode"
 private const val WEB_REDUCE_MOTION = "reduce_motion"
 private const val WEB_AUTO_NET_OPT = "auto_net_opt"
+private const val WEB_START_URL = "start_url"
+private const val WEB_USE_LAST_URL = "use_last_url"
 private const val WEB_RECENT_PAGES = "recent_pages"
 private const val WEB_SCROLL_POSITIONS = "scroll_positions"
 private val WEB_ALLOWED_HOSTS = setOf("dtz-lid.com", "www.dtz-lid.com")
@@ -334,8 +336,14 @@ fun WebAppScreen() {
             webPrefs.edit().remove(WEB_PENDING_DEEP_LINK).apply()
             normalizedPending
         } else {
+            val useLast = webPrefs.getBoolean(WEB_USE_LAST_URL, true)
             val saved = webPrefs.getString(WEB_LAST_URL, WEB_BASE_URL) ?: WEB_BASE_URL
-            normalizeAllowedWebUrl(saved) ?: WEB_BASE_URL
+            val customStart = webPrefs.getString(WEB_START_URL, WEB_BASE_URL) ?: WEB_BASE_URL
+            if (useLast) {
+                normalizeAllowedWebUrl(saved) ?: WEB_BASE_URL
+            } else {
+                normalizeAllowedWebUrl(customStart) ?: WEB_BASE_URL
+            }
         }
     }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
@@ -378,6 +386,12 @@ fun WebAppScreen() {
     var pendingGeoOrigin by remember { mutableStateOf<String?>(null) }
     var pendingGeoCallback by remember { mutableStateOf<GeolocationPermissions.Callback?>(null) }
     var desktopMode by remember { mutableStateOf(webPrefs.getBoolean(WEB_DESKTOP_MODE, false)) }
+    var useLastUrlOnLaunch by remember { mutableStateOf(webPrefs.getBoolean(WEB_USE_LAST_URL, true)) }
+    var startPageUrl by remember {
+        mutableStateOf(
+            normalizeAllowedWebUrl(webPrefs.getString(WEB_START_URL, WEB_BASE_URL) ?: WEB_BASE_URL) ?: WEB_BASE_URL
+        )
+    }
     var textZoom by remember { mutableStateOf(webPrefs.getInt(WEB_TEXT_ZOOM, 100).coerceIn(70, 180)) }
     var keepScreenOn by remember { mutableStateOf(webPrefs.getBoolean(WEB_KEEP_SCREEN_ON, false)) }
     var dataSaver by remember { mutableStateOf(webPrefs.getBoolean(WEB_DATA_SAVER, false)) }
@@ -451,6 +465,10 @@ fun WebAppScreen() {
         webViewRef?.loadUrl(normalizeAllowedWebUrl(url) ?: WEB_BASE_URL)
     }
 
+    fun goHome() {
+        openSafeUrl(startPageUrl)
+    }
+
     fun buildUserAgent(baseUserAgent: String): String {
         val base = baseUserAgent.replace(" $WEBVIEW_TAG_UA", "").trim()
         if (desktopMode) {
@@ -480,6 +498,13 @@ fun WebAppScreen() {
     fun persistFavorites() {
         val raw = favorites.joinToString("\n")
         webPrefs.edit().putString(WEB_FAVORITES, raw).apply()
+    }
+
+    fun persistLaunchPrefs() {
+        webPrefs.edit()
+            .putBoolean(WEB_USE_LAST_URL, useLastUrlOnLaunch)
+            .putString(WEB_START_URL, startPageUrl)
+            .apply()
     }
 
     fun addRecentPage(url: String, title: String) {
@@ -715,7 +740,7 @@ fun WebAppScreen() {
                             text = { Text("Ana Sayfa") },
                             onClick = {
                                 topMenuExpanded = false
-                                openSafeUrl(WEB_BASE_URL)
+                                goHome()
                             }
                         )
                         DropdownMenuItem(
@@ -818,6 +843,26 @@ fun WebAppScreen() {
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text("Bu Sayfayı Başlangıç Yap") },
+                            onClick = {
+                                topMenuExpanded = false
+                                val current = normalizeAllowedWebUrl(webViewRef?.url.orEmpty())
+                                if (current != null) {
+                                    startPageUrl = current
+                                    useLastUrlOnLaunch = false
+                                    persistLaunchPrefs()
+                                    Toast.makeText(context, "Başlangıç sayfası güncellendi", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Başlangıç Sayfasına Git") },
+                            onClick = {
+                                topMenuExpanded = false
+                                openSafeUrl(startPageUrl)
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("WebView Ayarları") },
                             onClick = {
                                 topMenuExpanded = false
@@ -868,7 +913,7 @@ fun WebAppScreen() {
                                 android.webkit.WebStorage.getInstance().deleteAllData()
                                 webViewRef?.clearHistory()
                                 webViewRef?.clearCache(true)
-                                openSafeUrl(WEB_BASE_URL)
+                                goHome()
                                 Toast.makeText(context, "Oturum temizlendi", Toast.LENGTH_SHORT).show()
                             }
                         )
@@ -895,7 +940,7 @@ fun WebAppScreen() {
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    AssistChip(onClick = { openSafeUrl(WEB_BASE_URL) }, label = { Text("Start") })
+                    AssistChip(onClick = { goHome() }, label = { Text("Start") })
                     AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#dtz") }, label = { Text("DTZ") })
                     AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#schreiben") }, label = { Text("Schreiben") })
                     AssistChip(onClick = { openSafeUrl("$WEB_BASE_URL/#portal") }, label = { Text("Portal") })
@@ -1338,7 +1383,7 @@ fun WebAppScreen() {
                         Text("Sayfayı yeniden deneyebilir veya ana sayfaya dönebilirsiniz.")
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = { webViewRef?.reload() }) { Text("Tekrar Dene") }
-                            Button(onClick = { openSafeUrl(WEB_BASE_URL) }) { Text("Ana Sayfa") }
+                            Button(onClick = { goHome() }) { Text("Ana Sayfa") }
                         }
                     }
                 }
@@ -1428,7 +1473,7 @@ fun WebAppScreen() {
                             enabled = canGoForward
                         ) { Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "İleri") }
                         IconButton(
-                            onClick = { openSafeUrl(WEB_BASE_URL) }
+                            onClick = { goHome() }
                         ) { Icon(Icons.Default.Home, contentDescription = "Ana Sayfa") }
                         IconButton(
                             onClick = {
@@ -1623,6 +1668,49 @@ fun WebAppScreen() {
                                 webViewRef?.let { applyRuntimeWebPreferences(it); it.reload() }
                             }
                         )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Açılışta Son Sayfayı Aç", fontWeight = FontWeight.SemiBold)
+                            Text("Kapalıysa aşağıdaki başlangıç sayfası kullanılır.", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(
+                            checked = useLastUrlOnLaunch,
+                            onCheckedChange = { checked ->
+                                useLastUrlOnLaunch = checked
+                                persistLaunchPrefs()
+                            }
+                        )
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Başlangıç Sayfası", fontWeight = FontWeight.SemiBold)
+                        OutlinedTextField(
+                            value = startPageUrl,
+                            onValueChange = { startPageUrl = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("https://dtz-lid.com/...") },
+                            singleLine = true
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = {
+                                val normalized = normalizeAllowedWebUrl(startPageUrl)
+                                if (normalized != null) {
+                                    startPageUrl = normalized
+                                    persistLaunchPrefs()
+                                    Toast.makeText(context, "Başlangıç sayfası kaydedildi", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Geçersiz URL", Toast.LENGTH_SHORT).show()
+                                }
+                            }) { Text("Kaydet") }
+                            OutlinedButton(onClick = {
+                                startPageUrl = WEB_BASE_URL
+                                persistLaunchPrefs()
+                            }) { Text("Sıfırla") }
+                        }
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("Profil", fontWeight = FontWeight.SemiBold)
