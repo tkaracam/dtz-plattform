@@ -90,6 +90,7 @@ $reminder = homework_reminder_for_state($state, $now);
 
 $response = [
     'has_assignment' => true,
+    'server_ts' => $now,
     'assignment' => [
         'id' => (string)($assignment['id'] ?? ''),
         'template_id' => (string)($assignment['template_id'] ?? ''),

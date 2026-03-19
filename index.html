@@ -3753,6 +3753,7 @@
     let assignmentAutoSubmitInFlight = false;
     let assignmentAutoSubmittedFor = "";
     let assignmentTimeWarningSent = {};
+    let serverTimeOffsetMs = 0;
     let taskStatus = {};
     let currentTaskIndex = 0;
     let taskFilter = "all";
@@ -9104,6 +9105,17 @@
       }
     }
 
+    function syncServerClock(serverTs) {
+      const ts = Number(serverTs || 0);
+      if (!Number.isFinite(ts) || ts <= 0) return;
+      const nowMs = Date.now();
+      serverTimeOffsetMs = (ts * 1000) - nowMs;
+    }
+
+    function approxServerNowSeconds() {
+      return Math.floor((Date.now() + serverTimeOffsetMs) / 1000);
+    }
+
     function assignmentWarningBucket(assignmentId) {
       const key = String(assignmentId || "").trim();
       if (!key) return null;
@@ -9447,7 +9459,7 @@
 
     function updateAssignmentCountdown() {
       if (!currentAssignedHomework || !currentAssignedHomeworkState) return;
-      const now = Math.floor(Date.now() / 1000);
+      const now = approxServerNowSeconds();
       const startsRaw = String(currentAssignedHomework.starts_at || "").trim();
       const startsTs = startsRaw ? Math.floor(new Date(startsRaw).getTime() / 1000) : 0;
       const deadlineRaw = String(currentAssignedHomeworkState.deadline_at || "").trim();
@@ -9597,6 +9609,7 @@
         });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        syncServerClock(payload.server_ts);
         renderCurrentAssignment(payload);
       } catch (err) {
         renderAssignmentPlaceholder(`Aufgabe konnte nicht geladen werden: ${err.message}`, "Fehler");
@@ -9622,6 +9635,7 @@
         });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        syncServerClock(payload.server_ts);
         setStatus("ok", "Bearbeitung gestartet. Die Zeit läuft.", statusBoxId);
         await loadCurrentAssignedHomework();
         resetLetterWritingTimer();

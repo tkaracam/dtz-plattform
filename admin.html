@@ -2690,22 +2690,20 @@
                   <label for="kursHwTaskPreview">Aufgabenstellung (bearbeitbar)</label>
                   <textarea id="kursHwTaskPreview" rows="6"></textarea>
                 </div>
-                <div class="grid">
-                  <div>
-                    <label for="kursHwDurationValue">Dauer</label>
-                    <input id="kursHwDurationValue" type="number" min="5" max="1440" value="60">
-                  </div>
-                  <div>
-                    <label for="kursHwDurationUnit">Einheit</label>
-                    <select id="kursHwDurationUnit">
-                      <option value="minutes" selected>Minuten</option>
-                      <option value="hours">Stunden</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="kursHwStartsAt">Startzeit</label>
-                    <input id="kursHwStartsAt" type="datetime-local" required>
-                  </div>
+                <div>
+                  <label for="kursHwStartsAt">Startzeit</label>
+                  <input id="kursHwStartsAt" type="datetime-local" required>
+                </div>
+                <div>
+                  <label for="kursHwDurationValue">Dauer</label>
+                  <input id="kursHwDurationValue" type="number" min="5" max="1440" value="60">
+                </div>
+                <div>
+                  <label for="kursHwDurationUnit">Einheit</label>
+                  <select id="kursHwDurationUnit">
+                    <option value="minutes" selected>Minuten</option>
+                    <option value="hours">Stunden</option>
+                  </select>
                 </div>
                 <div class="actions">
                   <button id="kursCreateHomeworkBtn" type="button">Hausaufgabe zuweisen</button>
@@ -2791,12 +2789,22 @@
                 <select id="hwCourseId">
                   <option value="">Bitte zuerst Kurs auswählen</option>
                 </select>
+                <small class="muted">Wenn leer, wird automatisch der aktuell gewählte Kurs verwendet.</small>
               </div>
-              <div class="grid">
-                <div>
-                  <label for="hwStartsAt">Startzeit</label>
-                  <input id="hwStartsAt" type="datetime-local" required>
-                </div>
+              <div>
+                <label for="hwStartsAt">Startzeit</label>
+                <input id="hwStartsAt" type="datetime-local" required>
+              </div>
+              <div>
+                <label for="hwDurationValue">Dauer</label>
+                <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
+              </div>
+              <div>
+                <label for="hwDurationUnit">Einheit</label>
+                <select id="hwDurationUnit">
+                  <option value="minutes" selected>Minuten</option>
+                  <option value="hours">Stunden</option>
+                </select>
               </div>
               <details id="hwAdvancedDetails" class="fold-section" style="margin-top:10px;">
                 <summary>Erweitert</summary>
@@ -2807,17 +2815,6 @@
                       <select id="hwTargetType">
                         <option value="course" selected>Kurs / Gruppe</option>
                         <option value="users">Ausgewählte Teilnehmende</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label for="hwDurationValue">Dauer</label>
-                      <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
-                    </div>
-                    <div>
-                      <label for="hwDurationUnit">Einheit</label>
-                      <select id="hwDurationUnit">
-                        <option value="minutes" selected>Minuten</option>
-                        <option value="hours">Stunden</option>
                       </select>
                     </div>
                   </div>
@@ -4875,7 +4872,7 @@
 
       const homeworkCourse = document.getElementById("hwCourseId");
       if (homeworkCourse) {
-        const prevHw = homeworkCourse.value || getStoredPreference(ADMIN_HW_COURSE_KEY);
+        const prevHw = homeworkCourse.value || getStoredPreference(ADMIN_HW_COURSE_KEY) || selectedCourseId;
         homeworkCourse.innerHTML = options.join("");
         if (prevHw && Array.from(homeworkCourse.options).some(o => o.value === prevHw)) {
           homeworkCourse.value = prevHw;
@@ -5055,6 +5052,11 @@
       getCourseSwitcherSelects().forEach(select => {
         select.value = id;
       });
+      const hwCourseSelect = document.getElementById("hwCourseId");
+      if (hwCourseSelect && id && Array.from(hwCourseSelect.options).some(o => o.value === id)) {
+        hwCourseSelect.value = id;
+        persistHomeworkQuickDefaults();
+      }
       if (!getAccountsScopeCourseId() && id) {
         setAccountsScopeCourse(id);
       }
@@ -7505,6 +7507,7 @@
       const attachment = "";
       const targetType = String(document.getElementById("hwTargetType")?.value || "course");
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
+      const effectiveCourseId = targetType === "course" ? (courseId || String(selectedCourseId || "").trim()) : "";
       const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
       const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
@@ -7534,7 +7537,7 @@
         .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
         .filter(Boolean);
 
-      if (targetType === "course" && !courseId) {
+      if (targetType === "course" && !effectiveCourseId) {
         setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
         return;
       }
@@ -7551,7 +7554,7 @@
           description,
           attachment,
           target_type: targetType,
-          course_id: targetType === "course" ? courseId : "",
+          course_id: targetType === "course" ? effectiveCourseId : "",
           usernames: targetType === "users" ? usernames : [],
           duration_minutes: durationMinutes,
           starts_at: startsAt
