@@ -3004,27 +3004,6 @@
       </div>
       </section>
     <div class="shell">
-      <section id="homeDashboardCard" class="card hidden">
-        <h2 class="section-title">Startpanel</h2>
-        <p class="section-subtitle">Schneller Überblick für heute.</p>
-        <div class="home-dashboard-grid">
-          <article class="home-dash-tile">
-            <p class="home-dash-label">Heutige Aufgabe</p>
-            <p id="dashTodayTask" class="home-dash-value">-</p>
-            <div class="row-end" style="margin-top:8px;">
-              <div class="btn-wrap" style="max-width:none;">
-                <button id="dashStartTaskBtn" type="button">Aufgabe starten</button>
-              </div>
-            </div>
-          </article>
-          <article class="home-dash-tile">
-            <p class="home-dash-label">Kurze Statistik</p>
-            <p id="dashStatsMain" class="home-dash-value">-</p>
-            <p id="dashStatsMeta" class="home-dash-meta">-</p>
-          </article>
-        </div>
-      </section>
-
       <section id="studentAuthCard" class="card auth-card">
         <h2 class="section-title">Schüler-Login</h2>
         <p class="section-subtitle">Zugangsdaten von der Lehrkraft eingeben.</p>
@@ -5576,9 +5555,7 @@
     }
 
     function openHomeView() {
-      setMainView("home");
-      setHomeDashboardSection("home");
-      updateHeroHomeVisibility("home");
+      openPortalView();
     }
 
     function openSimulationView() {
@@ -8387,36 +8364,37 @@
         closeNavOnMobile();
         return;
       }
+      const normalizedTarget = target === "home" ? "portal" : target;
 
-      if (target === "home") {
+      if (normalizedTarget === "home") {
         openHomeView();
-      } else if (target === "portal") {
+      } else if (normalizedTarget === "portal") {
         openPortalView();
-      } else if (target === "simulation") {
+      } else if (normalizedTarget === "simulation") {
         openSimulationView();
-      } else if (target === "room") {
+      } else if (normalizedTarget === "room") {
         openRoomView();
-      } else if (target === "write") {
+      } else if (normalizedTarget === "write") {
         openCorrectionView();
-      } else if (target === "bsk" || target === "bsk-suite") {
+      } else if (normalizedTarget === "bsk" || normalizedTarget === "bsk-suite") {
         openPortalView();
-      } else if (target === "lid") {
+      } else if (normalizedTarget === "lid") {
         openLidView();
-      } else if (target === "speaking") {
+      } else if (normalizedTarget === "speaking") {
         openSpeakingView();
-      } else if (target === "niveau") {
+      } else if (normalizedTarget === "niveau") {
         openNiveauView();
-      } else if (target === "dtz") {
+      } else if (normalizedTarget === "dtz") {
         openDtzHubView();
-      } else if (target === "b1") {
+      } else if (normalizedTarget === "b1") {
         openB1View();
-      } else if (target === "dtz-hoeren") {
+      } else if (normalizedTarget === "dtz-hoeren") {
         openDtzModuleView("hoeren");
-      } else if (target === "dtz-lesen") {
+      } else if (normalizedTarget === "dtz-lesen") {
         openDtzModuleView("lesen");
       }
 
-      if (target === "b1" || target === "dtz-hoeren" || target === "dtz-lesen") {
+      if (normalizedTarget === "b1" || normalizedTarget === "dtz-hoeren" || normalizedTarget === "dtz-lesen") {
         const dtzCard = document.getElementById("dtzTrainingCard");
         if (dtzCard) {
           dtzCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -8425,7 +8403,7 @@
         const hero = document.querySelector(".hero");
         if (hero) hero.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-      setHomeDashboardSection(target);
+      setHomeDashboardSection(normalizedTarget);
       closeNavOnMobile();
     }
 
