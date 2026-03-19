@@ -463,35 +463,6 @@
       display: none;
     }
 
-    .hero-quick {
-      display: grid;
-      gap: 10px;
-      max-width: 980px;
-      margin: 0 auto;
-    }
-
-    .hero-quick-title {
-      margin: 0;
-      color: rgba(79, 70, 86, 0.9);
-      font-size: 1rem;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .hero-quick-grid {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(3, minmax(140px, 1fr));
-    }
-
-    .hero-quick-btn {
-      text-transform: none;
-      letter-spacing: 0.02em;
-      font-size: 0.92rem;
-      min-height: 46px;
-      border-radius: 12px;
-    }
-
     .level-bar {
       margin-top: 12px;
       display: grid;
@@ -2813,10 +2784,6 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
-      .hero-quick-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
       .hero-media {
         height: 210px;
       }
@@ -2888,10 +2855,6 @@
         padding: 18px 14px;
       }
 
-      .hero-quick-grid {
-        grid-template-columns: 1fr;
-      }
-
       .command-palette-backdrop {
         padding: 10px 8px;
       }
@@ -2949,17 +2912,6 @@
             <button type="button" class="level-tile portal-wide" id="levelPortalBtn">Portal</button>
           </div>
           <div class="hero-cta" aria-hidden="true"></div>
-        </div>
-        <div id="heroQuickAccess" class="hero-quick hidden">
-          <p class="hero-quick-title">Schnellzugriff</p>
-          <div class="hero-quick-grid">
-            <button id="heroQuickPortalBtn" type="button" class="hero-quick-btn">Portal</button>
-            <button id="heroQuickWriteBtn" type="button" class="hero-quick-btn">Schreiben</button>
-            <button id="heroQuickDtzBtn" type="button" class="hero-quick-btn">DTZ</button>
-            <button id="heroQuickLidBtn" type="button" class="hero-quick-btn">LiD</button>
-            <button id="heroQuickSpeakingBtn" type="button" class="hero-quick-btn">Sprechen</button>
-            <button id="heroQuickPaletteBtn" type="button" class="hero-quick-btn">Mehr</button>
-          </div>
         </div>
       </div>
       </section>
@@ -5261,13 +5213,9 @@
 
     function updateHeroHomeVisibility(mode) {
       const heroHomeContent = document.getElementById("heroHomeContent");
-      const heroQuickAccess = document.getElementById("heroQuickAccess");
       if (!heroHomeContent) return;
       const showHome = mode === "" || mode === "home";
       heroHomeContent.classList.toggle("hidden", !showHome);
-      if (heroQuickAccess) {
-        heroQuickAccess.classList.toggle("hidden", showHome);
-      }
     }
 
     function setMainView(mode) {
@@ -10840,18 +10788,6 @@
     });
     const levelPortalBtn = document.getElementById("levelPortalBtn");
     if (levelPortalBtn) levelPortalBtn.addEventListener("click", () => navigateToSection("portal"));
-    const heroQuickPortalBtn = document.getElementById("heroQuickPortalBtn");
-    if (heroQuickPortalBtn) heroQuickPortalBtn.addEventListener("click", () => navigateToSection("portal"));
-    const heroQuickWriteBtn = document.getElementById("heroQuickWriteBtn");
-    if (heroQuickWriteBtn) heroQuickWriteBtn.addEventListener("click", () => navigateToSection("write"));
-    const heroQuickDtzBtn = document.getElementById("heroQuickDtzBtn");
-    if (heroQuickDtzBtn) heroQuickDtzBtn.addEventListener("click", () => navigateToSection("dtz"));
-    const heroQuickLidBtn = document.getElementById("heroQuickLidBtn");
-    if (heroQuickLidBtn) heroQuickLidBtn.addEventListener("click", () => navigateToSection("lid"));
-    const heroQuickSpeakingBtn = document.getElementById("heroQuickSpeakingBtn");
-    if (heroQuickSpeakingBtn) heroQuickSpeakingBtn.addEventListener("click", () => navigateToSection("speaking"));
-    const heroQuickPaletteBtn = document.getElementById("heroQuickPaletteBtn");
-    if (heroQuickPaletteBtn) heroQuickPaletteBtn.addEventListener("click", () => openCommandPalette());
     removeArchivedBskFrontend();
     checkStudentSession();
   </script>
