@@ -5228,7 +5228,7 @@
 
     function showStudentApp(identityText) {
       document.getElementById("studentAuthCard").classList.add("hidden");
-      setMainView("portal");
+      openHomeView();
       const memberPanel = document.getElementById("memberPanel");
       memberPanel.classList.remove("hidden");
       currentStudentLabel = identityText || "Angemeldet";
@@ -5251,7 +5251,7 @@
     }
 
     function openHomeView() {
-      setMainView("portal");
+      setMainView("");
       updateHeroHomeVisibility("home");
     }
 
