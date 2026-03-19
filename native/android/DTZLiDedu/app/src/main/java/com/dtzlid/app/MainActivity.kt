@@ -328,6 +328,9 @@ fun WebAppScreen() {
     var lastScrollPersistAt by remember { mutableStateOf(0L) }
     var pageScrollPercent by remember { mutableStateOf(0) }
     var estimatedReadMinutes by remember { mutableStateOf(0) }
+    var estimatedWordCount by remember { mutableStateOf(0) }
+    var pageLoadStartedAt by remember { mutableStateOf(0L) }
+    var lastPageLoadDurationMs by remember { mutableStateOf(0L) }
     var loading by remember { mutableStateOf(true) }
     var loadProgress by remember { mutableStateOf(0) }
     var offline by remember { mutableStateOf(false) }
@@ -340,6 +343,7 @@ fun WebAppScreen() {
     var showRecentPages by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showJumpDialog by remember { mutableStateOf(false) }
+    var showPageInfoDialog by remember { mutableStateOf(false) }
     var showScrollTop by remember { mutableStateOf(false) }
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
@@ -492,6 +496,7 @@ fun WebAppScreen() {
         ) { jsResult ->
             val raw = jsResult.orEmpty().trim().trim('"')
             val words = raw.filter { it.isDigit() }.toIntOrNull() ?: 0
+            estimatedWordCount = words
             estimatedReadMinutes = if (words <= 0) 0 else maxOf(1, Math.ceil(words / 180.0).toInt())
         }
     }
@@ -754,6 +759,13 @@ fun WebAppScreen() {
                                 topMenuExpanded = false
                                 refreshReadingStats(webViewRef)
                                 Toast.makeText(context, "Okuma analizi güncellendi", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Sayfa Bilgisi") },
+                            onClick = {
+                                topMenuExpanded = false
+                                showPageInfoDialog = true
                             }
                         )
                         DropdownMenuItem(
@@ -1089,6 +1101,8 @@ fun WebAppScreen() {
                                 showScrollTop = false
                                 pageScrollPercent = 0
                                 estimatedReadMinutes = 0
+                                estimatedWordCount = 0
+                                pageLoadStartedAt = System.currentTimeMillis()
                                 lastScrollY = 0
                                 findMatchCount = 0
                                 findActiveMatch = 0
@@ -1146,6 +1160,10 @@ fun WebAppScreen() {
                                 canGoForward = view?.canGoForward() == true
                                 loading = false
                                 loadProgress = 100
+                                if (pageLoadStartedAt > 0L) {
+                                    lastPageLoadDurationMs = (System.currentTimeMillis() - pageLoadStartedAt).coerceAtLeast(0L)
+                                    pageLoadStartedAt = 0L
+                                }
                                 offline = false
                                 loadTimedOut = false
                                 settings.cacheMode = WebSettings.LOAD_DEFAULT
@@ -1663,6 +1681,30 @@ fun WebAppScreen() {
             },
             dismissButton = {
                 TextButton(onClick = { showJumpDialog = false }) { Text("Kapat") }
+            }
+        )
+    }
+
+    if (showPageInfoDialog) {
+        val currentUrl = webViewRef?.url.orEmpty()
+        val normalized = normalizeAllowedWebUrl(currentUrl).orEmpty()
+        val isHttps = normalized.startsWith("https://")
+        AlertDialog(
+            onDismissRequest = { showPageInfoDialog = false },
+            title = { Text("Sayfa Bilgisi") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Başlık: ${currentPageTitle.ifBlank { "Bilinmiyor" }}")
+                    Text("URL: ${if (normalized.isBlank()) "-" else normalized}")
+                    Text("Bağlantı: ${if (isHttps) "Güvenli (HTTPS)" else "Kontrol edin"}")
+                    Text("Yükleme Süresi: ${"%.2f".format(Locale.US, lastPageLoadDurationMs / 1000.0)} sn")
+                    Text("Kelime Sayısı: $estimatedWordCount")
+                    Text("Tahmini Okuma: ${if (estimatedReadMinutes > 0) "~$estimatedReadMinutes dk" else "-"}")
+                    Text("Okuma İlerlemesi: %$pageScrollPercent")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPageInfoDialog = false }) { Text("Kapat") }
             }
         )
     }
