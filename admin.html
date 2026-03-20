@@ -2850,21 +2850,6 @@
                 </select>
                 <small class="muted">Wenn leer, wird automatisch der aktuell gewählte Kurs verwendet.</small>
               </div>
-              <div>
-                <label for="hwStartsAt">Startzeit</label>
-                <input id="hwStartsAt" type="datetime-local" required>
-              </div>
-              <div>
-                <label for="hwDurationValue">Dauer</label>
-                <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
-              </div>
-              <div>
-                <label for="hwDurationUnit">Einheit</label>
-                <select id="hwDurationUnit">
-                  <option value="minutes" selected>Minuten</option>
-                  <option value="hours">Stunden</option>
-                </select>
-              </div>
               <input id="hwTargetType" type="hidden" value="course">
               <div id="hwMultiAssignBox">
                 <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
@@ -2875,6 +2860,23 @@
                 <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
                 <label for="hwTaskPreviewMulti" style="margin-top:8px;">Ausgewählte Aufgaben</label>
                 <textarea id="hwTaskPreviewMulti" rows="6" readonly></textarea>
+                <div class="grid" style="margin-top:8px;">
+                  <div>
+                    <label for="hwStartsAt">Startzeit</label>
+                    <input id="hwStartsAt" type="datetime-local" required>
+                  </div>
+                  <div>
+                    <label for="hwDurationValue">Dauer</label>
+                    <input id="hwDurationValue" type="number" min="5" max="1440" value="60">
+                  </div>
+                  <div>
+                    <label for="hwDurationUnit">Einheit</label>
+                    <select id="hwDurationUnit">
+                      <option value="minutes" selected>Minuten</option>
+                      <option value="hours">Stunden</option>
+                    </select>
+                  </div>
+                </div>
                 <div class="actions" style="margin-top:8px;">
                   <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
                 </div>
