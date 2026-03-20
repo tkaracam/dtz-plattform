@@ -329,3 +329,160 @@ function pick_current_assignment_for_student(array $assignments, string $usernam
 
     return $candidates[0];
 }
+
+function homework_reminder_policy_file_path(): string
+{
+    return __DIR__ . '/storage/homework_reminder_policy.json';
+}
+
+function homework_reminder_policy_default_profile(): array
+{
+    return [
+        'defaults' => [
+            'warn24' => ['enabled' => true, 'cooldown_hours' => 24, 'max_per_day' => 1],
+            'warn2' => ['enabled' => true, 'cooldown_hours' => 2, 'max_per_day' => 2],
+            'expired' => ['enabled' => true, 'cooldown_hours' => 24, 'max_per_day' => 1],
+        ],
+        'course_overrides' => [],
+        'template_overrides' => [],
+    ];
+}
+
+function normalize_homework_reminder_level_policy(array $policy): array
+{
+    $enabled = !empty($policy['enabled']);
+    $cooldownHours = max(0, min(24 * 30, (int)($policy['cooldown_hours'] ?? 0)));
+    $maxPerDay = max(0, min(48, (int)($policy['max_per_day'] ?? 0)));
+    return [
+        'enabled' => $enabled,
+        'cooldown_hours' => $cooldownHours,
+        'max_per_day' => $maxPerDay,
+    ];
+}
+
+function normalize_homework_reminder_policy_profile(array $profile): array
+{
+    $default = homework_reminder_policy_default_profile();
+    $levels = ['warn24', 'warn2', 'expired'];
+    $normalizedDefaults = [];
+    foreach ($levels as $level) {
+        $raw = is_array($profile['defaults'][$level] ?? null)
+            ? $profile['defaults'][$level]
+            : $default['defaults'][$level];
+        $normalizedDefaults[$level] = normalize_homework_reminder_level_policy((array)$raw);
+    }
+
+    $normalizeOverrides = static function ($rawOverrides) use ($levels): array {
+        $out = [];
+        if (!is_array($rawOverrides)) return $out;
+        foreach ($rawOverrides as $scopeKey => $row) {
+            $key = trim((string)$scopeKey);
+            if ($key === '' || !is_array($row)) continue;
+            $scope = [];
+            foreach ($levels as $level) {
+                if (!is_array($row[$level] ?? null)) continue;
+                $scope[$level] = normalize_homework_reminder_level_policy((array)$row[$level]);
+            }
+            if ($scope) $out[$key] = $scope;
+        }
+        return $out;
+    };
+
+    return [
+        'defaults' => $normalizedDefaults,
+        'course_overrides' => $normalizeOverrides($profile['course_overrides'] ?? []),
+        'template_overrides' => $normalizeOverrides($profile['template_overrides'] ?? []),
+    ];
+}
+
+function load_homework_reminder_policy_data(): array
+{
+    $file = homework_reminder_policy_file_path();
+    $defaultProfile = homework_reminder_policy_default_profile();
+    if (!is_file($file)) {
+        return [
+            'version' => 1,
+            'by_teacher' => [],
+            'default_profile' => $defaultProfile,
+        ];
+    }
+    $raw = file_get_contents($file);
+    if (!is_string($raw) || trim($raw) === '') {
+        return [
+            'version' => 1,
+            'by_teacher' => [],
+            'default_profile' => $defaultProfile,
+        ];
+    }
+    $decoded = json_decode($raw, true);
+    $byTeacher = [];
+    if (is_array($decoded['by_teacher'] ?? null)) {
+        foreach ($decoded['by_teacher'] as $teacherUsername => $profile) {
+            $key = auth_lower_text((string)$teacherUsername);
+            if ($key === '' || !is_array($profile)) continue;
+            $byTeacher[$key] = normalize_homework_reminder_policy_profile($profile);
+        }
+    }
+    return [
+        'version' => 1,
+        'by_teacher' => $byTeacher,
+        'default_profile' => $defaultProfile,
+    ];
+}
+
+function write_homework_reminder_policy_data(array $data): bool
+{
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if (!is_string($json)) {
+        return false;
+    }
+    return file_put_contents(homework_reminder_policy_file_path(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function load_homework_reminder_policy_for_teacher(string $teacherUsername): array
+{
+    $data = load_homework_reminder_policy_data();
+    $key = auth_lower_text($teacherUsername);
+    $profile = is_array($data['by_teacher'][$key] ?? null)
+        ? $data['by_teacher'][$key]
+        : ($data['default_profile'] ?? homework_reminder_policy_default_profile());
+    return normalize_homework_reminder_policy_profile((array)$profile);
+}
+
+function save_homework_reminder_policy_for_teacher(string $teacherUsername, array $profile): bool
+{
+    $key = auth_lower_text($teacherUsername);
+    if ($key === '') return false;
+    $data = load_homework_reminder_policy_data();
+    $byTeacher = is_array($data['by_teacher'] ?? null) ? $data['by_teacher'] : [];
+    $byTeacher[$key] = normalize_homework_reminder_policy_profile($profile);
+    $payload = [
+        'version' => 1,
+        'by_teacher' => $byTeacher,
+    ];
+    return write_homework_reminder_policy_data($payload);
+}
+
+function homework_reminder_policy_for_assignment_level(array $assignment, string $level, array $teacherPolicy): array
+{
+    $safeLevel = trim($level);
+    $profile = normalize_homework_reminder_policy_profile($teacherPolicy);
+    $effective = is_array($profile['defaults'][$safeLevel] ?? null)
+        ? $profile['defaults'][$safeLevel]
+        : normalize_homework_reminder_level_policy([]);
+
+    $courseId = trim((string)($assignment['course_id'] ?? ''));
+    if ($courseId !== '' && is_array($profile['course_overrides'][$courseId][$safeLevel] ?? null)) {
+        $effective = $profile['course_overrides'][$courseId][$safeLevel];
+    }
+    $templateId = trim((string)($assignment['template_id'] ?? ''));
+    if ($templateId !== '' && is_array($profile['template_overrides'][$templateId][$safeLevel] ?? null)) {
+        $effective = $profile['template_overrides'][$templateId][$safeLevel];
+    }
+
+    return normalize_homework_reminder_level_policy((array)$effective);
+}

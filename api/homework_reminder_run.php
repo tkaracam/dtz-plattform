@@ -98,6 +98,43 @@ function load_reminder_log_local(string $storageDir): array
     return $keys;
 }
 
+function load_reminder_history_local(string $storageDir): array
+{
+    $file = reminder_log_path_local($storageDir);
+    if (!is_file($file)) {
+        return [];
+    }
+    $handle = @fopen($file, 'rb');
+    if (!$handle) {
+        return [];
+    }
+    $history = [];
+    while (($line = fgets($handle)) !== false) {
+        $line = trim($line);
+        if ($line === '') continue;
+        $row = json_decode($line, true);
+        if (!is_array($row)) continue;
+        $assignmentId = trim((string)($row['assignment_id'] ?? ''));
+        $username = mb_strtolower(trim((string)($row['student_username'] ?? '')));
+        $level = trim((string)($row['level'] ?? ''));
+        $createdAt = trim((string)($row['created_at'] ?? ''));
+        if ($assignmentId === '' || $username === '' || $level === '' || $createdAt === '') continue;
+        $ts = strtotime($createdAt);
+        if ($ts === false) continue;
+        $key = $assignmentId . '|' . $username . '|' . $level;
+        if (!isset($history[$key]) || !is_array($history[$key])) {
+            $history[$key] = [];
+        }
+        $history[$key][] = (int)$ts;
+    }
+    fclose($handle);
+    foreach ($history as $key => $list) {
+        sort($list, SORT_NUMERIC);
+        $history[$key] = $list;
+    }
+    return $history;
+}
+
 function reminder_bucket_local(string $level, int $nowTs): string
 {
     $safeLevel = trim($level);
@@ -112,6 +149,34 @@ function reminder_bucket_local(string $level, int $nowTs): string
         return gmdate('Y-m-d', $nowTs);
     }
     return '';
+}
+
+function reminder_can_send_by_policy_local(array $policy, array $historyTs, int $nowTs): bool
+{
+    if (empty($policy['enabled'])) {
+        return false;
+    }
+    $cooldownHours = max(0, (int)($policy['cooldown_hours'] ?? 0));
+    if ($cooldownHours > 0 && $historyTs) {
+        $lastTs = (int)end($historyTs);
+        if ($lastTs > 0 && ($nowTs - $lastTs) < ($cooldownHours * 3600)) {
+            return false;
+        }
+    }
+    $maxPerDay = max(0, (int)($policy['max_per_day'] ?? 0));
+    if ($maxPerDay > 0 && $historyTs) {
+        $todayKey = gmdate('Y-m-d', $nowTs);
+        $countToday = 0;
+        foreach ($historyTs as $ts) {
+            if (gmdate('Y-m-d', (int)$ts) === $todayKey) {
+                $countToday++;
+            }
+        }
+        if ($countToday >= $maxPerDay) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function append_reminder_log_local(string $storageDir, array $record): bool
@@ -197,11 +262,14 @@ if ($teacherName === '') {
 }
 
 $sentKeys = load_reminder_log_local($storageDir);
+$reminderHistory = load_reminder_history_local($storageDir);
 $items = load_homework_assignments();
 $now = time();
 $targets = [];
 $createdCount = 0;
 $skippedAlreadySent = 0;
+$skippedByPolicy = 0;
+$policyCache = [];
 
 foreach ($items as $assignment) {
     if (!is_array($assignment)) {
@@ -218,6 +286,12 @@ foreach ($items as $assignment) {
     if ($assignmentId === '') {
         continue;
     }
+    $assignmentTeacher = auth_lower_text((string)($assignment['teacher_username'] ?? ''));
+    $policyKey = $assignmentTeacher !== '' ? $assignmentTeacher : $teacherUsername;
+    if (!isset($policyCache[$policyKey]) || !is_array($policyCache[$policyKey])) {
+        $policyCache[$policyKey] = load_homework_reminder_policy_for_teacher($policyKey);
+    }
+    $policyProfile = $policyCache[$policyKey];
 
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
     foreach ($assignees as $username => $rawState) {
@@ -233,6 +307,13 @@ foreach ($items as $assignment) {
         $reminder = homework_reminder_for_state($state, $now);
         $level = (string)($reminder['level'] ?? 'none');
         if (!isset($requestedLevels[$level])) {
+            continue;
+        }
+        $effectivePolicy = homework_reminder_policy_for_assignment_level($assignment, $level, $policyProfile);
+        $historyKey = $assignmentId . '|' . $uname . '|' . $level;
+        $historyTs = is_array($reminderHistory[$historyKey] ?? null) ? $reminderHistory[$historyKey] : [];
+        if (!reminder_can_send_by_policy_local($effectivePolicy, $historyTs, $now)) {
+            $skippedByPolicy++;
             continue;
         }
 
@@ -267,6 +348,10 @@ foreach ($items as $assignment) {
                 ]);
                 if ($okLog) {
                     $sentKeys[$key] = true;
+                    if (!isset($reminderHistory[$historyKey]) || !is_array($reminderHistory[$historyKey])) {
+                        $reminderHistory[$historyKey] = [];
+                    }
+                    $reminderHistory[$historyKey][] = $now;
                     $createdCount++;
                 }
             }
@@ -283,6 +368,7 @@ if (!$dryRun) {
         'levels' => array_keys($requestedLevels),
         'created' => $createdCount,
         'skipped_already_sent' => $skippedAlreadySent,
+        'skipped_by_policy' => $skippedByPolicy,
     ]);
 }
 
@@ -292,5 +378,6 @@ echo json_encode([
     'levels' => array_keys($requestedLevels),
     'created' => $createdCount,
     'skipped_already_sent' => $skippedAlreadySent,
+    'skipped_by_policy' => $skippedByPolicy,
     'targets' => $targets,
 ], JSON_UNESCAPED_UNICODE);

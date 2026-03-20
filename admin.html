@@ -2960,6 +2960,54 @@
           </details>
         </div>
 
+        <div id="homeworkReminderPolicySection" class="bulk-wrap">
+          <h3 class="section-title" style="font-size: 1.2rem;">Reminder-Politik</h3>
+          <details id="homeworkReminderPolicyDetails" class="fold-section">
+            <summary>Cooldown & Wiederholungen (pro Kurs / Vorlage)</summary>
+            <div class="fold-section-content">
+              <div class="grid">
+                <div>
+                  <label><strong>warn24</strong></label>
+                  <label class="hw-multi-check-item"><input id="rpWarn24Enabled" type="checkbox" checked><span>Aktiv</span></label>
+                  <label for="rpWarn24Cooldown">Cooldown (Stunden)</label>
+                  <input id="rpWarn24Cooldown" type="number" min="0" max="720" value="24">
+                  <label for="rpWarn24MaxPerDay">Max/Tag</label>
+                  <input id="rpWarn24MaxPerDay" type="number" min="0" max="48" value="1">
+                </div>
+                <div>
+                  <label><strong>warn2</strong></label>
+                  <label class="hw-multi-check-item"><input id="rpWarn2Enabled" type="checkbox" checked><span>Aktiv</span></label>
+                  <label for="rpWarn2Cooldown">Cooldown (Stunden)</label>
+                  <input id="rpWarn2Cooldown" type="number" min="0" max="720" value="2">
+                  <label for="rpWarn2MaxPerDay">Max/Tag</label>
+                  <input id="rpWarn2MaxPerDay" type="number" min="0" max="48" value="2">
+                </div>
+                <div>
+                  <label><strong>expired</strong></label>
+                  <label class="hw-multi-check-item"><input id="rpExpiredEnabled" type="checkbox" checked><span>Aktiv</span></label>
+                  <label for="rpExpiredCooldown">Cooldown (Stunden)</label>
+                  <input id="rpExpiredCooldown" type="number" min="0" max="720" value="24">
+                  <label for="rpExpiredMaxPerDay">Max/Tag</label>
+                  <input id="rpExpiredMaxPerDay" type="number" min="0" max="48" value="1">
+                </div>
+              </div>
+              <div style="margin-top:10px;">
+                <label for="rpCourseOverrides"><strong>Kurs-Overrides</strong> (eine Zeile = `kurs_id|level|enabled|cooldown_h|max_per_day`)</label>
+                <textarea id="rpCourseOverrides" class="bulk-preview" rows="5" placeholder="bamf123|warn2|1|1|3"></textarea>
+              </div>
+              <div style="margin-top:10px;">
+                <label for="rpTemplateOverrides"><strong>Vorlagen-Overrides</strong> (eine Zeile = `template_id|level|enabled|cooldown_h|max_per_day`)</label>
+                <textarea id="rpTemplateOverrides" class="bulk-preview" rows="5" placeholder="dtz-hoeren-teil1-fragenpaket|warn24|1|12|2"></textarea>
+              </div>
+              <div class="actions" style="margin-top:10px;">
+                <button id="loadReminderPolicyBtn" type="button" class="ghost-btn">Policy laden</button>
+                <button id="saveReminderPolicyBtn" type="button">Policy speichern</button>
+              </div>
+              <div id="homeworkReminderPolicyStatus" class="hidden"></div>
+            </div>
+          </details>
+        </div>
+
         <div id="trainingSetSection" class="bulk-wrap">
           <h3 class="section-title" style="font-size: 1.2rem;">AI Generator</h3>
           <details class="fold-section">
@@ -4147,6 +4195,8 @@
         renderCourseAssignEditor(selectedCourseId);
         updateKursPaneSummary();
         loadKursProgressOverview(true);
+      } else if (paneName === "homeworks") {
+        loadHomeworkReminderPolicy();
       } else if (paneName === "progress") {
         loadProgressOverview(true);
       } else if (paneName === "mod6") {
@@ -7530,6 +7580,164 @@
       }
 
       throw new Error(errors.join(" | "));
+    }
+
+    function defaultReminderPolicyProfileClient() {
+      return {
+        defaults: {
+          warn24: { enabled: true, cooldown_hours: 24, max_per_day: 1 },
+          warn2: { enabled: true, cooldown_hours: 2, max_per_day: 2 },
+          expired: { enabled: true, cooldown_hours: 24, max_per_day: 1 }
+        },
+        course_overrides: {},
+        template_overrides: {}
+      };
+    }
+
+    function parseReminderBool(value) {
+      const v = String(value || "").trim().toLowerCase();
+      return v === "1" || v === "true" || v === "yes" || v === "on" || v === "ja";
+    }
+
+    function parseReminderOverrideLines(raw, scopeLabel = "override") {
+      const out = {};
+      const lines = String(raw || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      lines.forEach((line, idx) => {
+        if (line.startsWith("#")) return;
+        const parts = line.split("|").map(part => part.trim());
+        if (parts.length < 5) return;
+        const [scopeKey, level, enabledRaw, cooldownRaw, maxRaw] = parts;
+        const safeScope = String(scopeKey || "").trim();
+        const safeLevel = String(level || "").trim().toLowerCase();
+        if (!safeScope || !["warn24", "warn2", "expired"].includes(safeLevel)) return;
+        const policy = {
+          enabled: parseReminderBool(enabledRaw),
+          cooldown_hours: Math.max(0, Math.min(24 * 30, Number.parseInt(cooldownRaw, 10) || 0)),
+          max_per_day: Math.max(0, Math.min(48, Number.parseInt(maxRaw, 10) || 0))
+        };
+        if (!out[safeScope]) out[safeScope] = {};
+        out[safeScope][safeLevel] = policy;
+      });
+      return out;
+    }
+
+    function reminderOverrideLinesFromObject(obj) {
+      const rows = [];
+      Object.entries(obj && typeof obj === "object" ? obj : {}).forEach(([scopeKey, levels]) => {
+        Object.entries(levels && typeof levels === "object" ? levels : {}).forEach(([level, cfg]) => {
+          rows.push([
+            scopeKey,
+            level,
+            cfg && cfg.enabled ? "1" : "0",
+            String(Math.max(0, Number(cfg && cfg.cooldown_hours ? cfg.cooldown_hours : 0))),
+            String(Math.max(0, Number(cfg && cfg.max_per_day ? cfg.max_per_day : 0)))
+          ].join("|"));
+        });
+      });
+      return rows.join("\n");
+    }
+
+    function collectHomeworkReminderPolicyFromUi() {
+      return {
+        defaults: {
+          warn24: {
+            enabled: !!document.getElementById("rpWarn24Enabled")?.checked,
+            cooldown_hours: Math.max(0, Math.min(24 * 30, Number.parseInt(String(document.getElementById("rpWarn24Cooldown")?.value || "0"), 10) || 0)),
+            max_per_day: Math.max(0, Math.min(48, Number.parseInt(String(document.getElementById("rpWarn24MaxPerDay")?.value || "0"), 10) || 0))
+          },
+          warn2: {
+            enabled: !!document.getElementById("rpWarn2Enabled")?.checked,
+            cooldown_hours: Math.max(0, Math.min(24 * 30, Number.parseInt(String(document.getElementById("rpWarn2Cooldown")?.value || "0"), 10) || 0)),
+            max_per_day: Math.max(0, Math.min(48, Number.parseInt(String(document.getElementById("rpWarn2MaxPerDay")?.value || "0"), 10) || 0))
+          },
+          expired: {
+            enabled: !!document.getElementById("rpExpiredEnabled")?.checked,
+            cooldown_hours: Math.max(0, Math.min(24 * 30, Number.parseInt(String(document.getElementById("rpExpiredCooldown")?.value || "0"), 10) || 0)),
+            max_per_day: Math.max(0, Math.min(48, Number.parseInt(String(document.getElementById("rpExpiredMaxPerDay")?.value || "0"), 10) || 0))
+          }
+        },
+        course_overrides: parseReminderOverrideLines(String(document.getElementById("rpCourseOverrides")?.value || ""), "course"),
+        template_overrides: parseReminderOverrideLines(String(document.getElementById("rpTemplateOverrides")?.value || ""), "template")
+      };
+    }
+
+    function applyHomeworkReminderPolicyToUi(policy) {
+      const p = policy && typeof policy === "object" ? policy : defaultReminderPolicyProfileClient();
+      const d = p.defaults && typeof p.defaults === "object" ? p.defaults : {};
+      const warn24 = d.warn24 || {};
+      const warn2 = d.warn2 || {};
+      const expired = d.expired || {};
+      const setChecked = (id, value) => {
+        const node = document.getElementById(id);
+        if (node) node.checked = !!value;
+      };
+      const setValue = (id, value) => {
+        const node = document.getElementById(id);
+        if (node) node.value = String(value);
+      };
+      setChecked("rpWarn24Enabled", !!warn24.enabled);
+      setValue("rpWarn24Cooldown", Math.max(0, Number(warn24.cooldown_hours || 0)));
+      setValue("rpWarn24MaxPerDay", Math.max(0, Number(warn24.max_per_day || 0)));
+      setChecked("rpWarn2Enabled", !!warn2.enabled);
+      setValue("rpWarn2Cooldown", Math.max(0, Number(warn2.cooldown_hours || 0)));
+      setValue("rpWarn2MaxPerDay", Math.max(0, Number(warn2.max_per_day || 0)));
+      setChecked("rpExpiredEnabled", !!expired.enabled);
+      setValue("rpExpiredCooldown", Math.max(0, Number(expired.cooldown_hours || 0)));
+      setValue("rpExpiredMaxPerDay", Math.max(0, Number(expired.max_per_day || 0)));
+      const courseOverrides = reminderOverrideLinesFromObject(p.course_overrides || {});
+      const templateOverrides = reminderOverrideLinesFromObject(p.template_overrides || {});
+      const courseNode = document.getElementById("rpCourseOverrides");
+      const templateNode = document.getElementById("rpTemplateOverrides");
+      if (courseNode) courseNode.value = courseOverrides;
+      if (templateNode) templateNode.value = templateOverrides;
+    }
+
+    async function callHomeworkReminderPolicyApi(method = "GET", body = null) {
+      const candidates = [
+        "./api/homework_reminder_policy.php",
+        "/api/homework_reminder_policy.php",
+        `${window.location.origin}/api/homework_reminder_policy.php`
+      ];
+      const errors = [];
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: body ? JSON.stringify(body) : undefined
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          return payload;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${url}: ${msg}`);
+        }
+      }
+      throw new Error(errors.join(" | "));
+    }
+
+    async function loadHomeworkReminderPolicy() {
+      clearBox("homeworkReminderPolicyStatus");
+      try {
+        const payload = await callHomeworkReminderPolicyApi("GET");
+        applyHomeworkReminderPolicyToUi(payload && payload.policy ? payload.policy : defaultReminderPolicyProfileClient());
+        setBox("homeworkReminderPolicyStatus", "ok", "Reminder-Policy geladen.");
+      } catch (err) {
+        setBox("homeworkReminderPolicyStatus", "error", `Policy konnte nicht geladen werden: ${err.message}`);
+      }
+    }
+
+    async function saveHomeworkReminderPolicy() {
+      clearBox("homeworkReminderPolicyStatus");
+      try {
+        const policy = collectHomeworkReminderPolicyFromUi();
+        const payload = await callHomeworkReminderPolicyApi("POST", { action: "save", policy });
+        applyHomeworkReminderPolicyToUi(payload && payload.policy ? payload.policy : policy);
+        setBox("homeworkReminderPolicyStatus", "ok", "Reminder-Policy gespeichert.");
+      } catch (err) {
+        setBox("homeworkReminderPolicyStatus", "error", `Policy konnte nicht gespeichert werden: ${err.message}`);
+      }
     }
 
     async function fetchHomeworkAssignmentAnalysis(assignmentId) {
@@ -11210,6 +11418,10 @@
     const createHomeworkBatchBtn = document.getElementById("createHomeworkBatchBtn");
     if (createHomeworkBatchBtn) createHomeworkBatchBtn.addEventListener("click", createHomeworkBatchAssignments);
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
+    const loadReminderPolicyBtn = document.getElementById("loadReminderPolicyBtn");
+    if (loadReminderPolicyBtn) loadReminderPolicyBtn.addEventListener("click", loadHomeworkReminderPolicy);
+    const saveReminderPolicyBtn = document.getElementById("saveReminderPolicyBtn");
+    if (saveReminderPolicyBtn) saveReminderPolicyBtn.addEventListener("click", saveHomeworkReminderPolicy);
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
     document.getElementById("generateLesenTeil1Btn").addEventListener("click", () => generateTrainingSet("lesen", 1));
