@@ -3843,7 +3843,6 @@
           <div class="dtz-exam-bar" style="margin-top:8px;">
             <span id="modelltestStageChip" class="dtz-exam-chip">Phase: Hören</span>
             <span id="modelltestTimerChip" class="dtz-exam-timer hidden">45:00</span>
-            <button id="modelltestToSchreibenBtn" type="button" class="portal-open-btn hidden">Lesen abschließen · Schreiben starten</button>
             <button id="modelltestFinishBtn" type="button" class="portal-open-btn hidden">Schreiben abgeben · Auswertung</button>
           </div>
           <div id="modelltestWritePanel" class="hidden" style="margin-top:10px;">
@@ -3933,6 +3932,9 @@
             <div class="row-end dtz-action-row">
               <div class="btn-wrap">
                 <button id="dtzLesenEvaluateBtn" type="button">AUSWERTEN</button>
+              </div>
+              <div class="btn-wrap">
+                <button id="modelltestToSchreibenBtn" type="button" class="portal-open-btn hidden">Lesen abschließen · Schreiben starten</button>
               </div>
               <div class="btn-wrap">
                 <button id="dtzLesenNewBtn" type="button">NEUE AUFGABEN</button>
@@ -9697,6 +9699,10 @@
         const part = getDtzPartConfig(module, teil);
         const innerRaw = renderer(module, state);
         const inner = prefixModelltestKeys(innerRaw, teil);
+        if (module === "lesen") {
+          sections.push(inner);
+          continue;
+        }
         sections.push(`
           <section class="portal-item" style="margin-top:10px;">
             <strong>${escapeHtml((part && part.title) ? part.title : `Teil ${teil}`)}</strong>
