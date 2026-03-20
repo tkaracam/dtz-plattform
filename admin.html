@@ -2505,6 +2505,7 @@
             <button id="fastAccountsBtn" type="button" class="admin-fastlane-btn">Schülerzugänge</button>
             <button id="fastCourseBuilderBtn" type="button" class="admin-fastlane-btn">Kurs erstellen</button>
             <button id="fastCoursesBtn" type="button" class="admin-fastlane-btn">Kurse</button>
+            <button id="fastTeachersBtn" type="button" class="admin-fastlane-btn owner-only hidden">Lehrkräfte</button>
             <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
             <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
@@ -11312,6 +11313,10 @@
     const fastCoursesBtn = document.getElementById("fastCoursesBtn");
     if (fastCoursesBtn) {
       fastCoursesBtn.addEventListener("click", () => openAdminPane("courses"));
+    }
+    const fastTeachersBtn = document.getElementById("fastTeachersBtn");
+    if (fastTeachersBtn) {
+      fastTeachersBtn.addEventListener("click", () => openAdminPane("teachers"));
     }
     const fastKursBtn = document.getElementById("fastKursBtn");
     if (fastKursBtn) {
