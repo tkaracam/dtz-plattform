@@ -9809,6 +9809,19 @@
           setDtzModuleStatus(module, "ok", "Auswertung abgeschlossen.");
         }
       }
+
+      if (
+        modelltestFlowState.active
+        && module === "lesen"
+        && modelltestFlowState.stage === "lesen"
+        && !modelltestFlowState.hasWritingTask
+        && !isPartial
+      ) {
+        const lesenStats = getModelltestModuleStats("lesen");
+        if (lesenStats.allAnswered && isModelltestModuleEvaluated("lesen")) {
+          void advanceModelltestAfterLesen(false);
+        }
+      }
     }
 
     function getDtzResolvedTaskCount(state) {
