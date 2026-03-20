@@ -2006,6 +2006,18 @@
       box-shadow: none;
     }
 
+    .admin-fastlane-btn.is-course-selected {
+      border-color: #9fdcbf;
+      background: linear-gradient(120deg, #2fa86f, #49c486);
+      color: #ffffff;
+    }
+
+    .admin-fastlane-btn.is-course-selected:hover {
+      color: #ffffff;
+      border-color: #97d8b8;
+      box-shadow: 0 10px 22px rgba(37, 148, 98, 0.24);
+    }
+
     .course-shortcut-btn {
       min-height: 78px;
       border-radius: 18px;
@@ -5031,13 +5043,15 @@
       const course = getCourseById(selectedCourseId);
       if (!course) {
         btn.classList.add("hidden");
+        btn.classList.remove("is-course-selected");
         btn.disabled = true;
         btn.textContent = "Kursbereich öffnen";
         return;
       }
       btn.classList.remove("hidden");
+      btn.classList.add("is-course-selected");
       btn.disabled = false;
-      btn.textContent = `Kursbereich öffnen: ${getCourseLabel(course, false)}`;
+      btn.textContent = String(course.name || course.course_id || "Kurs");
     }
 
     function getCourseSwitcherSelects() {
