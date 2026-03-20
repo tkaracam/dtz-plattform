@@ -779,6 +779,7 @@
     const checkAllBtn = document.getElementById("checkAllBtn");
     const showAllSolutionsBtn = document.getElementById("showAllSolutionsBtn");
     const statsBox = document.getElementById("statsBox");
+    const toolbarNode = document.querySelector(".toolbar");
 
     const state = {
       topic: "Perfekt",
@@ -1811,17 +1812,28 @@
       renderStats();
     }
 
-    startTestBtn.addEventListener("click", startTest);
+    const homeworkMode = isHomeworkMode();
+
+    if (!homeworkMode) {
+      startTestBtn.addEventListener("click", startTest);
+    }
     checkAllBtn.addEventListener("click", evaluateAllQuestions);
     showAllSolutionsBtn.addEventListener("click", showAllSolutions);
 
     const presetTopics = parseHomeworkTopicPreset();
-    if (presetTopics.length) {
-      const presetCount = parseHomeworkQuestionCount();
+    const presetCount = parseHomeworkQuestionCount();
+    if (homeworkMode) {
+      if (toolbarNode) toolbarNode.style.display = "none";
       startTest({
         topics: presetTopics,
         count: presetCount,
-        homeworkMode: isHomeworkMode()
+        homeworkMode: true
+      });
+    } else if (presetTopics.length) {
+      startTest({
+        topics: presetTopics,
+        count: presetCount,
+        homeworkMode: false
       });
     }
   </script>
