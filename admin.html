@@ -2491,8 +2491,12 @@
             <button id="fastCoursesBtn" type="button" class="admin-fastlane-btn">Kurse</button>
             <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
+            <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen</button>
             <button id="fastMod6Btn" type="button" class="admin-fastlane-btn owner-only hidden">MOD6</button>
+          </div>
+          <div style="margin-top:8px;">
+            <button id="fastSelectedCourseWorkspaceBtn" type="button" class="admin-fastlane-btn hidden">Kursbereich öffnen</button>
           </div>
         </div>
 
@@ -5090,11 +5094,28 @@
       if (!hint) return;
       if (!course) {
         hint.textContent = "Bitte zuerst einen Kurs auswählen.";
+        updateFastSelectedCourseWorkspaceButton();
         updateKursPaneSummary();
         return;
       }
       hint.textContent = `Aktueller Kurs: ${getCourseLabel(course, true)} | Mitglieder: ${Array.isArray(course.members) ? course.members.length : 0}`;
+      updateFastSelectedCourseWorkspaceButton();
       updateKursPaneSummary();
+    }
+
+    function updateFastSelectedCourseWorkspaceButton() {
+      const btn = document.getElementById("fastSelectedCourseWorkspaceBtn");
+      if (!btn) return;
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        btn.classList.add("hidden");
+        btn.disabled = true;
+        btn.textContent = "Kursbereich öffnen";
+        return;
+      }
+      btn.classList.remove("hidden");
+      btn.disabled = false;
+      btn.textContent = `Kursbereich öffnen: ${getCourseLabel(course, false)}`;
     }
 
     function getCourseSwitcherSelects() {
@@ -5266,6 +5287,29 @@
       const assigned = document.getElementById("kursAssignedHomeworkDetails");
       if (assigned) assigned.open = true;
       setBox("kursHomeworkStatus", "ok", `Kurs gewählt: ${getCourseLabel(course, false)}.`);
+    }
+
+    function openSelectedCourseWorkspace() {
+      const course = getCourseById(selectedCourseId);
+      if (!course) {
+        setBox("courseStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+        openAdminPane("courses");
+        return;
+      }
+      openAdminPane("kurs");
+      setSelectedCourse(String(course.course_id || ""), true);
+      const detailsIds = [
+        "kursUsersDetails",
+        "kursHomeworkDetails",
+        "kursAssignedHomeworkDetails",
+        "kursCorrectionsDetails",
+        "kursProgressDetails"
+      ];
+      detailsIds.forEach(id => {
+        const node = document.getElementById(id);
+        if (node) node.open = true;
+      });
+      setKursActionBox("ok", `Kursbereich geöffnet: ${getCourseLabel(course, false)}.`);
     }
 
     function renderCourses(courses) {
@@ -10977,6 +11021,14 @@
     const fastHomeworksBtn = document.getElementById("fastHomeworksBtn");
     if (fastHomeworksBtn) {
       fastHomeworksBtn.addEventListener("click", () => openAdminPane("homeworks"));
+    }
+    const fastProgressBtn = document.getElementById("fastProgressBtn");
+    if (fastProgressBtn) {
+      fastProgressBtn.addEventListener("click", () => openAdminPane("progress"));
+    }
+    const fastSelectedCourseWorkspaceBtn = document.getElementById("fastSelectedCourseWorkspaceBtn");
+    if (fastSelectedCourseWorkspaceBtn) {
+      fastSelectedCourseWorkspaceBtn.addEventListener("click", openSelectedCourseWorkspace);
     }
     const fastArchiveBtn = document.getElementById("fastArchiveBtn");
     if (fastArchiveBtn) {
