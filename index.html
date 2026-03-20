@@ -1060,6 +1060,22 @@
       line-height: 1.4;
     }
 
+    .a2-option .a2-choice-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #fff4e9;
+      border: 1px solid #f1d7c6;
+      color: #8a5e48;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-right: 6px;
+      flex: 0 0 auto;
+    }
+
     .a2-question-card.correct {
       border-color: #b8dfce;
       background: #f4fcf8;
@@ -1074,6 +1090,16 @@
       margin-top: 6px;
       font-size: 0.84rem;
       color: #6f4d41;
+    }
+
+    .a2-result.ok {
+      color: #1f7a46;
+      font-weight: 700;
+    }
+
+    .a2-result.err {
+      color: #b23a2f;
+      font-weight: 700;
     }
 
     .lid-top-actions {
@@ -6033,15 +6059,16 @@
       wrap.innerHTML = currentA2State.questions.map((q, index) => {
         const optionsHtml = q.options.map((opt, optIndex) => {
           const checked = Number(q.selected) === optIndex ? "checked" : "";
+          const letter = String.fromCharCode(65 + optIndex);
           return `
             <label class="a2-option">
               <input type="radio" name="a2-q-${index}" value="${optIndex}" ${checked}>
-              <span>${escapeHtml(opt)}</span>
+              <span><span class="a2-choice-label">${letter}</span>${escapeHtml(opt)}</span>
             </label>
           `;
         }).join("");
         const resultHtml = q.result
-          ? `<div class="a2-result">${q.result}</div>`
+          ? `<div class="a2-result ${escapeHtml(String(q.resultClass || ""))}">${q.result}</div>`
           : "";
         const rowClass = q.correct === true ? "a2-question-card correct" : (q.correct === false ? "a2-question-card wrong" : "a2-question-card");
         return `
@@ -6127,6 +6154,7 @@
             ...generateA2Question(chosenTopic, idx),
             selected: null,
             correct: null,
+            resultClass: "",
             result: ""
           };
         })
@@ -6148,19 +6176,24 @@
         currentA2State.solutionsShown = true;
       }
       currentA2State.questions = currentA2State.questions.map(q => {
+        const selectedIndex = Number.isFinite(q.selected) ? q.selected : -1;
+        const selectedValue = selectedIndex >= 0 ? String(q.options[selectedIndex] || "") : "";
+        const computedOk = !!(selectedValue && selectedValue === q.correct);
         if (showSolutions) {
           return {
             ...q,
-            correct: false,
-            result: `Lösung: ${escapeHtml(q.correct)}`
+            correct: computedOk,
+            resultClass: computedOk ? "ok" : "err",
+            result: computedOk
+              ? `Richtig. Lösung: ${escapeHtml(q.correct)}`
+              : `Falsch. Lösung: ${escapeHtml(q.correct)}`
           };
         }
-        const selectedIndex = Number.isFinite(q.selected) ? q.selected : -1;
-        const selectedValue = selectedIndex >= 0 ? String(q.options[selectedIndex] || "") : "";
-        const ok = selectedValue && selectedValue === q.correct;
+        const ok = computedOk;
         return {
           ...q,
           correct: ok,
+          resultClass: ok ? "ok" : "err",
           result: ok
             ? `Richtig. ${escapeHtml(q.hint)}`
             : `Falsch. Lösung: ${escapeHtml(q.correct)}`
