@@ -3431,50 +3431,7 @@
                   <span class="card-accordion-icon">▾</span>
                 </summary>
                 <div class="card-accordion-body">
-                  <div id="portalMailHomeworkWrap" class="portal-list" style="margin-bottom:10px;">Keine Mail-Aufgaben vorhanden.</div>
-                  <div class="task-picker">
-                    <div class="assignment-box">
-                      <div class="assignment-head">
-                        <h3 id="portalCurrentAssignmentTitle">Zugewiesene Aufgabe</h3>
-                        <span id="portalCurrentAssignmentState" class="task-chip">Wird geladen...</span>
-                      </div>
-                      <p id="portalCurrentAssignmentDescription" class="muted assignment-description">Ihre Lehrkraft weist Ihnen eine Aufgabe zu. Bitte warten Sie einen Moment.</p>
-                      <div class="assignment-meta">
-                        <div><strong>Dauer:</strong> <span id="portalCurrentAssignmentDuration">-</span></div>
-                        <div><strong>Abgabetimer:</strong> <span id="portalCurrentAssignmentCountdown">--:--</span></div>
-                      </div>
-                      <div id="portalCurrentAssignmentAttachmentWrap" class="assignment-attachment hidden">
-                        <strong>Material:</strong>
-                        <a id="portalCurrentAssignmentAttachment" href="#" target="_blank" rel="noopener noreferrer">Öffnen</a>
-                      </div>
-                      <div class="assignment-actions">
-                        <button id="portalStartAssignmentBtn" type="button" class="ghost-btn">Bearbeitung starten</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="letter-panel">
-                    <label for="portalLetterText">Ihre Mail</label>
-                    <textarea id="portalLetterText" required placeholder="Sehr geehrte Damen und Herren, ..."
-                      autocomplete="on" autocorrect="on" autocapitalize="sentences" spellcheck="true"></textarea>
-                    <div class="meta-strip">
-                      <div class="meta-item">Kopieren, Einfügen und Ausschneiden sind gesperrt.</div>
-                      <div class="meta-item">Empfehlung: 50-80 Wörter für B1-Ziel.</div>
-                    </div>
-                    <div id="portalHoerenChecklistWrap" class="hidden" style="margin-top:10px;">
-                      <strong>Hören-Abgabe (Pflichtfelder)</strong>
-                      <p class="muted" style="margin:6px 0 8px;">Bitte mindestens 5 Schlüsselwörter und 2 schwierige Fragen eintragen.</p>
-                      <label for="portalHoerenKeywordsInput">Schlüsselwörter (mind. 5, pro Zeile eins)</label>
-                      <textarea id="portalHoerenKeywordsInput" rows="4" placeholder="z. B. Termin&#10;Anmeldung&#10;Bestätigung"></textarea>
-                      <label for="portalHoerenDifficultInput" style="margin-top:8px;">Schwierige Fragen (mind. 2, pro Zeile eins)</label>
-                      <textarea id="portalHoerenDifficultInput" rows="3" placeholder="z. B. Frage 3 war schwer wegen ..."></textarea>
-                    </div>
-                  </div>
-                  <div class="row-end">
-                    <div class="btn-wrap">
-                      <button id="portalUploadBtn" type="button">Brief hochladen</button>
-                    </div>
-                  </div>
-                  <div id="portalWriteStatus" class="hidden"></div>
+                  <div id="portalMailHomeworkWrap" class="portal-list">Keine Mail-Aufgaben vorhanden.</div>
                 </div>
               </details>
               <details id="portalCorrectionsAccordion" class="card-accordion">
@@ -11582,7 +11539,7 @@
             if (btn.hasAttribute("disabled")) return;
             const assignmentId = String(btn.getAttribute("data-open-mail-homework") || "").trim();
             if (!assignmentId) return;
-            await startHomeworkAssignmentById(assignmentId, "portalWriteStatus", "write");
+            await startHomeworkAssignmentById(assignmentId, "portalStatus", "write");
           });
         });
       }
