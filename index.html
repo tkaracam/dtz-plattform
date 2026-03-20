@@ -2409,6 +2409,16 @@
       color: #fff;
     }
 
+    .dtz-audio-btn.is-played,
+    .dtz-audio-btn.is-played:disabled {
+      background: linear-gradient(120deg, #ef6b6b, #d84545);
+      border-color: #f0b1b1;
+      color: #fff;
+      opacity: 1;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
     .dtz-audio-wave {
       width: 96px;
       max-width: 42vw;
@@ -7185,7 +7195,7 @@
       const audioLocked = isModelltestAudioLocked(key, isPlaying);
       return `
         <div class="dtz-audio-actions">
-          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" ${audioLocked ? "disabled aria-disabled=\"true\"" : ""} data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
+          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""} ${audioLocked ? "is-played" : ""}" ${audioLocked ? "disabled aria-disabled=\"true\"" : ""} data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
             ${isPlaying
               ? `Stoppen${durationLabel ? ` · ${durationLabel}` : ""}`
               : (audioLocked
