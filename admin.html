@@ -2441,7 +2441,6 @@
       <div class="admin-topbar-right">
         <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger">Menü</button>
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
-          <button id="goHomeBtn" class="admin-menu-item" type="button">Startseite</button>
           <button id="jumpAccountsBtn" class="admin-menu-item" type="button">Schülerzugänge</button>
           <button id="jumpCourseBuilderBtn" class="admin-menu-item" type="button">Kurs erstellen</button>
           <button id="jumpCoursesBtn" class="admin-menu-item" type="button">Kurse</button>
@@ -11230,10 +11229,13 @@
         openAdminPane(btn.dataset.pane);
       });
     });
-    document.getElementById("goHomeBtn").addEventListener("click", () => {
-      closeAdminMenu();
-      window.location.href = "./index.html";
-    });
+    const goHomeBtn = document.getElementById("goHomeBtn");
+    if (goHomeBtn) {
+      goHomeBtn.addEventListener("click", () => {
+        closeAdminMenu();
+        window.location.href = "./index.html";
+      });
+    }
     const heroBrand = document.querySelector(".hero-brand");
     if (heroBrand) {
       heroBrand.addEventListener("keydown", event => {
