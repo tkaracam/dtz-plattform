@@ -977,6 +977,17 @@
       background: #f9fcff;
     }
 
+    #hwMultiAssignBox {
+      width: 70%;
+      margin-right: auto;
+    }
+
+    @media (max-width: 900px) {
+      #hwMultiAssignBox {
+        width: 100%;
+      }
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -2822,7 +2833,7 @@
                   </div>
                 </div>
               </details>
-              <div>
+              <div id="hwMultiAssignBox">
                 <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
                 <select id="hwTaskTemplatesMulti" multiple size="10">
                   <option value="">Bitte Aufgaben wählen</option>
