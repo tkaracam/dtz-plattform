@@ -6997,6 +6997,19 @@
       updateDtzTeilButtons("lesen");
       updateDtzPartMeta("lesen");
 
+      const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
+      const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
+      const hoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
+      const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
+      const hoerenNewBtn = document.getElementById("dtzHoerenNewBtn");
+      const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
+      if (hoerenTeilButtons) hoerenTeilButtons.classList.add("hidden");
+      if (lesenTeilButtons) lesenTeilButtons.classList.add("hidden");
+      if (hoerenOpenBtn) hoerenOpenBtn.classList.add("hidden");
+      if (lesenOpenBtn) lesenOpenBtn.classList.add("hidden");
+      if (hoerenNewBtn) hoerenNewBtn.classList.add("hidden");
+      if (lesenNewBtn) lesenNewBtn.classList.add("hidden");
+
       void setupModelltestFlow();
       generateSpeakingSet();
       setSpeakingTab(1);
