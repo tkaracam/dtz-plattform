@@ -3227,7 +3227,6 @@
           <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
           <button id="navNiveauBtn" class="nav-link" type="button">Sprechen</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
-          <button id="navQuickActionsBtn" class="nav-link" type="button">Schnellzugriff</button>
           <button id="navAdminBtn" class="nav-link" type="button">Lehrer-Panel</button>
         </div>
       </div>
@@ -13994,8 +13993,6 @@
     }
     const navLidBtn = document.getElementById("navLidBtn");
     if (navLidBtn) navLidBtn.addEventListener("click", () => navigateToSection("lid"));
-    const navQuickActionsBtn = document.getElementById("navQuickActionsBtn");
-    if (navQuickActionsBtn) navQuickActionsBtn.addEventListener("click", () => openCommandPalette());
     const navAdminBtn = document.getElementById("navAdminBtn");
     if (navAdminBtn) navAdminBtn.addEventListener("click", () => {
       window.location.href = "./admin.html";
