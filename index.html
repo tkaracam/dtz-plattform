@@ -6072,12 +6072,17 @@
       const evaluateBtn = document.getElementById("a2EvaluateBtn");
       const showSolutionsBtn = document.getElementById("a2ShowSolutionsBtn");
       const backBtn = document.getElementById("backToPortalFromA2Btn");
-      const allAnswered = !!(
-        currentA2State.started
-        && Array.isArray(currentA2State.questions)
-        && currentA2State.questions.length
-        && currentA2State.questions.every(q => Number.isFinite(q.selected))
-      );
+      const questions = Array.isArray(currentA2State.questions) ? currentA2State.questions : [];
+      const total = questions.length;
+      const answeredByState = questions.reduce((sum, q) => sum + (Number.isFinite(q.selected) ? 1 : 0), 0);
+      const checkedInputs = Array.from(document.querySelectorAll("#a2QuestionList input[type='radio']:checked"));
+      const answeredByDom = new Set(
+        checkedInputs
+          .map(input => String(input.getAttribute("name") || "").trim())
+          .filter(Boolean)
+      ).size;
+      const answered = Math.max(answeredByState, answeredByDom);
+      const allAnswered = !!(currentA2State.started && total > 0 && answered >= total);
       if (evaluateBtn) evaluateBtn.disabled = !allAnswered;
       if (showSolutionsBtn) showSolutionsBtn.disabled = !allAnswered;
       if (backBtn) backBtn.disabled = !currentA2State.evaluated;
