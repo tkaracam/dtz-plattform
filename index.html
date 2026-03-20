@@ -4093,6 +4093,7 @@
       writeVariant: "A",
       writePromptA: "",
       writePromptB: "",
+      playedAudioByKey: {},
       finished: false
     };
     let solvedHomeworkAssignments = new Set();
@@ -6562,6 +6563,9 @@
           writeText: String(writeText ? writeText.value || "" : ""),
           hoerenAnswersByTeil: answersByTeil("hoeren"),
           lesenAnswersByTeil: answersByTeil("lesen"),
+          playedAudioByKey: (modelltestFlowState.playedAudioByKey && typeof modelltestFlowState.playedAudioByKey === "object")
+            ? modelltestFlowState.playedAudioByKey
+            : {},
           savedAt: Date.now()
         };
         window.localStorage.setItem(key, JSON.stringify(payload));
@@ -6584,6 +6588,9 @@
         modelltestFlowState.writeVariant = String(parsed.writeVariant || "A") === "B" ? "B" : "A";
         modelltestFlowState.writePromptA = String(parsed.writePromptA || "");
         modelltestFlowState.writePromptB = String(parsed.writePromptB || "");
+        modelltestFlowState.playedAudioByKey = (parsed.playedAudioByKey && typeof parsed.playedAudioByKey === "object")
+          ? parsed.playedAudioByKey
+          : {};
         const applyAnswers = (module, mapKey, legacyKey) => {
           const maxTeil = getDtzMaxTeil(module);
           const byTeil = (parsed[mapKey] && typeof parsed[mapKey] === "object") ? parsed[mapKey] : null;
@@ -7020,6 +7027,7 @@
       modelltestFlowState.writeVariant = "A";
       modelltestFlowState.writePromptA = "";
       modelltestFlowState.writePromptB = "";
+      modelltestFlowState.playedAudioByKey = {};
       ensureModelltestWritePrompts();
 
       const resultBox = document.getElementById("modelltestResultBox");
@@ -7173,16 +7181,50 @@
       const scriptAttr = escapeHtml(String(audioScript || ""));
       const key = String(audioKey || "");
       const durationLabel = getDtzAudioDurationLabel(key);
+      const audioLocked = isModelltestAudioLocked(key, isPlaying);
       return `
         <div class="dtz-audio-actions">
-          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
+          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" ${audioLocked ? "disabled aria-disabled=\"true\"" : ""} data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
             ${isPlaying
               ? `Stoppen${durationLabel ? ` · ${durationLabel}` : ""}`
-              : `▶ ABSPIELEN${durationLabel ? ` · ${durationLabel}` : ""}`}
+              : (audioLocked
+                ? `Abgespielt${durationLabel ? ` · ${durationLabel}` : ""}`
+                : `▶ ABSPIELEN${durationLabel ? ` · ${durationLabel}` : ""}`)}
           </button>
           ${isPlaying ? '<img src="./assets/wave.gif" class="dtz-audio-wave" alt="Audio läuft">' : ""}
         </div>
       `;
+    }
+
+    function getSafeModelltestAudioKey(audioKey) {
+      const key = String(audioKey || "").trim();
+      if (!key) return "";
+      return key.startsWith("mt_") ? key : "";
+    }
+
+    function hasModelltestAudioPlayed(audioKey) {
+      const key = getSafeModelltestAudioKey(audioKey);
+      if (!key) return false;
+      const bag = modelltestFlowState && typeof modelltestFlowState.playedAudioByKey === "object"
+        ? modelltestFlowState.playedAudioByKey
+        : {};
+      return !!bag[key];
+    }
+
+    function markModelltestAudioPlayed(audioKey) {
+      const key = getSafeModelltestAudioKey(audioKey);
+      if (!key) return;
+      if (!modelltestFlowState.playedAudioByKey || typeof modelltestFlowState.playedAudioByKey !== "object") {
+        modelltestFlowState.playedAudioByKey = {};
+      }
+      modelltestFlowState.playedAudioByKey[key] = true;
+      persistModelltestProgress();
+    }
+
+    function isModelltestAudioLocked(audioKey, isPlaying = false) {
+      if (!modelltestFlowState.active) return false;
+      if (isPlaying) return false;
+      return hasModelltestAudioPlayed(audioKey);
     }
 
     function formatDtzAudioDuration(ms) {
@@ -8405,6 +8447,10 @@
       }
       const key = mt ? `mt_${mt[1]}__${String(source.key || requestedKey)}` : String(source.key || requestedKey);
       const script = String(source.script || "");
+      if (isModelltestAudioLocked(key, false)) {
+        setDtzModuleStatus(module, "error", "Dieses Audio wurde im Modelltest bereits abgespielt.");
+        return;
+      }
 
       const synth = ("speechSynthesis" in window) ? window.speechSynthesis : null;
       if (currentDtzSpeakingIndex === key && ((synth && synth.speaking) || !!currentDtzServerAudioEl)) {
@@ -8428,6 +8474,7 @@
           }
         }
         if (serverSegments.length) {
+          markModelltestAudioPlayed(key);
           const durationMs = estimateDtzAudioDurationMsFromServerSegments(serverSegments);
           setDtzAudioDurationMs(key, durationMs);
           const durationHint = durationMs > 0 ? ` Dauer: ${formatDtzAudioDuration(durationMs)}.` : "";
@@ -8453,6 +8500,7 @@
       }
       const browserDurationMs = estimateDtzAudioDurationMsFromBrowserSegments(segments);
       setDtzAudioDurationMs(key, browserDurationMs);
+      markModelltestAudioPlayed(key);
       const speakers = segments.map(segment => segment.speaker || "NARRATOR");
       const preferredSpeakers = Array.isArray(source.speakerMeta)
         ? source.speakerMeta.map(s => String(s || "").trim().toUpperCase()).filter(Boolean)
