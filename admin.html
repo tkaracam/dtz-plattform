@@ -7808,6 +7808,14 @@
       clearBox("homeworkReminderPolicyStatus");
       const previewNode = document.getElementById("homeworkReminderDryRunPreview");
       if (previewNode) previewNode.textContent = "";
+      let policy = null;
+      try {
+        policy = collectHomeworkReminderPolicyFromUi();
+      } catch (err) {
+        setBox("homeworkReminderPolicyStatus", "error", `Policy-Parse fehlgeschlagen: ${err.message || err}`);
+        if (previewNode) previewNode.textContent = `Policy-Parse Fehler: ${err.message || err}`;
+        return;
+      }
       const levels = [];
       if (document.getElementById("rpWarn24Enabled")?.checked) levels.push("warn24");
       if (document.getElementById("rpWarn2Enabled")?.checked) levels.push("warn2");
@@ -7820,7 +7828,8 @@
         const payload = await callHomeworkReminderRunApi({
           dry_run: true,
           levels,
-          limit: 200
+          limit: 200,
+          policy_override: policy
         });
         const targets = Array.isArray(payload?.targets) ? payload.targets : [];
         const compactTargets = targets.slice(0, 30).map(item => ({
@@ -7836,6 +7845,8 @@
           skipped_already_sent: Number(payload?.skipped_already_sent || 0),
           skipped_by_policy: Number(payload?.skipped_by_policy || 0),
           sample_targets: compactTargets,
+          would_send_by_course: payload?.would_send_by_course || {},
+          would_send_by_template: payload?.would_send_by_template || {},
           created_by_course: payload?.created_by_course || {},
           created_by_template: payload?.created_by_template || {}
         };

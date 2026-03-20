@@ -421,8 +421,13 @@ if ($action === 'create_batch') {
         exit;
     }
     if ($usedDtzChanged && !save_used_dtz_question_ids($usedDtz)) {
+        $rolledBack = write_homework_assignments($items);
         http_response_code(500);
-        echo json_encode(['error' => 'Fragen-Status konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode([
+            'error' => $rolledBack
+                ? 'Fragen-Status konnte nicht gespeichert werden. Batch wurde zurückgerollt.'
+                : 'Fragen-Status konnte nicht gespeichert werden und Rollback ist fehlgeschlagen. Bitte sofort prüfen.'
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 

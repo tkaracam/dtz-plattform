@@ -248,6 +248,15 @@ if (!$requestedLevels) {
 
 $dryRun = !empty($body['dry_run']);
 $limit = max(1, min(500, (int)($body['limit'] ?? 200)));
+$policyOverride = null;
+if (isset($body['policy_override'])) {
+    if (!is_array($body['policy_override'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'policy_override muss ein Objekt sein.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $policyOverride = normalize_homework_reminder_policy_profile((array)$body['policy_override']);
+}
 
 $storageDir = __DIR__ . '/storage';
 if (!is_dir($storageDir) && !mkdir($storageDir, 0775, true) && !is_dir($storageDir)) {
@@ -273,6 +282,8 @@ $skippedByPolicy = 0;
 $policyCache = [];
 $createdByCourse = [];
 $createdByTemplate = [];
+$wouldSendByCourse = [];
+$wouldSendByTemplate = [];
 
 foreach ($items as $assignment) {
     if (!is_array($assignment)) {
@@ -294,7 +305,7 @@ foreach ($items as $assignment) {
     if (!isset($policyCache[$policyKey]) || !is_array($policyCache[$policyKey])) {
         $policyCache[$policyKey] = load_homework_reminder_policy_for_teacher($policyKey);
     }
-    $policyProfile = $policyCache[$policyKey];
+    $policyProfile = is_array($policyOverride) ? $policyOverride : $policyCache[$policyKey];
 
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
     foreach ($assignees as $username => $rawState) {
@@ -337,6 +348,16 @@ foreach ($items as $assignment) {
             'note' => $note,
         ];
         $targets[] = $target;
+        $courseKey = trim((string)($assignment['course_id'] ?? ''));
+        if ($courseKey === '') {
+            $courseKey = '-';
+        }
+        $templateKey = trim((string)($assignment['template_id'] ?? ''));
+        if ($templateKey === '') {
+            $templateKey = '-';
+        }
+        $wouldSendByCourse[$courseKey] = (int)($wouldSendByCourse[$courseKey] ?? 0) + 1;
+        $wouldSendByTemplate[$templateKey] = (int)($wouldSendByTemplate[$templateKey] ?? 0) + 1;
 
         if (!$dryRun) {
             $okNote = append_teacher_note_local($storageDir, $uname, $note, $teacherName);
@@ -356,14 +377,6 @@ foreach ($items as $assignment) {
                     }
                     $reminderHistory[$historyKey][] = $now;
                     $createdCount++;
-                    $courseKey = trim((string)($assignment['course_id'] ?? ''));
-                    if ($courseKey === '') {
-                        $courseKey = '-';
-                    }
-                    $templateKey = trim((string)($assignment['template_id'] ?? ''));
-                    if ($templateKey === '') {
-                        $templateKey = '-';
-                    }
                     $createdByCourse[$courseKey] = (int)($createdByCourse[$courseKey] ?? 0) + 1;
                     $createdByTemplate[$templateKey] = (int)($createdByTemplate[$templateKey] ?? 0) + 1;
                 }
@@ -392,6 +405,8 @@ echo json_encode([
     'created' => $createdCount,
     'skipped_already_sent' => $skippedAlreadySent,
     'skipped_by_policy' => $skippedByPolicy,
+    'would_send_by_course' => $wouldSendByCourse,
+    'would_send_by_template' => $wouldSendByTemplate,
     'created_by_course' => $createdByCourse,
     'created_by_template' => $createdByTemplate,
     'targets' => $targets,

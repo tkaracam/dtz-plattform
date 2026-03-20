@@ -115,7 +115,7 @@ function detect_student_homework_category(array $assignment): string
     if (strpos($bag, 'lesen') !== false) return 'lesen';
     if (strpos($bag, 'sprechen') !== false) return 'sprechen';
     if (strpos($bag, 'schreiben') !== false || strpos($bag, 'mail') !== false) return 'mail';
-    return 'mail';
+    return 'unknown';
 }
 
 $simRecords = [];
@@ -285,7 +285,7 @@ usort($homeworks, static function (array $a, array $b): int {
     $bDue = (string)($b['due_date'] ?? '');
     return strcmp($bDue, $aDue);
 });
-$homeworks = array_slice($homeworks, 0, 500);
+$homeworks = array_slice($homeworks, 0, 200);
 
 $notesRaw = read_json_file_array($storageDir . '/teacher_notes.json');
 $teacherNotes = [];

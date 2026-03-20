@@ -4082,6 +4082,7 @@
     let currentA2HomeworkConfig = null;
     let currentOpenedHomeworkContext = {
       a2AssignmentId: "",
+      a2AssignmentIds: [],
       dtzByModule: {
         hoeren: "",
         lesen: ""
@@ -6456,12 +6457,24 @@
         const allAnswered = currentA2State.questions.every(q => Number.isFinite(q.selected));
         if (allAnswered) {
           const solvedAssignmentId = String(currentOpenedHomeworkContext.a2AssignmentId || "").trim();
-          if (markAssignmentSolvedClient(solvedAssignmentId)) {
-            void refreshPortalData();
-          }
-          if (solvedAssignmentId) {
+          const solvedAssignmentIds = Array.isArray(currentOpenedHomeworkContext.a2AssignmentIds)
+            ? currentOpenedHomeworkContext.a2AssignmentIds.map(v => String(v || "").trim()).filter(Boolean)
+            : [];
+          const targets = solvedAssignmentIds.length ? solvedAssignmentIds : (solvedAssignmentId ? [solvedAssignmentId] : []);
+          if (targets.length) {
             void (async () => {
-              await submitHomeworkCompleteById(solvedAssignmentId);
+              const settled = await Promise.all(targets.map(async id => ({
+                id,
+                ok: await submitHomeworkCompleteById(id)
+              })));
+              settled.forEach(row => {
+                if (row.ok) {
+                  markAssignmentSolvedClient(row.id);
+                }
+              });
+              if (settled.some(row => !row.ok)) {
+                setStatus("error", "Mindestens eine A2-Hausaufgabe konnte nicht abgeschlossen werden.", "portalStatus");
+              }
               await refreshPortalData();
             })();
           }
@@ -6477,6 +6490,7 @@
       currentA2HomeworkConfig = cfg.homeworkMode ? cfg : null;
       if (!cfg.homeworkMode) {
         currentOpenedHomeworkContext.a2AssignmentId = "";
+        currentOpenedHomeworkContext.a2AssignmentIds = [];
       }
       setMainView("a2");
       setHomeDashboardSection("niveau");
@@ -6794,7 +6808,7 @@
       const assignmentId = currentModelltestAssignmentId();
       if (!assignmentId || !aggregate || typeof aggregate !== "object") return false;
       try {
-        await fetch("./api/student_modelltest_result.php", {
+        const response = await fetch("./api/student_modelltest_result.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -6809,8 +6823,11 @@
             level: String(aggregate.level || "A1")
           })
         });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         return true;
-      } catch (_) {
+      } catch (err) {
+        setStatus("error", `Modelltest-Ergebnis konnte nicht gespeichert werden: ${err.message || err}`, "statusBox");
         return false;
       }
     }
@@ -7046,7 +7063,7 @@
       }
       if (resultBox) resultBox.classList.remove("hidden");
 
-      await saveModelltestResult({
+      const saved = await saveModelltestResult({
         hoerenCorrect: Number(hoerenStats.correct || 0),
         hoerenTotal: Number(hoerenStats.total || 0),
         lesenCorrect: Number(lesenStats.correct || 0),
@@ -7063,9 +7080,17 @@
 
       const assignmentId = currentModelltestAssignmentId();
       if (assignmentId) {
-        markAssignmentSolvedClient(assignmentId);
-        await submitHomeworkCompleteById(assignmentId);
-        await refreshPortalData();
+        if (saved) {
+          const completed = await submitHomeworkCompleteById(assignmentId);
+          if (completed) {
+            markAssignmentSolvedClient(assignmentId);
+            await refreshPortalData();
+          } else {
+            setStatus("error", "Modelltest wurde gespeichert, aber Abgabe konnte nicht abgeschlossen werden.", "statusBox");
+          }
+        } else {
+          setStatus("error", "Modelltest nicht als gelöst markiert: Speichern fehlgeschlagen.", "statusBox");
+        }
       }
       clearModelltestProgress();
     }
@@ -11862,6 +11887,7 @@
       rows.forEach(row => {
         if (isHomeworkRowSolved(row)) return;
         const category = detectStudentHomeworkCategory(row);
+        if (category === "unknown") return;
         const key = category === "hoeren"
           ? "hoeren"
           : (category === "lesen" ? "lesen" : (category === "a2" ? "a2" : (category === "modelltest" ? "modelltest" : "mail")));
@@ -11926,7 +11952,7 @@
 
     function detectStudentHomeworkCategory(row) {
       const serverCategory = String(row && row.category ? row.category : "").toLowerCase();
-      if (["hoeren", "lesen", "a2", "mail", "modelltest", "sprechen", "schreiben"].includes(serverCategory)) {
+      if (["hoeren", "lesen", "a2", "mail", "modelltest", "sprechen", "schreiben", "unknown"].includes(serverCategory)) {
         return serverCategory;
       }
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
@@ -11958,7 +11984,7 @@
       if (bag.includes("lesen")) return "lesen";
       if (bag.includes("sprechen")) return "sprechen";
       if (bag.includes("schreiben") || bag.includes("mail")) return "mail";
-      return "mail";
+      return "unknown";
     }
 
     function isHomeworkSolvedStatus(statusRaw) {
@@ -12076,6 +12102,7 @@
         return;
       }
       currentOpenedHomeworkContext.a2AssignmentId = assignmentId;
+      currentOpenedHomeworkContext.a2AssignmentIds = assignmentId ? [assignmentId] : [];
       const parsed = parseA2HomeworkTemplate(assignment);
       if (!parsed || !parsed.url) {
         setStatus("error", "Für diese Aufgabe ist kein A2-Test-Link hinterlegt.", "portalStatus");
@@ -12112,6 +12139,10 @@
       }
       const pending = rows.filter(row => !isHomeworkRowSolved(row));
       const source = pending.length ? pending : rows;
+      currentOpenedHomeworkContext.a2AssignmentIds = source
+        .map(row => String((row && row.id) || "").trim())
+        .filter(Boolean);
+      currentOpenedHomeworkContext.a2AssignmentId = currentOpenedHomeworkContext.a2AssignmentIds[0] || "";
       const topicSet = [];
       const countCandidates = [];
       source.forEach(row => {
@@ -12165,7 +12196,8 @@
         mail: [],
         modelltest: [],
         schreiben: [],
-        sprechen: []
+        sprechen: [],
+        unknown: []
       };
 
       rows.forEach(row => {
@@ -12200,6 +12232,9 @@
         const modelltestOpenAction = category === "modelltest"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-modelltest-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Modelltest öffnen"}</button></div>`
           : "";
+        const unknownOpenAction = category === "unknown"
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-unknown-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Aufgabe öffnen"}</button></div>`
+          : "";
         return `
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
@@ -12211,6 +12246,7 @@
             ${schreibenOpenAction}
             ${sprechenOpenAction}
             ${modelltestOpenAction}
+            ${unknownOpenAction}
           </div>
         `;
       };
@@ -12268,7 +12304,7 @@
         }
       }
       if (mailWrap) {
-        const writeRows = [...grouped.mail, ...grouped.schreiben, ...grouped.sprechen];
+        const writeRows = [...grouped.mail, ...grouped.schreiben, ...grouped.sprechen, ...grouped.unknown];
         mailWrap.innerHTML = writeRows.length ? writeRows.map(itemHtml).join("") : "Keine Mail-Aufgaben vorhanden.";
         mailWrap.querySelectorAll("[data-open-mail-homework]").forEach(btn => {
           btn.addEventListener("click", async () => {
@@ -12293,6 +12329,15 @@
             if (!assignmentId) return;
             await startHomeworkAssignmentById(assignmentId, "portalStatus");
             openSpeakingView();
+          });
+        });
+        mailWrap.querySelectorAll("[data-open-unknown-homework]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (btn.hasAttribute("disabled")) return;
+            const assignmentId = String(btn.getAttribute("data-open-unknown-homework") || "").trim();
+            if (!assignmentId) return;
+            await startHomeworkAssignmentById(assignmentId, "portalStatus");
+            openPortalPanel("homework");
           });
         });
       }
@@ -12744,7 +12789,7 @@
         resetLetterWritingTimer();
         clearStudentSessionCache();
         solvedHomeworkAssignments = new Set();
-        currentOpenedHomeworkContext = { a2AssignmentId: "", dtzByModule: { hoeren: "", lesen: "" } };
+        currentOpenedHomeworkContext = { a2AssignmentId: "", a2AssignmentIds: [], dtzByModule: { hoeren: "", lesen: "" } };
         currentStudentUsername = "";
         currentRoom = null;
         stopRoomPolling();
