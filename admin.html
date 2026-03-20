@@ -3440,8 +3440,8 @@
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
-    const DOCENT_ALLOWED_PANES = new Set(["homeworks", "coursebuilder", "progress", "archive"]);
-    const DOCENT_QUICK_PANES = new Set(["homeworks", "coursebuilder", "progress", "archive"]);
+    const DOCENT_ALLOWED_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "archive"]);
+    const DOCENT_QUICK_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "archive"]);
     const DOCENT_HIDE_MENU_IDS = [
       "jumpAccountsBtn",
       "jumpCourseBuilderBtn",
@@ -3454,7 +3454,7 @@
       "toggleAndereBtn",
       "switchAccountBtn"
     ];
-    const DOCENT_HIDE_FAST_IDS = ["fastAccountsBtn", "fastCoursesBtn", "fastKursBtn", "fastMod6Btn"];
+    const DOCENT_HIDE_FAST_IDS = ["fastCoursesBtn", "fastKursBtn", "fastMod6Btn"];
     const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection", "trainingSetSection"];
 
     (function setupAdminFetchSessionModeHeader() {
@@ -5031,6 +5031,20 @@
 
     function getScopedStudentsForAccounts() {
       const scopeCourse = getAccountsScopeCourse();
+      if (isDocentSimpleMode() && !scopeCourse) {
+        const memberSet = new Set();
+        currentCourses.forEach(course => {
+          const members = Array.isArray(course && course.members) ? course.members : [];
+          members.forEach(username => {
+            const uname = String(username || "").trim().toLowerCase();
+            if (uname) memberSet.add(uname);
+          });
+        });
+        return currentStudents.filter(user => {
+          const username = String(user.username || "").trim().toLowerCase();
+          return username && memberSet.has(username);
+        });
+      }
       if (!scopeCourse) return currentStudents.slice();
       const members = new Set(
         (Array.isArray(scopeCourse.members) ? scopeCourse.members : [])
@@ -5072,7 +5086,7 @@
         nextValue = previous;
       } else if (accountsScopeCourseId && currentCourses.some(c => String(c.course_id || "") === accountsScopeCourseId)) {
         nextValue = accountsScopeCourseId;
-      } else if (selectedCourseId && currentCourses.some(c => String(c.course_id || "") === selectedCourseId)) {
+      } else if (!isDocentSimpleMode() && selectedCourseId && currentCourses.some(c => String(c.course_id || "") === selectedCourseId)) {
         nextValue = selectedCourseId;
       }
       select.value = nextValue;
