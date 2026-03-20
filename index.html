@@ -6668,14 +6668,43 @@
       modelltestFlowState.writePromptB = selected.b;
     }
 
+    function getModelltestAssignmentContext() {
+      const assignmentId = currentModelltestAssignmentId();
+      const item = currentAssignedHomework && typeof currentAssignedHomework === "object"
+        ? currentAssignedHomework
+        : {};
+      const templateId = String(item.template_id || "").toLowerCase();
+      const title = String(item.title || "");
+      const description = String(item.description || "");
+      const bag = `${title} ${description} ${templateId}`.toLowerCase();
+      return {
+        isAssigned: assignmentId !== "",
+        assignmentId,
+        templateId,
+        bag
+      };
+    }
+
     function detectModelltestHasWritingTask() {
-      const title = String((currentAssignedHomework && currentAssignedHomework.title) || "").toLowerCase();
-      const description = String((currentAssignedHomework && currentAssignedHomework.description) || "").toLowerCase();
-      const bag = `${title} ${description}`;
+      const ctx = getModelltestAssignmentContext();
+      if (!ctx.isAssigned) return false;
+      const bag = ctx.bag;
       if (bag.includes("ohne schreiben") || bag.includes("nur hören lesen") || bag.includes("nur hoeren lesen")) {
         return false;
       }
-      return true;
+      if (bag.includes("schreiben") || bag.includes("mail")) {
+        return true;
+      }
+      return ctx.templateId === "dtz-mock-pruefung-komplett";
+    }
+
+    function detectModelltestHasSpeakingTask() {
+      const ctx = getModelltestAssignmentContext();
+      if (!ctx.isAssigned) return false;
+      const bag = ctx.bag;
+      if (bag.includes("ohne sprechen")) return false;
+      if (bag.includes("sprechen")) return true;
+      return ctx.templateId === "dtz-mock-pruefung-komplett";
     }
 
     function getModelltestModuleStats(module) {
@@ -7057,7 +7086,12 @@
     }
 
     function openDtzModelltestView() {
-      showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
+      const hasWritingTask = detectModelltestHasWritingTask();
+      const hasSpeakingTask = detectModelltestHasSpeakingTask();
+      const visibleCards = ["dtzTrainingCard"];
+      if (hasWritingTask) visibleCards.push("workCard");
+      if (hasSpeakingTask) visibleCards.push("speakingCard");
+      showCards(visibleCards);
       updateHeroHomeVisibility("dtz");
       setHomeDashboardSection("dtz");
       setAccordionOpen("dtzHoerenAccordion", true);
@@ -7093,8 +7127,10 @@
       if (lesenNewBtn) lesenNewBtn.classList.add("hidden");
 
       void setupModelltestFlow();
-      generateSpeakingSet();
-      setSpeakingTab(1);
+      if (hasSpeakingTask) {
+        generateSpeakingSet();
+        setSpeakingTab(1);
+      }
     }
 
     function openDtzModuleView(module) {
