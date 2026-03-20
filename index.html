@@ -7177,6 +7177,13 @@
       return `<p style="margin: 0 0 8px; color: #1d3f65; font-weight: 700;">${escapeHtml(text || "")}</p>`;
     }
 
+    function isDtzAudioPlaying(audioKey) {
+      const key = String(audioKey || "").trim();
+      const current = String(currentDtzSpeakingIndex || "").trim();
+      if (!key || !current) return false;
+      return current === key || current.endsWith(`__${key}`);
+    }
+
     function AudioPlayer(module, audioKey, isPlaying, audioScript) {
       const scriptAttr = escapeHtml(String(audioScript || ""));
       const key = String(audioKey || "");
@@ -8556,7 +8563,7 @@
       const correct = String(task.correct || "");
       const isHoeren = module === "hoeren";
       const audioKey = `q_${index}`;
-      const isPlaying = isHoeren && currentDtzSpeakingIndex === audioKey;
+      const isPlaying = isHoeren && isDtzAudioPlaying(audioKey);
       let resultClass = "lid-question";
       let feedback = "";
 
@@ -8948,13 +8955,13 @@
 
     function renderHoerenBundleTask(module, state, task, teilNo) {
       const questions = Array.isArray(task.questions) ? task.questions : [];
-      const isPlaying = currentDtzSpeakingIndex === "bundle_main";
+      const isPlaying = isDtzAudioPlaying("bundle_main");
       const bundleScript = String(task.audio_script || task.text || "").trim();
       const compactForModelltest = !!modelltestFlowState.active;
       const questionsHtml = questions.map((question, idx) => {
         const key = String(question.id || `q_${idx}`);
         const audioKey = `bundle_q:${key}`;
-        const isQuestionPlaying = currentDtzSpeakingIndex === audioKey;
+        const isQuestionPlaying = isDtzAudioPlaying(audioKey);
         const selected = String(state.answers[key] || "");
         const correct = String(question.correct || "");
         let rowClass = "lid-question";
@@ -9023,7 +9030,7 @@
         const detailSelected = String(state.answers[detailKey] || "");
         const tfCorrect = String((dialog.trueFalse || {}).correct || "");
         const detailCorrect = String((dialog.detail || {}).correct || "");
-        const isPlaying = currentDtzSpeakingIndex === `dialog:${dialogId}`;
+        const isPlaying = isDtzAudioPlaying(`dialog:${dialogId}`);
         let tfFeedback = "";
         let detailFeedback = "";
 
@@ -9111,7 +9118,7 @@
         const key = String(statement.id || `s_${idx + 1}`);
         const selected = String(state.answers[key] || "");
         const correct = String(statement.correct || "");
-        const isPlaying = currentDtzSpeakingIndex === `statement:${key}`;
+        const isPlaying = isDtzAudioPlaying(`statement:${key}`);
         let feedback = "";
         if (state.evaluated) {
           if (!selected) {
