@@ -8711,6 +8711,7 @@
     }
 
     function renderDtzLesenTeil1Task(state, task) {
+      const compactForModelltest = !!modelltestFlowState.active;
       const situations = Array.isArray(task.situations) ? task.situations : [];
       const wegweiserLines = Array.isArray(task.wegweiser) ? task.wegweiser : [];
 
@@ -8749,13 +8750,19 @@
         `;
       }).join("");
 
-      return `
-        <section class="dtz-lesen-group">
+      const wrapClass = compactForModelltest ? "dtz-hoeren-flat" : "dtz-lesen-group";
+      const bodyClassAttr = compactForModelltest ? "" : ' class="dtz-lesen-group-body"';
+      const headHtml = compactForModelltest ? "" : `
           <div class="dtz-lesen-group-head">
             <h4>${escapeHtml(task.dtzPart || "L1 Kurznachrichten und Mitteilungen")}</h4>
             <span>${situations.length} Aufgaben</span>
           </div>
-          <div class="dtz-lesen-group-body">
+      `;
+
+      return `
+        <section class="${wrapClass}">
+          ${headHtml}
+          <div${bodyClassAttr}>
             <article class="lid-question">
               ${TaskInstruction(task.instructions || "Lesen Sie die Aufgaben 21-25 und den Wegweiser.")}
               ${renderWegweiserBoard(task.wegweiserTitle || "Wegweiser", wegweiserLines)}
