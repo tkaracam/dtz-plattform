@@ -8477,8 +8477,7 @@
           markModelltestAudioPlayed(key);
           const durationMs = estimateDtzAudioDurationMsFromServerSegments(serverSegments);
           setDtzAudioDurationMs(key, durationMs);
-          const durationHint = durationMs > 0 ? ` Dauer: ${formatDtzAudioDuration(durationMs)}.` : "";
-          setDtzModuleStatus(module, "ok", `Audio läuft (Server-TTS): ${source.label}.${durationHint}`);
+          clearDtzModuleStatus(module);
           playServerDtzAudioSegments(serverSegments, key, module);
           return;
         }
@@ -8548,8 +8547,7 @@
       };
 
       playNextSegment();
-      const browserDurationHint = browserDurationMs > 0 ? ` Dauer: ${formatDtzAudioDuration(browserDurationMs)}.` : "";
-      setDtzModuleStatus(module, "ok", `Audio läuft (Browser): ${source.label}.${browserDurationHint}`);
+      clearDtzModuleStatus(module);
       renderDtzTrainingSet(module);
     }
 
