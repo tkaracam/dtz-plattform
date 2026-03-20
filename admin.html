@@ -2462,6 +2462,7 @@
             <button id="openStudentGuideBtn" class="admin-menu-item" type="button">Schüler-Anleitung</button>
             <button id="refreshStudentsBtn" class="admin-menu-item" type="button">Schülerliste aktualisieren</button>
           </div>
+          <button id="switchAccountBtn" class="admin-menu-item" type="button">Konto wechseln</button>
           <button id="navLogoutBtn" class="admin-menu-item critical" type="button">Abmelden</button>
         </div>
       </div>
@@ -4349,6 +4350,18 @@
       if (pendingBtn) pendingBtn.textContent = "Nur nicht abgegeben: Aus";
       const ungradedBtn = document.getElementById("toggleRoomUngradedOnlyBtn");
       if (ungradedBtn) ungradedBtn.textContent = "Nur unbewertet: Aus";
+    }
+
+    function switchAdminAccount() {
+      closeAdminMenu();
+      showLogin();
+      const userInput = document.getElementById("adminUsername");
+      const passInput = document.getElementById("adminPassword");
+      if (userInput) userInput.value = "";
+      if (passInput) passInput.value = "";
+      clearBox("loginStatus");
+      setBox("loginStatus", "ok", "Neuen Account eingeben und anmelden.");
+      if (userInput) userInput.focus();
     }
 
     async function login() {
@@ -10998,6 +11011,10 @@
       closeAdminMenu();
       logout();
     });
+    const switchAccountBtn = document.getElementById("switchAccountBtn");
+    if (switchAccountBtn) {
+      switchAccountBtn.addEventListener("click", switchAdminAccount);
+    }
     document.getElementById("createStudentBtn").addEventListener("click", createStudent);
     document.getElementById("accountsCourseScope").addEventListener("change", event => {
       const id = String(event.target?.value || "").trim();
