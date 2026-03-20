@@ -1,102 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 700" width="1600" height="700" role="img" aria-label="DTZ-LiD edu logo">
-  <defs>
-    <linearGradient id="goldGradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FFD24A"/>
-      <stop offset="100%" stop-color="#F4B400"/>
-    </linearGradient>
-    <linearGradient id="redGradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#EF2A23"/>
-      <stop offset="100%" stop-color="#D61717"/>
-    </linearGradient>
-    <linearGradient id="darkGradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1F2126"/>
-      <stop offset="100%" stop-color="#2F2F33"/>
-    </linearGradient>
-    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.12"/>
-    </filter>
-  </defs>
+<svg width="500" height="150" viewBox="0 0 500 150" xmlns="http://www.w3.org/2000/svg">
+  <path d="M40 30 Q80 10 120 30 L120 100 Q80 80 40 100 Z" fill="#000000"/>
+  <path d="M40 45 Q80 25 120 45 L120 70 Q80 50 40 70 Z" fill="#E30613"/>
+  <path d="M40 70 Q80 50 120 70 L120 100 Q80 80 40 100 Z" fill="#FFCC00"/>
 
-  <rect width="1600" height="700" fill="none"/>
+  <path d="M120 30 Q160 10 200 30 L200 100 Q160 80 120 100 Z" fill="#000000"/>
+  <path d="M120 45 Q160 25 200 45 L200 70 Q160 50 120 70 Z" fill="#E30613"/>
+  <path d="M120 70 Q160 50 200 70 L200 100 Q160 80 120 100 Z" fill="#FFCC00"/>
 
-  <!-- emblem -->
-  <g transform="translate(70,35)" filter="url(#softShadow)">
-    <circle cx="290" cy="315" r="192" fill="#FFFFFF" stroke="#1E1E20" stroke-width="10"/>
+  <path d="M180 90 L195 105 L220 75" stroke="#FFCC00" stroke-width="6" fill="none" stroke-linecap="round"/>
 
-    <!-- graduation cap -->
-    <g transform="translate(0,-6)">
-      <path d="M170 230 L288 188 L406 230 L288 267 Z" fill="url(#darkGradient)"/>
-      <path d="M212 243 C243 251 268 262 288 279 C309 261 334 251 364 243 L364 287 C336 294 311 306 288 325 C264 305 240 295 212 287 Z" fill="#FFFFFF" stroke="#242428" stroke-width="8" stroke-linejoin="round"/>
-      <path d="M208 245 L208 278 C208 288 201 297 189 297 C177 297 171 288 171 278 C171 267 177 261 184 256 C189 252 193 249 194 243" fill="none" stroke="#242428" stroke-width="8" stroke-linecap="round"/>
-      <circle cx="208" cy="245" r="7" fill="#242428"/>
-    </g>
-
-    <!-- inner book shapes -->
-    <path d="M144 398 C192 386 241 394 288 435 C334 393 382 385 436 399" fill="none" stroke="#242428" stroke-width="10" stroke-linecap="round"/>
-
-    <!-- left black page / flag section -->
-    <path d="M152 269
-             C187 274 220 286 252 304
-             C269 313 279 322 288 333
-             L288 425
-             C247 388 204 366 141 356
-             Z"
-          fill="url(#darkGradient)"/>
-
-    <!-- left gold page -->
-    <path d="M145 340
-             C203 348 244 368 288 405
-             L288 435
-             C242 398 203 378 138 371
-             Z"
-          fill="url(#goldGradient)"/>
-
-    <!-- right red page / flag section -->
-    <path d="M288 333
-             C305 313 328 299 360 287
-             C387 276 412 271 439 269
-             L449 326
-             C391 333 341 353 288 392
-             Z"
-          fill="url(#redGradient)"/>
-
-    <!-- right gold page -->
-    <path d="M288 392
-             C337 357 390 339 449 332
-             L439 371
-             C377 378 334 398 288 435
-             Z"
-          fill="url(#goldGradient)"/>
-
-    <!-- white book structure -->
-    <path d="M158 245
-             C204 251 247 269 288 298
-             C328 269 370 251 419 245"
-          fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M288 298 L288 435" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
-    <path d="M288 298
-             C243 270 205 255 165 247"
-          fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
-    <path d="M288 298
-             C332 270 373 255 415 247"
-          fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
-
-    <!-- outer book line -->
-    <path d="M141 356 C200 362 245 384 288 425 C331 384 376 362 436 356" fill="none" stroke="#242428" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
-
-  <!-- text -->
-  <g transform="translate(650,325)">
-    <text x="0" y="0"
-      font-family="Inter, Arial, Helvetica, sans-serif"
-      font-size="150"
-      font-weight="700"
-      letter-spacing="1"
-      fill="#2B2B2E">DTZ-LiD</text>
-    <text x="610" y="0"
-      font-family="Inter, Arial, Helvetica, sans-serif"
-      font-size="115"
-      font-weight="300"
-      fill="#F09A24">edu</text>
-  </g>
+  <text x="240" y="90" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#000">DTZ-</text>
+  <text x="340" y="90" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#E30613">LiD</text>
 </svg>
