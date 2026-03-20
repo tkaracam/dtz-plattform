@@ -2497,6 +2497,9 @@
           <div id="courseShortcutWrap" class="course-shortcut-wrap">
             <p class="section-subtitle">Noch keine Kurse vorhanden.</p>
           </div>
+          <div style="margin-top:8px;">
+            <button id="shortcutTeachersBtn" type="button" class="admin-fastlane-btn owner-only hidden">Lehrkräfte</button>
+          </div>
         </div>
 
         <div class="admin-fastlane">
@@ -11210,6 +11213,12 @@
         }
         openAdminPane("courses");
         deleteCourse(selectedCourseId);
+      });
+    }
+    const shortcutTeachersBtn = document.getElementById("shortcutTeachersBtn");
+    if (shortcutTeachersBtn) {
+      shortcutTeachersBtn.addEventListener("click", () => {
+        openAdminPane("teachers");
       });
     }
     document.getElementById("refreshStudentsInlineBtn").addEventListener("click", listStudents);
