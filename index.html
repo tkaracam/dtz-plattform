@@ -3764,7 +3764,6 @@
           <div class="dtz-exam-bar" style="margin-top:8px;">
             <span id="modelltestStageChip" class="dtz-exam-chip">Phase: Hören</span>
             <span id="modelltestTimerChip" class="dtz-exam-timer hidden">45:00</span>
-            <button id="modelltestToLesenBtn" type="button" class="portal-open-btn">Hören abschließen · Lesen starten</button>
             <button id="modelltestToSchreibenBtn" type="button" class="portal-open-btn hidden">Lesen abschließen · Schreiben starten</button>
             <button id="modelltestFinishBtn" type="button" class="portal-open-btn hidden">Schreiben abgeben · Auswertung</button>
           </div>
@@ -3816,6 +3815,9 @@
             <div class="row-end dtz-action-row">
               <div class="btn-wrap">
                 <button id="dtzHoerenEvaluateBtn" type="button">AUSWERTEN</button>
+              </div>
+              <div class="btn-wrap">
+                <button id="modelltestToLesenBtn" type="button" class="portal-open-btn hidden">Hören abschließen · Lesen starten</button>
               </div>
               <div class="btn-wrap">
                 <button id="dtzHoerenNewBtn" type="button">NEUE AUFGABEN</button>
@@ -6077,6 +6079,8 @@
       modelltestFlowState.active = false;
       const flowCard = document.getElementById("modelltestFlowCard");
       if (flowCard) flowCard.classList.add("hidden");
+      const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
+      if (modelltestToLesenBtn) modelltestToLesenBtn.classList.add("hidden");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
       const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
       if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
@@ -6421,6 +6425,8 @@
       modelltestFlowState.active = false;
       const flowCard = document.getElementById("modelltestFlowCard");
       if (flowCard) flowCard.classList.add("hidden");
+      const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
+      if (modelltestToLesenBtn) modelltestToLesenBtn.classList.add("hidden");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
       const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
       if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
