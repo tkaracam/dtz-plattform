@@ -3983,6 +3983,14 @@
     let speakingRecordingTimerId = null;
     let speakingAutoTranscript = "";
     let currentA2HomeworkConfig = null;
+    let currentOpenedHomeworkContext = {
+      a2AssignmentId: "",
+      dtzByModule: {
+        hoeren: "",
+        lesen: ""
+      }
+    };
+    let solvedHomeworkAssignments = new Set();
     let currentA2State = {
       topic: "Perfekt",
       questions: [],
@@ -4039,6 +4047,54 @@
       try {
         window.localStorage.removeItem(STUDENT_SESSION_CACHE_KEY);
       } catch (_) {}
+    }
+
+    function solvedHomeworkStorageKey() {
+      const user = String(currentStudentUsername || "guest").trim().toLowerCase() || "guest";
+      return `dtz_solved_homework_assignments_v1_${user}`;
+    }
+
+    function loadSolvedHomeworkAssignments() {
+      try {
+        const raw = window.localStorage.getItem(solvedHomeworkStorageKey());
+        if (!raw) {
+          solvedHomeworkAssignments = new Set();
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        const rows = Array.isArray(parsed) ? parsed : [];
+        solvedHomeworkAssignments = new Set(
+          rows
+            .map(item => String(item || "").trim())
+            .filter(Boolean)
+        );
+      } catch (_) {
+        solvedHomeworkAssignments = new Set();
+      }
+    }
+
+    function persistSolvedHomeworkAssignments() {
+      try {
+        window.localStorage.setItem(
+          solvedHomeworkStorageKey(),
+          JSON.stringify(Array.from(solvedHomeworkAssignments))
+        );
+      } catch (_) {}
+    }
+
+    function isClientSolvedAssignment(assignmentIdRaw) {
+      const assignmentId = String(assignmentIdRaw || "").trim();
+      if (!assignmentId) return false;
+      return solvedHomeworkAssignments.has(assignmentId);
+    }
+
+    function markAssignmentSolvedClient(assignmentIdRaw) {
+      const assignmentId = String(assignmentIdRaw || "").trim();
+      if (!assignmentId) return false;
+      if (solvedHomeworkAssignments.has(assignmentId)) return false;
+      solvedHomeworkAssignments.add(assignmentId);
+      persistSolvedHomeworkAssignments();
+      return true;
     }
 
     function isoDateLocal(inputDate = new Date()) {
@@ -5890,6 +5946,7 @@
       memberPanel.classList.remove("hidden");
       currentStudentLabel = identityText || "Angemeldet";
       persistStudentSessionCache(currentStudentUsername, currentStudentLabel);
+      loadSolvedHomeworkAssignments();
       approvedCorrectionUploadIds = new Set();
       renderAssignmentPlaceholder("Zugewiesene Aufgabe wird geladen...", "Wird geladen");
       loadStudentPortal();
@@ -5949,6 +6006,8 @@
     }
 
     function openDtzHubView() {
+      currentOpenedHomeworkContext.dtzByModule.hoeren = "";
+      currentOpenedHomeworkContext.dtzByModule.lesen = "";
       setMainView("dtz");
       setHomeDashboardSection("dtz");
     }
@@ -6237,6 +6296,15 @@
             : `Falsch. Lösung: ${escapeHtml(q.answer)}`
         };
       });
+      if (!showSolutions) {
+        const allAnswered = currentA2State.questions.every(q => Number.isFinite(q.selected));
+        if (allAnswered) {
+          const solvedAssignmentId = String(currentOpenedHomeworkContext.a2AssignmentId || "").trim();
+          if (markAssignmentSolvedClient(solvedAssignmentId)) {
+            void refreshPortalData();
+          }
+        }
+      }
       renderA2IntegratedQuestions();
       renderA2IntegratedStats();
       updateA2ActionStates();
@@ -6245,6 +6313,9 @@
     function openA2ThemesInApp(rawInput = "./a2-themen.html") {
       const cfg = parseA2ConfigFromInput(rawInput);
       currentA2HomeworkConfig = cfg.homeworkMode ? cfg : null;
+      if (!cfg.homeworkMode) {
+        currentOpenedHomeworkContext.a2AssignmentId = "";
+      }
       setMainView("a2");
       setHomeDashboardSection("niveau");
       startA2IntegratedTest(cfg);
@@ -6265,6 +6336,8 @@
     }
 
     function openDtzTrainingOnlyView() {
+      currentOpenedHomeworkContext.dtzByModule.hoeren = "";
+      currentOpenedHomeworkContext.dtzByModule.lesen = "";
       showCards(["dtzTrainingCard"]);
       updateHeroHomeVisibility("dtz");
       setAccordionOpen("dtzHoerenAccordion", false);
@@ -8608,6 +8681,12 @@
       registerHomePractice(module === "lesen" ? "dtz-lesen" : "dtz-hoeren", correct, total);
       void submitAssignedDtzResult(module, state.teil, { total, correct, unanswered, points, maxPoints });
       const isPartial = module === "hoeren" && unanswered > 0;
+      if (unanswered === 0) {
+        const solvedAssignmentId = String(((currentOpenedHomeworkContext.dtzByModule || {})[module] || "")).trim();
+        if (markAssignmentSolvedClient(solvedAssignmentId)) {
+          void refreshPortalData();
+        }
+      }
 
       if (ui.summary) {
         const label = module === "hoeren" ? "Hören" : "Lesen";
@@ -10605,7 +10684,7 @@
       };
 
       rows.forEach(row => {
-        if (isHomeworkSolvedStatus((row && row.status) || "")) return;
+        if (isHomeworkRowSolved(row)) return;
         const category = detectStudentHomeworkCategory(row);
         const key = category === "hoeren"
           ? "hoeren"
@@ -10650,16 +10729,16 @@
       const expiredNode = document.getElementById("portalTodayExpired");
       if (activeNode || warn24Node || expiredNode) {
         const activeCount = rows.reduce((sum, row) => {
-          return isHomeworkSolvedStatus((row && row.status) || "") ? sum : (sum + 1);
+          return isHomeworkRowSolved(row) ? sum : (sum + 1);
         }, 0);
         const warn24Count = rows.reduce((sum, row) => {
           const level = String((row && row.reminder_level) || "").toLowerCase();
-          if (isHomeworkSolvedStatus((row && row.status) || "")) return sum;
+          if (isHomeworkRowSolved(row)) return sum;
           return level === "warn24" ? (sum + 1) : sum;
         }, 0);
         const expiredCount = rows.reduce((sum, row) => {
           const level = String((row && row.reminder_level) || "").toLowerCase();
-          if (isHomeworkSolvedStatus((row && row.status) || "")) return sum;
+          if (isHomeworkRowSolved(row)) return sum;
           return level === "expired" ? (sum + 1) : sum;
         }, 0);
         if (activeNode) activeNode.textContent = String(activeCount);
@@ -10692,6 +10771,12 @@
         || status === "gelost"
         || status === "completed"
         || status === "done";
+    }
+
+    function isHomeworkRowSolved(row) {
+      if (!row || typeof row !== "object") return false;
+      if (isHomeworkSolvedStatus(row.status || "")) return true;
+      return isClientSolvedAssignment(row.id || "");
     }
 
     function parseDtzHomeworkTemplate(templateIdRaw) {
@@ -10759,12 +10844,18 @@
       return null;
     }
 
-    function openHomeworkDtzTeil(templateIdRaw) {
+    function openHomeworkDtzTeil(templateIdRaw, assignmentIdRaw = "") {
       const parsed = parseDtzHomeworkTemplate(templateIdRaw);
       if (!parsed) {
         setStatus("error", "Für diese Aufgabe ist kein DTZ-Teil verknüpft.", "portalStatus");
         return;
       }
+      const assignmentId = String(assignmentIdRaw || "").trim();
+      if (assignmentId && isClientSolvedAssignment(assignmentId)) {
+        setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
+        return;
+      }
+      currentOpenedHomeworkContext.dtzByModule[parsed.module] = assignmentId;
       const moduleUi = getDtzUi(parsed.module);
       if (moduleUi.teilSelect) {
         moduleUi.teilSelect.value = String(parsed.teil);
@@ -10780,6 +10871,12 @@
     }
 
     function openHomeworkA2Task(assignment) {
+      const assignmentId = String((assignment && assignment.id) || "").trim();
+      if (assignmentId && isClientSolvedAssignment(assignmentId)) {
+        setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
+        return;
+      }
+      currentOpenedHomeworkContext.a2AssignmentId = assignmentId;
       const parsed = parseA2HomeworkTemplate(assignment);
       if (!parsed || !parsed.url) {
         setStatus("error", "Für diese Aufgabe ist kein A2-Test-Link hinterlegt.", "portalStatus");
@@ -10814,7 +10911,7 @@
         setStatus("error", "Keine A2-Aufgaben gefunden.", "portalStatus");
         return;
       }
-      const pending = rows.filter(row => !isHomeworkSolvedStatus((row && row.status) || ""));
+      const pending = rows.filter(row => !isHomeworkRowSolved(row));
       const source = pending.length ? pending : rows;
       const topicSet = [];
       const countCandidates = [];
@@ -10880,15 +10977,14 @@
 
       const itemHtml = row => {
         const statusRaw = String(row.status || "offen").toLowerCase();
-        const isDone = isHomeworkSolvedStatus(statusRaw);
+        const isDone = isHomeworkRowSolved(row);
         const stateClass = isDone ? "homework-done" : "homework-pending";
         const reminderLevel = String(row.reminder_level || "none").toLowerCase();
         const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
         const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
         const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
-        const parsedA2 = parseA2HomeworkTemplate(row);
         const dtzOpenAction = parsedTemplate
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "ghost-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}">${isDone ? "Gelöst" : `${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen`}</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "ghost-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}" data-open-hw-assignment="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : `${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen`}</button></div>`
           : "";
         const a2OpenAction = !parsedTemplate && detectStudentHomeworkCategory(row) === "a2"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : ""}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "A2-Test öffnen"}</button></div>`
@@ -10909,7 +11005,8 @@
         hoerenWrap.querySelectorAll("[data-open-dtz-teil]").forEach(btn => {
           btn.addEventListener("click", () => {
             const templateId = String(btn.getAttribute("data-open-dtz-teil") || "");
-            openHomeworkDtzTeil(templateId);
+            const assignmentId = String(btn.getAttribute("data-open-hw-assignment") || "");
+            openHomeworkDtzTeil(templateId, assignmentId);
           });
         });
       }
@@ -10918,7 +11015,8 @@
         lesenWrap.querySelectorAll("[data-open-dtz-teil]").forEach(btn => {
           btn.addEventListener("click", () => {
             const templateId = String(btn.getAttribute("data-open-dtz-teil") || "");
-            openHomeworkDtzTeil(templateId);
+            const assignmentId = String(btn.getAttribute("data-open-hw-assignment") || "");
+            openHomeworkDtzTeil(templateId, assignmentId);
           });
         });
       }
@@ -10926,7 +11024,7 @@
         if (!grouped.a2.length) {
           a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
         } else {
-          const pendingA2 = grouped.a2.filter(row => !isHomeworkSolvedStatus((row && row.status) || ""));
+          const pendingA2 = grouped.a2.filter(row => !isHomeworkRowSolved(row));
           const source = pendingA2.length ? pendingA2 : grouped.a2;
           const topics = [];
           source.forEach(row => {
@@ -10935,11 +11033,11 @@
             });
           });
           const totalDuration = source.reduce((sum, row) => sum + Math.max(0, Number(row && row.duration_minutes ? row.duration_minutes : 0)), 0);
-          const allDone = source.every(row => isHomeworkSolvedStatus((row && row.status) || ""));
+          const allDone = source.every(row => isHomeworkRowSolved(row));
           const dueLabel = formatDisplayDate(String((source[0] && source[0].due_date) || "")) || "-";
           const assignmentRows = source.map(row => {
             const rowStatus = String((row && row.status) || "offen");
-            const rowDone = isHomeworkSolvedStatus(rowStatus);
+            const rowDone = isHomeworkRowSolved(row);
             const rowDue = formatDisplayDate(String((row && row.due_date) || "")) || "-";
             return `
               <div class="portal-item" style="margin-top:8px;">
@@ -10990,7 +11088,7 @@
         openPortalPanel("hoerenHomework", false);
       } else if (assigned && assigned.module === "lesen") {
         openPortalPanel("lesenHomework", false);
-      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && !isHomeworkSolvedStatus((row && row.status) || ""))) {
+      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && !isHomeworkRowSolved(row))) {
         openPortalPanel("a2Homework", false);
       }
 
@@ -11397,6 +11495,8 @@
       } finally {
         resetLetterWritingTimer();
         clearStudentSessionCache();
+        solvedHomeworkAssignments = new Set();
+        currentOpenedHomeworkContext = { a2AssignmentId: "", dtzByModule: { hoeren: "", lesen: "" } };
         currentStudentUsername = "";
         currentRoom = null;
         stopRoomPolling();
