@@ -3671,13 +3671,133 @@
         prompt: "Ihr Paket wurde beim Nachbarn abgegeben. Schreiben Sie eine kurze Nachricht.",
         points: ["Sagen Sie, dass Ihr Paket dort ist.", "Bitten Sie um Abholung.", "Schlagen Sie eine Uhrzeit vor."]
       },
-      {
-        id: "jobcenter-termin",
-        title: "Jobcenter: Termin",
-        prompt: "Sie können einen Termin beim Jobcenter nicht wahrnehmen. Schreiben Sie eine E-Mail.",
-        points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
-      }
-    ];
+	      {
+	        id: "jobcenter-termin",
+	        title: "Jobcenter: Termin",
+	        prompt: "Sie können einen Termin beim Jobcenter nicht wahrnehmen. Schreiben Sie eine E-Mail.",
+	        points: ["Nennen Sie den Termin.", "Sagen Sie den Grund.", "Bitten Sie um einen neuen Termin."]
+	      },
+	      {
+	        id: "schule-elternabend-rueckmeldung",
+	        title: "Schule: Elternabend Rückmeldung",
+	        prompt: "Sie können am Elternabend nicht teilnehmen. Schreiben Sie der Klassenleitung eine E-Mail.",
+	        points: ["Entschuldigen Sie sich kurz.", "Nennen Sie den Grund.", "Bitten Sie um eine kurze Zusammenfassung."]
+	      },
+	      {
+	        id: "stromanbieter-ratenzahlung",
+	        title: "Stromanbieter: Ratenzahlung",
+	        prompt: "Die letzte Stromrechnung ist sehr hoch. Schreiben Sie dem Anbieter und bitten Sie um Ratenzahlung.",
+	        points: ["Nennen Sie Kundennummer und Rechnung.", "Erklären Sie kurz Ihre Situation.", "Schlagen Sie eine monatliche Rate vor."]
+	      },
+	      {
+	        id: "versicherung-schadensmeldung",
+	        title: "Versicherung: Schadensmeldung",
+	        prompt: "Ihr Fahrrad wurde beschädigt. Schreiben Sie Ihrer Versicherung eine Schadensmeldung.",
+	        points: ["Beschreiben Sie den Schaden.", "Nennen Sie Datum und Ort.", "Fragen Sie nach den nächsten Schritten."]
+	      },
+	      {
+	        id: "sprachschule-pruefungstermin",
+	        title: "Sprachschule: Prüfungstermin",
+	        prompt: "Sie möchten sich für einen DTZ-Prüfungstermin anmelden. Schreiben Sie der Sprachschule.",
+	        points: ["Nennen Sie Ihren Kurs und Ihr Niveau.", "Bitten Sie um verfügbare Termine.", "Fragen Sie nach den Unterlagen."]
+	      },
+	      {
+	        id: "vermieter-nebenkosten-frage",
+	        title: "Vermieter: Nebenkosten Frage",
+	        prompt: "Sie haben Fragen zur Nebenkostenabrechnung. Schreiben Sie Ihrer Vermieterin eine E-Mail.",
+	        points: ["Nennen Sie die Abrechnung und den Zeitraum.", "Formulieren Sie Ihre konkrete Frage.", "Bitten Sie um einen Gesprächstermin."]
+	      },
+	      {
+	        id: "arbeit-krankmeldung-anlage-fehlt",
+	        title: "Arbeit: Krankmeldung Anlage fehlt",
+	        prompt: "Sie haben sich krankgemeldet, aber die Bescheinigung noch nicht geschickt. Schreiben Sie Ihrer Teamleitung.",
+	        points: ["Nennen Sie den Zeitraum der Krankheit.", "Entschuldigen Sie die verspätete Bescheinigung.", "Sagen Sie, wann Sie die Bescheinigung nachreichen."]
+	      },
+	      {
+	        id: "bank-kontoauszug-anfordern",
+	        title: "Bank: Kontoauszug anfordern",
+	        prompt: "Sie benötigen einen alten Kontoauszug für eine Behörde. Schreiben Sie Ihrer Bank.",
+	        points: ["Nennen Sie den gewünschten Zeitraum.", "Erklären Sie kurz den Zweck.", "Fragen Sie nach Gebühren und Bearbeitungszeit."]
+	      },
+	      {
+	        id: "kita-abholzeit-aendern",
+	        title: "Kita: Abholzeit ändern",
+	        prompt: "Sie müssen Ihr Kind in den nächsten zwei Wochen später abholen. Schreiben Sie an die Kita.",
+	        points: ["Nennen Sie den Zeitraum.", "Geben Sie die neue Abholzeit an.", "Bitten Sie um Bestätigung."]
+	      },
+	      {
+	        id: "arztpraxis-befund-anfragen",
+	        title: "Arztpraxis: Befund anfragen",
+	        prompt: "Sie warten auf einen Befund und möchten nachfragen. Schreiben Sie an die Arztpraxis.",
+	        points: ["Nennen Sie Ihren Untersuchungstermin.", "Fragen Sie höflich nach dem Stand.", "Bitten Sie um Rückmeldung per E-Mail oder Telefon."]
+	      },
+	      {
+	        id: "bibliothek-mahnung-klaeren",
+	        title: "Bibliothek: Mahnung klären",
+	        prompt: "Sie haben eine Mahnung erhalten, obwohl Sie das Buch zurückgegeben haben. Schreiben Sie an die Bibliothek.",
+	        points: ["Nennen Sie Titel und Rückgabedatum.", "Erklären Sie das Problem.", "Bitten Sie um Klärung der Mahngebühr."]
+	      },
+	      {
+	        id: "arbeit-fortbildung-anmeldung",
+	        title: "Arbeit: Fortbildung Anmeldung",
+	        prompt: "Sie möchten an einer Fortbildung teilnehmen. Schreiben Sie Ihrer Führungskraft.",
+	        points: ["Nennen Sie Thema und Termin.", "Begründen Sie den Nutzen für die Arbeit.", "Bitten Sie um Freigabe."]
+	      },
+	      {
+	        id: "verkehrsbetriebe-monatskarte-erstatten",
+	        title: "Verkehrsbetriebe: Monatskarte erstatten",
+	        prompt: "Ihre Monatskarte war wegen Streik nicht nutzbar. Schreiben Sie an die Verkehrsbetriebe.",
+	        points: ["Nennen Sie Zeitraum und Ticketnummer.", "Beschreiben Sie kurz die Situation.", "Bitten Sie um Teil-Erstattung."]
+	      },
+	      {
+	        id: "fitnessstudio-vertrag-pause",
+	        title: "Fitnessstudio: Vertrag pausieren",
+	        prompt: "Sie sind für zwei Monate im Ausland und möchten den Vertrag pausieren. Schreiben Sie an das Studio.",
+	        points: ["Nennen Sie den Zeitraum.", "Bitten Sie um Pausierung ohne Zusatzkosten.", "Fragen Sie nach Bestätigung."]
+	      },
+	      {
+	        id: "internetanbieter-stoerung-melden",
+	        title: "Internetanbieter: Störung melden",
+	        prompt: "Ihr Internet fällt seit gestern immer wieder aus. Schreiben Sie an den Kundenservice.",
+	        points: ["Beschreiben Sie die Störung und seit wann sie besteht.", "Nennen Sie Kundennummer und Adresse.", "Bitten Sie um schnelle Lösung."]
+	      },
+	      {
+	        id: "schule-zeugnis-kopie-anfragen",
+	        title: "Schule: Zeugnis-Kopie anfragen",
+	        prompt: "Sie benötigen eine Kopie eines alten Zeugnisses. Schreiben Sie an das Schulsekretariat.",
+	        points: ["Nennen Sie das Schuljahr.", "Erklären Sie kurz den Grund.", "Fragen Sie nach dem Ablauf und den Kosten."]
+	      },
+	      {
+	        id: "hausverwaltung-muellraum-schluessel",
+	        title: "Hausverwaltung: Müllraum Schlüssel",
+	        prompt: "Sie haben keinen Schlüssel für den Müllraum. Schreiben Sie an die Hausverwaltung.",
+	        points: ["Beschreiben Sie das Problem.", "Bitten Sie um einen Ersatzschlüssel.", "Fragen Sie nach Termin zur Abholung."]
+	      },
+	      {
+	        id: "arbeit-arbeitszeugnis-anfordern",
+	        title: "Arbeit: Arbeitszeugnis anfordern",
+	        prompt: "Sie brauchen ein aktuelles Arbeitszeugnis. Schreiben Sie der Personalabteilung.",
+	        points: ["Nennen Sie Ihren vollständigen Namen und Bereich.", "Bitten Sie um ein qualifiziertes Zeugnis.", "Nennen Sie Ihre Frist."]
+	      },
+	      {
+	        id: "reisebuero-buchung-fehler",
+	        title: "Reisebüro: Buchung Fehler",
+	        prompt: "Bei Ihrer Reisebuchung ist der Name falsch geschrieben. Schreiben Sie an das Reisebüro.",
+	        points: ["Nennen Sie Buchungsnummer und richtigen Namen.", "Erklären Sie kurz den Fehler.", "Bitten Sie um schnelle Korrektur."]
+	      },
+	      {
+	        id: "nachhilfe-termin-absagen",
+	        title: "Nachhilfe: Termin absagen",
+	        prompt: "Sie können an einem Nachhilfe-Termin nicht teilnehmen. Schreiben Sie der Lehrkraft.",
+	        points: ["Nennen Sie Datum und Uhrzeit.", "Sagen Sie den Grund.", "Bitten Sie um einen Ersatztermin."]
+	      },
+	      {
+	        id: "amt-wohnsitzbestaetigung-anfragen",
+	        title: "Amt: Wohnsitzbestätigung anfragen",
+	        prompt: "Sie benötigen eine Wohnsitzbestätigung für eine Bewerbung. Schreiben Sie an das Bürgeramt.",
+	        points: ["Nennen Sie den Zweck.", "Fragen Sie nach benötigten Unterlagen.", "Bitten Sie um einen zeitnahen Termin."]
+	      }
+	    ];
 
     const A2_HOMEWORK_TOPIC_MAP = [
       { key: "perfekt", label: "Perfekt", a2Topic: "Perfekt" },
@@ -6656,31 +6776,52 @@
         return;
       }
 
-      const fragment = document.createDocumentFragment();
-      groups.forEach(group => {
-        const groupWrap = document.createElement("div");
-        groupWrap.className = "hw-multi-checklist-group";
-        if (group.label) {
-          const title = document.createElement("div");
-          title.className = "hw-multi-checklist-title";
-          title.textContent = group.label;
-          groupWrap.appendChild(title);
-        }
-        group.options.forEach(item => {
-          const row = document.createElement("label");
-          row.className = "hw-multi-check-item";
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
+	      const fragment = document.createDocumentFragment();
+	      groups.forEach(group => {
+	        const labelLower = String(group.label || "").trim().toLowerCase();
+	        const isMailGroup = labelLower === "mail-aufgabe";
+	        let groupWrap;
+	        let listHost;
+	        if (isMailGroup) {
+	          const details = document.createElement("details");
+	          details.className = "hw-multi-checklist-group";
+	          details.open = true;
+	          const summary = document.createElement("summary");
+	          summary.className = "hw-multi-checklist-title";
+	          summary.textContent = group.label || "Mail-Aufgabe";
+	          details.appendChild(summary);
+	          const body = document.createElement("div");
+	          body.style.marginTop = "8px";
+	          details.appendChild(body);
+	          groupWrap = details;
+	          listHost = body;
+	        } else {
+	          const div = document.createElement("div");
+	          div.className = "hw-multi-checklist-group";
+	          if (group.label) {
+	            const title = document.createElement("div");
+	            title.className = "hw-multi-checklist-title";
+	            title.textContent = group.label;
+	            div.appendChild(title);
+	          }
+	          groupWrap = div;
+	          listHost = div;
+	        }
+	        group.options.forEach(item => {
+	          const row = document.createElement("label");
+	          row.className = "hw-multi-check-item";
+	          const checkbox = document.createElement("input");
+	          checkbox.type = "checkbox";
           checkbox.dataset.mirrorValue = item.value;
-          checkbox.checked = selectedSet.has(item.value);
-          const text = document.createElement("span");
-          text.textContent = item.text;
-          row.appendChild(checkbox);
-          row.appendChild(text);
-          groupWrap.appendChild(row);
-        });
-        fragment.appendChild(groupWrap);
-      });
+	          checkbox.checked = selectedSet.has(item.value);
+	          const text = document.createElement("span");
+	          text.textContent = item.text;
+	          row.appendChild(checkbox);
+	          row.appendChild(text);
+	          listHost.appendChild(row);
+	        });
+	        fragment.appendChild(groupWrap);
+	      });
       container.appendChild(fragment);
 
       container.querySelectorAll("input[type='checkbox'][data-mirror-value]").forEach(input => {
