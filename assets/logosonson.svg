@@ -1,14 +1,4 @@
-<svg width="500" height="150" viewBox="0 0 500 150" xmlns="http://www.w3.org/2000/svg">
-  <path d="M40 30 Q80 10 120 30 L120 100 Q80 80 40 100 Z" fill="#000000"/>
-  <path d="M40 45 Q80 25 120 45 L120 70 Q80 50 40 70 Z" fill="#E30613"/>
-  <path d="M40 70 Q80 50 120 70 L120 100 Q80 80 40 100 Z" fill="#FFCC00"/>
-
-  <path d="M120 30 Q160 10 200 30 L200 100 Q160 80 120 100 Z" fill="#000000"/>
-  <path d="M120 45 Q160 25 200 45 L200 70 Q160 50 120 70 Z" fill="#E30613"/>
-  <path d="M120 70 Q160 50 200 70 L200 100 Q160 80 120 100 Z" fill="#FFCC00"/>
-
-  <path d="M180 90 L195 105 L220 75" stroke="#FFCC00" stroke-width="6" fill="none" stroke-linecap="round"/>
-
-  <text x="240" y="90" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#000">DTZ-</text>
-  <text x="340" y="90" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#E30613">LiD</text>
+<svg width="500" height="150" viewBox="0 0 500 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DTZ-LiD">
+  <text x="120" y="95" font-family="Arial, sans-serif" font-size="58" font-weight="700" fill="#000000">DTZ-</text>
+  <text x="275" y="95" font-family="Arial, sans-serif" font-size="58" font-weight="700" fill="#E30613">LiD</text>
 </svg>
