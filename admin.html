@@ -2497,8 +2497,33 @@
           <div id="courseShortcutWrap" class="course-shortcut-wrap">
             <p class="section-subtitle">Noch keine Kurse vorhanden.</p>
           </div>
-          <div style="margin-top:8px;">
-            <button id="shortcutTeachersBtn" type="button" class="admin-fastlane-btn owner-only hidden">Lehrkräfte</button>
+          <div id="paneTeachers" class="owner-only hidden" style="margin-top:10px;">
+            <div class="bulk-wrap" style="margin-top:0; border-top:none; padding-top:0;">
+              <h2 class="section-title" style="font-size: 1.15rem;">Lehrkräfte verwalten</h2>
+              <p class="section-subtitle">Nur Haupt-Admin: Dozent-Konten verwalten.</p>
+              <div class="grid">
+                <div>
+                  <label for="newTeacherUsername">Benutzername</label>
+                  <input id="newTeacherUsername" type="text" placeholder="z. B. docent01">
+                </div>
+                <div>
+                  <label for="newTeacherDisplayName">Anzeigename</label>
+                  <input id="newTeacherDisplayName" type="text" placeholder="z. B. Frau Yilmaz">
+                </div>
+              </div>
+              <div class="grid">
+                <div>
+                  <label for="newTeacherPassword">Passwort</label>
+                  <input id="newTeacherPassword" type="text" placeholder="Einfaches Passwort">
+                </div>
+              </div>
+              <div class="actions">
+                <button id="createTeacherBtn" type="button">Lehrkraft erstellen</button>
+                <button id="refreshTeachersBtn" class="ghost-btn" type="button">Lehrkräfte aktualisieren</button>
+              </div>
+              <div id="teacherStatus" class="hidden"></div>
+              <div id="teacherListWrap" style="margin-top: 10px;"></div>
+            </div>
           </div>
         </div>
 
@@ -2663,35 +2688,6 @@
               <div id="userListWrap" style="margin-top: 10px;"></div>
             </div>
           </details>
-        </div>
-
-        <div id="paneTeachers" class="admin-pane owner-only hidden">
-          <div class="bulk-wrap">
-            <h2 class="section-title" style="font-size: 1.35rem;">Lehrkräfte verwalten</h2>
-            <p class="section-subtitle">Nur Haupt-Admin: Dozent-Konten verwalten.</p>
-            <div class="grid">
-              <div>
-                <label for="newTeacherUsername">Benutzername</label>
-                <input id="newTeacherUsername" type="text" placeholder="z. B. docent01">
-              </div>
-              <div>
-                <label for="newTeacherDisplayName">Anzeigename</label>
-                <input id="newTeacherDisplayName" type="text" placeholder="z. B. Frau Yilmaz">
-              </div>
-            </div>
-            <div class="grid">
-              <div>
-                <label for="newTeacherPassword">Passwort</label>
-                <input id="newTeacherPassword" type="text" placeholder="Einfaches Passwort">
-              </div>
-            </div>
-            <div class="actions">
-              <button id="createTeacherBtn" type="button">Lehrkraft erstellen</button>
-              <button id="refreshTeachersBtn" class="ghost-btn" type="button">Lehrkräfte aktualisieren</button>
-            </div>
-            <div id="teacherStatus" class="hidden"></div>
-            <div id="teacherListWrap" style="margin-top: 10px;"></div>
-          </div>
         </div>
 
         <div id="paneCourses" class="admin-pane">
