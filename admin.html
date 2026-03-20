@@ -5235,6 +5235,14 @@
     function updateFastSelectedCourseWorkspaceButton() {
       const btn = document.getElementById("fastSelectedCourseWorkspaceBtn");
       if (!btn) return;
+      const isDocent = String(adminContext.role || "").trim().toLowerCase() === "docent";
+      if (isDocent) {
+        btn.classList.add("hidden");
+        btn.classList.remove("is-course-selected");
+        btn.disabled = true;
+        btn.textContent = "Kursbereich öffnen";
+        return;
+      }
       const course = getCourseById(selectedCourseId);
       if (!course) {
         btn.classList.add("hidden");
