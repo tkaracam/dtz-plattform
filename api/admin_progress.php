@@ -72,6 +72,7 @@ function progress_extract_score(array $review): ?int
 }
 
 $courseIdFilter = trim((string)($_GET['course_id'] ?? ''));
+$studentUsernameFilter = progress_normalize_username((string)($_GET['student_username'] ?? ''));
 $windowDays = (int)($_GET['days'] ?? 7);
 if ($windowDays < 1 || $windowDays > 90) {
     $windowDays = 7;
@@ -168,6 +169,12 @@ foreach (load_student_users() as $student) {
     $visibleStudents[$uname] = $student;
 }
 
+if ($studentUsernameFilter !== '' && !isset($visibleStudents[$studentUsernameFilter])) {
+    http_response_code(404);
+    echo json_encode(['error' => 'Teilnehmende wurde nicht gefunden oder Zugriff verweigert.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 $studentStats = [];
 foreach ($visibleStudents as $uname => $student) {
     $studentName = trim((string)($student['display_name'] ?? $student['name'] ?? ''));
@@ -210,6 +217,25 @@ if ($courseIdFilter !== '') {
         if (!isset($onlyMembers[$uname])) {
             unset($visibleStudents[$uname]);
         }
+    }
+}
+
+if ($studentUsernameFilter !== '') {
+    foreach (array_keys($visibleStudents) as $uname) {
+        if ($uname !== $studentUsernameFilter) {
+            unset($visibleStudents[$uname]);
+        }
+    }
+    if (!$visibleStudents) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Teilnehmende passt nicht zum gewählten Kursfilter.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+foreach (array_keys($studentStats) as $uname) {
+    if (!isset($visibleStudents[$uname])) {
+        unset($studentStats[$uname]);
     }
 }
 
@@ -647,6 +673,10 @@ echo json_encode([
     'selected_course' => $courseIdFilter !== '' && isset($visibleCourses[$courseIdFilter]) ? [
         'course_id' => $courseIdFilter,
         'name' => (string)($visibleCourses[$courseIdFilter]['name'] ?? $courseIdFilter),
+    ] : null,
+    'selected_student' => $studentUsernameFilter !== '' && isset($visibleStudents[$studentUsernameFilter]) ? [
+        'student_username' => (string)($visibleStudents[$studentUsernameFilter]['username'] ?? $studentUsernameFilter),
+        'student_name' => (string)($visibleStudents[$studentUsernameFilter]['display_name'] ?? $visibleStudents[$studentUsernameFilter]['name'] ?? ''),
     ] : null,
     'recent_approved' => $recentApproved,
     'recent_modelltest_results' => $recentModelltestResults,

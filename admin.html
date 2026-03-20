@@ -3020,6 +3020,12 @@
                 </select>
               </div>
               <div>
+                <label for="progressStudentFilter">Teilnehmende (optional)</label>
+                <select id="progressStudentFilter">
+                  <option value="">Alle Teilnehmenden</option>
+                </select>
+              </div>
+              <div>
                 <label for="progressDaysFilter">Zeitraum</label>
                 <select id="progressDaysFilter">
                   <option value="7" selected>Letzte 7 Tage</option>
@@ -5125,6 +5131,46 @@
       });
       select.innerHTML = options.join("");
       if (previous && currentCourses.some(course => String(course.course_id || "") === previous)) {
+        select.value = previous;
+      }
+      renderProgressStudentFilter();
+    }
+
+    function renderProgressStudentFilter() {
+      const select = document.getElementById("progressStudentFilter");
+      if (!select) return;
+      const selectedCourseId = String((document.getElementById("progressCourseFilter") || {}).value || "").trim();
+      const previous = String(select.value || "").trim().toLowerCase();
+      const allowedUsers = new Set();
+      if (selectedCourseId) {
+        const course = currentCourses.find(item => String(item.course_id || "") === selectedCourseId);
+        const members = Array.isArray(course?.members) ? course.members : [];
+        members.forEach(member => {
+          const uname = String(member || "").trim().toLowerCase();
+          if (uname) allowedUsers.add(uname);
+        });
+      }
+      const options = ['<option value="">Alle Teilnehmenden</option>'];
+      currentStudents
+        .filter(student => !!student && !!student.active)
+        .filter(student => {
+          const uname = String(student.username || "").trim().toLowerCase();
+          if (!uname) return false;
+          return !selectedCourseId || allowedUsers.has(uname);
+        })
+        .sort((a, b) => {
+          const an = String(a.display_name || a.name || a.username || "").trim().toLowerCase();
+          const bn = String(b.display_name || b.name || b.username || "").trim().toLowerCase();
+          return an.localeCompare(bn, "de");
+        })
+        .forEach(student => {
+          const uname = String(student.username || "").trim().toLowerCase();
+          const displayName = String(student.display_name || student.name || "").trim();
+          const label = displayName ? `${displayName} (${uname})` : uname;
+          options.push(`<option value="${escapeHtml(uname)}">${escapeHtml(label)}</option>`);
+        });
+      select.innerHTML = options.join("");
+      if (previous && Array.from(select.options).some(option => String(option.value || "").trim().toLowerCase() === previous)) {
         select.value = previous;
       }
     }
@@ -7640,11 +7686,13 @@
     async function fetchAdminProgress(payload = {}) {
       const days = clamp(payload.days, 1, 90, 7);
       const courseId = String(payload.course_id || "").trim();
+      const studentUsername = String(payload.student_username || "").trim().toLowerCase();
       const dateFrom = toIsoDateInput(payload.date_from || "");
       const dateTo = toIsoDateInput(payload.date_to || "");
       const query = new URLSearchParams();
       query.set("days", String(days));
       if (courseId) query.set("course_id", courseId);
+      if (studentUsername) query.set("student_username", studentUsername);
       if (dateFrom) query.set("from", dateFrom);
       if (dateTo) query.set("to", dateTo);
       const queryString = query.toString();
@@ -7674,10 +7722,11 @@
 
     function getProgressFilterParams() {
       const courseId = String((document.getElementById("progressCourseFilter") || {}).value || "").trim();
+      const studentUsername = String((document.getElementById("progressStudentFilter") || {}).value || "").trim().toLowerCase();
       const days = clamp((document.getElementById("progressDaysFilter") || {}).value, 1, 90, 7);
       const dateFrom = toIsoDateInput((document.getElementById("progressDateFrom") || {}).value || "");
       const dateTo = toIsoDateInput((document.getElementById("progressDateTo") || {}).value || "");
-      return { courseId, days, dateFrom, dateTo };
+      return { courseId, studentUsername, days, dateFrom, dateTo };
     }
 
     function getProgressReportTitle(payload = latestProgressPayload || {}) {
@@ -8083,6 +8132,7 @@
       try {
         const payload = await fetchAdminProgress({
           course_id: filters.courseId,
+          student_username: filters.studentUsername,
           days: filters.days,
           date_from: filters.dateFrom,
           date_to: filters.dateTo
@@ -9153,10 +9203,12 @@
         currentStudents = Array.isArray(payload.users) ? payload.users.slice() : [];
         renderStudents(getScopedStudentsForAccounts());
         renderHomeworkUserPicker();
+        renderProgressStudentFilter();
       } catch (_) {
         currentStudents = [];
         renderStudents([]);
         renderHomeworkUserPicker();
+        renderProgressStudentFilter();
       }
     }
 
@@ -11044,7 +11096,11 @@
     document.getElementById("downloadLesenSetBtn").addEventListener("click", () => downloadTrainingSet("lesen"));
     document.getElementById("downloadHoerenSetBtn").addEventListener("click", () => downloadTrainingSet("hoeren"));
     document.getElementById("refreshProgressBtn").addEventListener("click", () => loadProgressOverview(false));
-    document.getElementById("progressCourseFilter").addEventListener("change", () => loadProgressOverview(true));
+    document.getElementById("progressCourseFilter").addEventListener("change", () => {
+      renderProgressStudentFilter();
+      loadProgressOverview(true);
+    });
+    document.getElementById("progressStudentFilter").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("progressDaysFilter").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("progressDateFrom").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("progressDateTo").addEventListener("change", () => loadProgressOverview(true));
