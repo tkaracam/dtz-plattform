@@ -4027,6 +4027,7 @@
     let currentDtzServerAudioQueue = [];
     let currentDtzServerAudioEl = null;
     let currentDtzAudioBackendMode = "";
+    let currentDtzAudioDurationMsByKey = {};
     let currentStudentLabel = "";
     let currentStudentUsername = "";
     let currentAssignedHomework = null;
@@ -7152,15 +7153,72 @@
 
     function AudioPlayer(module, audioKey, isPlaying, audioScript) {
       const scriptAttr = escapeHtml(String(audioScript || ""));
+      const key = String(audioKey || "");
+      const durationLabel = getDtzAudioDurationLabel(key);
       return `
         <div class="dtz-audio-actions">
           <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""}" data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
             ${isPlaying
-              ? "STOP"
-              : '<img src="./assets/play.png" class="dtz-audio-icon" alt="Play" />'}
+              ? `Stoppen${durationLabel ? ` · ${durationLabel}` : ""}`
+              : `Abspielen${durationLabel ? ` · ${durationLabel}` : ""}`}
           </button>
         </div>
       `;
+    }
+
+    function formatDtzAudioDuration(ms) {
+      const totalSec = Math.max(0, Math.round(Number(ms || 0) / 1000));
+      const minutes = Math.floor(totalSec / 60);
+      const seconds = totalSec % 60;
+      return `${String(minutes)}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function estimateSpeechDurationMs(text, rate = 0.93) {
+      const normalized = String(text || "").trim();
+      if (!normalized) return 0;
+      const words = normalized.split(/\s+/).filter(Boolean).length;
+      const speakingWps = Math.max(1.6, 2.45 * Math.max(0.75, Number(rate || 0.93)));
+      const spokenMs = (words / speakingWps) * 1000;
+      const commaPauses = (normalized.match(/[,;:]/g) || []).length * 140;
+      const endPause = /[.!?]$/.test(normalized) ? 240 : 120;
+      return Math.round(spokenMs + commaPauses + endPause);
+    }
+
+    function estimateDtzAudioDurationMsFromServerSegments(segments) {
+      if (!Array.isArray(segments) || !segments.length) return 0;
+      return segments.reduce((sum, segment) => {
+        const text = String(segment && segment.text ? segment.text : "").trim();
+        const spokenMs = estimateSpeechDurationMs(text, 0.93);
+        const pauseMs = Number(segment && segment.pause_ms ? segment.pause_ms : 0);
+        return sum + spokenMs + (Number.isFinite(pauseMs) ? Math.max(0, pauseMs) : 0);
+      }, 0);
+    }
+
+    function estimateDtzAudioDurationMsFromBrowserSegments(segments) {
+      if (!Array.isArray(segments) || !segments.length) return 0;
+      return segments.reduce((sum, segment) => {
+        const text = String(segment && segment.text ? segment.text : "").trim();
+        const rate = Number(segment && segment.rate ? segment.rate : 0.93);
+        const spokenMs = estimateSpeechDurationMs(text, rate);
+        const pauseMs = Number(segment && segment.pauseMs ? segment.pauseMs : 0);
+        return sum + spokenMs + (Number.isFinite(pauseMs) ? Math.max(0, pauseMs) : 0);
+      }, 0);
+    }
+
+    function setDtzAudioDurationMs(key, ms) {
+      const safeKey = String(key || "").trim();
+      if (!safeKey) return;
+      const value = Number(ms || 0);
+      if (!Number.isFinite(value) || value <= 0) return;
+      currentDtzAudioDurationMsByKey[safeKey] = Math.round(value);
+    }
+
+    function getDtzAudioDurationLabel(key) {
+      const safeKey = String(key || "").trim();
+      if (!safeKey) return "";
+      const ms = Number(currentDtzAudioDurationMsByKey[safeKey] || 0);
+      if (!Number.isFinite(ms) || ms <= 0) return "";
+      return formatDtzAudioDuration(ms);
     }
 
     function OptionGroup(params) {
@@ -8351,7 +8409,10 @@
           }
         }
         if (serverSegments.length) {
-          setDtzModuleStatus(module, "ok", `Audio läuft (Server-TTS): ${source.label}.`);
+          const durationMs = estimateDtzAudioDurationMsFromServerSegments(serverSegments);
+          setDtzAudioDurationMs(key, durationMs);
+          const durationHint = durationMs > 0 ? ` Dauer: ${formatDtzAudioDuration(durationMs)}.` : "";
+          setDtzModuleStatus(module, "ok", `Audio läuft (Server-TTS): ${source.label}.${durationHint}`);
           playServerDtzAudioSegments(serverSegments, key, module);
           return;
         }
@@ -8371,6 +8432,8 @@
         setDtzModuleStatus(module, "error", "Audiotext ist leer.");
         return;
       }
+      const browserDurationMs = estimateDtzAudioDurationMsFromBrowserSegments(segments);
+      setDtzAudioDurationMs(key, browserDurationMs);
       const speakers = segments.map(segment => segment.speaker || "NARRATOR");
       const preferredSpeakers = Array.isArray(source.speakerMeta)
         ? source.speakerMeta.map(s => String(s || "").trim().toUpperCase()).filter(Boolean)
@@ -8418,7 +8481,8 @@
       };
 
       playNextSegment();
-      setDtzModuleStatus(module, "ok", `Audio läuft (Browser): ${source.label}.`);
+      const browserDurationHint = browserDurationMs > 0 ? ` Dauer: ${formatDtzAudioDuration(browserDurationMs)}.` : "";
+      setDtzModuleStatus(module, "ok", `Audio läuft (Browser): ${source.label}.${browserDurationHint}`);
       renderDtzTrainingSet(module);
     }
 
