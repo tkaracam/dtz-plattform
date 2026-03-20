@@ -223,15 +223,21 @@ foreach (load_homework_assignments() as $assignment) {
     $deadlineTs = (int)($state['deadline_ts'] ?? 0);
     $expired = ($submittedAt === '' && $deadlineTs > 0 && $nowTs >= $deadlineTs);
     $reminder = homework_reminder_for_state($state, $nowTs);
+    $assignmentStatus = mb_strtolower(trim((string)($assignment['status'] ?? 'active')));
+    $startsAt = trim((string)($assignment['starts_at'] ?? ''));
+    $startsAtTs = $startsAt !== '' ? strtotime($startsAt) : false;
+    $plannedInFuture = ($startsAtTs !== false && (int)$startsAtTs > $nowTs);
 
     $status = 'offen';
     if ($submittedAt !== '') {
         $status = 'abgegeben';
+    } elseif ($assignmentStatus !== 'active') {
+        $status = 'archiviert';
     } elseif ($expired) {
         $status = 'abgelaufen';
     } elseif ($startedAt !== '') {
         $status = 'läuft';
-    } elseif (!assignment_is_active_now($assignment, $nowTs)) {
+    } elseif ($plannedInFuture) {
         $status = 'geplant';
     }
 

@@ -19,6 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
 
+function modelltest_level_from_percent_local(int $percent): string
+{
+    $p = max(0, min(100, $percent));
+    if ($p >= 75) {
+        return 'B1';
+    }
+    if ($p >= 50) {
+        return 'A2';
+    }
+    return 'A1';
+}
+
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 if ($username === '') {
@@ -48,8 +60,26 @@ $lesenCorrect = max(0, (int)($body['lesen_correct'] ?? 0));
 $lesenTotal = max(0, (int)($body['lesen_total'] ?? 0));
 $schreibenScore = max(0, (int)($body['schreiben_score'] ?? 0));
 $schreibenMax = max(0, (int)($body['schreiben_max'] ?? 0));
-$overallPercent = max(0, min(100, (int)($body['overall_percent'] ?? 0)));
-$level = trim((string)($body['level'] ?? ''));
+if ($hoerenTotal <= 0 || $lesenTotal <= 0) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Modelltest-Teile: Hören und Lesen müssen > 0 sein.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($hoerenCorrect > $hoerenTotal || $lesenCorrect > $lesenTotal) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Modelltest-Werte: richtig > gesamt.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($schreibenMax > 0 && $schreibenScore > $schreibenMax) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Schreibpunkte: score > max.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($schreibenMax <= 0 && $schreibenScore > 0) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Schreibpunkte ohne Maximalwert.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $items = load_homework_assignments();
 $idx = -1;
@@ -84,11 +114,56 @@ if ($templateId !== 'dtz-mock-pruefung-komplett') {
     exit;
 }
 
+$nowTs = time();
+if (!assignment_is_active_now($assignment, $nowTs)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Die Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
 $state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
-$nowIso = gmdate('c');
+$state = assignment_state_from_raw($assignment, $state);
+
+$startedAt = trim((string)($state['started_at'] ?? ''));
+$submittedAt = trim((string)($state['submitted_at'] ?? ''));
+$deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+if ($submittedAt !== '') {
+    http_response_code(409);
+    echo json_encode(['error' => 'Die Aufgabe wurde bereits abgegeben.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($startedAt === '') {
+    http_response_code(409);
+    echo json_encode(['error' => 'Die Aufgabe wurde noch nicht gestartet.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+$deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
+if ($deadlineTs !== false && $nowTs > (int)$deadlineTs) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Die Frist ist abgelaufen.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$correctTotal = $hoerenCorrect + $lesenCorrect;
+$questionTotal = $hoerenTotal + $lesenTotal;
+$dtzPercent = $questionTotal > 0 ? (int)round(($correctTotal / $questionTotal) * 100) : 0;
+$writingPercent = $schreibenMax > 0 ? (int)round(($schreibenScore / $schreibenMax) * 100) : 0;
+$overallPercent = $schreibenMax > 0
+    ? (int)round(($dtzPercent * 0.7) + ($writingPercent * 0.3))
+    : $dtzPercent;
+$level = modelltest_level_from_percent_local($overallPercent);
+
+$nowIso = gmdate('c', $nowTs);
+try {
+    $resultSuffix = bin2hex(random_bytes(4));
+} catch (Throwable $e) {
+    $resultSuffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 8);
+}
+$resultId = 'mtres-' . gmdate('YmdHis', $nowTs) . '-' . $resultSuffix;
 
 $state['last_modelltest_result'] = [
+    'result_id' => $resultId,
     'saved_at' => $nowIso,
     'hoeren_correct' => $hoerenCorrect,
     'hoeren_total' => $hoerenTotal,
@@ -97,8 +172,13 @@ $state['last_modelltest_result'] = [
     'schreiben_score' => $schreibenScore,
     'schreiben_max' => $schreibenMax,
     'overall_percent' => $overallPercent,
-    'level' => $level !== '' ? $level : 'A1'
+    'level' => $level,
+    'dtz_percent' => $dtzPercent,
+    'writing_percent' => $writingPercent,
 ];
+$state['submitted_at'] = $nowIso;
+$state['last_upload_id'] = $resultId;
+$state['submission_count'] = max(1, (int)($state['submission_count'] ?? 0) + 1);
 
 $assignees[$username] = $state;
 $items[$idx]['assignees'] = $assignees;
@@ -114,11 +194,13 @@ append_audit_log('student_modelltest_result_saved', [
     'assignment_id' => $assignmentId,
     'student_username' => $username,
     'overall_percent' => $overallPercent,
-    'level' => $level !== '' ? $level : 'A1'
+    'level' => $level,
 ]);
 
 echo json_encode([
     'ok' => true,
-    'saved_at' => $nowIso
+    'saved_at' => $nowIso,
+    'result_id' => $resultId,
+    'overall_percent' => $overallPercent,
+    'level' => $level,
 ], JSON_UNESCAPED_UNICODE);
-

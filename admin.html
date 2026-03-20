@@ -7601,24 +7601,41 @@
 
     function parseReminderOverrideLines(raw, scopeLabel = "override") {
       const out = {};
+      const errors = [];
       const lines = String(raw || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
       lines.forEach((line, idx) => {
         if (line.startsWith("#")) return;
         const parts = line.split("|").map(part => part.trim());
-        if (parts.length < 5) return;
+        if (parts.length < 5) {
+          errors.push(`${scopeLabel} Zeile ${idx + 1}: Erwartet 5 Felder (key|level|enabled|cooldown|max_per_day).`);
+          return;
+        }
         const [scopeKey, level, enabledRaw, cooldownRaw, maxRaw] = parts;
         const safeScope = String(scopeKey || "").trim();
         const safeLevel = String(level || "").trim().toLowerCase();
-        if (!safeScope || !["warn24", "warn2", "expired"].includes(safeLevel)) return;
+        if (!safeScope) {
+          errors.push(`${scopeLabel} Zeile ${idx + 1}: scope key fehlt.`);
+          return;
+        }
+        if (!["warn24", "warn2", "expired"].includes(safeLevel)) {
+          errors.push(`${scopeLabel} Zeile ${idx + 1}: level muss warn24, warn2 oder expired sein.`);
+          return;
+        }
+        const cooldownParsed = Number.parseInt(cooldownRaw, 10);
+        const maxParsed = Number.parseInt(maxRaw, 10);
+        if (!Number.isFinite(cooldownParsed) || !Number.isFinite(maxParsed)) {
+          errors.push(`${scopeLabel} Zeile ${idx + 1}: cooldown/max_per_day müssen Zahlen sein.`);
+          return;
+        }
         const policy = {
           enabled: parseReminderBool(enabledRaw),
-          cooldown_hours: Math.max(0, Math.min(24 * 30, Number.parseInt(cooldownRaw, 10) || 0)),
-          max_per_day: Math.max(0, Math.min(48, Number.parseInt(maxRaw, 10) || 0))
+          cooldown_hours: Math.max(0, Math.min(24 * 30, cooldownParsed)),
+          max_per_day: Math.max(0, Math.min(48, maxParsed))
         };
         if (!out[safeScope]) out[safeScope] = {};
         out[safeScope][safeLevel] = policy;
       });
-      return out;
+      return { out, errors };
     }
 
     function reminderOverrideLinesFromObject(obj) {
@@ -7638,6 +7655,12 @@
     }
 
     function collectHomeworkReminderPolicyFromUi() {
+      const parsedCourse = parseReminderOverrideLines(String(document.getElementById("rpCourseOverrides")?.value || ""), "course");
+      const parsedTemplate = parseReminderOverrideLines(String(document.getElementById("rpTemplateOverrides")?.value || ""), "template");
+      const parseErrors = [...parsedCourse.errors, ...parsedTemplate.errors];
+      if (parseErrors.length) {
+        throw new Error(parseErrors.join(" | "));
+      }
       return {
         defaults: {
           warn24: {
@@ -7656,8 +7679,8 @@
             max_per_day: Math.max(0, Math.min(48, Number.parseInt(String(document.getElementById("rpExpiredMaxPerDay")?.value || "0"), 10) || 0))
           }
         },
-        course_overrides: parseReminderOverrideLines(String(document.getElementById("rpCourseOverrides")?.value || ""), "course"),
-        template_overrides: parseReminderOverrideLines(String(document.getElementById("rpTemplateOverrides")?.value || ""), "template")
+        course_overrides: parsedCourse.out,
+        template_overrides: parsedTemplate.out
       };
     }
 

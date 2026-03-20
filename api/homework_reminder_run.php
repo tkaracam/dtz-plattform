@@ -260,6 +260,7 @@ $teacherName = trim((string)($admin['display_name'] ?? ''));
 if ($teacherName === '') {
     $teacherName = trim((string)($admin['username'] ?? 'Lehrkraft'));
 }
+$teacherUsername = auth_lower_text((string)($admin['username'] ?? ''));
 
 $sentKeys = load_reminder_log_local($storageDir);
 $reminderHistory = load_reminder_history_local($storageDir);
@@ -270,6 +271,8 @@ $createdCount = 0;
 $skippedAlreadySent = 0;
 $skippedByPolicy = 0;
 $policyCache = [];
+$createdByCourse = [];
+$createdByTemplate = [];
 
 foreach ($items as $assignment) {
     if (!is_array($assignment)) {
@@ -353,6 +356,16 @@ foreach ($items as $assignment) {
                     }
                     $reminderHistory[$historyKey][] = $now;
                     $createdCount++;
+                    $courseKey = trim((string)($assignment['course_id'] ?? ''));
+                    if ($courseKey === '') {
+                        $courseKey = '-';
+                    }
+                    $templateKey = trim((string)($assignment['template_id'] ?? ''));
+                    if ($templateKey === '') {
+                        $templateKey = '-';
+                    }
+                    $createdByCourse[$courseKey] = (int)($createdByCourse[$courseKey] ?? 0) + 1;
+                    $createdByTemplate[$templateKey] = (int)($createdByTemplate[$templateKey] ?? 0) + 1;
                 }
             }
         }
@@ -379,5 +392,7 @@ echo json_encode([
     'created' => $createdCount,
     'skipped_already_sent' => $skippedAlreadySent,
     'skipped_by_policy' => $skippedByPolicy,
+    'created_by_course' => $createdByCourse,
+    'created_by_template' => $createdByTemplate,
     'targets' => $targets,
 ], JSON_UNESCAPED_UNICODE);

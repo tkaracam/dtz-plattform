@@ -89,6 +89,26 @@ if (!in_array($module, ['hoeren', 'lesen'], true) || $teil < 1) {
     echo json_encode(['error' => 'Ungültiger DTZ-Teil.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+if ($correct > $total || $wrong > $total || $unanswered > $total) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Ergebniswerte: Teilwerte dürfen nicht größer als total sein.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if (($correct + $wrong + $unanswered) !== $total) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Ergebniswerte: correct + wrong + unanswered muss total entsprechen.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($maxPoints > 0 && $points > $maxPoints) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Punkte: points darf max_points nicht überschreiten.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($maxPoints <= 0 && $points > 0) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Punkte ohne max_points.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $items = load_homework_assignments();
 $idx = -1;
