@@ -10654,6 +10654,64 @@
       openA2ThemesInApp(parsed.url);
     }
 
+    function inferA2TopicsFromAssignment(row) {
+      const parsed = parseA2HomeworkTemplate(row);
+      if (parsed && parsed.url) {
+        const cfg = parseA2ConfigFromInput(parsed.url);
+        if (Array.isArray(cfg.topics) && cfg.topics.length) return cfg.topics;
+      }
+      const bag = `${String(row && row.title ? row.title : "")}\n${String(row && row.description ? row.description : "")}`.toLowerCase();
+      const topics = [];
+      const pushTopic = topic => {
+        if (topic && !topics.includes(topic)) topics.push(topic);
+      };
+      if (bag.includes("perfekt")) pushTopic("Perfekt");
+      if (bag.includes("nebensatz") || bag.includes("nebensätze")) pushTopic("Nebensatz");
+      if (bag.includes("modalverben")) pushTopic("Modalverben");
+      if (bag.includes("präposition") || bag.includes("praeposition")) pushTopic("Präpositionen");
+      if (bag.includes("trennbare verben")) pushTopic("Trennbare Verben");
+      if (bag.includes("kasus")) pushTopic("Kasus");
+      return topics;
+    }
+
+    function openCombinedA2Homework(assignments) {
+      const rows = Array.isArray(assignments) ? assignments.filter(item => item && typeof item === "object") : [];
+      if (!rows.length) {
+        setStatus("error", "Keine A2-Aufgaben gefunden.", "portalStatus");
+        return;
+      }
+      const pending = rows.filter(row => String((row && row.status) || "").toLowerCase() !== "abgegeben");
+      const source = pending.length ? pending : rows;
+      const topicSet = [];
+      const countCandidates = [];
+      source.forEach(row => {
+        const topics = inferA2TopicsFromAssignment(row);
+        topics.forEach(topic => {
+          if (!topicSet.includes(topic)) topicSet.push(topic);
+        });
+        const parsed = parseA2HomeworkTemplate(row);
+        if (parsed && parsed.url) {
+          const cfg = parseA2ConfigFromInput(parsed.url);
+          if (Number.isFinite(cfg.count) && cfg.count > 0) {
+            countCandidates.push(cfg.count);
+          }
+        }
+      });
+      const combinedCount = Math.min(
+        100,
+        Math.max(
+          20,
+          topicSet.length ? topicSet.length * 10 : 20,
+          countCandidates.length ? Math.max(...countCandidates) : 20
+        )
+      );
+      openA2ThemesInApp({
+        topics: topicSet,
+        count: combinedCount,
+        homeworkMode: true
+      });
+    }
+
     function renderPortalHomeworksGrouped(homeworks) {
       const hoerenWrap = document.getElementById("portalHoerenHomeworkWrap");
       const lesenWrap = document.getElementById("portalLesenHomeworkWrap");
@@ -10731,14 +10789,35 @@
         });
       }
       if (a2Wrap) {
-        a2Wrap.innerHTML = grouped.a2.length ? grouped.a2.map(itemHtml).join("") : "Keine A2-Aufgaben vorhanden.";
-        a2Wrap.querySelectorAll("[data-open-a2-homework]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const assignmentId = String(btn.getAttribute("data-open-a2-homework") || "");
-            const row = grouped.a2.find(item => String(item.id || "") === assignmentId);
-            openHomeworkA2Task(row || null);
+        if (!grouped.a2.length) {
+          a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
+        } else {
+          const pendingA2 = grouped.a2.filter(row => String((row && row.status) || "").toLowerCase() !== "abgegeben");
+          const source = pendingA2.length ? pendingA2 : grouped.a2;
+          const topics = [];
+          source.forEach(row => {
+            inferA2TopicsFromAssignment(row).forEach(topic => {
+              if (!topics.includes(topic)) topics.push(topic);
+            });
           });
-        });
+          const totalDuration = source.reduce((sum, row) => sum + Math.max(0, Number(row && row.duration_minutes ? row.duration_minutes : 0)), 0);
+          const allDone = source.every(row => String((row && row.status) || "").toLowerCase() === "abgegeben");
+          const dueLabel = formatDisplayDate(String((source[0] && source[0].due_date) || "")) || "-";
+          a2Wrap.innerHTML = `
+            <div class="portal-item ${allDone ? "homework-done" : "homework-pending"}">
+              <strong>A2 Sammeltest (${source.length} Aufgabe${source.length === 1 ? "" : "n"})</strong>
+              <div>Themen: ${escapeHtml(topics.length ? topics.join(" + ") : "Gemischt")} </div>
+              <div>Dauer: ${escapeHtml(totalDuration > 0 ? formatDurationMinutes(totalDuration) : "-")} | Fällig: ${escapeHtml(dueLabel)} | Status: ${escapeHtml(allDone ? "abgegeben" : "offen")}</div>
+              <div class="row-end" style="margin-top:8px;">
+                <button type="button" class="ghost-btn" id="openCombinedA2Btn">A2-Test öffnen</button>
+              </div>
+            </div>
+          `;
+          const openBtn = document.getElementById("openCombinedA2Btn");
+          if (openBtn) {
+            openBtn.addEventListener("click", () => openCombinedA2Homework(source));
+          }
+        }
       }
     }
 
