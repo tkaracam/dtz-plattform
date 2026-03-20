@@ -7921,6 +7921,28 @@
         .trim();
     }
 
+    function normalizeDtzSpeakerTag(rawSpeaker) {
+      const key = String(rawSpeaker || "")
+        .trim()
+        .replace(/[._-]+/g, " ")
+        .replace(/\s+/g, " ")
+        .toUpperCase();
+      if (!key) return "NARRATOR";
+      if (/^(A|B|C|D)$/.test(key)) return key;
+      if (/^SPRECHER\s*\d+$/.test(key)) return key.replace(/\s+/g, " ");
+      if (/^(MODERATOR|ANSAGE|NARRATOR)$/.test(key)) return "NARRATOR";
+      if (/^(WOMAN|FRAU)\s*(\d+)$/.test(key)) return `WOMAN ${key.match(/\d+/)[0]}`;
+      if (/^(MAN|MANN)\s*(\d+)$/.test(key)) return `MAN ${key.match(/\d+/)[0]}`;
+      if (/^(SPEAKER)\s*(\d+)$/.test(key)) return `SPEAKER ${key.match(/\d+/)[0]}`;
+      return "NARRATOR";
+    }
+
+    function stripLeadingSpeakerToken(text) {
+      return String(text || "")
+        .replace(/^((?:A|B|C|D|SPRECHER\s*\d+|SPEAKER\s*\d+|WOMAN[_\s-]*\d+|MAN[_\s-]*\d+|NARRATOR|MODERATOR|ANSAGE))\s*:\s*/i, "")
+        .trim();
+    }
+
     function getGermanVoices(voices) {
       if (!Array.isArray(voices) || !voices.length) return [];
       const deVoices = voices.filter(v => String(v.lang || "").toLowerCase().startsWith("de"));
@@ -7929,6 +7951,7 @@
 
     function getVoiceQualityScore(voice) {
       const name = String(voice && voice.name ? voice.name : "").toLowerCase();
+      const lang = String(voice && voice.lang ? voice.lang : "").toLowerCase();
       let score = 0;
       if (name.includes("siri")) score += 120;
       if (name.includes("natural")) score += 100;
@@ -7936,7 +7959,9 @@
       if (name.includes("enhanced")) score += 55;
       if (name.includes("neural")) score += 45;
       if (name.includes("google")) score += 25;
-      if (String(voice && voice.lang ? voice.lang : "").toLowerCase().startsWith("de-de")) score += 15;
+      if (lang.startsWith("de-de")) score += 30;
+      if (lang.startsWith("de-at") || lang.startsWith("de-ch")) score += 20;
+      if (name.includes("compact") || name.includes("novelty") || name.includes("classic")) score -= 12;
       if (voice && voice.localService) score += 8;
       return score;
     }
@@ -8006,21 +8031,22 @@
     function splitDtzAudioSegments(script) {
       const normalized = normalizeGermanSpeechText(script)
         .replace(/\s+([A-D]):/g, ". $1:")
+        .replace(/\s+(?=(?:WOMAN|MAN|SPEAKER)\s*[_-]?\s*\d+\s*:)/gi, "\n")
         .replace(/\b(wegen)\s+\1\b/gi, "$1")
         .trim();
       if (!normalized) return [];
 
       const splitBySpeaker = normalized
-        .replace(/\s+(?=(?:[A-D]|Sprecher\s*\d+|Moderator|Ansage)\s*:)/gi, "\n")
+        .replace(/\s+(?=(?:[A-D]|Sprecher\s*\d+|Speaker\s*\d+|Woman\s*[_-]?\s*\d+|Man\s*[_-]?\s*\d+|Moderator|Ansage|Narrator)\s*:)/gi, "\n")
         .split(/\n+/)
         .map(part => part.trim())
         .filter(Boolean);
 
       const rawSegments = [];
       splitBySpeaker.forEach((chunk) => {
-        const match = chunk.match(/^((?:[A-D]|Sprecher\s*\d+|Moderator|Ansage))\s*:\s*(.+)$/i);
-        const speaker = match ? String(match[1]).toUpperCase() : "NARRATOR";
-        const textBlock = match ? match[2] : chunk;
+        const match = chunk.match(/^((?:[A-D]|Sprecher\s*\d+|Speaker\s*\d+|Woman\s*[_-]?\s*\d+|Man\s*[_-]?\s*\d+|Moderator|Ansage|Narrator))\s*:\s*(.+)$/i);
+        const speaker = normalizeDtzSpeakerTag(match ? match[1] : "NARRATOR");
+        const textBlock = stripLeadingSpeakerToken(match ? match[2] : chunk);
         const sentences = textBlock
           .split(/(?<=[.!?])\s+/)
           .map(s => s.trim())
@@ -8040,10 +8066,10 @@
       });
 
       const speakerProfiles = [
-        { rate: 0.93, pitch: 0.92, pauseMs: 330 },
-        { rate: 0.97, pitch: 1.06, pauseMs: 320 },
-        { rate: 0.95, pitch: 0.99, pauseMs: 320 },
-        { rate: 0.99, pitch: 1.11, pauseMs: 340 }
+        { rate: 0.91, pitch: 0.94, pauseMs: 340 },
+        { rate: 0.95, pitch: 1.03, pauseMs: 330 },
+        { rate: 0.93, pitch: 0.98, pauseMs: 330 },
+        { rate: 0.97, pitch: 1.08, pauseMs: 350 }
       ];
       const speakerIndex = {};
       let nextIndex = 0;
@@ -8055,11 +8081,11 @@
           nextIndex += 1;
         }
         const profile = speaker === "NARRATOR"
-          ? { rate: 0.95, pitch: 1.0, pauseMs: 300 }
+          ? { rate: 0.93, pitch: 1.0, pauseMs: 320 }
           : speakerProfiles[speakerIndex[speaker] % speakerProfiles.length];
 
         const lengthFactor = Math.min(0.1, Math.max(0, (segment.text.length - 70) / 520));
-        const rate = Math.max(0.84, profile.rate - lengthFactor);
+        const rate = Math.max(0.82, profile.rate - lengthFactor);
         let pauseMs = profile.pauseMs;
         if (/[!?]$/.test(segment.text)) pauseMs += 70;
 

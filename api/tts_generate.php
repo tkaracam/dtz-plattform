@@ -64,6 +64,44 @@ function tts_normalize_text(string $text): string
     return trim($text);
 }
 
+function tts_normalize_speaker_tag(string $speaker): string
+{
+    $key = mb_strtoupper(trim((string)preg_replace('/[._-]+/u', ' ', $speaker)));
+    $key = trim((string)preg_replace('/\s+/u', ' ', $key));
+    if ($key === '') {
+        return 'NARRATOR';
+    }
+    if (preg_match('/^(A|B|C|D)$/u', $key) === 1) {
+        return $key;
+    }
+    if (preg_match('/^SPRECHER\s*\d+$/u', $key) === 1) {
+        return (string)preg_replace('/\s+/u', ' ', $key);
+    }
+    if (preg_match('/^(NARRATOR|MODERATOR|ANSAGE)$/u', $key) === 1) {
+        return 'NARRATOR';
+    }
+    if (preg_match('/^(WOMAN|FRAU)\s*(\d+)$/u', $key, $m) === 1) {
+        return 'WOMAN ' . $m[2];
+    }
+    if (preg_match('/^(MAN|MANN)\s*(\d+)$/u', $key, $m) === 1) {
+        return 'MAN ' . $m[2];
+    }
+    if (preg_match('/^SPEAKER\s*(\d+)$/u', $key, $m) === 1) {
+        return 'SPEAKER ' . $m[1];
+    }
+    return 'NARRATOR';
+}
+
+function tts_strip_leading_speaker_token(string $text): string
+{
+    $stripped = preg_replace(
+        '/^((?:A|B|C|D|SPRECHER\s*\d+|SPEAKER\s*\d+|WOMAN[_\s-]*\d+|MAN[_\s-]*\d+|NARRATOR|MODERATOR|ANSAGE))\s*:\s*/iu',
+        '',
+        trim($text)
+    );
+    return trim((string)$stripped);
+}
+
 function tts_split_segments(string $script): array
 {
     $normalized = tts_normalize_text($script);
@@ -71,7 +109,7 @@ function tts_split_segments(string $script): array
         return [];
     }
 
-    $withBreaks = preg_replace('/\s+(?=(?:[A-D]|Sprecher\s*\d+|Moderator|Ansage)\s*:)/iu', "\n", $normalized);
+    $withBreaks = preg_replace('/\s+(?=(?:[A-D]|Sprecher\s*\d+|Speaker\s*\d+|Woman\s*[_-]?\s*\d+|Man\s*[_-]?\s*\d+|Moderator|Ansage|Narrator)\s*:)/iu', "\n", $normalized);
     $speakerChunks = preg_split('/\n+/u', (string) $withBreaks) ?: [];
 
     $segments = [];
@@ -82,9 +120,11 @@ function tts_split_segments(string $script): array
         }
         $speaker = 'NARRATOR';
         $textBlock = $chunk;
-        if (preg_match('/^((?:[A-D]|Sprecher\s*\d+|Moderator|Ansage))\s*:\s*(.+)$/iu', $chunk, $m) === 1) {
-            $speaker = mb_strtoupper(trim((string) $m[1]));
-            $textBlock = trim((string) $m[2]);
+        if (preg_match('/^((?:[A-D]|Sprecher\s*\d+|Speaker\s*\d+|Woman\s*[_-]?\s*\d+|Man\s*[_-]?\s*\d+|Moderator|Ansage|Narrator))\s*:\s*(.+)$/iu', $chunk, $m) === 1) {
+            $speaker = tts_normalize_speaker_tag((string)$m[1]);
+            $textBlock = tts_strip_leading_speaker_token((string)$m[2]);
+        } else {
+            $textBlock = tts_strip_leading_speaker_token($textBlock);
         }
 
         $sentences = preg_split('/(?<=[.!?])\s+/u', $textBlock) ?: [$textBlock];
@@ -121,6 +161,12 @@ function tts_voice_for_speaker(string $speaker, string $defaultVoice): string
         'B' => getenv('OPENAI_TTS_VOICE_B') ?: 'verse',
         'C' => getenv('OPENAI_TTS_VOICE_C') ?: 'echo',
         'D' => getenv('OPENAI_TTS_VOICE_D') ?: 'fable',
+        'WOMAN 1' => getenv('OPENAI_TTS_VOICE_WOMAN_1') ?: (getenv('OPENAI_TTS_VOICE_B') ?: 'verse'),
+        'WOMAN 2' => getenv('OPENAI_TTS_VOICE_WOMAN_2') ?: (getenv('OPENAI_TTS_VOICE_D') ?: 'fable'),
+        'MAN 1' => getenv('OPENAI_TTS_VOICE_MAN_1') ?: (getenv('OPENAI_TTS_VOICE_A') ?: 'alloy'),
+        'MAN 2' => getenv('OPENAI_TTS_VOICE_MAN_2') ?: (getenv('OPENAI_TTS_VOICE_C') ?: 'echo'),
+        'SPEAKER 1' => getenv('OPENAI_TTS_VOICE_SPEAKER_1') ?: (getenv('OPENAI_TTS_VOICE_A') ?: 'alloy'),
+        'SPEAKER 2' => getenv('OPENAI_TTS_VOICE_SPEAKER_2') ?: (getenv('OPENAI_TTS_VOICE_B') ?: 'verse'),
         'NARRATOR' => getenv('OPENAI_TTS_VOICE_NARRATOR') ?: $defaultVoice,
     ];
     return $map[$speakerKey] ?? $defaultVoice;
@@ -130,7 +176,7 @@ function tts_pause_for_segment(string $speaker, string $text): int
 {
     $pause = 130;
     $speakerKey = mb_strtoupper(trim($speaker));
-    if (in_array($speakerKey, ['A', 'B', 'C', 'D'], true)) {
+    if (preg_match('/^(A|B|C|D|WOMAN\s+\d+|MAN\s+\d+|SPEAKER\s+\d+)$/u', $speakerKey) === 1) {
         $pause = 190;
     }
     if (preg_match('/[!?]$/u', trim($text)) === 1) {
