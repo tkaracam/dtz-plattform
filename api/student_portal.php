@@ -252,9 +252,26 @@ foreach (load_homework_assignments() as $assignment) {
     ];
 }
 usort($homeworks, static function (array $a, array $b): int {
-    return strcmp((string)($b['due_date'] ?? ''), (string)($a['due_date'] ?? ''));
+    $statusRank = static function (string $status): int {
+        $key = mb_strtolower(trim($status));
+        if ($key === 'offen' || $key === 'läuft') return 5;
+        if ($key === 'geplant') return 4;
+        if ($key === 'abgelaufen') return 2;
+        if ($key === 'abgegeben') return 1;
+        return 0;
+    };
+
+    $aRank = $statusRank((string)($a['status'] ?? ''));
+    $bRank = $statusRank((string)($b['status'] ?? ''));
+    if ($aRank !== $bRank) {
+        return $bRank <=> $aRank;
+    }
+
+    $aDue = (string)($a['due_date'] ?? '');
+    $bDue = (string)($b['due_date'] ?? '');
+    return strcmp($bDue, $aDue);
 });
-$homeworks = array_slice($homeworks, 0, 100);
+$homeworks = array_slice($homeworks, 0, 500);
 
 $notesRaw = read_json_file_array($storageDir . '/teacher_notes.json');
 $teacherNotes = [];
