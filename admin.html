@@ -1294,6 +1294,52 @@
       box-shadow: none;
     }
 
+    .hw-multi-source-select {
+      display: none;
+    }
+
+    .hw-multi-checklist {
+      margin-top: 6px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .hw-multi-checklist-group {
+      display: grid;
+      gap: 6px;
+    }
+
+    .hw-multi-checklist-title {
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #4e5a70;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .hw-multi-check-item {
+      border: 1px solid #d8e4f1;
+      border-radius: 10px;
+      padding: 7px 10px;
+      background: #f8fbff;
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      line-height: 1.2;
+      color: #173652;
+      font-size: 0.84rem;
+    }
+
+    .hw-multi-check-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+
     .ok {
       margin-top: 11px;
       padding: 11px 12px;
@@ -2835,9 +2881,10 @@
               </details>
               <div id="hwMultiAssignBox">
                 <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
-                <select id="hwTaskTemplatesMulti" multiple size="10">
+                <select id="hwTaskTemplatesMulti" class="hw-multi-source-select" multiple size="10">
                   <option value="">Bitte Aufgaben wählen</option>
                 </select>
+                <div id="hwTaskTemplatesMultiChecks" class="hw-multi-checklist"></div>
                 <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
                 <label for="hwTaskPreviewMulti" style="margin-top:8px;">Ausgewählte Aufgaben</label>
                 <textarea id="hwTaskPreviewMulti" rows="6" readonly></textarea>
@@ -2847,7 +2894,7 @@
               </div>
               <div>
                 <label for="hwA2TopicsMulti"><strong>A2-Test Generator</strong> · Themen (Mehrfachauswahl)</label>
-                <select id="hwA2TopicsMulti" multiple size="6">
+                <select id="hwA2TopicsMulti" class="hw-multi-source-select" multiple size="6">
                   <option value="perfekt">Perfekt</option>
                   <option value="nebensatz">Nebensätze</option>
                   <option value="modalverben">Modalverben</option>
@@ -2855,6 +2902,7 @@
                   <option value="trennbare-verben">Trennbare Verben</option>
                   <option value="kasus">Kasus</option>
                 </select>
+                <div id="hwA2TopicsMultiChecks" class="hw-multi-checklist"></div>
                 <div class="grid" style="margin-top:8px;">
                   <div>
                     <label for="hwA2QuestionCount">Fragenzahl</label>
@@ -6580,6 +6628,89 @@
         .join("\n");
     }
 
+    function renderMultiSelectCheckboxMirror(selectId, containerId) {
+      const select = document.getElementById(selectId);
+      const container = document.getElementById(containerId);
+      if (!select || !container) return;
+
+      const selectedSet = new Set(
+        Array.from(select.selectedOptions)
+          .map(option => String(option.value || "").trim())
+          .filter(Boolean)
+      );
+
+      container.innerHTML = "";
+      const nodes = Array.from(select.children);
+      const groups = [];
+
+      nodes.forEach(node => {
+        if (!node) return;
+        if (node.tagName === "OPTGROUP") {
+          const label = String(node.getAttribute("label") || "").trim();
+          const options = Array.from(node.querySelectorAll("option"))
+            .map(option => ({
+              value: String(option.value || "").trim(),
+              text: String(option.textContent || "").trim()
+            }))
+            .filter(option => option.value !== "");
+          if (options.length) groups.push({ label, options });
+          return;
+        }
+        if (node.tagName === "OPTION") {
+          const value = String(node.value || "").trim();
+          const text = String(node.textContent || "").trim();
+          if (value) groups.push({ label: "", options: [{ value, text }] });
+        }
+      });
+
+      if (!groups.length) {
+        container.innerHTML = '<small class="muted">Keine Optionen verfügbar.</small>';
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      groups.forEach(group => {
+        const groupWrap = document.createElement("div");
+        groupWrap.className = "hw-multi-checklist-group";
+        if (group.label) {
+          const title = document.createElement("div");
+          title.className = "hw-multi-checklist-title";
+          title.textContent = group.label;
+          groupWrap.appendChild(title);
+        }
+        group.options.forEach(item => {
+          const row = document.createElement("label");
+          row.className = "hw-multi-check-item";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.dataset.mirrorValue = item.value;
+          checkbox.checked = selectedSet.has(item.value);
+          const text = document.createElement("span");
+          text.textContent = item.text;
+          row.appendChild(checkbox);
+          row.appendChild(text);
+          groupWrap.appendChild(row);
+        });
+        fragment.appendChild(groupWrap);
+      });
+      container.appendChild(fragment);
+
+      container.querySelectorAll("input[type='checkbox'][data-mirror-value]").forEach(input => {
+        input.addEventListener("change", () => {
+          const values = Array.from(
+            container.querySelectorAll("input[type='checkbox'][data-mirror-value]:checked")
+          )
+            .map(el => String(el.getAttribute("data-mirror-value") || "").trim())
+            .filter(Boolean);
+          const valueSet = new Set(values);
+          Array.from(select.options).forEach(option => {
+            option.selected = valueSet.has(String(option.value || "").trim());
+          });
+          select.dispatchEvent(new Event("change"));
+        });
+      });
+    }
+
     function renderHomeworkTemplateMultiOptions() {
       const select = document.getElementById("hwTaskTemplatesMulti");
       if (!select) return;
@@ -6612,6 +6743,7 @@
         option.selected = currentValues.has(String(option.value || ""));
       });
       updateHomeworkTemplateMultiPreview();
+      renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
     }
 
     function renderAllHomeworkTemplateOptions() {
@@ -10654,11 +10786,15 @@
       hwTaskTemplatesMulti.addEventListener("change", () => {
         updateHomeworkTemplateMultiPreview();
         persistHomeworkQuickDefaults();
+        renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
       });
     }
     const hwA2TopicsMulti = document.getElementById("hwA2TopicsMulti");
     if (hwA2TopicsMulti) {
-      hwA2TopicsMulti.addEventListener("change", generateA2HomeworkPreview);
+      hwA2TopicsMulti.addEventListener("change", () => {
+        generateA2HomeworkPreview();
+        renderMultiSelectCheckboxMirror("hwA2TopicsMulti", "hwA2TopicsMultiChecks");
+      });
     }
     const hwA2QuestionCount = document.getElementById("hwA2QuestionCount");
     if (hwA2QuestionCount) {
@@ -10911,6 +11047,8 @@
     updateKursProgressRiskButton();
     renderAllHomeworkTemplateOptions();
     restoreHomeworkQuickDefaults();
+    renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
+    renderMultiSelectCheckboxMirror("hwA2TopicsMulti", "hwA2TopicsMultiChecks");
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
     checkSession();
