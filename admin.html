@@ -6236,12 +6236,20 @@
             .filter(user => String(user.username || "").trim() !== "");
         }
         let nextCourses = Array.isArray(payload.courses) ? payload.courses : [];
-        // Safety filter on UI side: docent must only see own courses in all quick/course lists.
+        // Safety filter on UI side: docent should only see own courses.
+        // Fallback: legacy courses may miss `teacher_username`; keep them if all members belong to this docent scope.
         if (String(adminContext.role || "").trim().toLowerCase() === "docent") {
           const docentUsername = String(adminContext.username || "").trim().toLowerCase();
+          const allowedStudentUsernames = new Set(
+            currentStudents.map(user => String(user && user.username ? user.username : "").trim().toLowerCase()).filter(Boolean)
+          );
           nextCourses = nextCourses.filter(course => {
             const teacherUsername = String(course && course.teacher_username ? course.teacher_username : "").trim().toLowerCase();
-            return docentUsername !== "" && teacherUsername === docentUsername;
+            if (docentUsername !== "" && teacherUsername === docentUsername) return true;
+            if (teacherUsername) return false;
+            const members = Array.isArray(course && course.members) ? course.members : [];
+            if (!members.length) return false;
+            return members.every(username => allowedStudentUsernames.has(String(username || "").trim().toLowerCase()));
           });
         }
         renderCourses(nextCourses);
