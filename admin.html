@@ -3870,6 +3870,7 @@
         const node = document.getElementById(id);
         if (!node) return;
         node.classList.toggle("hidden", enabled);
+        node.style.display = enabled ? "none" : "";
       });
       DOCENT_HIDE_FAST_IDS.forEach(id => {
         const node = document.getElementById(id);
