@@ -6235,7 +6235,15 @@
             })
             .filter(user => String(user.username || "").trim() !== "");
         }
-        const nextCourses = Array.isArray(payload.courses) ? payload.courses : [];
+        let nextCourses = Array.isArray(payload.courses) ? payload.courses : [];
+        // Safety filter on UI side: docent must only see own courses in all quick/course lists.
+        if (String(adminContext.role || "").trim().toLowerCase() === "docent") {
+          const docentUsername = String(adminContext.username || "").trim().toLowerCase();
+          nextCourses = nextCourses.filter(course => {
+            const teacherUsername = String(course && course.teacher_username ? course.teacher_username : "").trim().toLowerCase();
+            return docentUsername !== "" && teacherUsername === docentUsername;
+          });
+        }
         renderCourses(nextCourses);
         const courseIds = new Set(nextCourses.map(course => String(course?.course_id || "").trim()).filter(Boolean));
         let preferredCourseId = String(selectedCourseId || "").trim();
