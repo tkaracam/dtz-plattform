@@ -129,8 +129,14 @@ if ((string)$template['module'] !== $module || (int)$template['teil'] !== $teil)
 }
 
 $now = time();
+if (!assignment_is_active_now($assignment, $now)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Die Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
 $state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
+$state = assignment_state_from_raw($assignment, $state);
 $startedAt = trim((string)($state['started_at'] ?? ''));
 $submittedAt = trim((string)($state['submitted_at'] ?? ''));
 $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
@@ -149,6 +155,12 @@ if ($startedAt === '') {
 
 $startedTs = strtotime($startedAt);
 $deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
+$isLate = ($deadlineTs !== false && $now > (int)$deadlineTs);
+if ($isLate) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Die Frist ist abgelaufen.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 $elapsed = $startedTs === false ? 0 : max(0, $now - (int)$startedTs);
 $withinDeadline = ($deadlineTs === false) ? true : ($now <= (int)$deadlineTs);
 
@@ -236,4 +248,3 @@ echo json_encode([
     'elapsed_seconds' => $elapsed,
     'within_deadline' => $withinDeadline,
 ], JSON_UNESCAPED_UNICODE);
-

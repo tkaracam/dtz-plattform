@@ -71,19 +71,9 @@ function assignment_targets_student(array $assignment, string $username): bool
         }
     }
 
-    $courseId = trim((string)($assignment['course_id'] ?? ''));
-    if ($courseId !== '') {
-        $course = find_course_by_id($courseId);
-        if (is_array($course)) {
-            $members = is_array($course['members'] ?? null) ? $course['members'] : [];
-            foreach ($members as $member) {
-                if (mb_strtolower(trim((string)$member)) === $uname) {
-                    return true;
-                }
-            }
-        }
-    }
-
+    // Intentionally no dynamic fallback to current course members:
+    // assignment targets must stay frozen at assignment creation time.
+    // Otherwise newly added course members could receive old assignments.
     return false;
 }
 

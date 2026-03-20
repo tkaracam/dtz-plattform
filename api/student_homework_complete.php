@@ -64,9 +64,15 @@ if (!assignment_targets_student($assignment, $username)) {
     echo json_encode(['error' => 'Diese Aufgabe ist Ihnen nicht zugewiesen.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+if (!assignment_is_active_now($assignment, $now)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Die Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
 $state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
+$state = assignment_state_from_raw($assignment, $state);
 $submittedAt = trim((string)($state['submitted_at'] ?? ''));
 if ($submittedAt !== '') {
     echo json_encode([
@@ -81,6 +87,12 @@ if ($submittedAt !== '') {
 
 $startedAt = trim((string)($state['started_at'] ?? ''));
 $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+$deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
+if ($deadlineTs !== false && $now > (int)$deadlineTs) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Die Frist ist abgelaufen.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 if ($startedAt === '') {
     $startedAt = gmdate('c', $now);
     $deadlineAt = gmdate('c', $now + assignment_duration_minutes($assignment) * 60);
@@ -114,4 +126,3 @@ echo json_encode([
     'submitted_at' => $submittedAt,
     'server_ts' => $now,
 ], JSON_UNESCAPED_UNICODE);
-
