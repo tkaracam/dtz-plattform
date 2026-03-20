@@ -8434,6 +8434,29 @@
       if (niveauBtn) niveauBtn.setAttribute("aria-expanded", "false");
     }
 
+    function ensureUsableMainView() {
+      const importantIds = [
+        "studentAuthCard",
+        "portalCard",
+        "workCard",
+        "lidClassicCard",
+        "dtzHubCard",
+        "dtzTrainingCard",
+        "speakingCard",
+        "niveauCard",
+        "a2EmbedCard",
+        "simulationCard",
+        "roomCard"
+      ];
+      const hasVisible = importantIds.some(id => {
+        const el = document.getElementById(id);
+        return !!(el && !el.classList.contains("hidden"));
+      });
+      if (!hasVisible) {
+        showStudentLogin();
+      }
+    }
+
     const QUICK_ACTIONS = [
       { key: "portal", label: "Portal öffnen", hint: "Hausaufgaben, Schreiben, Korrekturen", keywords: "portal hausaufgaben korrekturen", action: () => navigateToSection("portal") },
       { key: "write", label: "Schreiben öffnen", hint: "Mail schreiben und prüfen", keywords: "schreiben brief mail korrektur", action: () => navigateToSection("write") },
@@ -11949,6 +11972,8 @@
     removeArchivedBskFrontend();
     checkStudentSession().finally(() => {
       applyRouteFromQuery();
+      ensureUsableMainView();
+      window.setTimeout(ensureUsableMainView, 500);
     });
   </script>
 </body>
