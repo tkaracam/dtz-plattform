@@ -6773,6 +6773,20 @@
       renderDtzTrainingSet(module);
     }
 
+    function isModelltestModuleEvaluated(module) {
+      const maxTeil = getDtzMaxTeil(module);
+      let loadedTeils = 0;
+      for (let teil = 1; teil <= maxTeil; teil += 1) {
+        const teilState = ensureDtzTeilState(module, teil);
+        if (!teilState || !Array.isArray(teilState.tasks) || !teilState.tasks.length) {
+          continue;
+        }
+        loadedTeils += 1;
+        if (!teilState.evaluated) return false;
+      }
+      return loadedTeils === maxTeil && loadedTeils > 0;
+    }
+
     async function saveModelltestResult(aggregate) {
       const assignmentId = currentModelltestAssignmentId();
       if (!assignmentId || !aggregate || typeof aggregate !== "object") return false;
@@ -6817,6 +6831,8 @@
       const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
       const hoerenStats = getModelltestModuleStats("hoeren");
       const lesenStats = getModelltestModuleStats("lesen");
+      const hoerenEvaluated = isModelltestModuleEvaluated("hoeren");
+      const lesenEvaluated = isModelltestModuleEvaluated("lesen");
       if (!flowCard) return;
 
       flowCard.classList.toggle("hidden", !modelltestFlowState.active);
@@ -6837,7 +6853,7 @@
           timerChip.classList.toggle("warn", modelltestFlowState.hoerenRemainingSec <= 5 * 60);
         }
         if (toLesenBtn) toLesenBtn.classList.remove("hidden");
-        if (toLesenBtn) toLesenBtn.disabled = !hoerenStats.allAnswered;
+        if (toLesenBtn) toLesenBtn.disabled = !hoerenStats.allAnswered || !hoerenEvaluated;
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) finishBtn.classList.add("hidden");
         if (writePanel) writePanel.classList.add("hidden");
@@ -6858,8 +6874,8 @@
         if (toSchreibenBtn) {
           toSchreibenBtn.textContent = modelltestFlowState.hasWritingTask
             ? "Lesen abschließen · Schreiben starten"
-            : "Lesen abschließen · Auswertung";
-          toSchreibenBtn.disabled = !lesenStats.allAnswered;
+            : "TEST ABGEBEN";
+          toSchreibenBtn.disabled = !lesenStats.allAnswered || !lesenEvaluated;
         }
         if (finishBtn) finishBtn.classList.add("hidden");
         if (writePanel) writePanel.classList.add("hidden");
@@ -6933,6 +6949,10 @@
         setDtzModuleStatus("hoeren", "error", "Bitte zuerst alle Hören-Fragen beantworten.");
         return;
       }
+      if (!fromTimeout && !isModelltestModuleEvaluated("hoeren")) {
+        setDtzModuleStatus("hoeren", "error", "Bitte zuerst auf „AUSWERTEN“ klicken.");
+        return;
+      }
       markModelltestModuleEvaluated("hoeren");
       modelltestFlowState.stage = "lesen";
       startModelltestStageTimer("lesen");
@@ -6946,6 +6966,10 @@
       const lesenStats = getModelltestModuleStats("lesen");
       if (!fromTimeout && !lesenStats.allAnswered) {
         setDtzModuleStatus("lesen", "error", "Bitte zuerst alle Lesen-Fragen beantworten.");
+        return;
+      }
+      if (!fromTimeout && !isModelltestModuleEvaluated("lesen")) {
+        setDtzModuleStatus("lesen", "error", "Bitte zuerst auf „AUSWERTEN“ klicken.");
         return;
       }
       markModelltestModuleEvaluated("lesen");
