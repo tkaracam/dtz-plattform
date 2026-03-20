@@ -5629,11 +5629,12 @@
       return arr;
     }
 
-    const MAIN_CARDS = ["homeDashboardCard", "workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
+    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "a2EmbedCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
 
     function hideMainCards() {
       MAIN_CARDS.forEach(id => {
-        document.getElementById(id).classList.add("hidden");
+        const el = document.getElementById(id);
+        if (el) el.classList.add("hidden");
       });
     }
 
@@ -5669,7 +5670,7 @@
 
     function setMainView(mode) {
       const map = {
-        home: "homeDashboardCard",
+        home: "portalCard",
         correction: "workCard",
         portal: "portalCard",
         room: "roomCard",
