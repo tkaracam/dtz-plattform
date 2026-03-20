@@ -2436,6 +2436,12 @@
       margin-top: 10px;
     }
 
+    .dtz-hoeren-flat {
+      display: grid;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
     .dtz-dialog-grid {
       display: grid;
       gap: 10px;
@@ -8885,6 +8891,7 @@
       const questions = Array.isArray(task.questions) ? task.questions : [];
       const isPlaying = currentDtzSpeakingIndex === "bundle_main";
       const bundleScript = String(task.audio_script || task.text || "").trim();
+      const compactForModelltest = !!modelltestFlowState.active;
       const questionsHtml = questions.map((question, idx) => {
         const key = String(question.id || `q_${idx}`);
         const audioKey = `bundle_q:${key}`;
@@ -8924,13 +8931,19 @@
         `;
       }).join("");
 
-      return `
-        <section class="dtz-lesen-group dtz-hoeren-group">
+      const wrapClass = compactForModelltest ? "dtz-hoeren-flat" : "dtz-lesen-group dtz-hoeren-group";
+      const bodyClassAttr = compactForModelltest ? "" : ' class="dtz-lesen-group-body"';
+      const headHtml = compactForModelltest ? "" : `
           <div class="dtz-lesen-group-head">
             <h4>${escapeHtml(task.dtzPart || `Hören Teil ${teilNo}`)}</h4>
             <span>${questions.length} Aufgaben</span>
           </div>
-          <div class="dtz-lesen-group-body">
+      `;
+
+      return `
+        <section class="${wrapClass}">
+          ${headHtml}
+          <div${bodyClassAttr}>
             <article class="lid-question">
               ${TaskInstruction(task.instructions || "Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.")}
               ${bundleScript ? AudioPlayer(module, "bundle_main", isPlaying, bundleScript) : ""}
