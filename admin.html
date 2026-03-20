@@ -981,6 +981,11 @@
       width: 70%;
       margin-left: 0;
       margin-right: auto;
+      margin-bottom: 14px;
+    }
+
+    #hwA2GeneratorBox .actions {
+      margin-top: 14px;
     }
 
     @media (max-width: 900px) {
@@ -2860,30 +2865,7 @@
                   <option value="hours">Stunden</option>
                 </select>
               </div>
-              <details id="hwAdvancedDetails" class="fold-section" style="margin-top:10px;">
-                <summary>Erweitert</summary>
-                <div class="fold-section-content">
-                  <div class="grid">
-                    <div>
-                      <label for="hwTargetType">Zuweisungstyp</label>
-                      <select id="hwTargetType">
-                        <option value="course" selected>Kurs / Gruppe</option>
-                        <option value="users">Ausgewählte Teilnehmende</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div id="hwUsersWrap" class="fold-section" style="margin-top:10px; display:none;">
-                    <summary>Teilnehmende auswählen</summary>
-                    <div class="fold-section-content">
-                      <div class="hw-user-actions">
-                        <button id="hwSelectAllUsersBtn" type="button" class="ghost-btn">Alle auswählen</button>
-                        <button id="hwClearUsersBtn" type="button" class="ghost-btn">Auswahl löschen</button>
-                      </div>
-                      <div id="hwUsersList" class="portal-list">Noch keine Teilnehmenden vorhanden.</div>
-                    </div>
-                  </div>
-                </div>
-              </details>
+              <input id="hwTargetType" type="hidden" value="course">
               <div id="hwMultiAssignBox">
                 <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
                 <select id="hwTaskTemplatesMulti" class="hw-multi-source-select" multiple size="10">
@@ -2897,7 +2879,7 @@
                   <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
                 </div>
               </div>
-              <div>
+              <div id="hwA2GeneratorBox">
                 <label for="hwA2TopicsMulti"><strong>A2-Test Generator</strong> · Themen (Mehrfachauswahl)</label>
                 <select id="hwA2TopicsMulti" class="hw-multi-source-select" multiple size="6">
                   <option value="perfekt">Perfekt</option>
@@ -2914,9 +2896,26 @@
                     <input id="hwA2QuestionCount" type="number" min="10" max="50" value="50">
                   </div>
                 </div>
+                <div class="grid" style="margin-top:8px;">
+                  <div>
+                    <label for="hwA2StartsAt">Startzeit</label>
+                    <input id="hwA2StartsAt" type="datetime-local">
+                  </div>
+                  <div>
+                    <label for="hwA2DurationValue">Dauer</label>
+                    <input id="hwA2DurationValue" type="number" min="5" max="1440" value="60">
+                  </div>
+                  <div>
+                    <label for="hwA2DurationUnit">Einheit</label>
+                    <select id="hwA2DurationUnit">
+                      <option value="minutes" selected>Minuten</option>
+                      <option value="hours">Stunden</option>
+                    </select>
+                  </div>
+                </div>
                 <label for="hwA2GeneratedPreview" style="margin-top:8px;">Generierte Aufgabenstellung</label>
                 <textarea id="hwA2GeneratedPreview" rows="7"></textarea>
-                <div class="actions" style="margin-top:8px;">
+                <div class="actions" style="margin-top:14px;">
                   <button id="generateA2HomeworkBtn" type="button" class="ghost-btn">A2-Test generieren</button>
                   <button id="assignA2HomeworkBtn" type="button">A2-Test als Hausaufgabe zuweisen</button>
                 </div>
@@ -6266,7 +6265,7 @@
     }
 
     function syncHomeworkTargetVisibility() {
-      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
+      const targetType = "course";
       const courseWrap = document.getElementById("hwCourseWrap");
       const usersWrap = document.getElementById("hwUsersWrap");
       if (targetType === "users") {
@@ -6465,15 +6464,11 @@
 
       const customPreview = String(document.getElementById("hwA2GeneratedPreview")?.value || "").trim();
       const description = customPreview || generated.description;
-      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
-      const effectiveCourseId = targetType === "course" ? (courseId || String(selectedCourseId || "").trim()) : "";
-      const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
-      const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
-      const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
-      const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
-        .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
-        .filter(Boolean);
+      const effectiveCourseId = courseId || String(selectedCourseId || "").trim();
+      const durationValue = Number(document.getElementById("hwA2DurationValue")?.value || document.getElementById("hwDurationValue")?.value || 0);
+      const durationUnit = String(document.getElementById("hwA2DurationUnit")?.value || document.getElementById("hwDurationUnit")?.value || "minutes");
+      const startsAtRaw = String(document.getElementById("hwA2StartsAt")?.value || document.getElementById("hwStartsAt")?.value || "").trim();
 
       let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
       if (durationUnit === "hours") durationMinutes *= 60;
@@ -6490,12 +6485,8 @@
       }
       const startsAt = new Date(ts).toISOString();
 
-      if (targetType === "course" && !effectiveCourseId) {
+      if (!effectiveCourseId) {
         setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
-        return;
-      }
-      if (targetType === "users" && !usernames.length) {
-        setBox("homeworkStatus", "error", "Bitte mindestens eine teilnehmende Person auswählen.");
         return;
       }
 
@@ -6506,16 +6497,15 @@
           title: generated.title,
           description,
           attachment: generated.attachment,
-          target_type: targetType,
-          course_id: targetType === "course" ? effectiveCourseId : "",
-          usernames: targetType === "users" ? usernames : [],
+          target_type: "course",
+          course_id: effectiveCourseId,
+          usernames: [],
           duration_minutes: durationMinutes,
           starts_at: startsAt
         });
         persistHomeworkQuickDefaults();
         setBox("homeworkStatus", "ok", `A2-Test gespeichert. Zugewiesen: ${payload.target_count || 0}`);
-        document.getElementById("hwStartsAt").value = "";
-        Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
+        document.getElementById("hwA2StartsAt").value = "";
         await refreshAllHomeworkLists();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -8221,9 +8211,8 @@
       const customDescription = String(document.getElementById(homeworkTemplatePreviewIdByCategory(safeCategory))?.value || "").trim();
       const description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
       const attachment = "";
-      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
-      const effectiveCourseId = targetType === "course" ? (courseId || String(selectedCourseId || "").trim()) : "";
+      const effectiveCourseId = courseId || String(selectedCourseId || "").trim();
       const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
       const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
@@ -8249,16 +8238,8 @@
       }
       startsAt = new Date(ts).toISOString();
 
-      const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
-        .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
-        .filter(Boolean);
-
-      if (targetType === "course" && !effectiveCourseId) {
+      if (!effectiveCourseId) {
         setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
-        return;
-      }
-      if (targetType === "users" && !usernames.length) {
-        setBox("homeworkStatus", "error", "Bitte mindestens eine teilnehmende Person auswählen.");
         return;
       }
 
@@ -8269,9 +8250,9 @@
           title,
           description,
           attachment,
-          target_type: targetType,
-          course_id: targetType === "course" ? effectiveCourseId : "",
-          usernames: targetType === "users" ? usernames : [],
+          target_type: "course",
+          course_id: effectiveCourseId,
+          usernames: [],
           duration_minutes: durationMinutes,
           starts_at: startsAt
         });
@@ -8281,7 +8262,6 @@
         if (templateSelect) templateSelect.value = "";
         updateHomeworkTemplatePreview(safeCategory);
         document.getElementById("hwStartsAt").value = "";
-        Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
         listHomeworkAssignments();
       } catch (err) {
         setBox("homeworkStatus", "error", `Aufgabe konnte nicht gespeichert werden: ${err.message}`);
@@ -8306,15 +8286,11 @@
         return;
       }
 
-      const targetType = String(document.getElementById("hwTargetType")?.value || "course");
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
-      const effectiveCourseId = targetType === "course" ? (courseId || String(selectedCourseId || "").trim()) : "";
+      const effectiveCourseId = courseId || String(selectedCourseId || "").trim();
       const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
       const durationUnit = String(document.getElementById("hwDurationUnit")?.value || "minutes");
       const startsAtRaw = String(document.getElementById("hwStartsAt")?.value || "").trim();
-      const usernames = Array.from(document.querySelectorAll("[data-hw-user]:checked"))
-        .map(el => String(el.getAttribute("data-hw-user") || "").trim().toLowerCase())
-        .filter(Boolean);
 
       let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
       if (durationUnit === "hours") durationMinutes *= 60;
@@ -8331,12 +8307,8 @@
       }
       const startsAt = new Date(ts).toISOString();
 
-      if (targetType === "course" && !effectiveCourseId) {
+      if (!effectiveCourseId) {
         setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
-        return;
-      }
-      if (targetType === "users" && !usernames.length) {
-        setBox("homeworkStatus", "error", "Bitte mindestens eine teilnehmende Person auswählen.");
         return;
       }
 
@@ -8359,9 +8331,9 @@
             title,
             description,
             attachment: "",
-            target_type: targetType,
-            course_id: targetType === "course" ? effectiveCourseId : "",
-            usernames: targetType === "users" ? usernames : [],
+            target_type: "course",
+            course_id: effectiveCourseId,
+            usernames: [],
             duration_minutes: durationMinutes,
             starts_at: startsAt,
             batch_group_id: groupId,
@@ -8384,7 +8356,6 @@
       }
       if (successCount > 0) {
         document.getElementById("hwStartsAt").value = "";
-        Array.from(document.querySelectorAll("[data-hw-user]")).forEach(el => { el.checked = false; });
         await refreshAllHomeworkLists();
       }
     }
@@ -10740,12 +10711,17 @@
     document.getElementById("progressDateTo").addEventListener("change", () => loadProgressOverview(true));
     document.getElementById("progressReportCsvBtn").addEventListener("click", downloadProgressReportCsv);
     document.getElementById("progressReportPdfBtn").addEventListener("click", openProgressReportPdf);
-    document.getElementById("hwSelectAllUsersBtn").addEventListener("click", () => setHomeworkUserSelection(true));
-    document.getElementById("hwClearUsersBtn").addEventListener("click", () => setHomeworkUserSelection(false));
-    document.getElementById("hwTargetType").addEventListener("change", () => {
-      syncHomeworkTargetVisibility();
-      persistHomeworkQuickDefaults();
-    });
+    const hwSelectAllUsersBtn = document.getElementById("hwSelectAllUsersBtn");
+    if (hwSelectAllUsersBtn) hwSelectAllUsersBtn.addEventListener("click", () => setHomeworkUserSelection(true));
+    const hwClearUsersBtn = document.getElementById("hwClearUsersBtn");
+    if (hwClearUsersBtn) hwClearUsersBtn.addEventListener("click", () => setHomeworkUserSelection(false));
+    const hwTargetType = document.getElementById("hwTargetType");
+    if (hwTargetType) {
+      hwTargetType.addEventListener("change", () => {
+        syncHomeworkTargetVisibility();
+        persistHomeworkQuickDefaults();
+      });
+    }
     const hwTaskTemplatesMulti = document.getElementById("hwTaskTemplatesMulti");
     if (hwTaskTemplatesMulti) {
       hwTaskTemplatesMulti.addEventListener("change", () => {
@@ -10765,6 +10741,12 @@
     if (hwA2QuestionCount) {
       hwA2QuestionCount.addEventListener("change", generateA2HomeworkPreview);
     }
+    const hwA2StartsAt = document.getElementById("hwA2StartsAt");
+    if (hwA2StartsAt) hwA2StartsAt.addEventListener("change", persistHomeworkQuickDefaults);
+    const hwA2DurationValue = document.getElementById("hwA2DurationValue");
+    if (hwA2DurationValue) hwA2DurationValue.addEventListener("change", persistHomeworkQuickDefaults);
+    const hwA2DurationUnit = document.getElementById("hwA2DurationUnit");
+    if (hwA2DurationUnit) hwA2DurationUnit.addEventListener("change", persistHomeworkQuickDefaults);
     const generateA2HomeworkBtn = document.getElementById("generateA2HomeworkBtn");
     if (generateA2HomeworkBtn) generateA2HomeworkBtn.addEventListener("click", generateA2HomeworkPreview);
     const assignA2HomeworkBtn = document.getElementById("assignA2HomeworkBtn");

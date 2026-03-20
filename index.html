@@ -909,6 +909,17 @@
       box-shadow: 0 12px 24px rgba(43, 141, 98, 0.24);
     }
 
+    .portal-open-btn {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      border: 1px solid #ffc2b0;
+      box-shadow: 0 12px 24px rgba(205, 98, 87, 0.3);
+      color: #ffffff;
+    }
+
+    .portal-open-btn:hover {
+      box-shadow: 0 15px 28px rgba(205, 98, 87, 0.34);
+    }
+
     .top-nav .nav-link,
     .top-nav .nav-toggle {
       box-shadow: none;
@@ -6317,6 +6328,12 @@
           if (markAssignmentSolvedClient(solvedAssignmentId)) {
             void refreshPortalData();
           }
+          if (solvedAssignmentId) {
+            void (async () => {
+              await submitHomeworkCompleteById(solvedAssignmentId);
+              await refreshPortalData();
+            })();
+          }
         }
       }
       renderA2IntegratedQuestions();
@@ -10694,6 +10711,24 @@
       }
     }
 
+    async function submitHomeworkCompleteById(assignmentId) {
+      const id = String(assignmentId || "").trim();
+      if (!id) return false;
+      try {
+        const response = await fetch("./api/student_homework_complete.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assignment_id: id })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        syncServerClock(payload.server_ts);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
     function renderPortalList(nodeId, rows, emptyText, renderer) {
       const wrap = document.getElementById(nodeId);
       if (!wrap) {
@@ -11036,16 +11071,16 @@
         const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
         const category = detectStudentHomeworkCategory(row);
         const dtzOpenAction = parsedTemplate
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "ghost-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}" data-open-hw-assignment="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : `${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen`}</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}" data-open-hw-assignment="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : `${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen`}</button></div>`
           : "";
         const a2OpenAction = !parsedTemplate && category === "a2"
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : ""}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "A2-Test öffnen"}</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "A2-Test öffnen"}</button></div>`
           : "";
         const mailOpenAction = category === "mail"
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "ghost-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-mail-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Mail-Aufgabe öffnen"}</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-mail-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Mail-Aufgabe öffnen"}</button></div>`
           : "";
         const modelltestOpenAction = category === "modelltest"
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "ghost-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-modelltest-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Modelltest öffnen"}</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-modelltest-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Modelltest öffnen"}</button></div>`
           : "";
         return `
           <div class="portal-item ${stateClass}">
@@ -11104,7 +11139,7 @@
                 <strong>${escapeHtml(String((row && row.title) || "A2-Aufgabe"))}</strong>
                 <div>Dauer: ${escapeHtml(formatDurationMinutes(row && row.duration_minutes))} | Fällig: ${escapeHtml(rowDue)} | Status: ${escapeHtml(rowStatus)}</div>
                 <div class="row-end" style="margin-top:6px;">
-                  <button type="button" class="${rowDone ? "task-solved-btn" : ""}" ${rowDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">${rowDone ? "Gelöst" : "A2-Test öffnen"}</button>
+                  <button type="button" class="${rowDone ? "task-solved-btn" : "portal-open-btn"}" ${rowDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">${rowDone ? "Gelöst" : "A2-Test öffnen"}</button>
                 </div>
               </div>
             `;
