@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur GET wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur GET wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -242,6 +242,53 @@ foreach (load_homework_assignments() as $assignment) {
         continue;
     }
     $visibleAssignments[] = $assignment;
+}
+
+$recentModelltestResults = [];
+foreach ($visibleAssignments as $assignment) {
+    if (!is_array($assignment)) {
+        continue;
+    }
+    $templateId = mb_strtolower(trim((string)($assignment['template_id'] ?? '')));
+    if ($templateId !== 'dtz-mock-pruefung-komplett') {
+        continue;
+    }
+    $assignmentCourseId = trim((string)($assignment['course_id'] ?? ''));
+    $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
+    foreach ($assignees as $assigneeUsername => $state) {
+        $uname = progress_normalize_username((string)$assigneeUsername);
+        if ($uname === '' || !isset($studentStats[$uname])) {
+            continue;
+        }
+        $belongs = $studentCourseMap[$uname] ?? [];
+        if ($courseIdFilter !== '' && !isset($belongs[$courseIdFilter])) {
+            continue;
+        }
+        $result = is_array($state['last_modelltest_result'] ?? null) ? $state['last_modelltest_result'] : null;
+        if (!$result) {
+            continue;
+        }
+        $savedAt = (string)($result['saved_at'] ?? '');
+        $savedTs = progress_iso_ts($savedAt);
+        if ($savedTs <= 0 || $savedTs < $windowStartTs || $savedTs > $windowEndTs) {
+            continue;
+        }
+        $studentName = trim((string)($studentStats[$uname]['student_name'] ?? ''));
+        $recentModelltestResults[] = [
+            'saved_at' => $savedAt,
+            'course_id' => $assignmentCourseId,
+            'student_username' => (string)($studentStats[$uname]['student_username'] ?? $uname),
+            'student_name' => $studentName,
+            'hoeren_correct' => (int)($result['hoeren_correct'] ?? 0),
+            'hoeren_total' => (int)($result['hoeren_total'] ?? 0),
+            'lesen_correct' => (int)($result['lesen_correct'] ?? 0),
+            'lesen_total' => (int)($result['lesen_total'] ?? 0),
+            'schreiben_score' => (int)($result['schreiben_score'] ?? 0),
+            'schreiben_max' => (int)($result['schreiben_max'] ?? 0),
+            'overall_percent' => (int)($result['overall_percent'] ?? 0),
+            'level' => (string)($result['level'] ?? 'A1')
+        ];
+    }
 }
 
 $summaryAssignedWindow = 0;
@@ -546,6 +593,11 @@ usort($recentApproved, static function (array $a, array $b): int {
 });
 $recentApproved = array_slice($recentApproved, 0, 20);
 
+usort($recentModelltestResults, static function (array $a, array $b): int {
+    return strcmp((string)($b['saved_at'] ?? ''), (string)($a['saved_at'] ?? ''));
+});
+$recentModelltestResults = array_slice($recentModelltestResults, 0, 30);
+
 $summary = [
     'window_days' => $windowDays,
     'courses_total' => count($courseRows),
@@ -574,4 +626,5 @@ echo json_encode([
         'name' => (string)($visibleCourses[$courseIdFilter]['name'] ?? $courseIdFilter),
     ] : null,
     'recent_approved' => $recentApproved,
+    'recent_modelltest_results' => $recentModelltestResults,
 ], JSON_UNESCAPED_UNICODE);

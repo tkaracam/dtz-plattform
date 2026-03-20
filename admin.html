@@ -7646,15 +7646,13 @@
       applyResponsiveTableLabels(wrap);
     }
 
-    function renderProgressRecent(recentRows) {
+    function renderProgressRecent(recentRows, modelltestRows = []) {
       const wrap = document.getElementById("progressRecentWrap");
       if (!wrap) return;
       const rows = Array.isArray(recentRows) ? recentRows : [];
-      if (!rows.length) {
-        wrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Noch keine Freigaben im Zeitraum.</p>";
-        return;
-      }
-      wrap.innerHTML = `
+      const mtRows = Array.isArray(modelltestRows) ? modelltestRows : [];
+      const approvedHtml = rows.length
+        ? `
         <h4>Zuletzt freigegebene Korrekturen</h4>
         <div class="progress-recent-list">
           ${rows.map(item => `
@@ -7664,7 +7662,22 @@
             </div>
           `).join("")}
         </div>
-      `;
+      `
+        : "<h4>Zuletzt freigegebene Korrekturen</h4><p>Noch keine Freigaben im Zeitraum.</p>";
+      const modelltestHtml = mtRows.length
+        ? `
+        <h4 style="margin-top:12px;">Zuletzt erfasste Modelltest-Ergebnisse</h4>
+        <div class="progress-recent-list">
+          ${mtRows.map(item => `
+            <div class="progress-recent-item">
+              <div><strong>${escapeHtml(String(item.student_name || item.student_username || "-"))}</strong> · Niveau: ${escapeHtml(String(item.level || "-"))} · ${escapeHtml(String(item.overall_percent || 0))}%</div>
+              <div class="mono">${escapeHtml(formatDisplayDateTime(String(item.saved_at || "")))} · Kurs: ${escapeHtml(String(item.course_id || "-"))} · Hören: ${escapeHtml(String(item.hoeren_correct || 0))}/${escapeHtml(String(item.hoeren_total || 0))} · Lesen: ${escapeHtml(String(item.lesen_correct || 0))}/${escapeHtml(String(item.lesen_total || 0))}</div>
+            </div>
+          `).join("")}
+        </div>
+      `
+        : "<h4 style=\"margin-top:12px;\">Zuletzt erfasste Modelltest-Ergebnisse</h4><p>Noch keine Modelltest-Ergebnisse im Zeitraum.</p>";
+      wrap.innerHTML = `${approvedHtml}${modelltestHtml}`;
     }
 
     function buildProgressReportCsv(payload = latestProgressPayload || {}) {
@@ -7810,7 +7823,7 @@
         renderProgressStudents(payload.students || []);
         renderProgressRisk(payload.risk_students || []);
         renderProgressTrend(payload.trend_weeks || []);
-        renderProgressRecent(payload.recent_approved || []);
+        renderProgressRecent(payload.recent_approved || [], payload.recent_modelltest_results || []);
         setBox("progressStatus", "ok", "Fortschritt wurde aktualisiert.");
       } catch (err) {
         latestProgressPayload = null;

@@ -4028,10 +4028,12 @@
     let modelltestFlowState = {
       active: false,
       stage: "hoeren",
+      hoerenRemainingSec: 35 * 60,
       lesenRemainingSec: 45 * 60,
       schreibenRemainingSec: 30 * 60,
       timerId: null,
       assignmentId: "",
+      hasWritingTask: true,
       writeVariant: "A",
       writePromptA: "",
       writePromptB: "",
@@ -6091,6 +6093,10 @@
       modelltestFlowState.active = false;
       const flowCard = document.getElementById("modelltestFlowCard");
       if (flowCard) flowCard.classList.add("hidden");
+      const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
+      const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
+      if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
+      if (lesenTeilButtons) lesenTeilButtons.classList.remove("hidden");
       currentOpenedHomeworkContext.dtzByModule.hoeren = "";
       currentOpenedHomeworkContext.dtzByModule.lesen = "";
       setMainView("dtz");
@@ -6431,6 +6437,10 @@
       modelltestFlowState.active = false;
       const flowCard = document.getElementById("modelltestFlowCard");
       if (flowCard) flowCard.classList.add("hidden");
+      const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
+      const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
+      if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
+      if (lesenTeilButtons) lesenTeilButtons.classList.remove("hidden");
       currentOpenedHomeworkContext.dtzByModule.hoeren = "";
       currentOpenedHomeworkContext.dtzByModule.lesen = "";
       showCards(["dtzTrainingCard"]);
@@ -6471,16 +6481,27 @@
         const key = modelltestProgressStorageKey();
         if (!key) return;
         const writeText = document.getElementById("modelltestWriteText");
+        const answersByTeil = (module) => {
+          const maxTeil = getDtzMaxTeil(module);
+          const out = {};
+          for (let teil = 1; teil <= maxTeil; teil += 1) {
+            const teilState = ensureDtzTeilState(module, teil);
+            out[String(teil)] = (teilState && typeof teilState.answers === "object") ? teilState.answers : {};
+          }
+          return out;
+        };
         const payload = {
           stage: String(modelltestFlowState.stage || "hoeren"),
+          hoerenRemainingSec: Math.max(0, Number(modelltestFlowState.hoerenRemainingSec || 0)),
           lesenRemainingSec: Math.max(0, Number(modelltestFlowState.lesenRemainingSec || 0)),
           schreibenRemainingSec: Math.max(0, Number(modelltestFlowState.schreibenRemainingSec || 0)),
+          hasWritingTask: !!modelltestFlowState.hasWritingTask,
           writeVariant: String(modelltestFlowState.writeVariant || "A"),
           writePromptA: String(modelltestFlowState.writePromptA || ""),
           writePromptB: String(modelltestFlowState.writePromptB || ""),
           writeText: String(writeText ? writeText.value || "" : ""),
-          hoerenAnswers: getDtzState("hoeren").answers || {},
-          lesenAnswers: getDtzState("lesen").answers || {},
+          hoerenAnswersByTeil: answersByTeil("hoeren"),
+          lesenAnswersByTeil: answersByTeil("lesen"),
           savedAt: Date.now()
         };
         window.localStorage.setItem(key, JSON.stringify(payload));
@@ -6496,15 +6517,30 @@
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== "object") return false;
         modelltestFlowState.stage = String(parsed.stage || "hoeren");
+        modelltestFlowState.hoerenRemainingSec = Math.max(0, Number(parsed.hoerenRemainingSec || 35 * 60));
         modelltestFlowState.lesenRemainingSec = Math.max(0, Number(parsed.lesenRemainingSec || 45 * 60));
         modelltestFlowState.schreibenRemainingSec = Math.max(0, Number(parsed.schreibenRemainingSec || 30 * 60));
+        modelltestFlowState.hasWritingTask = parsed.hasWritingTask !== false;
         modelltestFlowState.writeVariant = String(parsed.writeVariant || "A") === "B" ? "B" : "A";
         modelltestFlowState.writePromptA = String(parsed.writePromptA || "");
         modelltestFlowState.writePromptB = String(parsed.writePromptB || "");
-        const hoerenState = getDtzState("hoeren");
-        const lesenState = getDtzState("lesen");
-        hoerenState.answers = (parsed.hoerenAnswers && typeof parsed.hoerenAnswers === "object") ? parsed.hoerenAnswers : {};
-        lesenState.answers = (parsed.lesenAnswers && typeof parsed.lesenAnswers === "object") ? parsed.lesenAnswers : {};
+        const applyAnswers = (module, mapKey, legacyKey) => {
+          const maxTeil = getDtzMaxTeil(module);
+          const byTeil = (parsed[mapKey] && typeof parsed[mapKey] === "object") ? parsed[mapKey] : null;
+          const legacy = (parsed[legacyKey] && typeof parsed[legacyKey] === "object") ? parsed[legacyKey] : null;
+          for (let teil = 1; teil <= maxTeil; teil += 1) {
+            const teilState = ensureDtzTeilState(module, teil);
+            if (byTeil && byTeil[String(teil)] && typeof byTeil[String(teil)] === "object") {
+              teilState.answers = byTeil[String(teil)];
+            } else if (legacy && teil === 1) {
+              teilState.answers = legacy;
+            } else {
+              teilState.answers = {};
+            }
+          }
+        };
+        applyAnswers("hoeren", "hoerenAnswersByTeil", "hoerenAnswers");
+        applyAnswers("lesen", "lesenAnswersByTeil", "lesenAnswers");
         const variantSelect = document.getElementById("modelltestTaskVariant");
         if (variantSelect) variantSelect.value = modelltestFlowState.writeVariant;
         const writeText = document.getElementById("modelltestWriteText");
@@ -6513,21 +6549,6 @@
       } catch (_) {
         return false;
       }
-    }
-
-    function applyModelltestStoredAnswersToModule(module) {
-      try {
-        const key = modelltestProgressStorageKey();
-        if (!key) return;
-        const raw = window.localStorage.getItem(key);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== "object") return;
-        const source = module === "lesen" ? parsed.lesenAnswers : parsed.hoerenAnswers;
-        if (!source || typeof source !== "object") return;
-        const state = getDtzState(module);
-        state.answers = { ...(state.answers || {}), ...source };
-      } catch (_) {}
     }
 
     function clearModelltestProgress() {
@@ -6576,6 +6597,79 @@
       modelltestFlowState.writePromptB = selected.b;
     }
 
+    function detectModelltestHasWritingTask() {
+      const title = String((currentAssignedHomework && currentAssignedHomework.title) || "").toLowerCase();
+      const description = String((currentAssignedHomework && currentAssignedHomework.description) || "").toLowerCase();
+      const bag = `${title} ${description}`;
+      if (bag.includes("ohne schreiben") || bag.includes("nur hören lesen") || bag.includes("nur hoeren lesen")) {
+        return false;
+      }
+      return true;
+    }
+
+    function getModelltestModuleStats(module) {
+      const maxTeil = getDtzMaxTeil(module);
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      let loadedTeils = 0;
+      for (let teil = 1; teil <= maxTeil; teil += 1) {
+        const teilState = ensureDtzTeilState(module, teil);
+        const evaluator = (DTZ_EVALUATORS[module] || {})[teil];
+        if (!teilState || !Array.isArray(teilState.tasks) || !teilState.tasks.length || typeof evaluator !== "function") {
+          continue;
+        }
+        loadedTeils += 1;
+        const stats = evaluator(teilState);
+        total += Math.max(0, Number(stats && stats.total ? stats.total : 0));
+        correct += Math.max(0, Number(stats && stats.correct ? stats.correct : 0));
+        unanswered += Math.max(0, Number(stats && stats.unanswered ? stats.unanswered : 0));
+      }
+      return {
+        total,
+        correct,
+        unanswered,
+        loadedTeils,
+        allLoaded: loadedTeils === maxTeil,
+        allAnswered: loadedTeils === maxTeil && total > 0 && unanswered === 0
+      };
+    }
+
+    function markModelltestModuleEvaluated(module) {
+      const maxTeil = getDtzMaxTeil(module);
+      for (let teil = 1; teil <= maxTeil; teil += 1) {
+        const teilState = ensureDtzTeilState(module, teil);
+        if (teilState) teilState.evaluated = true;
+      }
+      updateDtzTeilButtons(module);
+      renderDtzTrainingSet(module);
+    }
+
+    async function saveModelltestResult(aggregate) {
+      const assignmentId = currentModelltestAssignmentId();
+      if (!assignmentId || !aggregate || typeof aggregate !== "object") return false;
+      try {
+        await fetch("./api/student_modelltest_result.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assignment_id: assignmentId,
+            hoeren_correct: Number(aggregate.hoerenCorrect || 0),
+            hoeren_total: Number(aggregate.hoerenTotal || 0),
+            lesen_correct: Number(aggregate.lesenCorrect || 0),
+            lesen_total: Number(aggregate.lesenTotal || 0),
+            schreiben_score: Number(aggregate.writingScore || 0),
+            schreiben_max: Number(aggregate.writingMax || 20),
+            overall_percent: Number(aggregate.overallPercent || 0),
+            level: String(aggregate.level || "A1")
+          })
+        });
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
     function updateModelltestFlowUi() {
       const flowCard = document.getElementById("modelltestFlowCard");
       const stageChip = document.getElementById("modelltestStageChip");
@@ -6587,16 +6681,27 @@
       const promptBox = document.getElementById("modelltestTaskPrompt");
       const variantSelect = document.getElementById("modelltestTaskVariant");
       const writeText = document.getElementById("modelltestWriteText");
+      const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
+      const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
+      const hoerenStats = getModelltestModuleStats("hoeren");
+      const lesenStats = getModelltestModuleStats("lesen");
       if (!flowCard) return;
 
       flowCard.classList.toggle("hidden", !modelltestFlowState.active);
       if (variantSelect) variantSelect.value = modelltestFlowState.writeVariant;
       if (promptBox) promptBox.textContent = writePromptForVariant(modelltestFlowState.writeVariant);
+      if (hoerenTeilButtons) hoerenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (lesenTeilButtons) lesenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
 
       if (modelltestFlowState.stage === "hoeren") {
-        if (stageChip) stageChip.textContent = "Phase: Hören";
-        if (timerChip) timerChip.classList.add("hidden");
+        if (stageChip) stageChip.textContent = "Phase: Hören (35:00)";
+        if (timerChip) {
+          timerChip.classList.remove("hidden");
+          timerChip.textContent = formatExamTimer(modelltestFlowState.hoerenRemainingSec);
+          timerChip.classList.toggle("warn", modelltestFlowState.hoerenRemainingSec <= 5 * 60);
+        }
         if (toLesenBtn) toLesenBtn.classList.remove("hidden");
+        if (toLesenBtn) toLesenBtn.disabled = !hoerenStats.allAnswered;
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) finishBtn.classList.add("hidden");
         if (writePanel) writePanel.classList.add("hidden");
@@ -6614,6 +6719,12 @@
         }
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.remove("hidden");
+        if (toSchreibenBtn) {
+          toSchreibenBtn.textContent = modelltestFlowState.hasWritingTask
+            ? "Lesen abschließen · Schreiben starten"
+            : "Lesen abschließen · Auswertung";
+          toSchreibenBtn.disabled = !lesenStats.allAnswered;
+        }
         if (finishBtn) finishBtn.classList.add("hidden");
         if (writePanel) writePanel.classList.add("hidden");
         setAccordionOpen("dtzHoerenAccordion", false);
@@ -6630,8 +6741,8 @@
         }
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
-        if (finishBtn) finishBtn.classList.remove("hidden");
-        if (writePanel) writePanel.classList.remove("hidden");
+        if (finishBtn) finishBtn.classList.toggle("hidden", !modelltestFlowState.hasWritingTask);
+        if (writePanel) writePanel.classList.toggle("hidden", !modelltestFlowState.hasWritingTask);
         setAccordionOpen("dtzHoerenAccordion", false);
         setAccordionOpen("dtzLesenAccordion", false);
         setAccordionOpen("workAccordion", false);
@@ -6653,11 +6764,18 @@
       modelltestFlowState.stage = stage;
       updateModelltestFlowUi();
       modelltestFlowState.timerId = setInterval(() => {
-        if (modelltestFlowState.stage === "lesen") {
+        if (modelltestFlowState.stage === "hoeren") {
+          modelltestFlowState.hoerenRemainingSec = Math.max(0, Number(modelltestFlowState.hoerenRemainingSec || 0) - 1);
+          if (modelltestFlowState.hoerenRemainingSec <= 0) {
+            stopModelltestFlowTimer();
+            void advanceModelltestToLesen(true);
+            return;
+          }
+        } else if (modelltestFlowState.stage === "lesen") {
           modelltestFlowState.lesenRemainingSec = Math.max(0, Number(modelltestFlowState.lesenRemainingSec || 0) - 1);
           if (modelltestFlowState.lesenRemainingSec <= 0) {
             stopModelltestFlowTimer();
-            void advanceModelltestToSchreiben(true);
+            void advanceModelltestAfterLesen(true);
             return;
           }
         } else if (modelltestFlowState.stage === "schreiben") {
@@ -6673,21 +6791,38 @@
       }, 1000);
     }
 
-    async function advanceModelltestToLesen() {
-      evaluateDtzTrainingSet("hoeren", false);
+    async function advanceModelltestToLesen(fromTimeout = false) {
+      const hoerenStats = getModelltestModuleStats("hoeren");
+      if (!fromTimeout && !hoerenStats.allAnswered) {
+        setDtzModuleStatus("hoeren", "error", "Bitte zuerst alle Hören-Fragen beantworten.");
+        return;
+      }
+      markModelltestModuleEvaluated("hoeren");
       modelltestFlowState.stage = "lesen";
       startModelltestStageTimer("lesen");
+      if (fromTimeout) {
+        setStatus("ok", "Hören-Zeit ist abgelaufen. Lesen wurde automatisch gestartet.", "statusBox");
+      }
       persistModelltestProgress();
     }
 
-    async function advanceModelltestToSchreiben(fromTimeout = false) {
-      evaluateDtzTrainingSet("lesen", false);
-      modelltestFlowState.stage = "schreiben";
-      startModelltestStageTimer("schreiben");
-      if (fromTimeout) {
-        setStatus("ok", "Lesen-Zeit ist abgelaufen. Schreiben wurde automatisch gestartet.", "statusBox");
+    async function advanceModelltestAfterLesen(fromTimeout = false) {
+      const lesenStats = getModelltestModuleStats("lesen");
+      if (!fromTimeout && !lesenStats.allAnswered) {
+        setDtzModuleStatus("lesen", "error", "Bitte zuerst alle Lesen-Fragen beantworten.");
+        return;
       }
-      persistModelltestProgress();
+      markModelltestModuleEvaluated("lesen");
+      if (modelltestFlowState.hasWritingTask) {
+        modelltestFlowState.stage = "schreiben";
+        startModelltestStageTimer("schreiben");
+        if (fromTimeout) {
+          setStatus("ok", "Lesen-Zeit ist abgelaufen. Schreiben wurde automatisch gestartet.", "statusBox");
+        }
+        persistModelltestProgress();
+        return;
+      }
+      await finalizeModelltest(true, { skipWriting: true });
     }
 
     function modelltestLevelFromPercent(percent) {
@@ -6697,35 +6832,32 @@
       return "A1";
     }
 
-    async function finalizeModelltest(autoByTimer = false) {
+    async function finalizeModelltest(autoByTimer = false, options = {}) {
       stopModelltestFlowTimer();
+      markModelltestModuleEvaluated("hoeren");
+      markModelltestModuleEvaluated("lesen");
+      const skipWriting = !!(options && options.skipWriting);
       const writeText = document.getElementById("modelltestWriteText");
       const variant = String(modelltestFlowState.writeVariant || "A");
       const text = String(writeText ? writeText.value || "" : "").trim();
       if (writeText) writeText.disabled = true;
 
-      const hoerenStats = (() => {
-        const state = getDtzState("hoeren");
-        const evaluator = (DTZ_EVALUATORS.hoeren || {})[state.teil];
-        return typeof evaluator === "function" ? evaluator(state) : { total: 0, correct: 0, unanswered: 0 };
-      })();
-      const lesenStats = (() => {
-        const state = getDtzState("lesen");
-        const evaluator = (DTZ_EVALUATORS.lesen || {})[state.teil];
-        return typeof evaluator === "function" ? evaluator(state) : { total: 0, correct: 0, unanswered: 0 };
-      })();
+      const hoerenStats = getModelltestModuleStats("hoeren");
+      const lesenStats = getModelltestModuleStats("lesen");
 
       const writePrompt = writePromptForVariant(variant);
       const requiredPoints = parseRequiredPointsFromText(`- ${writePrompt}\n- Anrede\n- Hauptteil\n- Schluss`);
-      const writingResult = localCorrection(text || " ", requiredPoints);
-      const writingScore = Math.max(0, Math.min(20, Number((writingResult && writingResult.score_total) || 0)));
-      const writingMax = 20;
+      const writingResult = skipWriting ? { score_total: 0 } : localCorrection(text || " ", requiredPoints);
+      const writingScore = skipWriting ? 0 : Math.max(0, Math.min(20, Number((writingResult && writingResult.score_total) || 0)));
+      const writingMax = modelltestFlowState.hasWritingTask && !skipWriting ? 20 : 0;
 
       const correctTotal = Number(hoerenStats.correct || 0) + Number(lesenStats.correct || 0);
       const questionTotal = Number(hoerenStats.total || 0) + Number(lesenStats.total || 0);
       const dtzPercent = questionTotal > 0 ? Math.round((correctTotal / questionTotal) * 100) : 0;
-      const writingPercent = Math.round((writingScore / writingMax) * 100);
-      const overallPercent = Math.round((dtzPercent * 0.7) + (writingPercent * 0.3));
+      const writingPercent = writingMax > 0 ? Math.round((writingScore / writingMax) * 100) : 0;
+      const overallPercent = writingMax > 0
+        ? Math.round((dtzPercent * 0.7) + (writingPercent * 0.3))
+        : dtzPercent;
       const level = modelltestLevelFromPercent(overallPercent);
 
       const resultBox = document.getElementById("modelltestResultBox");
@@ -6733,13 +6865,26 @@
         resultBox.className = "portal-item";
         resultBox.innerHTML = `
           <strong>Modelltest Ergebnis</strong>
+          <div>Hören: ${Number(hoerenStats.correct || 0)}/${Number(hoerenStats.total || 0)}</div>
+          <div>Lesen: ${Number(lesenStats.correct || 0)}/${Number(lesenStats.total || 0)}</div>
           <div>Hören+Lesen: ${correctTotal}/${questionTotal} · ${dtzPercent}%</div>
-          <div>Schreiben: ${writingScore}/${writingMax} · ${writingPercent}% (Aufgabe ${escapeHtml(variant)})</div>
+          ${writingMax > 0 ? `<div>Schreiben: ${writingScore}/${writingMax} · ${writingPercent}% (Aufgabe ${escapeHtml(variant)})</div>` : "<div>Schreiben: nicht enthalten</div>"}
           <div><strong>Gesamt: ${overallPercent}% · Niveau: ${escapeHtml(level)}</strong></div>
-          <div class="muted">${autoByTimer ? "Schreiben wurde beim Zeitende automatisch abgegeben." : "Schreiben wurde abgegeben."}</div>
+          <div class="muted">${autoByTimer ? "Teilzeit wurde automatisch beendet." : "Modelltest wurde abgeschlossen."}</div>
         `;
       }
       if (resultBox) resultBox.classList.remove("hidden");
+
+      await saveModelltestResult({
+        hoerenCorrect: Number(hoerenStats.correct || 0),
+        hoerenTotal: Number(hoerenStats.total || 0),
+        lesenCorrect: Number(lesenStats.correct || 0),
+        lesenTotal: Number(lesenStats.total || 0),
+        writingScore,
+        writingMax: writingMax > 0 ? writingMax : 20,
+        overallPercent,
+        level
+      });
 
       modelltestFlowState.stage = "done";
       modelltestFlowState.finished = true;
@@ -6754,14 +6899,54 @@
       clearModelltestProgress();
     }
 
-    function setupModelltestFlow() {
+    async function loadModelltestModuleAllTeils(module) {
+      const normalizedModule = module === "lesen" ? "lesen" : "hoeren";
+      const maxTeil = getDtzMaxTeil(normalizedModule);
+      for (let teil = 1; teil <= maxTeil; teil += 1) {
+        const state = ensureDtzTeilState(normalizedModule, teil);
+        const count = getDtzQuestionCount(normalizedModule, teil);
+        try {
+          const response = await fetch("./api/student_training_set.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              module: normalizedModule,
+              count,
+              teil
+            })
+          });
+          const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          const set = payload && payload.set ? payload.set : {};
+          const items = Array.isArray(set.items) ? set.items : [];
+          if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
+          state.set = items;
+          state.tasks = buildDtzTasks(normalizedModule, teil, items);
+          if (!state.answers || typeof state.answers !== "object") {
+            state.answers = {};
+          }
+          state.evaluated = false;
+          state.lastLoadedAt = new Date().toISOString();
+        } catch (_) {
+          state.set = [];
+          state.tasks = [];
+          state.answers = {};
+          state.evaluated = false;
+        }
+      }
+      renderDtzTrainingSet(normalizedModule);
+    }
+
+    async function setupModelltestFlow() {
       const flowCard = document.getElementById("modelltestFlowCard");
       if (!flowCard) return;
       const assignmentId = currentModelltestAssignmentId();
       modelltestFlowState.active = true;
       modelltestFlowState.finished = false;
       modelltestFlowState.assignmentId = assignmentId;
+      modelltestFlowState.hasWritingTask = detectModelltestHasWritingTask();
       modelltestFlowState.stage = "hoeren";
+      modelltestFlowState.hoerenRemainingSec = 35 * 60;
       modelltestFlowState.lesenRemainingSec = 45 * 60;
       modelltestFlowState.schreibenRemainingSec = 30 * 60;
       modelltestFlowState.writeVariant = "A";
@@ -6780,11 +6965,13 @@
         writeText.disabled = false;
       }
 
+      await loadModelltestModuleAllTeils("hoeren");
+      await loadModelltestModuleAllTeils("lesen");
       const restored = restoreModelltestProgress();
-      if (restored && (modelltestFlowState.stage === "lesen" || modelltestFlowState.stage === "schreiben")) {
+      if (restored && (modelltestFlowState.stage === "hoeren" || modelltestFlowState.stage === "lesen" || modelltestFlowState.stage === "schreiben")) {
         startModelltestStageTimer(modelltestFlowState.stage);
       } else {
-        updateModelltestFlowUi();
+        startModelltestStageTimer("hoeren");
       }
       persistModelltestProgress();
     }
@@ -6812,9 +6999,7 @@
       updateDtzTeilButtons("lesen");
       updateDtzPartMeta("lesen");
 
-      setupModelltestFlow();
-      loadDtzTrainingSet("hoeren");
-      loadDtzTrainingSet("lesen");
+      void setupModelltestFlow();
       generateSpeakingSet();
       setSpeakingTab(1);
     }
@@ -8030,13 +8215,22 @@
 
     async function playDtzAudioByKey(module, audioKey) {
       if (module !== "hoeren") return;
-      const state = getDtzState(module);
-      const source = getDtzAudioSourceByKey(module, state, audioKey);
+      let state = getDtzState(module);
+      let requestedKey = String(audioKey || "");
+      const mt = requestedKey.match(/^mt_(\d+)__(.+)$/);
+      if (mt) {
+        const teil = Number.parseInt(mt[1], 10);
+        if (Number.isFinite(teil) && teil >= 1) {
+          state = ensureDtzTeilState(module, teil);
+          requestedKey = String(mt[2] || "");
+        }
+      }
+      const source = getDtzAudioSourceByKey(module, state, requestedKey);
       if (!source || !source.script) {
         setDtzModuleStatus(module, "error", "Für diese Aufgabe ist kein Audiotext verfügbar.");
         return;
       }
-      const key = String(source.key || "");
+      const key = mt ? `mt_${mt[1]}__${String(source.key || requestedKey)}` : String(source.key || requestedKey);
       const script = String(source.script || "");
 
       const synth = ("speechSynthesis" in window) ? window.speechSynthesis : null;
@@ -8752,16 +8946,31 @@
       const ui = getDtzUi(module);
       const state = getDtzState(module);
       if (!ui.list) return;
+      const resolveAnswerTarget = (rawKey) => {
+        const key = String(rawKey || "").trim();
+        if (!key) return null;
+        const mt = key.match(/^mt_(\d+)__(.+)$/);
+        if (!mt) {
+          return { teilState: state, key };
+        }
+        const teil = Number.parseInt(mt[1], 10);
+        const cleanKey = String(mt[2] || "").trim();
+        if (!Number.isFinite(teil) || teil < 1 || !cleanKey) return null;
+        return { teilState: ensureDtzTeilState(module, teil), key: cleanKey };
+      };
 
       ui.list.querySelectorAll("input[type='radio'][data-dtz-key]").forEach((input) => {
         input.addEventListener("change", (event) => {
           const target = event.target;
           if (!(target instanceof HTMLInputElement)) return;
-          const key = String(target.getAttribute("data-dtz-key") || "").trim();
-          if (!key) return;
-          state.answers[key] = String(target.value || "");
+          const resolved = resolveAnswerTarget(target.getAttribute("data-dtz-key"));
+          if (!resolved || !resolved.key) return;
+          resolved.teilState.answers[resolved.key] = String(target.value || "");
           persistModelltestProgress();
-          if (state.evaluated) {
+          if (modelltestFlowState.active) {
+            updateModelltestFlowUi();
+          }
+          if (resolved.teilState.evaluated) {
             evaluateDtzTrainingSet(module, false);
           }
         });
@@ -8771,14 +8980,17 @@
         select.addEventListener("change", (event) => {
           const target = event.target;
           if (!(target instanceof HTMLSelectElement)) return;
-          const key = String(target.getAttribute("data-dtz-key") || "").trim();
-          if (!key) return;
+          const resolved = resolveAnswerTarget(target.getAttribute("data-dtz-key"));
+          if (!resolved || !resolved.key) return;
           const value = String(target.value || "");
-          state.answers[key] = value;
-          enforceMatchingNoReuse(state, key, value);
+          resolved.teilState.answers[resolved.key] = value;
+          enforceMatchingNoReuse(resolved.teilState, resolved.key, value);
           renderDtzTrainingSet(module);
           persistModelltestProgress();
-          if (state.evaluated) {
+          if (modelltestFlowState.active) {
+            updateModelltestFlowUi();
+          }
+          if (resolved.teilState.evaluated) {
             evaluateDtzTrainingSet(module, false);
           }
         });
@@ -9093,10 +9305,54 @@
       }
     };
 
+    function stripInlineDtzEvaluateRows(html) {
+      return String(html || "").replace(/<div class="row-end dtz-inline-action-row">[\s\S]*?<\/div>/g, "");
+    }
+
+    function prefixModelltestKeys(html, teil) {
+      const safeTeil = Math.max(1, Number.parseInt(String(teil || "1"), 10) || 1);
+      let out = stripInlineDtzEvaluateRows(html);
+      out = out.replace(/name="([^"]+)"/g, (_m, name) => `name="mt_t${safeTeil}_${name}"`);
+      out = out.replace(/data-dtz-key="([^"]+)"/g, (_m, key) => `data-dtz-key="mt_${safeTeil}__${key}"`);
+      out = out.replace(/data-dtz-audio-key="([^"]+)"/g, (_m, key) => `data-dtz-audio-key="mt_${safeTeil}__${key}"`);
+      return out;
+    }
+
+    function renderModelltestCombinedModule(module) {
+      const maxTeil = getDtzMaxTeil(module);
+      const sections = [];
+      for (let teil = 1; teil <= maxTeil; teil += 1) {
+        const state = ensureDtzTeilState(module, teil);
+        const renderer = (DTZ_RENDERERS[module] || {})[teil];
+        if (!state || !Array.isArray(state.tasks) || !state.tasks.length || typeof renderer !== "function") {
+          continue;
+        }
+        const part = getDtzPartConfig(module, teil);
+        const innerRaw = renderer(module, state);
+        const inner = prefixModelltestKeys(innerRaw, teil);
+        sections.push(`
+          <section class="portal-item" style="margin-top:10px;">
+            <strong>${escapeHtml((part && part.title) ? part.title : `Teil ${teil}`)}</strong>
+            <div style="margin-top:8px;">${inner}</div>
+          </section>
+        `);
+      }
+      if (!sections.length) {
+        return `<div class="archive-empty">Noch keine Aufgaben geladen.</div>`;
+      }
+      return sections.join("");
+    }
+
     function renderDtzTrainingSet(module) {
       const ui = getDtzUi(module);
       const state = getDtzState(module);
       if (!ui.list) return;
+
+      if (modelltestFlowState.active) {
+        ui.list.innerHTML = renderModelltestCombinedModule(module);
+        attachDtzAnswerListeners(module);
+        return;
+      }
 
       if (!Array.isArray(state.tasks) || !state.tasks.length) {
         ui.list.innerHTML = `<div class="archive-empty">Noch keine Aufgaben geladen. Klicken Sie auf „NEUE AUFGABEN“.</div>`;
@@ -9233,9 +9489,6 @@
         state.set = items;
         state.tasks = buildDtzTasks(normalizedModule, teil, items);
         state.answers = {};
-        if (modelltestFlowState.active) {
-          applyModelltestStoredAnswersToModule(normalizedModule);
-        }
         state.evaluated = false;
         state.lastLoadedAt = new Date().toISOString();
 
@@ -12976,7 +13229,7 @@
     const modelltestToSchreibenBtn = document.getElementById("modelltestToSchreibenBtn");
     if (modelltestToSchreibenBtn) {
       modelltestToSchreibenBtn.addEventListener("click", () => {
-        void advanceModelltestToSchreiben(false);
+        void advanceModelltestAfterLesen(false);
       });
     }
     const modelltestFinishBtn = document.getElementById("modelltestFinishBtn");
