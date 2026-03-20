@@ -3203,6 +3203,11 @@
             <span class="card-accordion-icon">▾</span>
           </summary>
           <div class="card-accordion-body">
+            <div class="row-end" style="margin-bottom:10px;">
+              <div class="btn-wrap">
+                <button id="writeBackToPortalBtn" type="button" class="secondary-btn hidden">Zurück</button>
+              </div>
+            </div>
 
             <div class="task-picker">
               <div class="assignment-box" id="currentAssignmentBox">
@@ -3981,6 +3986,7 @@
     let assignmentAutoSubmittedFor = "";
     let assignmentTimeWarningSent = {};
     let serverTimeOffsetMs = 0;
+    let writeOpenedFromPortalMail = false;
     let taskStatus = {};
     let currentTaskIndex = 0;
     let taskFilter = "all";
@@ -5961,6 +5967,10 @@
       };
       showCards(map[mode] ? [map[mode]] : []);
       updateHeroHomeVisibility(mode);
+      if (mode !== "correction") {
+        writeOpenedFromPortalMail = false;
+        updateWriteBackButtonVisibility();
+      }
       const resultSection = document.getElementById("resultSection");
       if (mode !== "correction" && resultSection) {
         resultSection.classList.add("hidden");
@@ -5982,10 +5992,39 @@
       renderHomeDashboard();
     }
 
-    function openCorrectionView() {
+    function updateWriteBackButtonVisibility() {
+      const btn = document.getElementById("writeBackToPortalBtn");
+      if (!btn) return;
+      btn.classList.toggle("hidden", !writeOpenedFromPortalMail);
+    }
+
+    function shouldConfirmWriteLeave() {
+      if (!writeOpenedFromPortalMail) return false;
+      if (!currentAssignedHomework || !currentAssignedHomeworkState) return false;
+      const submitted = !!currentAssignedHomeworkState.submitted_at;
+      return !submitted;
+    }
+
+    function confirmWriteLeaveIfNeeded() {
+      if (!shouldConfirmWriteLeave()) return true;
+      return window.confirm("Sind Sie sicher? Der Brief wurde noch nicht hochgeladen.");
+    }
+
+    function goBackToPortalFromWrite() {
+      if (!confirmWriteLeaveIfNeeded()) return false;
+      writeOpenedFromPortalMail = false;
+      updateWriteBackButtonVisibility();
+      openPortalView();
+      openPortalPanel("write", false);
+      return true;
+    }
+
+    function openCorrectionView(options = {}) {
+      writeOpenedFromPortalMail = !!(options && options.fromPortalMail);
       setMainView("correction");
       setHomeDashboardSection("write");
       setAccordionOpen("workAccordion", true);
+      updateWriteBackButtonVisibility();
       loadCurrentAssignedHomework();
     }
 
@@ -11054,7 +11093,7 @@
       }
     }
 
-    async function startHomeworkAssignmentById(assignmentId, statusBoxId = "portalWriteStatus", openTarget = "portal") {
+    async function startHomeworkAssignmentById(assignmentId, statusBoxId = "portalWriteStatus", openTarget = "portal", sourceContext = "") {
       const id = String(assignmentId || "").trim();
       if (!id) return false;
       clearStatus(statusBoxId);
@@ -11071,7 +11110,11 @@
         await loadCurrentAssignedHomework();
         await refreshPortalData();
         if (String(openTarget || "").toLowerCase() === "write") {
-          navigateToSection("write");
+          const fromPortalMail = String(sourceContext || "").toLowerCase() === "mail-homework";
+          openCorrectionView({ fromPortalMail });
+          if (fromPortalMail && window.history && typeof window.history.pushState === "function") {
+            window.history.pushState({ dtz_write_mail: true }, "", window.location.href);
+          }
         } else {
           openPortalPanel("write");
         }
@@ -11539,7 +11582,7 @@
             if (btn.hasAttribute("disabled")) return;
             const assignmentId = String(btn.getAttribute("data-open-mail-homework") || "").trim();
             if (!assignmentId) return;
-            await startHomeworkAssignmentById(assignmentId, "portalStatus", "write");
+            await startHomeworkAssignmentById(assignmentId, "portalStatus", "write", "mail-homework");
           });
         });
       }
@@ -12991,8 +13034,12 @@
     document.getElementById("finishSimulationBtn").addEventListener("click", () => finishSimulation(false));
     document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);
     document.getElementById("submitRoomBtn").addEventListener("click", submitRoomAnswer);
-    const backToWrite = document.getElementById("backToMenuFromWriteBtn");
-    if (backToWrite) backToWrite.addEventListener("click", () => setMainView("portal"));
+    const writeBackToPortalBtn = document.getElementById("writeBackToPortalBtn");
+    if (writeBackToPortalBtn) {
+      writeBackToPortalBtn.addEventListener("click", () => {
+        goBackToPortalFromWrite();
+      });
+    }
     const backToMenuFromPortalBtn = document.getElementById("backToMenuFromPortalBtn");
     if (backToMenuFromPortalBtn) {
       backToMenuFromPortalBtn.addEventListener("click", () => setMainView("portal"));
@@ -13028,6 +13075,21 @@
         }
         closeNavOnMobile();
       }
+    });
+    window.addEventListener("popstate", () => {
+      const workCard = document.getElementById("workCard");
+      const inWriteView = !!(workCard && !workCard.classList.contains("hidden"));
+      if (!writeOpenedFromPortalMail || !inWriteView) return;
+      if (!confirmWriteLeaveIfNeeded()) {
+        if (window.history && typeof window.history.pushState === "function") {
+          window.history.pushState({ dtz_write_mail: true }, "", window.location.href);
+        }
+        return;
+      }
+      writeOpenedFromPortalMail = false;
+      updateWriteBackButtonVisibility();
+      openPortalView();
+      openPortalPanel("write", false);
     });
     document.addEventListener("keydown", event => {
       const pressed = String(event.key || "");
