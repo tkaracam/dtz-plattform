@@ -6667,6 +6667,10 @@
       const writeText = document.getElementById("modelltestWriteText");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
       const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
+      const hoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
+      const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
+      const hoerenNewBtn = document.getElementById("dtzHoerenNewBtn");
+      const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
       const hoerenStats = getModelltestModuleStats("hoeren");
       const lesenStats = getModelltestModuleStats("lesen");
       if (!flowCard) return;
@@ -6676,6 +6680,10 @@
       if (promptBox) promptBox.textContent = writePromptForVariant(modelltestFlowState.writeVariant);
       if (hoerenTeilButtons) hoerenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
       if (lesenTeilButtons) lesenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (hoerenOpenBtn) hoerenOpenBtn.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (lesenOpenBtn) lesenOpenBtn.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (hoerenNewBtn) hoerenNewBtn.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (lesenNewBtn) lesenNewBtn.classList.toggle("hidden", !!modelltestFlowState.active);
 
       if (modelltestFlowState.stage === "hoeren") {
         if (stageChip) stageChip.textContent = "Phase: Hören (35:00)";
