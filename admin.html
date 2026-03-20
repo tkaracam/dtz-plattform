@@ -5019,7 +5019,12 @@
 
     function getAccountsScopeCourseId() {
       const select = document.getElementById("accountsCourseScope");
-      const raw = String(select?.value || accountsScopeCourseId || "").trim();
+      let raw = String(select?.value || accountsScopeCourseId || "").trim();
+      if (!raw && isDocentSimpleMode()) {
+        const fallback = selectedCourseId
+          || String(((Array.isArray(currentCourses) ? currentCourses[0] : {}) || {}).course_id || "").trim();
+        raw = fallback;
+      }
       return raw;
     }
 
@@ -5073,7 +5078,9 @@
       const select = document.getElementById("accountsCourseScope");
       if (!select) return;
       const previous = String(select.value || accountsScopeCourseId || "").trim();
-      const options = ['<option value="">Alle Kurse</option>'];
+      const options = isDocentSimpleMode()
+        ? []
+        : ['<option value="">Alle Kurse</option>'];
       currentCourses.forEach(course => {
         const id = String(course.course_id || "").trim();
         if (!id) return;
@@ -5088,6 +5095,9 @@
         nextValue = accountsScopeCourseId;
       } else if (!isDocentSimpleMode() && selectedCourseId && currentCourses.some(c => String(c.course_id || "") === selectedCourseId)) {
         nextValue = selectedCourseId;
+      }
+      if (isDocentSimpleMode() && !nextValue) {
+        nextValue = String(((currentCourses[0] || {}).course_id || "")).trim();
       }
       select.value = nextValue;
       accountsScopeCourseId = nextValue;
