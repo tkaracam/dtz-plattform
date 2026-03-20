@@ -3787,6 +3787,28 @@
       </section>
 
       <section id="dtzTrainingCard" class="card hidden">
+        <div id="modelltestFlowCard" class="portal-item hidden" style="margin: 0 0 10px;">
+          <strong>DTZ Modelltest Ablauf</strong>
+          <div class="muted" style="margin-top:4px;">Reihenfolge: Hören → Lesen (45:00) → Schreiben (30:00)</div>
+          <div class="dtz-exam-bar" style="margin-top:8px;">
+            <span id="modelltestStageChip" class="dtz-exam-chip">Phase: Hören</span>
+            <span id="modelltestTimerChip" class="dtz-exam-timer hidden">45:00</span>
+            <button id="modelltestToLesenBtn" type="button" class="portal-open-btn">Hören abschließen · Lesen starten</button>
+            <button id="modelltestToSchreibenBtn" type="button" class="portal-open-btn hidden">Lesen abschließen · Schreiben starten</button>
+            <button id="modelltestFinishBtn" type="button" class="portal-open-btn hidden">Schreiben abgeben · Auswertung</button>
+          </div>
+          <div id="modelltestWritePanel" class="hidden" style="margin-top:10px;">
+            <label for="modelltestTaskVariant"><strong>Schreiben Auswahl</strong></label>
+            <select id="modelltestTaskVariant">
+              <option value="A">Aufgabe A</option>
+              <option value="B">Aufgabe B</option>
+            </select>
+            <div id="modelltestTaskPrompt" class="dtz-hint" style="margin-top:8px;"></div>
+            <label for="modelltestWriteText" style="margin-top:8px;">Ihr Schreiben</label>
+            <textarea id="modelltestWriteText" rows="8" placeholder="Schreiben Sie Ihren Text hier..."></textarea>
+          </div>
+          <div id="modelltestResultBox" class="hidden" style="margin-top:10px;"></div>
+        </div>
         <div class="dtz-training-modules">
           <button id="dtzHoerenOpenBtn" type="button" class="dtz-module-btn">Hören (Teil 1-4)</button>
           <button id="dtzLesenOpenBtn" type="button" class="dtz-module-btn">Lesen (Teil 1-5)</button>
@@ -4015,6 +4037,18 @@
         lesen: ""
       }
     };
+    let modelltestFlowState = {
+      active: false,
+      stage: "hoeren",
+      lesenRemainingSec: 45 * 60,
+      schreibenRemainingSec: 30 * 60,
+      timerId: null,
+      assignmentId: "",
+      writeVariant: "A",
+      writePromptA: "",
+      writePromptB: "",
+      finished: false
+    };
     let solvedHomeworkAssignments = new Set();
     let currentA2State = {
       topic: "Perfekt",
@@ -4037,6 +4071,7 @@
     const HOME_DASHBOARD_KEY = "dtz_home_dashboard_v1";
     const HOME_ANNOUNCEMENT_KEY = "dtz_home_announcement_v1";
     const STUDENT_SESSION_CACHE_KEY = "dtz_student_session_cache_v1";
+    const MODELLTEST_PROGRESS_KEY = "dtz_modelltest_progress_v1";
     const DASHBOARD_FALLBACK_ANNOUNCEMENT = "Empfehlung: heute 20 Minuten DTZ plus eine kurze LiD-Wiederholung.";
 
     function persistStudentSessionCache(username, label) {
@@ -6031,6 +6066,10 @@
     }
 
     function openDtzHubView() {
+      stopModelltestFlowTimer();
+      modelltestFlowState.active = false;
+      const flowCard = document.getElementById("modelltestFlowCard");
+      if (flowCard) flowCard.classList.add("hidden");
       currentOpenedHomeworkContext.dtzByModule.hoeren = "";
       currentOpenedHomeworkContext.dtzByModule.lesen = "";
       setMainView("dtz");
@@ -6367,6 +6406,10 @@
     }
 
     function openDtzTrainingOnlyView() {
+      stopModelltestFlowTimer();
+      modelltestFlowState.active = false;
+      const flowCard = document.getElementById("modelltestFlowCard");
+      if (flowCard) flowCard.classList.add("hidden");
       currentOpenedHomeworkContext.dtzByModule.hoeren = "";
       currentOpenedHomeworkContext.dtzByModule.lesen = "";
       showCards(["dtzTrainingCard"]);
@@ -6377,14 +6420,362 @@
       initDtzTrainingUi();
     }
 
+    function formatExamTimer(seconds) {
+      const safe = Math.max(0, Number.parseInt(String(seconds || 0), 10) || 0);
+      const mm = Math.floor(safe / 60).toString().padStart(2, "0");
+      const ss = (safe % 60).toString().padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function currentModelltestAssignmentId() {
+      return String((currentOpenedHomeworkContext && currentOpenedHomeworkContext.dtzByModule && currentOpenedHomeworkContext.dtzByModule.hoeren) || "").trim();
+    }
+
+    function stopModelltestFlowTimer() {
+      if (modelltestFlowState.timerId) {
+        clearInterval(modelltestFlowState.timerId);
+        modelltestFlowState.timerId = null;
+      }
+    }
+
+    function modelltestProgressStorageKey() {
+      const uname = String(currentStudentUsername || "").trim().toLowerCase();
+      const aid = String(modelltestFlowState.assignmentId || "").trim();
+      if (!uname || !aid) return "";
+      return `${MODELLTEST_PROGRESS_KEY}_${uname}_${aid}`;
+    }
+
+    function persistModelltestProgress() {
+      try {
+        const key = modelltestProgressStorageKey();
+        if (!key) return;
+        const writeText = document.getElementById("modelltestWriteText");
+        const payload = {
+          stage: String(modelltestFlowState.stage || "hoeren"),
+          lesenRemainingSec: Math.max(0, Number(modelltestFlowState.lesenRemainingSec || 0)),
+          schreibenRemainingSec: Math.max(0, Number(modelltestFlowState.schreibenRemainingSec || 0)),
+          writeVariant: String(modelltestFlowState.writeVariant || "A"),
+          writePromptA: String(modelltestFlowState.writePromptA || ""),
+          writePromptB: String(modelltestFlowState.writePromptB || ""),
+          writeText: String(writeText ? writeText.value || "" : ""),
+          hoerenAnswers: getDtzState("hoeren").answers || {},
+          lesenAnswers: getDtzState("lesen").answers || {},
+          savedAt: Date.now()
+        };
+        window.localStorage.setItem(key, JSON.stringify(payload));
+      } catch (_) {}
+    }
+
+    function restoreModelltestProgress() {
+      try {
+        const key = modelltestProgressStorageKey();
+        if (!key) return false;
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return false;
+        modelltestFlowState.stage = String(parsed.stage || "hoeren");
+        modelltestFlowState.lesenRemainingSec = Math.max(0, Number(parsed.lesenRemainingSec || 45 * 60));
+        modelltestFlowState.schreibenRemainingSec = Math.max(0, Number(parsed.schreibenRemainingSec || 30 * 60));
+        modelltestFlowState.writeVariant = String(parsed.writeVariant || "A") === "B" ? "B" : "A";
+        modelltestFlowState.writePromptA = String(parsed.writePromptA || "");
+        modelltestFlowState.writePromptB = String(parsed.writePromptB || "");
+        const hoerenState = getDtzState("hoeren");
+        const lesenState = getDtzState("lesen");
+        hoerenState.answers = (parsed.hoerenAnswers && typeof parsed.hoerenAnswers === "object") ? parsed.hoerenAnswers : {};
+        lesenState.answers = (parsed.lesenAnswers && typeof parsed.lesenAnswers === "object") ? parsed.lesenAnswers : {};
+        const variantSelect = document.getElementById("modelltestTaskVariant");
+        if (variantSelect) variantSelect.value = modelltestFlowState.writeVariant;
+        const writeText = document.getElementById("modelltestWriteText");
+        if (writeText) writeText.value = String(parsed.writeText || "");
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function applyModelltestStoredAnswersToModule(module) {
+      try {
+        const key = modelltestProgressStorageKey();
+        if (!key) return;
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return;
+        const source = module === "lesen" ? parsed.lesenAnswers : parsed.hoerenAnswers;
+        if (!source || typeof source !== "object") return;
+        const state = getDtzState(module);
+        state.answers = { ...(state.answers || {}), ...source };
+      } catch (_) {}
+    }
+
+    function clearModelltestProgress() {
+      try {
+        const key = modelltestProgressStorageKey();
+        if (!key) return;
+        window.localStorage.removeItem(key);
+      } catch (_) {}
+    }
+
+    function lockDtzModuleInputs(module, locked) {
+      const ui = getDtzUi(module);
+      if (!ui || !ui.list) return;
+      ui.list.querySelectorAll("input, select, textarea, button").forEach(el => {
+        if (!(el instanceof HTMLElement)) return;
+        const keepAudio = el instanceof HTMLButtonElement && el.hasAttribute("data-dtz-audio-key");
+        if (keepAudio) return;
+        if ("disabled" in el) el.disabled = !!locked;
+      });
+      if (ui.evaluateBtn) ui.evaluateBtn.disabled = !!locked;
+      if (ui.newBtn) ui.newBtn.disabled = !!locked;
+    }
+
+    function writePromptForVariant(variant) {
+      return String(variant === "B" ? modelltestFlowState.writePromptB : modelltestFlowState.writePromptA);
+    }
+
+    function ensureModelltestWritePrompts() {
+      if (modelltestFlowState.writePromptA && modelltestFlowState.writePromptB) return;
+      const pool = [
+        {
+          a: "Aufgabe A: Sie können morgen nicht am Kurs teilnehmen. Schreiben Sie Ihrer Lehrkraft eine formelle E-Mail und erklären Sie den Grund.",
+          b: "Aufgabe B: Ihr Termin bei einer Behörde passt nicht. Schreiben Sie eine formelle E-Mail und bitten Sie um einen neuen Termin.",
+          pointsA: ["Anrede", "Grund nennen", "Entschuldigung", "Bitte um Information", "Grußformel"],
+          pointsB: ["Anrede", "Alter Termin", "Neuen Termin erbitten", "Begründung", "Grußformel"]
+        },
+        {
+          a: "Aufgabe A: In Ihrer Wohnung ist die Heizung defekt. Schreiben Sie eine E-Mail an die Hausverwaltung.",
+          b: "Aufgabe B: Sie möchten im Kurs von Gruppe A in Gruppe B wechseln. Schreiben Sie eine E-Mail an das Sekretariat.",
+          pointsA: ["Anrede", "Problem beschreiben", "Dringlichkeit", "Bitte um Reparatur", "Grußformel"],
+          pointsB: ["Anrede", "Aktuelle Gruppe", "Grund des Wechsels", "Wunschgruppe", "Grußformel"]
+        }
+      ];
+      const selected = pool[Math.floor(Math.random() * pool.length)];
+      modelltestFlowState.writePromptA = selected.a;
+      modelltestFlowState.writePromptB = selected.b;
+    }
+
+    function updateModelltestFlowUi() {
+      const flowCard = document.getElementById("modelltestFlowCard");
+      const stageChip = document.getElementById("modelltestStageChip");
+      const timerChip = document.getElementById("modelltestTimerChip");
+      const toLesenBtn = document.getElementById("modelltestToLesenBtn");
+      const toSchreibenBtn = document.getElementById("modelltestToSchreibenBtn");
+      const finishBtn = document.getElementById("modelltestFinishBtn");
+      const writePanel = document.getElementById("modelltestWritePanel");
+      const promptBox = document.getElementById("modelltestTaskPrompt");
+      const variantSelect = document.getElementById("modelltestTaskVariant");
+      const writeText = document.getElementById("modelltestWriteText");
+      if (!flowCard) return;
+
+      flowCard.classList.toggle("hidden", !modelltestFlowState.active);
+      if (variantSelect) variantSelect.value = modelltestFlowState.writeVariant;
+      if (promptBox) promptBox.textContent = writePromptForVariant(modelltestFlowState.writeVariant);
+
+      if (modelltestFlowState.stage === "hoeren") {
+        if (stageChip) stageChip.textContent = "Phase: Hören";
+        if (timerChip) timerChip.classList.add("hidden");
+        if (toLesenBtn) toLesenBtn.classList.remove("hidden");
+        if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
+        if (finishBtn) finishBtn.classList.add("hidden");
+        if (writePanel) writePanel.classList.add("hidden");
+        setAccordionOpen("dtzHoerenAccordion", true);
+        setAccordionOpen("dtzLesenAccordion", false);
+        setAccordionOpen("workAccordion", false);
+        lockDtzModuleInputs("hoeren", false);
+        lockDtzModuleInputs("lesen", true);
+      } else if (modelltestFlowState.stage === "lesen") {
+        if (stageChip) stageChip.textContent = "Phase: Lesen (45:00)";
+        if (timerChip) {
+          timerChip.classList.remove("hidden");
+          timerChip.textContent = formatExamTimer(modelltestFlowState.lesenRemainingSec);
+          timerChip.classList.toggle("warn", modelltestFlowState.lesenRemainingSec <= 5 * 60);
+        }
+        if (toLesenBtn) toLesenBtn.classList.add("hidden");
+        if (toSchreibenBtn) toSchreibenBtn.classList.remove("hidden");
+        if (finishBtn) finishBtn.classList.add("hidden");
+        if (writePanel) writePanel.classList.add("hidden");
+        setAccordionOpen("dtzHoerenAccordion", false);
+        setAccordionOpen("dtzLesenAccordion", true);
+        setAccordionOpen("workAccordion", false);
+        lockDtzModuleInputs("hoeren", true);
+        lockDtzModuleInputs("lesen", false);
+      } else if (modelltestFlowState.stage === "schreiben") {
+        if (stageChip) stageChip.textContent = "Phase: Schreiben (30:00)";
+        if (timerChip) {
+          timerChip.classList.remove("hidden");
+          timerChip.textContent = formatExamTimer(modelltestFlowState.schreibenRemainingSec);
+          timerChip.classList.toggle("warn", modelltestFlowState.schreibenRemainingSec <= 5 * 60);
+        }
+        if (toLesenBtn) toLesenBtn.classList.add("hidden");
+        if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
+        if (finishBtn) finishBtn.classList.remove("hidden");
+        if (writePanel) writePanel.classList.remove("hidden");
+        setAccordionOpen("dtzHoerenAccordion", false);
+        setAccordionOpen("dtzLesenAccordion", false);
+        setAccordionOpen("workAccordion", false);
+        lockDtzModuleInputs("hoeren", true);
+        lockDtzModuleInputs("lesen", true);
+        if (writeText) writeText.disabled = false;
+      } else {
+        if (stageChip) stageChip.textContent = "Phase: Abgeschlossen";
+        if (timerChip) timerChip.classList.add("hidden");
+        if (toLesenBtn) toLesenBtn.classList.add("hidden");
+        if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
+        if (finishBtn) finishBtn.classList.add("hidden");
+        if (writePanel) writePanel.classList.add("hidden");
+      }
+    }
+
+    function startModelltestStageTimer(stage) {
+      stopModelltestFlowTimer();
+      modelltestFlowState.stage = stage;
+      updateModelltestFlowUi();
+      modelltestFlowState.timerId = setInterval(() => {
+        if (modelltestFlowState.stage === "lesen") {
+          modelltestFlowState.lesenRemainingSec = Math.max(0, Number(modelltestFlowState.lesenRemainingSec || 0) - 1);
+          if (modelltestFlowState.lesenRemainingSec <= 0) {
+            stopModelltestFlowTimer();
+            void advanceModelltestToSchreiben(true);
+            return;
+          }
+        } else if (modelltestFlowState.stage === "schreiben") {
+          modelltestFlowState.schreibenRemainingSec = Math.max(0, Number(modelltestFlowState.schreibenRemainingSec || 0) - 1);
+          if (modelltestFlowState.schreibenRemainingSec <= 0) {
+            stopModelltestFlowTimer();
+            void finalizeModelltest(true);
+            return;
+          }
+        }
+        updateModelltestFlowUi();
+        persistModelltestProgress();
+      }, 1000);
+    }
+
+    async function advanceModelltestToLesen() {
+      evaluateDtzTrainingSet("hoeren", false);
+      modelltestFlowState.stage = "lesen";
+      startModelltestStageTimer("lesen");
+      persistModelltestProgress();
+    }
+
+    async function advanceModelltestToSchreiben(fromTimeout = false) {
+      evaluateDtzTrainingSet("lesen", false);
+      modelltestFlowState.stage = "schreiben";
+      startModelltestStageTimer("schreiben");
+      if (fromTimeout) {
+        setStatus("ok", "Lesen-Zeit ist abgelaufen. Schreiben wurde automatisch gestartet.", "statusBox");
+      }
+      persistModelltestProgress();
+    }
+
+    function modelltestLevelFromPercent(percent) {
+      const p = Math.max(0, Math.min(100, Number(percent || 0)));
+      if (p >= 75) return "B1";
+      if (p >= 50) return "A2";
+      return "A1";
+    }
+
+    async function finalizeModelltest(autoByTimer = false) {
+      stopModelltestFlowTimer();
+      const writeText = document.getElementById("modelltestWriteText");
+      const variant = String(modelltestFlowState.writeVariant || "A");
+      const text = String(writeText ? writeText.value || "" : "").trim();
+      if (writeText) writeText.disabled = true;
+
+      const hoerenStats = (() => {
+        const state = getDtzState("hoeren");
+        const evaluator = (DTZ_EVALUATORS.hoeren || {})[state.teil];
+        return typeof evaluator === "function" ? evaluator(state) : { total: 0, correct: 0, unanswered: 0 };
+      })();
+      const lesenStats = (() => {
+        const state = getDtzState("lesen");
+        const evaluator = (DTZ_EVALUATORS.lesen || {})[state.teil];
+        return typeof evaluator === "function" ? evaluator(state) : { total: 0, correct: 0, unanswered: 0 };
+      })();
+
+      const writePrompt = writePromptForVariant(variant);
+      const requiredPoints = parseRequiredPointsFromText(`- ${writePrompt}\n- Anrede\n- Hauptteil\n- Schluss`);
+      const writingResult = localCorrection(text || " ", requiredPoints);
+      const writingScore = Math.max(0, Math.min(20, Number((writingResult && writingResult.score_total) || 0)));
+      const writingMax = 20;
+
+      const correctTotal = Number(hoerenStats.correct || 0) + Number(lesenStats.correct || 0);
+      const questionTotal = Number(hoerenStats.total || 0) + Number(lesenStats.total || 0);
+      const dtzPercent = questionTotal > 0 ? Math.round((correctTotal / questionTotal) * 100) : 0;
+      const writingPercent = Math.round((writingScore / writingMax) * 100);
+      const overallPercent = Math.round((dtzPercent * 0.7) + (writingPercent * 0.3));
+      const level = modelltestLevelFromPercent(overallPercent);
+
+      const resultBox = document.getElementById("modelltestResultBox");
+      if (resultBox) {
+        resultBox.className = "portal-item";
+        resultBox.innerHTML = `
+          <strong>Modelltest Ergebnis</strong>
+          <div>Hören+Lesen: ${correctTotal}/${questionTotal} · ${dtzPercent}%</div>
+          <div>Schreiben: ${writingScore}/${writingMax} · ${writingPercent}% (Aufgabe ${escapeHtml(variant)})</div>
+          <div><strong>Gesamt: ${overallPercent}% · Niveau: ${escapeHtml(level)}</strong></div>
+          <div class="muted">${autoByTimer ? "Schreiben wurde beim Zeitende automatisch abgegeben." : "Schreiben wurde abgegeben."}</div>
+        `;
+      }
+      if (resultBox) resultBox.classList.remove("hidden");
+
+      modelltestFlowState.stage = "done";
+      modelltestFlowState.finished = true;
+      updateModelltestFlowUi();
+
+      const assignmentId = currentModelltestAssignmentId();
+      if (assignmentId) {
+        markAssignmentSolvedClient(assignmentId);
+        await submitHomeworkCompleteById(assignmentId);
+        await refreshPortalData();
+      }
+      clearModelltestProgress();
+    }
+
+    function setupModelltestFlow() {
+      const flowCard = document.getElementById("modelltestFlowCard");
+      if (!flowCard) return;
+      const assignmentId = currentModelltestAssignmentId();
+      modelltestFlowState.active = true;
+      modelltestFlowState.finished = false;
+      modelltestFlowState.assignmentId = assignmentId;
+      modelltestFlowState.stage = "hoeren";
+      modelltestFlowState.lesenRemainingSec = 45 * 60;
+      modelltestFlowState.schreibenRemainingSec = 30 * 60;
+      modelltestFlowState.writeVariant = "A";
+      modelltestFlowState.writePromptA = "";
+      modelltestFlowState.writePromptB = "";
+      ensureModelltestWritePrompts();
+
+      const resultBox = document.getElementById("modelltestResultBox");
+      if (resultBox) {
+        resultBox.className = "hidden";
+        resultBox.textContent = "";
+      }
+      const writeText = document.getElementById("modelltestWriteText");
+      if (writeText) {
+        writeText.value = "";
+        writeText.disabled = false;
+      }
+
+      const restored = restoreModelltestProgress();
+      if (restored && (modelltestFlowState.stage === "lesen" || modelltestFlowState.stage === "schreiben")) {
+        startModelltestStageTimer(modelltestFlowState.stage);
+      } else {
+        updateModelltestFlowUi();
+      }
+      persistModelltestProgress();
+    }
+
     function openDtzModelltestView() {
       showCards(["dtzTrainingCard", "workCard", "speakingCard"]);
       updateHeroHomeVisibility("dtz");
       setHomeDashboardSection("dtz");
       setAccordionOpen("dtzHoerenAccordion", true);
-      setAccordionOpen("dtzLesenAccordion", true);
-      setAccordionOpen("workAccordion", true);
-      setAccordionOpen("speakingAccordion", true);
+      setAccordionOpen("dtzLesenAccordion", false);
+      setAccordionOpen("workAccordion", false);
+      setAccordionOpen("speakingAccordion", false);
       setDtzModuleButtonActive("");
       initDtzTrainingUi();
 
@@ -6400,6 +6791,7 @@
       updateDtzTeilButtons("lesen");
       updateDtzPartMeta("lesen");
 
+      setupModelltestFlow();
       loadDtzTrainingSet("hoeren");
       loadDtzTrainingSet("lesen");
       generateSpeakingSet();
@@ -8339,6 +8731,7 @@
           const key = String(target.getAttribute("data-dtz-key") || "").trim();
           if (!key) return;
           state.answers[key] = String(target.value || "");
+          persistModelltestProgress();
           if (state.evaluated) {
             evaluateDtzTrainingSet(module, false);
           }
@@ -8355,6 +8748,7 @@
           state.answers[key] = value;
           enforceMatchingNoReuse(state, key, value);
           renderDtzTrainingSet(module);
+          persistModelltestProgress();
           if (state.evaluated) {
             evaluateDtzTrainingSet(module, false);
           }
@@ -8809,6 +9203,9 @@
         state.set = items;
         state.tasks = buildDtzTasks(normalizedModule, teil, items);
         state.answers = {};
+        if (modelltestFlowState.active) {
+          applyModelltestStoredAnswersToModule(normalizedModule);
+        }
         state.evaluated = false;
         state.lastLoadedAt = new Date().toISOString();
 
@@ -8982,6 +9379,8 @@
     }
 
     function showStudentLogin() {
+      stopModelltestFlowTimer();
+      modelltestFlowState.active = false;
       setMainView("");
       stopDtzAudio(true);
       const resultSection = document.getElementById("resultSection");
@@ -11175,9 +11574,11 @@
       if (modelltestWrap) {
         modelltestWrap.innerHTML = grouped.modelltest.length ? grouped.modelltest.map(itemHtml).join("") : "Keine Modelltest-Aufgaben vorhanden.";
         modelltestWrap.querySelectorAll("[data-open-modelltest-homework]").forEach(btn => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", async () => {
             if (btn.hasAttribute("disabled")) return;
             const assignmentId = String(btn.getAttribute("data-open-modelltest-homework") || "").trim();
+            if (!assignmentId) return;
+            await startHomeworkAssignmentById(assignmentId, "portalStatus");
             currentOpenedHomeworkContext.dtzByModule.hoeren = assignmentId;
             currentOpenedHomeworkContext.dtzByModule.lesen = assignmentId;
             openDtzModelltestView();
@@ -12527,6 +12928,36 @@
     const portalStartAssignmentBtn = document.getElementById("portalStartAssignmentBtn");
     if (portalStartAssignmentBtn) {
       portalStartAssignmentBtn.addEventListener("click", () => startCurrentAssignment("portalStartAssignmentBtn", "portalWriteStatus"));
+    }
+    const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
+    if (modelltestToLesenBtn) {
+      modelltestToLesenBtn.addEventListener("click", () => {
+        void advanceModelltestToLesen();
+      });
+    }
+    const modelltestToSchreibenBtn = document.getElementById("modelltestToSchreibenBtn");
+    if (modelltestToSchreibenBtn) {
+      modelltestToSchreibenBtn.addEventListener("click", () => {
+        void advanceModelltestToSchreiben(false);
+      });
+    }
+    const modelltestFinishBtn = document.getElementById("modelltestFinishBtn");
+    if (modelltestFinishBtn) {
+      modelltestFinishBtn.addEventListener("click", () => {
+        void finalizeModelltest(false);
+      });
+    }
+    const modelltestTaskVariant = document.getElementById("modelltestTaskVariant");
+    if (modelltestTaskVariant) {
+      modelltestTaskVariant.addEventListener("change", () => {
+        modelltestFlowState.writeVariant = String(modelltestTaskVariant.value || "A") === "B" ? "B" : "A";
+        updateModelltestFlowUi();
+        persistModelltestProgress();
+      });
+    }
+    const modelltestWriteText = document.getElementById("modelltestWriteText");
+    if (modelltestWriteText) {
+      modelltestWriteText.addEventListener("input", persistModelltestProgress);
     }
     document.getElementById("studentLoginBtn").addEventListener("click", loginStudent);
     document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);

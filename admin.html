@@ -2878,6 +2878,7 @@
                 <div class="actions" style="margin-top:8px;">
                   <button id="createHomeworkBatchBtn" type="button">Ausgewählte Aufgaben zuweisen</button>
                 </div>
+                <div id="hwBatchInlineStatus" class="muted" style="margin-top:8px;"></div>
               </div>
               <div id="hwA2GeneratorBox">
                 <label for="hwA2TopicsMulti"><strong>A2-Test Generator</strong> · Themen (Mehrfachauswahl)</label>
@@ -8270,6 +8271,8 @@
 
     async function createHomeworkBatchAssignments() {
       clearBox("homeworkStatus");
+      const inlineStatus = document.getElementById("hwBatchInlineStatus");
+      if (inlineStatus) inlineStatus.textContent = "";
       const select = document.getElementById("hwTaskTemplatesMulti");
       const selectedTemplateIds = Array.from(select?.selectedOptions || [])
         .map(option => String(option.value || "").trim())
@@ -8348,11 +8351,17 @@
 
       persistHomeworkQuickDefaults();
       if (successCount > 0 && failures.length === 0) {
-        setBox("homeworkStatus", "ok", `${successCount} Aufgabe(n) gespeichert. Zugewiesen gesamt: ${totalAssignedTargets}`);
+        const msg = `${successCount} Aufgabe(n) gespeichert. Zugewiesen gesamt: ${totalAssignedTargets}`;
+        setBox("homeworkStatus", "ok", msg);
+        if (inlineStatus) inlineStatus.textContent = msg;
       } else if (successCount > 0) {
-        setBox("homeworkStatus", "error", `${successCount} Aufgabe(n) gespeichert, ${failures.length} fehlgeschlagen: ${failures.join(" | ")}`);
+        const msg = `${successCount} Aufgabe(n) gespeichert, ${failures.length} fehlgeschlagen: ${failures.join(" | ")}`;
+        setBox("homeworkStatus", "error", msg);
+        if (inlineStatus) inlineStatus.textContent = msg;
       } else {
-        setBox("homeworkStatus", "error", `Keine Aufgabe gespeichert: ${failures.join(" | ") || "unbekannter Fehler"}`);
+        const msg = `Keine Aufgabe gespeichert: ${failures.join(" | ") || "unbekannter Fehler"}`;
+        setBox("homeworkStatus", "error", msg);
+        if (inlineStatus) inlineStatus.textContent = msg;
       }
       if (successCount > 0) {
         document.getElementById("hwStartsAt").value = "";
