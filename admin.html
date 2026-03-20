@@ -3001,8 +3001,10 @@
               </div>
               <div class="actions" style="margin-top:10px;">
                 <button id="loadReminderPolicyBtn" type="button" class="ghost-btn">Policy laden</button>
+                <button id="previewReminderPolicyBtn" type="button" class="ghost-btn">Policy Vorschau</button>
                 <button id="saveReminderPolicyBtn" type="button">Policy speichern</button>
               </div>
+              <pre id="homeworkReminderPolicyPreview" class="bulk-preview" style="margin-top:10px; white-space:pre-wrap;"></pre>
               <div id="homeworkReminderPolicyStatus" class="hidden"></div>
             </div>
           </details>
@@ -7684,6 +7686,17 @@
       };
     }
 
+    function renderHomeworkReminderPolicyPreview() {
+      const previewNode = document.getElementById("homeworkReminderPolicyPreview");
+      if (!previewNode) return;
+      try {
+        const policy = collectHomeworkReminderPolicyFromUi();
+        previewNode.textContent = JSON.stringify(policy, null, 2);
+      } catch (err) {
+        previewNode.textContent = `Parse-Fehler: ${err.message || err}`;
+      }
+    }
+
     function applyHomeworkReminderPolicyToUi(policy) {
       const p = policy && typeof policy === "object" ? policy : defaultReminderPolicyProfileClient();
       const d = p.defaults && typeof p.defaults === "object" ? p.defaults : {};
@@ -7713,6 +7726,7 @@
       const templateNode = document.getElementById("rpTemplateOverrides");
       if (courseNode) courseNode.value = courseOverrides;
       if (templateNode) templateNode.value = templateOverrides;
+      renderHomeworkReminderPolicyPreview();
     }
 
     async function callHomeworkReminderPolicyApi(method = "GET", body = null) {
@@ -8096,6 +8110,7 @@
         { label: "Teilnehmende", value: String(data.students_total ?? 0), meta: "im Zugriff" },
         { label: "Abgabequote", value: `${String(data.completion_window_percent ?? 0)}%`, meta: `${String(data.submitted_window_total ?? 0)} von ${String(data.assigned_window_total ?? 0)}` },
         { label: "Ø Punkte", value: avgScore, meta: `${String(data.approved_reviews_window_total ?? 0)} freigegeben` },
+        { label: "Reminder gesendet", value: String(data.reminders_sent_window_total ?? 0), meta: "im Zeitraum" },
         { label: "Offene Korrekturen", value: String(data.pending_reviews_total ?? 0), meta: "wartend" },
         { label: "Aktive Aufgaben", value: String(data.active_homeworks_total ?? 0), meta: "derzeit laufend" },
         { label: "Risikogruppe", value: String(data.risk_students_total ?? 0), meta: "< 50% Wochenquote" },
@@ -8313,11 +8328,13 @@
       applyResponsiveTableLabels(wrap);
     }
 
-    function renderProgressRecent(recentRows, modelltestRows = []) {
+    function renderProgressRecent(recentRows, modelltestRows = [], reminderCourses = [], reminderTemplates = []) {
       const wrap = document.getElementById("progressRecentWrap");
       if (!wrap) return;
       const rows = Array.isArray(recentRows) ? recentRows : [];
       const mtRows = Array.isArray(modelltestRows) ? modelltestRows : [];
+      const reminderCourseRows = Array.isArray(reminderCourses) ? reminderCourses : [];
+      const reminderTemplateRows = Array.isArray(reminderTemplates) ? reminderTemplates : [];
       const approvedHtml = rows.length
         ? `
         <h4>Zuletzt freigegebene Korrekturen</h4>
@@ -8344,7 +8361,22 @@
         </div>
       `
         : "<h4 style=\"margin-top:12px;\">Zuletzt erfasste Modelltest-Ergebnisse</h4><p>Noch keine Modelltest-Ergebnisse im Zeitraum.</p>";
-      wrap.innerHTML = `${approvedHtml}${modelltestHtml}`;
+      const reminderHtml = (reminderCourseRows.length || reminderTemplateRows.length)
+        ? `
+        <h4 style="margin-top:12px;">Reminder-Verteilung</h4>
+        <div class="progress-recent-list">
+          <div class="progress-recent-item">
+            <div><strong>Nach Kurs</strong></div>
+            <div class="mono">${reminderCourseRows.map(row => `${escapeHtml(String(row.label || row.course_id || "-"))}: ${escapeHtml(String(row.count || 0))}`).join(" · ") || "-"}</div>
+          </div>
+          <div class="progress-recent-item">
+            <div><strong>Nach Vorlage</strong></div>
+            <div class="mono">${reminderTemplateRows.map(row => `${escapeHtml(String(row.template_id || "-"))}: ${escapeHtml(String(row.count || 0))}`).join(" · ") || "-"}</div>
+          </div>
+        </div>
+      `
+        : "<h4 style=\"margin-top:12px;\">Reminder-Verteilung</h4><p>Keine Reminderdaten im Zeitraum.</p>";
+      wrap.innerHTML = `${approvedHtml}${modelltestHtml}${reminderHtml}`;
     }
 
     function buildProgressReportCsv(payload = latestProgressPayload || {}) {
@@ -8491,7 +8523,12 @@
         renderProgressStudents(payload.students || []);
         renderProgressRisk(payload.risk_students || []);
         renderProgressTrend(payload.trend_weeks || []);
-        renderProgressRecent(payload.recent_approved || [], payload.recent_modelltest_results || []);
+        renderProgressRecent(
+          payload.recent_approved || [],
+          payload.recent_modelltest_results || [],
+          payload.reminders_by_course || [],
+          payload.reminders_by_template || []
+        );
         setBox("progressStatus", "ok", "Fortschritt wurde aktualisiert.");
       } catch (err) {
         latestProgressPayload = null;
@@ -9023,9 +9060,9 @@
 
       let successCount = 0;
       let totalAssignedTargets = 0;
-      const failures = [];
       const groupId = `hwgrp-${Date.now().toString(36)}`;
       const groupLabel = `Mehrfachzuweisung ${formatDisplayDateTime(new Date().toISOString()) || new Date().toLocaleString("de-DE")}`;
+      const assignmentRows = [];
       for (const template of selectedTemplates) {
         const title = String(template?.title || "").trim();
         const includeMail = isModelltestTemplateId(String(template?.id || "")) ? isMockMailOptionEnabled() : false;
@@ -9047,59 +9084,42 @@
           attachment = params.toString();
         }
         if (!title || !description) {
-          failures.push(`${String(template?.id || "aufgabe")}: ungültige Vorlage`);
-          continue;
+          setBox("homeworkStatus", "error", `${String(template?.id || "aufgabe")}: ungültige Vorlage`);
+          return;
         }
-        try {
-          const payload = await callHomeworkAssignApi({
-            action: "create",
-            template_id: String(template?.id || ""),
-            title,
-            description,
-            attachment,
-            target_type: "course",
-            course_id: effectiveCourseId,
-            usernames: [],
-            duration_minutes: durationMinutes,
-            starts_at: startsAt,
-            batch_group_id: groupId,
-            batch_group_label: groupLabel
-          });
-          successCount += 1;
-          totalAssignedTargets += Number(payload?.target_count || 0);
-        } catch (err) {
-          failures.push(`${title}: ${err.message}`);
-        }
+        assignmentRows.push({
+          template_id: String(template?.id || ""),
+          title,
+          description,
+          attachment
+        });
       }
 
       persistHomeworkQuickDefaults();
-      if (successCount > 0 && failures.length === 0) {
+      try {
+        const payload = await callHomeworkAssignApi({
+          action: "create_batch",
+          assignments: assignmentRows,
+          target_type: "course",
+          course_id: effectiveCourseId,
+          usernames: [],
+          duration_minutes: durationMinutes,
+          starts_at: startsAt,
+          batch_group_id: groupId,
+          batch_group_label: groupLabel
+        });
+        successCount = Number(payload?.created_count || 0);
+        totalAssignedTargets = Number(payload?.target_count || 0);
         const msg = `${successCount} Aufgabe(n) gespeichert. Zugewiesen gesamt: ${totalAssignedTargets}`;
         setBox("homeworkStatus", "ok", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
-      } else if (successCount > 0) {
-        let rollbackMsg = "";
-        try {
-          const rollback = await callHomeworkAssignApi({
-            action: "delete_group",
-            batch_group_id: groupId
-          });
-          rollbackMsg = ` Rollback ausgeführt (${Number(rollback?.removed_count || 0)} Aufgabe(n) entfernt).`;
-        } catch (rollbackErr) {
-          rollbackMsg = ` Rollback fehlgeschlagen: ${rollbackErr.message}`;
-        }
-        const msg = `${successCount} Aufgabe(n) gespeichert, ${failures.length} fehlgeschlagen: ${failures.join(" | ")}.${rollbackMsg}`;
-        setBox("homeworkStatus", "error", msg);
-        if (inlineStatus) inlineStatus.textContent = msg;
-      } else {
-        const msg = `Keine Aufgabe gespeichert: ${failures.join(" | ") || "unbekannter Fehler"}`;
+      } catch (err) {
+        const msg = `Keine Aufgabe gespeichert: ${err.message || "unbekannter Fehler"}`;
         setBox("homeworkStatus", "error", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
       }
-      if (successCount > 0 && failures.length === 0) {
+      if (successCount > 0) {
         resetHomeworkAssignmentSelections();
-        await refreshAllHomeworkLists();
-      } else if (successCount > 0) {
         await refreshAllHomeworkLists();
       }
     }
@@ -11443,8 +11463,18 @@
     document.getElementById("refreshHomeworkBtn").addEventListener("click", listHomeworkAssignments);
     const loadReminderPolicyBtn = document.getElementById("loadReminderPolicyBtn");
     if (loadReminderPolicyBtn) loadReminderPolicyBtn.addEventListener("click", loadHomeworkReminderPolicy);
+    const previewReminderPolicyBtn = document.getElementById("previewReminderPolicyBtn");
+    if (previewReminderPolicyBtn) previewReminderPolicyBtn.addEventListener("click", renderHomeworkReminderPolicyPreview);
     const saveReminderPolicyBtn = document.getElementById("saveReminderPolicyBtn");
     if (saveReminderPolicyBtn) saveReminderPolicyBtn.addEventListener("click", saveHomeworkReminderPolicy);
+    ["rpCourseOverrides", "rpTemplateOverrides", "rpWarn24Cooldown", "rpWarn24MaxPerDay", "rpWarn2Cooldown", "rpWarn2MaxPerDay", "rpExpiredCooldown", "rpExpiredMaxPerDay"].forEach(id => {
+      const node = document.getElementById(id);
+      if (node) node.addEventListener("input", renderHomeworkReminderPolicyPreview);
+    });
+    ["rpWarn24Enabled", "rpWarn2Enabled", "rpExpiredEnabled"].forEach(id => {
+      const node = document.getElementById(id);
+      if (node) node.addEventListener("change", renderHomeworkReminderPolicyPreview);
+    });
     document.getElementById("generateLesenSetBtn").addEventListener("click", () => generateTrainingSet("lesen"));
     document.getElementById("generateHoerenSetBtn").addEventListener("click", () => generateTrainingSet("hoeren"));
     document.getElementById("generateLesenTeil1Btn").addEventListener("click", () => generateTrainingSet("lesen", 1));

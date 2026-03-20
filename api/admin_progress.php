@@ -71,6 +71,30 @@ function progress_extract_score(array $review): ?int
     return (int)$result['score_total'];
 }
 
+function progress_read_jsonl_file(string $file): array
+{
+    if (!is_file($file)) {
+        return [];
+    }
+    $rows = [];
+    $handle = @fopen($file, 'rb');
+    if (!$handle) {
+        return [];
+    }
+    while (($line = fgets($handle)) !== false) {
+        $line = trim($line);
+        if ($line === '') {
+            continue;
+        }
+        $decoded = json_decode($line, true);
+        if (is_array($decoded)) {
+            $rows[] = $decoded;
+        }
+    }
+    fclose($handle);
+    return $rows;
+}
+
 $courseIdFilter = trim((string)($_GET['course_id'] ?? ''));
 $studentUsernameFilter = progress_normalize_username((string)($_GET['student_username'] ?? ''));
 $windowDays = (int)($_GET['days'] ?? 7);
@@ -263,6 +287,7 @@ foreach ($visibleCourses as $courseId => $course) {
 }
 
 $visibleAssignments = [];
+$visibleAssignmentsById = [];
 foreach (load_homework_assignments() as $assignment) {
     if (!is_array($assignment)) {
         continue;
@@ -271,6 +296,10 @@ foreach (load_homework_assignments() as $assignment) {
         continue;
     }
     $visibleAssignments[] = $assignment;
+    $aid = trim((string)($assignment['id'] ?? ''));
+    if ($aid !== '') {
+        $visibleAssignmentsById[$aid] = $assignment;
+    }
 }
 
 $recentModelltestResults = [];
@@ -323,6 +352,9 @@ foreach ($visibleAssignments as $assignment) {
 $summaryAssignedWindow = 0;
 $summarySubmittedWindow = 0;
 $summaryActiveHomeworks = 0;
+$summaryRemindersWindow = 0;
+$remindersByCourse = [];
+$remindersByTemplate = [];
 
 foreach ($visibleAssignments as $assignment) {
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
@@ -442,6 +474,56 @@ foreach ($visibleAssignments as $assignment) {
 }
 
 $storageDir = __DIR__ . '/storage';
+$reminderRows = is_dir($storageDir) ? progress_read_jsonl_file($storageDir . '/homework_reminders_log.jsonl') : [];
+foreach ($reminderRows as $row) {
+    if (!is_array($row)) {
+        continue;
+    }
+    $createdTs = progress_iso_ts((string)($row['created_at'] ?? ''));
+    if ($createdTs <= 0 || $createdTs < $windowStartTs || $createdTs > $windowEndTs) {
+        continue;
+    }
+    $assignmentId = trim((string)($row['assignment_id'] ?? ''));
+    if ($assignmentId === '') {
+        continue;
+    }
+    $assignment = is_array($visibleAssignmentsById[$assignmentId] ?? null) ? $visibleAssignmentsById[$assignmentId] : null;
+    if (!$assignment) {
+        continue;
+    }
+    $courseId = trim((string)($assignment['course_id'] ?? ''));
+    if ($courseIdFilter !== '' && $courseId !== $courseIdFilter) {
+        continue;
+    }
+    $templateId = trim((string)($assignment['template_id'] ?? ''));
+    $summaryRemindersWindow++;
+    $courseKey = $courseId !== '' ? $courseId : '-';
+    $templateKey = $templateId !== '' ? $templateId : '-';
+    $remindersByCourse[$courseKey] = (int)($remindersByCourse[$courseKey] ?? 0) + 1;
+    $remindersByTemplate[$templateKey] = (int)($remindersByTemplate[$templateKey] ?? 0) + 1;
+}
+arsort($remindersByCourse, SORT_NUMERIC);
+arsort($remindersByTemplate, SORT_NUMERIC);
+$remindersByCourseRows = [];
+foreach (array_slice($remindersByCourse, 0, 20, true) as $courseId => $count) {
+    $label = $courseId;
+    if ($courseId !== '-' && isset($visibleCourses[$courseId])) {
+        $label = (string)($visibleCourses[$courseId]['name'] ?? $courseId);
+    }
+    $remindersByCourseRows[] = [
+        'course_id' => $courseId,
+        'label' => $label,
+        'count' => (int)$count,
+    ];
+}
+$remindersByTemplateRows = [];
+foreach (array_slice($remindersByTemplate, 0, 20, true) as $templateId => $count) {
+    $remindersByTemplateRows[] = [
+        'template_id' => $templateId,
+        'count' => (int)$count,
+    ];
+}
+
 $reviewsByUpload = is_dir($storageDir) ? load_letter_reviews_index($storageDir) : [];
 $letterRows = is_dir($storageDir) ? progress_read_letters($storageDir) : [];
 
@@ -658,6 +740,7 @@ $summary = [
     'submitted_window_total' => $summarySubmittedWindow,
     'completion_window_percent' => $summaryAssignedWindow > 0 ? (int)round(($summarySubmittedWindow / $summaryAssignedWindow) * 100) : 0,
     'approved_reviews_window_total' => $summaryApprovedWindow,
+    'reminders_sent_window_total' => $summaryRemindersWindow,
     'avg_score_window' => $summaryScoreCountWindow > 0 ? round($summaryScoreSumWindow / $summaryScoreCountWindow, 1) : null,
     'range_from' => $rangeFromRaw,
     'range_to' => $rangeToRaw,
@@ -680,4 +763,6 @@ echo json_encode([
     ] : null,
     'recent_approved' => $recentApproved,
     'recent_modelltest_results' => $recentModelltestResults,
+    'reminders_by_course' => $remindersByCourseRows,
+    'reminders_by_template' => $remindersByTemplateRows,
 ], JSON_UNESCAPED_UNICODE);

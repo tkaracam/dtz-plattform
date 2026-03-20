@@ -11964,6 +11964,7 @@
     function isHomeworkSolvedStatus(statusRaw) {
       const status = String(statusRaw || "").trim().toLowerCase();
       return status === "abgegeben"
+        || status === "submitted"
         || status === "gelöst"
         || status === "geloest"
         || status === "gelost"
@@ -12202,7 +12203,7 @@
         return `
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
-            <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status || "offen")}</div>
+            <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status_label || row.status || "offen")}</div>
             <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
             ${dtzOpenAction}
             ${a2OpenAction}
@@ -12249,33 +12250,19 @@
           const totalDuration = source.reduce((sum, row) => sum + Math.max(0, Number(row && row.duration_minutes ? row.duration_minutes : 0)), 0);
           const allDone = source.every(row => isHomeworkRowSolved(row));
           const dueLabel = formatDisplayDate(String((source[0] && source[0].due_date) || "")) || "-";
-          const assignmentRows = source.map(row => {
-            const rowStatus = String((row && row.status) || "offen");
-            const rowDone = isHomeworkRowSolved(row);
-            const rowDue = formatDisplayDate(String((row && row.due_date) || "")) || "-";
-            return `
-              <div class="portal-item" style="margin-top:8px;">
-                <strong>${escapeHtml(String((row && row.title) || "A2-Aufgabe"))}</strong>
-                <div>Dauer: ${escapeHtml(formatDurationMinutes(row && row.duration_minutes))} | Fällig: ${escapeHtml(rowDue)} | Status: ${escapeHtml(rowStatus)}</div>
-                <div class="row-end" style="margin-top:6px;">
-                  <button type="button" class="${rowDone ? "task-solved-btn" : "portal-open-btn"}" ${rowDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">${rowDone ? "Gelöst" : "A2-Test öffnen"}</button>
-                </div>
-              </div>
-            `;
-          }).join("");
           a2Wrap.innerHTML = `
             <div class="portal-item ${allDone ? "homework-done" : "homework-pending"}">
               <strong>A2 Sammeltest (${source.length} Aufgabe${source.length === 1 ? "" : "n"})</strong>
               <div>Themen: ${escapeHtml(topics.length ? topics.join(" + ") : "Gemischt")} </div>
               <div>Dauer: ${escapeHtml(totalDuration > 0 ? formatDurationMinutes(totalDuration) : "-")} | Fällig: ${escapeHtml(dueLabel)} | Status: ${escapeHtml(allDone ? "abgegeben" : "offen")}</div>
-              ${assignmentRows}
+              <div class="row-end" style="margin-top:8px;">
+                <button type="button" class="${allDone ? "task-solved-btn" : "portal-open-btn"}" ${allDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-combined="1">${allDone ? "Gelöst" : "A2-Test öffnen"}</button>
+              </div>
             </div>
           `;
-          a2Wrap.querySelectorAll("[data-open-a2-homework]").forEach(btn => {
+          a2Wrap.querySelectorAll("[data-open-a2-combined]").forEach(btn => {
             btn.addEventListener("click", () => {
-              const assignmentId = String(btn.getAttribute("data-open-a2-homework") || "");
-              const row = source.find(item => String((item && item.id) || "") === assignmentId);
-              openHomeworkA2Task(row || null);
+              openCombinedA2Homework(source);
             });
           });
         }

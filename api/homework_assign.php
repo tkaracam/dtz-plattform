@@ -68,11 +68,10 @@ function parse_dtz_template_id(string $templateId): ?array
     return ['module' => $module, 'teil' => $teil];
 }
 
-function build_unique_dtz_bundle(string $module, int $teil): array
+function build_unique_dtz_bundle_from_used(string $module, int $teil, array $used): array
 {
     $set = create_training_set($module, 50, false, $teil);
     $items = is_array($set['items'] ?? null) ? $set['items'] : [];
-    $used = load_used_dtz_question_ids();
     $bucketKey = $module . '_teil_' . $teil;
     $usedIds = is_array($used[$bucketKey] ?? null) ? $used[$bucketKey] : [];
     $usedLookup = [];
@@ -126,16 +125,26 @@ function build_unique_dtz_bundle(string $module, int $teil): array
     $nextUsedIds = array_keys($usedLookup);
     sort($nextUsedIds, SORT_STRING);
     $used[$bucketKey] = $nextUsedIds;
-    if (!save_used_dtz_question_ids($used)) {
-        throw new RuntimeException('Fragen-Status konnte nicht gespeichert werden.');
-    }
 
     return [
         'module' => $module,
         'teil' => $teil,
         'items' => $picked,
         'reused_cycle' => $reusedCycle,
+        'used' => $used,
     ];
+}
+
+function build_unique_dtz_bundle(string $module, int $teil): array
+{
+    $used = load_used_dtz_question_ids();
+    $bundle = build_unique_dtz_bundle_from_used($module, $teil, $used);
+    $nextUsed = is_array($bundle['used'] ?? null) ? $bundle['used'] : $used;
+    if (!save_used_dtz_question_ids($nextUsed)) {
+        throw new RuntimeException('Fragen-Status konnte nicht gespeichert werden.');
+    }
+    unset($bundle['used']);
+    return $bundle;
 }
 
 function format_dtz_bundle_description(string $baseDescription, array $bundle): string
@@ -224,6 +233,211 @@ if ($action === 'list') {
     });
 
     echo json_encode(['assignments' => $out], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($action === 'create_batch') {
+    $assignmentsRaw = $body['assignments'] ?? [];
+    $targetType = trim((string)($body['target_type'] ?? 'course'));
+    $courseId = trim((string)($body['course_id'] ?? ''));
+    $usernamesRaw = $body['usernames'] ?? [];
+    $durationMinutes = (int)($body['duration_minutes'] ?? 0);
+    $startsAt = trim((string)($body['starts_at'] ?? ''));
+    $batchGroupId = trim((string)($body['batch_group_id'] ?? ''));
+    $batchGroupLabel = trim((string)($body['batch_group_label'] ?? ''));
+
+    if (!is_array($assignmentsRaw) || !$assignmentsRaw) {
+        http_response_code(400);
+        echo json_encode(['error' => 'assignments ist erforderlich.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (count($assignmentsRaw) > 50) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Maximal 50 Aufgaben pro Batch erlaubt.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $durationMinutes = max(5, min(24 * 60, $durationMinutes));
+    if ($startsAt === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'Startzeit ist erforderlich.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (strtotime($startsAt) === false) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Startzeit.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($batchGroupId !== '' && preg_match('/^[a-z0-9._-]{4,80}$/i', $batchGroupId) !== 1) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Gruppen-ID.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $targetUsers = [];
+    $targetLabel = '';
+    if ($targetType === 'course') {
+        if ($courseId === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Bitte einen Kurs wählen.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $course = find_course_by_id($courseId);
+        if (!is_array($course)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Kurs nicht gefunden.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if (!admin_can_access_course_record($course, $admin)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Keine Berechtigung für diesen Kurs.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $members = is_array($course['members'] ?? null) ? $course['members'] : [];
+        foreach ($members as $member) {
+            $uname = mb_strtolower(trim((string)$member));
+            if ($uname === '' || !preg_match('/^[a-z0-9._-]{3,32}$/', $uname)) {
+                continue;
+            }
+            if (!admin_can_access_student_username($uname, $admin)) {
+                continue;
+            }
+            $targetUsers[] = $uname;
+        }
+        $targetUsers = array_values(array_unique($targetUsers));
+        $targetLabel = (string)($course['name'] ?? $courseId);
+    } elseif ($targetType === 'users') {
+        if (!is_array($usernamesRaw)) {
+            $usernamesRaw = [];
+        }
+        foreach ($usernamesRaw as $item) {
+            $uname = mb_strtolower(trim((string)$item));
+            if ($uname === '' || !preg_match('/^[a-z0-9._-]{3,32}$/', $uname)) {
+                continue;
+            }
+            if (!admin_can_access_student_username($uname, $admin)) {
+                continue;
+            }
+            $targetUsers[] = $uname;
+        }
+        $targetUsers = array_values(array_unique($targetUsers));
+        $targetLabel = 'Ausgewählte Schüler';
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültiger Zuweisungstyp.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if (!$targetUsers) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Keine gültigen Ziel-Schüler gefunden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $newItems = [];
+    $newIds = [];
+    $createdAt = gmdate('c');
+    $usedDtz = load_used_dtz_question_ids();
+    $usedDtzChanged = false;
+
+    foreach ($assignmentsRaw as $row) {
+        if (!is_array($row)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Ungültiger assignments-Eintrag.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $templateId = trim((string)($row['template_id'] ?? ''));
+        $title = trim((string)($row['title'] ?? ''));
+        $description = trim((string)($row['description'] ?? ''));
+        $attachment = trim((string)($row['attachment'] ?? ''));
+        if ($title === '' || $description === '') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Titel und Beschreibung sind erforderlich.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $dtzBundle = null;
+        $dtzTemplate = parse_dtz_template_id($templateId);
+        if (is_array($dtzTemplate)) {
+            try {
+                $bundleWithUsed = build_unique_dtz_bundle_from_used((string)$dtzTemplate['module'], (int)$dtzTemplate['teil'], $usedDtz);
+                $usedDtz = is_array($bundleWithUsed['used'] ?? null) ? $bundleWithUsed['used'] : $usedDtz;
+                unset($bundleWithUsed['used']);
+                $dtzBundle = $bundleWithUsed;
+                $description = format_dtz_bundle_description($description, $dtzBundle);
+                $usedDtzChanged = true;
+            } catch (Throwable $e) {
+                http_response_code(409);
+                echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+        }
+
+        try {
+            $suffix = bin2hex(random_bytes(4));
+        } catch (Throwable $e) {
+            $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 8);
+        }
+        $id = 'hw-' . gmdate('YmdHis') . '-' . $suffix;
+
+        $assignees = [];
+        foreach ($targetUsers as $uname) {
+            $assignees[$uname] = [
+                'started_at' => '',
+                'deadline_at' => '',
+                'submitted_at' => '',
+                'submission_count' => 0,
+                'last_upload_id' => '',
+            ];
+        }
+
+        $newItems[] = [
+            'id' => $id,
+            'template_id' => $templateId,
+            'title' => $title,
+            'description' => $description,
+            'attachment' => $attachment,
+            'target_type' => $targetType,
+            'target_label' => $targetLabel,
+            'course_id' => $targetType === 'course' ? $courseId : '',
+            'usernames' => $targetType === 'users' ? $targetUsers : [],
+            'duration_minutes' => $durationMinutes,
+            'starts_at' => $startsAt,
+            'status' => 'active',
+            'teacher_username' => (string)($admin['username'] ?? ''),
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt,
+            'batch_group_id' => $batchGroupId,
+            'batch_group_label' => $batchGroupLabel,
+            'assignees' => $assignees,
+            'dtz_bundle' => $dtzBundle,
+        ];
+        $newIds[] = $id;
+    }
+
+    $nextItems = array_merge($items, $newItems);
+    if (!write_homework_assignments($nextItems)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Aufgaben konnten nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($usedDtzChanged && !save_used_dtz_question_ids($usedDtz)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Fragen-Status konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    append_audit_log('homework_assign_create_batch', [
+        'batch_group_id' => $batchGroupId,
+        'created_count' => count($newIds),
+        'target_count' => count($targetUsers),
+    ]);
+
+    echo json_encode([
+        'ok' => true,
+        'created_count' => count($newIds),
+        'assignment_ids' => $newIds,
+        'target_count' => count($targetUsers),
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

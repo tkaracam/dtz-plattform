@@ -228,17 +228,23 @@ foreach (load_homework_assignments() as $assignment) {
     $startsAtTs = $startsAt !== '' ? strtotime($startsAt) : false;
     $plannedInFuture = ($startsAtTs !== false && (int)$startsAtTs > $nowTs);
 
-    $status = 'offen';
+    $status = 'active';
+    $statusLabel = 'offen';
     if ($submittedAt !== '') {
-        $status = 'abgegeben';
+        $status = 'submitted';
+        $statusLabel = 'abgegeben';
     } elseif ($assignmentStatus !== 'active') {
-        $status = 'archiviert';
+        $status = 'archived';
+        $statusLabel = 'archiviert';
     } elseif ($expired) {
-        $status = 'abgelaufen';
+        $status = 'expired';
+        $statusLabel = 'abgelaufen';
     } elseif ($startedAt !== '') {
-        $status = 'läuft';
+        $status = 'active';
+        $statusLabel = 'läuft';
     } elseif ($plannedInFuture) {
-        $status = 'geplant';
+        $status = 'planned';
+        $statusLabel = 'geplant';
     }
 
     $homeworks[] = [
@@ -251,6 +257,7 @@ foreach (load_homework_assignments() as $assignment) {
         'duration_minutes' => (int)($assignment['duration_minutes'] ?? 0),
         'due_date' => $deadlineAt !== '' ? $deadlineAt : (string)($assignment['starts_at'] ?? ''),
         'status' => $status,
+        'status_label' => $statusLabel,
         'reminder_level' => (string)($reminder['level'] ?? 'none'),
         'reminder_label' => (string)($reminder['label'] ?? 'Keine Fristwarnung'),
         'reminder_urgent' => !empty($reminder['urgent']),
@@ -260,10 +267,11 @@ foreach (load_homework_assignments() as $assignment) {
 usort($homeworks, static function (array $a, array $b): int {
     $statusRank = static function (string $status): int {
         $key = mb_strtolower(trim($status));
-        if ($key === 'offen' || $key === 'läuft') return 5;
-        if ($key === 'geplant') return 4;
-        if ($key === 'abgelaufen') return 2;
-        if ($key === 'abgegeben') return 1;
+        if ($key === 'active') return 5;
+        if ($key === 'planned') return 4;
+        if ($key === 'expired') return 2;
+        if ($key === 'submitted') return 1;
+        if ($key === 'archived') return 0;
         return 0;
     };
 
