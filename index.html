@@ -10782,9 +10782,18 @@
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(templateId)) return "lesen";
       if (templateId === "dtz-mock-pruefung-komplett") return "modelltest";
       if (templateId.startsWith("a2-thema-") || templateId.startsWith("a2-test-") || templateId.startsWith("a2-test-generator-")) return "a2";
-      const title = String(row && row.title ? row.title : "").toLowerCase();
-      const description = String(row && row.description ? row.description : "").toLowerCase();
-      const bag = `${title} ${description}`;
+      const title = String(row && row.title ? row.title : "");
+      const description = String(row && row.description ? row.description : "");
+      const titleLower = title.toLowerCase();
+      const bag = `${titleLower} ${description.toLowerCase()}`;
+
+      // Priorität: Überschrift/Titel (Mehrfachauswahl-Gruppen) vor Fließtext.
+      if (/^(mail|mail-aufgabe)\b/.test(titleLower)) return "mail";
+      if (/^(modelltest|dtz modelltest|mock-pr[üu]fung)\b/.test(titleLower)) return "modelltest";
+      if (/^h[öo]ren\b/.test(titleLower) || /h[öo]ren\s*teil\s*[1-4]/.test(titleLower)) return "hoeren";
+      if (/^lesen\b/.test(titleLower) || /lesen\s*teil\s*[1-5]/.test(titleLower)) return "lesen";
+      if (/^a2\b|^a2-/.test(titleLower) || titleLower.includes("a2-grammatik")) return "a2";
+
       if (bag.includes("a2")) return "a2";
       if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
       if (bag.includes("lesen")) return "lesen";
