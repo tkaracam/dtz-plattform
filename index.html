@@ -10914,20 +10914,34 @@
           const totalDuration = source.reduce((sum, row) => sum + Math.max(0, Number(row && row.duration_minutes ? row.duration_minutes : 0)), 0);
           const allDone = source.every(row => String((row && row.status) || "").toLowerCase() === "abgegeben");
           const dueLabel = formatDisplayDate(String((source[0] && source[0].due_date) || "")) || "-";
+          const assignmentRows = source.map(row => {
+            const rowStatus = String((row && row.status) || "offen");
+            const rowDue = formatDisplayDate(String((row && row.due_date) || "")) || "-";
+            return `
+              <div class="portal-item" style="margin-top:8px;">
+                <strong>${escapeHtml(String((row && row.title) || "A2-Aufgabe"))}</strong>
+                <div>Dauer: ${escapeHtml(formatDurationMinutes(row && row.duration_minutes))} | Fällig: ${escapeHtml(rowDue)} | Status: ${escapeHtml(rowStatus)}</div>
+                <div class="row-end" style="margin-top:6px;">
+                  <button type="button" class="ghost-btn" data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">A2-Test öffnen</button>
+                </div>
+              </div>
+            `;
+          }).join("");
           a2Wrap.innerHTML = `
             <div class="portal-item ${allDone ? "homework-done" : "homework-pending"}">
               <strong>A2 Sammeltest (${source.length} Aufgabe${source.length === 1 ? "" : "n"})</strong>
               <div>Themen: ${escapeHtml(topics.length ? topics.join(" + ") : "Gemischt")} </div>
               <div>Dauer: ${escapeHtml(totalDuration > 0 ? formatDurationMinutes(totalDuration) : "-")} | Fällig: ${escapeHtml(dueLabel)} | Status: ${escapeHtml(allDone ? "abgegeben" : "offen")}</div>
-              <div class="row-end" style="margin-top:8px;">
-                <button type="button" class="ghost-btn" id="openCombinedA2Btn">A2-Test öffnen</button>
-              </div>
+              ${assignmentRows}
             </div>
           `;
-          const openBtn = document.getElementById("openCombinedA2Btn");
-          if (openBtn) {
-            openBtn.addEventListener("click", () => openCombinedA2Homework(source));
-          }
+          a2Wrap.querySelectorAll("[data-open-a2-homework]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const assignmentId = String(btn.getAttribute("data-open-a2-homework") || "");
+              const row = source.find(item => String((item && item.id) || "") === assignmentId);
+              openHomeworkA2Task(row || null);
+            });
+          });
         }
       }
     }
