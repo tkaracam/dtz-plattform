@@ -396,7 +396,7 @@ function admin_can_access_course_record(array $course, array $adminCtx): bool
         return true;
     }
     // Legacy fallback: old course rows can miss teacher_username.
-    // In docent mode, allow only if all course members belong to this docent scope.
+    // In docent mode, allow if at least one course member belongs to this docent scope.
     if ($courseTeacher === '') {
         $members = $course['members'] ?? [];
         if (!is_array($members) || $members === []) {
@@ -404,11 +404,11 @@ function admin_can_access_course_record(array $course, array $adminCtx): bool
         }
         foreach ($members as $memberUsername) {
             $uname = auth_lower_text((string)$memberUsername);
-            if ($uname === '' || !admin_can_access_student_username($uname, $adminCtx)) {
-                return false;
+            if ($uname !== '' && admin_can_access_student_username($uname, $adminCtx)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
     return false;
 }

@@ -6249,7 +6249,7 @@
             if (teacherUsername) return false;
             const members = Array.isArray(course && course.members) ? course.members : [];
             if (!members.length) return false;
-            return members.every(username => allowedStudentUsernames.has(String(username || "").trim().toLowerCase()));
+            return members.some(username => allowedStudentUsernames.has(String(username || "").trim().toLowerCase()));
           });
         }
         renderCourses(nextCourses);
