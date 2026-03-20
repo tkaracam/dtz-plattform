@@ -3637,7 +3637,6 @@
 
       <section id="a2EmbedCard" class="card hidden">
         <h2 class="section-title">A2-Themen</h2>
-        <p class="section-subtitle">A2 direkt integriert: wie Hören/Lesen als internes Trainingsmodul.</p>
         <div id="a2Toolbar" class="a2-toolbar">
           <div class="a2-controls">
             <div>
@@ -3670,16 +3669,16 @@
         <div id="a2Status" class="hidden"></div>
         <div class="row-end" style="margin-top:8px;">
           <div class="btn-wrap">
-            <button id="a2EvaluateBtn" type="button" class="secondary-btn">Auswerten</button>
+            <button id="a2EvaluateBtn" type="button" class="secondary-btn" disabled>Auswerten</button>
           </div>
           <div class="btn-wrap">
-            <button id="a2ShowSolutionsBtn" type="button" class="secondary-btn">Lösungen zeigen</button>
+            <button id="a2ShowSolutionsBtn" type="button" class="secondary-btn" disabled>Lösungen zeigen</button>
           </div>
         </div>
         <div id="a2StatsBox" class="portal-item" style="margin-top:10px;">Noch kein A2-Test gestartet.</div>
         <div class="row-end">
           <div class="btn-wrap">
-            <button id="backToPortalFromA2Btn" type="button" class="secondary-btn">Zurück zum Portal</button>
+            <button id="backToPortalFromA2Btn" type="button" class="secondary-btn" disabled>Zurück zum Portal</button>
           </div>
         </div>
         <div id="a2QuestionList" class="a2-question-list"></div>
@@ -3923,7 +3922,8 @@
       topic: "Perfekt",
       questions: [],
       started: false,
-      score: 0
+      score: 0,
+      evaluated: false
     };
     let simulationState = {
       active: false,
@@ -6049,6 +6049,7 @@
           const idx = Number.parseInt(match[1], 10);
           if (!Number.isFinite(idx) || !currentA2State.questions[idx]) return;
           currentA2State.questions[idx].selected = Number.parseInt(String(input.value || ""), 10);
+          updateA2ActionStates();
         });
       });
     }
@@ -6065,6 +6066,21 @@
       const correct = currentA2State.questions.filter(q => q.correct === true).length;
       const pct = checked > 0 ? Math.round((correct / total) * 100) : 0;
       node.textContent = `A2-Test: ${checked}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
+    }
+
+    function updateA2ActionStates() {
+      const evaluateBtn = document.getElementById("a2EvaluateBtn");
+      const showSolutionsBtn = document.getElementById("a2ShowSolutionsBtn");
+      const backBtn = document.getElementById("backToPortalFromA2Btn");
+      const allAnswered = !!(
+        currentA2State.started
+        && Array.isArray(currentA2State.questions)
+        && currentA2State.questions.length
+        && currentA2State.questions.every(q => Number.isFinite(q.selected))
+      );
+      if (evaluateBtn) evaluateBtn.disabled = !allAnswered;
+      if (showSolutionsBtn) showSolutionsBtn.disabled = !allAnswered;
+      if (backBtn) backBtn.disabled = !currentA2State.evaluated;
     }
 
     function startA2IntegratedTest(config = {}) {
@@ -6086,6 +6102,7 @@
         topic: baseTopic,
         started: true,
         score: 0,
+        evaluated: false,
         questions: Array.from({ length: count }, (_, idx) => {
           const chosenTopic = baseTopic === "Gemischt" ? a2Pick(sourceTopics) : sourceTopics[0];
           return {
@@ -6097,17 +6114,19 @@
         })
       };
       if (status) {
-        status.className = "ok";
-        status.textContent = homeworkMode
-          ? "Hausaufgabe aktiv: nur der zugewiesene A2-Test ist geöffnet."
-          : "A2-Test gestartet.";
+        status.className = "hidden";
+        status.textContent = "";
       }
       renderA2IntegratedQuestions();
       renderA2IntegratedStats();
+      updateA2ActionStates();
     }
 
     function evaluateA2IntegratedTest(showSolutions = false) {
       if (!currentA2State.started || !Array.isArray(currentA2State.questions)) return;
+      if (!showSolutions) {
+        currentA2State.evaluated = true;
+      }
       currentA2State.questions = currentA2State.questions.map(q => {
         if (showSolutions) {
           return {
@@ -6129,6 +6148,7 @@
       });
       renderA2IntegratedQuestions();
       renderA2IntegratedStats();
+      updateA2ActionStates();
     }
 
     function openA2ThemesInApp(rawInput = "./a2-themen.html") {
