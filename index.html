@@ -7390,7 +7390,12 @@
     function setDtzModuleStatus(module, type, message) {
       const ui = getDtzUi(module);
       if (!ui.status) return;
-      ui.status.className = type === "error" ? "error" : "ok";
+      if (type !== "error") {
+        ui.status.className = "hidden";
+        ui.status.textContent = "";
+        return;
+      }
+      ui.status.className = "error";
       ui.status.textContent = message;
     }
 
