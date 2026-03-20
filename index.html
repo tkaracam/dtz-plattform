@@ -3388,18 +3388,6 @@
                   <div id="portalA2HomeworkWrap" class="portal-list">Keine A2-Aufgaben vorhanden.</div>
                 </div>
               </details>
-              <details id="portalMailHomeworkAccordion" class="card-accordion" style="margin-top:12px;">
-                <summary class="card-accordion-summary">
-                  <div class="title-wrap">
-                    <h3 style="margin:0;">Mail-Aufgabe <span id="portalMailTaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
-                    <p class="section-subtitle">Mail-Aufgaben separat öffnen und im Schreibbereich bearbeiten.</p>
-                  </div>
-                  <span class="card-accordion-icon">▾</span>
-                </summary>
-                <div class="card-accordion-body">
-                  <div id="portalMailHomeworkWrap" class="portal-list">Keine Mail-Aufgaben vorhanden.</div>
-                </div>
-              </details>
               <details id="portalModelltestHomeworkAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
@@ -3416,11 +3404,12 @@
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
                     <h3 style="margin:0;">Mail schreiben und prüfen <span id="portalTaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
-                    <p class="section-subtitle">Zugewiesene Aufgabe bearbeiten und direkt hochladen.</p>
+                    <p class="section-subtitle">Mail-Aufgabe auswählen, bearbeiten und direkt hochladen.</p>
                   </div>
                   <span class="card-accordion-icon">▾</span>
                 </summary>
                 <div class="card-accordion-body">
+                  <div id="portalMailHomeworkWrap" class="portal-list" style="margin-bottom:10px;">Keine Mail-Aufgaben vorhanden.</div>
                   <div class="task-picker">
                     <div class="assignment-box">
                       <div class="assignment-head">
@@ -8917,7 +8906,6 @@
       hoerenHomework: "portalHoerenHomeworkAccordion",
       lesenHomework: "portalLesenHomeworkAccordion",
       a2Homework: "portalA2HomeworkAccordion",
-      mailHomework: "portalMailHomeworkAccordion",
       modelltestHomework: "portalModelltestHomeworkAccordion",
       write: "portalWriteAccordion",
       corrections: "portalCorrectionsAccordion"
@@ -8928,7 +8916,7 @@
     }
 
     function setPortalQuickActive(panel) {
-      const quickPanel = ["hoerenHomework", "lesenHomework", "a2Homework", "mailHomework", "modelltestHomework"].includes(panel) ? "homework" : panel;
+      const quickPanel = ["hoerenHomework", "lesenHomework", "a2Homework", "modelltestHomework"].includes(panel) ? "homework" : panel;
       const mapping = {
         homework: "portalQuickHomeworkBtn",
         write: "portalQuickWriteBtn",
@@ -10682,6 +10670,30 @@
       }
     }
 
+    async function startHomeworkAssignmentById(assignmentId, statusBoxId = "portalWriteStatus") {
+      const id = String(assignmentId || "").trim();
+      if (!id) return false;
+      clearStatus(statusBoxId);
+      try {
+        const response = await fetch("./api/student_homework_start.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assignment_id: id })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        syncServerClock(payload.server_ts);
+        setStatus("ok", "Aufgabe geöffnet. Sie können jetzt bearbeiten.", statusBoxId);
+        await loadCurrentAssignedHomework();
+        await refreshPortalData();
+        openPortalPanel("write");
+        return true;
+      } catch (err) {
+        setStatus("error", `Aufgabe konnte nicht geöffnet werden: ${err.message}`, statusBoxId);
+        return false;
+      }
+    }
+
     function renderPortalList(nodeId, rows, emptyText, renderer) {
       const wrap = document.getElementById(nodeId);
       if (!wrap) {
@@ -10730,7 +10742,6 @@
         { id: "portalHoerenTaskNotifyBadge", key: "hoeren", label: "Hören" },
         { id: "portalLesenTaskNotifyBadge", key: "lesen", label: "Lesen" },
         { id: "portalA2TaskNotifyBadge", key: "a2", label: "A2-Themen" },
-        { id: "portalMailTaskNotifyBadge", key: "mail", label: "Mail-Aufgabe" },
         { id: "portalModelltestTaskNotifyBadge", key: "modelltest", label: "Modelltest" }
       ];
 
@@ -11118,9 +11129,11 @@
       if (mailWrap) {
         mailWrap.innerHTML = grouped.mail.length ? grouped.mail.map(itemHtml).join("") : "Keine Mail-Aufgaben vorhanden.";
         mailWrap.querySelectorAll("[data-open-mail-homework]").forEach(btn => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", async () => {
             if (btn.hasAttribute("disabled")) return;
-            openPortalPanel("write");
+            const assignmentId = String(btn.getAttribute("data-open-mail-homework") || "").trim();
+            if (!assignmentId) return;
+            await startHomeworkAssignmentById(assignmentId, "portalWriteStatus");
           });
         });
       }
@@ -11161,7 +11174,7 @@
       } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && !isHomeworkRowSolved(row))) {
         openPortalPanel("a2Homework", false);
       } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "mail" && !isHomeworkRowSolved(row))) {
-        openPortalPanel("mailHomework", false);
+        openPortalPanel("write", false);
       } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "modelltest" && !isHomeworkRowSolved(row))) {
         openPortalPanel("modelltestHomework", false);
       }
@@ -12518,7 +12531,7 @@
       if (badgeCount("portalHoerenTaskNotifyBadge") > 0) return "hoerenHomework";
       if (badgeCount("portalLesenTaskNotifyBadge") > 0) return "lesenHomework";
       if (badgeCount("portalA2TaskNotifyBadge") > 0) return "a2Homework";
-      if (badgeCount("portalMailTaskNotifyBadge") > 0) return "mailHomework";
+      if (badgeCount("portalTaskNotifyBadge") > 0) return "write";
       if (badgeCount("portalModelltestTaskNotifyBadge") > 0) return "modelltestHomework";
       return "hoerenHomework";
     }
