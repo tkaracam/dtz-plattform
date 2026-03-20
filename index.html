@@ -6724,16 +6724,8 @@
     function detectModelltestHasWritingTask() {
       const ctx = getModelltestAssignmentContext();
       if (!ctx.isAssigned) return false;
-      const bag = ctx.bag;
-      if (bag.includes("mock_mail=0")) return false;
-      if (bag.includes("mock_mail=1")) return true;
-      if (bag.includes("ohne schreiben") || bag.includes("nur hören lesen") || bag.includes("nur hoeren lesen")) {
-        return false;
-      }
-      if (bag.includes("schreiben") || bag.includes("mail")) {
-        return true;
-      }
-      return ctx.templateId === "dtz-mock-pruefung-komplett";
+      const params = parseModelltestAttachmentParams(ctx.attachment || "");
+      return String(params.get("mock_mail") || "") === "1";
     }
 
     function detectModelltestHasSpeakingTask() {
@@ -6884,7 +6876,7 @@
         if (toSchreibenBtn) {
           toSchreibenBtn.textContent = modelltestFlowState.hasWritingTask
             ? "Lesen abschließen · Schreiben starten"
-            : "TEST ABGEBEN";
+            : "ERGEBNIS";
           toSchreibenBtn.disabled = !lesenStats.allAnswered || !lesenEvaluated;
         }
         if (finishBtn) finishBtn.classList.add("hidden");
@@ -6997,7 +6989,7 @@
         persistModelltestProgress();
         return;
       }
-      await finalizeModelltest(true, { skipWriting: true });
+      await finalizeModelltest(fromTimeout, { skipWriting: true });
     }
 
     function modelltestLevelFromPercent(percent) {
@@ -7028,6 +7020,9 @@
 
       const correctTotal = Number(hoerenStats.correct || 0) + Number(lesenStats.correct || 0);
       const questionTotal = Number(hoerenStats.total || 0) + Number(lesenStats.total || 0);
+      const wrongTotal = Math.max(0, questionTotal - correctTotal);
+      const hoerenWrong = Math.max(0, Number(hoerenStats.total || 0) - Number(hoerenStats.correct || 0));
+      const lesenWrong = Math.max(0, Number(lesenStats.total || 0) - Number(lesenStats.correct || 0));
       const dtzPercent = questionTotal > 0 ? Math.round((correctTotal / questionTotal) * 100) : 0;
       const writingPercent = writingMax > 0 ? Math.round((writingScore / writingMax) * 100) : 0;
       const overallPercent = writingMax > 0
@@ -7040,9 +7035,9 @@
         resultBox.className = "portal-item";
         resultBox.innerHTML = `
           <strong>Modelltest Ergebnis</strong>
-          <div>Hören: ${Number(hoerenStats.correct || 0)}/${Number(hoerenStats.total || 0)}</div>
-          <div>Lesen: ${Number(lesenStats.correct || 0)}/${Number(lesenStats.total || 0)}</div>
-          <div>Hören+Lesen: ${correctTotal}/${questionTotal} · ${dtzPercent}%</div>
+          <div>Hören: ${Number(hoerenStats.correct || 0)} richtig · ${hoerenWrong} falsch</div>
+          <div>Lesen: ${Number(lesenStats.correct || 0)} richtig · ${lesenWrong} falsch</div>
+          <div>Hören+Lesen: ${correctTotal} richtig · ${wrongTotal} falsch · ${dtzPercent}%</div>
           ${writingMax > 0 ? `<div>Schreiben: ${writingScore}/${writingMax} · ${writingPercent}% (Aufgabe ${escapeHtml(variant)})</div>` : "<div>Schreiben: nicht enthalten</div>"}
           <div><strong>Gesamt: ${overallPercent}% · Niveau: ${escapeHtml(level)}</strong></div>
           <div class="muted">${autoByTimer ? "Teilzeit wurde automatisch beendet." : "Modelltest wurde abgeschlossen."}</div>
