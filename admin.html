@@ -7555,6 +7555,9 @@
         const name = String(student.student_name || "").trim();
         const displayName = name !== "" ? name : String(student.student_username || "-");
         const avgScore = student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`;
+        const dtzCorrect = Number(student.dtz_correct_window || 0);
+        const dtzWrong = Number(student.dtz_wrong_window || 0);
+        const dtzAccuracy = student.dtz_accuracy_window == null ? "-" : `${escapeHtml(String(student.dtz_accuracy_window))}%`;
         const submitted = Number(student.submitted_window || 0);
         const assigned = Number(student.assigned_window || 0);
         const pending = Number(student.pending_homeworks || 0);
@@ -7567,6 +7570,9 @@
             <td class="mono">${escapeHtml(String(submitted))}/${escapeHtml(String(assigned))}</td>
             <td class="mono">${escapeHtml(String(completion))}%</td>
             <td class="mono">${escapeHtml(String(pending))}</td>
+            <td class="mono">${escapeHtml(String(dtzCorrect))}</td>
+            <td class="mono">${escapeHtml(String(dtzWrong))}</td>
+            <td class="mono">${dtzAccuracy}</td>
             <td class="mono">${avgScore}</td>
             <td class="mono">${escapeHtml(lastSubmitted || "-")}</td>
           </tr>
@@ -7582,6 +7588,9 @@
               <th>Abgaben</th>
               <th>Quote</th>
               <th>Offen</th>
+              <th>Richtig</th>
+              <th>Falsch</th>
+              <th>Trefferquote</th>
               <th>Ø Punkte</th>
               <th>Letzte Abgabe</th>
             </tr>
@@ -7991,6 +8000,9 @@
       const tableRows = rows.map(student => {
         const displayName = String(student.student_name || "").trim() || String(student.student_username || "-");
         const avgScore = student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`;
+        const dtzCorrect = Number(student.dtz_correct_window || 0);
+        const dtzWrong = Number(student.dtz_wrong_window || 0);
+        const dtzAccuracy = student.dtz_accuracy_window == null ? "-" : `${escapeHtml(String(student.dtz_accuracy_window))}%`;
         const risk = getKursProgressRiskMeta(student.completion_window_percent || 0);
         return `
           <tr>
@@ -7999,6 +8011,9 @@
             <td class="mono">${escapeHtml(String(student.submitted_window || 0))}/${escapeHtml(String(student.assigned_window || 0))}</td>
             <td class="mono">${escapeHtml(String(student.completion_window_percent || 0))}%</td>
             <td class="mono">${escapeHtml(String(student.pending_homeworks || 0))}</td>
+            <td class="mono">${escapeHtml(String(dtzCorrect))}</td>
+            <td class="mono">${escapeHtml(String(dtzWrong))}</td>
+            <td class="mono">${dtzAccuracy}</td>
             <td class="mono">${avgScore}</td>
             <td><span class="progress-risk-pill ${escapeHtml(risk.cls)}">${escapeHtml(risk.label)}</span></td>
           </tr>
@@ -8013,6 +8028,9 @@
               <th>Abgaben</th>
               <th>Quote</th>
               <th>Offen</th>
+              <th>Richtig</th>
+              <th>Falsch</th>
+              <th>Trefferquote</th>
               <th>Ø Punkte</th>
               <th>Status</th>
             </tr>

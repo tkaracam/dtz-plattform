@@ -177,6 +177,9 @@ foreach ($visibleStudents as $uname => $student) {
         'assigned_window' => 0,
         'submitted_window' => 0,
         'pending_homeworks' => 0,
+        'dtz_correct_window' => 0,
+        'dtz_wrong_window' => 0,
+        'dtz_total_window' => 0,
         'last_submitted_at' => '',
         'avg_score_window' => null,
         '_score_sum_window' => 0,
@@ -381,6 +384,23 @@ foreach ($visibleAssignments as $assignment) {
                 $summarySubmittedWindow++;
             }
         }
+
+        $lastDtzResult = is_array($state['last_dtz_result'] ?? null) ? $state['last_dtz_result'] : null;
+        if ($lastDtzResult) {
+            $savedTs = progress_iso_ts((string)($lastDtzResult['saved_at'] ?? ''));
+            if ($savedTs > 0 && $savedTs >= $windowStartTs && $savedTs <= $windowEndTs) {
+                $correctVal = max(0, (int)($lastDtzResult['correct'] ?? 0));
+                $wrongVal = max(0, (int)($lastDtzResult['wrong'] ?? 0));
+                $totalVal = max(0, (int)($lastDtzResult['total'] ?? ($correctVal + $wrongVal + max(0, (int)($lastDtzResult['unanswered'] ?? 0)))));
+                if ($totalVal < ($correctVal + $wrongVal)) {
+                    $totalVal = $correctVal + $wrongVal;
+                }
+                $studentStats[$uname]['dtz_correct_window'] += $correctVal;
+                $studentStats[$uname]['dtz_wrong_window'] += $wrongVal;
+                $studentStats[$uname]['dtz_total_window'] += $totalVal;
+            }
+        }
+
         foreach (array_keys($belongs) as $cid) {
             if (!isset($courseStats[$cid])) {
                 continue;
@@ -521,6 +541,9 @@ foreach ($studentStats as $uname => $row) {
     unset($row['_score_sum_window'], $row['_score_count_window'], $row['_last_submitted_ts']);
     $row['completion_window_percent'] = $completion;
     $row['avg_score_window'] = $avgScoreWindow;
+    $dtzTotal = (int)($row['dtz_total_window'] ?? 0);
+    $dtzCorrect = (int)($row['dtz_correct_window'] ?? 0);
+    $row['dtz_accuracy_window'] = $dtzTotal > 0 ? (int)round(($dtzCorrect / $dtzTotal) * 100) : null;
     $studentRows[] = $row;
 }
 
