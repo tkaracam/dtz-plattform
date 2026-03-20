@@ -15,6 +15,15 @@ function auth_lower_text(string $value): string
 
 function start_secure_session(): void
 {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        $requestedAdminMode = auth_lower_text((string)($_SERVER['HTTP_X_ADMIN_MODE'] ?? ''));
+        if ($requestedAdminMode === 'docent') {
+            session_name('DTZSESSID_DOCENT');
+        } elseif ($requestedAdminMode === 'owner' || $requestedAdminMode === 'hauptadmin') {
+            session_name('DTZSESSID_OWNER');
+        }
+    }
+
     $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 
     if (PHP_VERSION_ID >= 70300) {

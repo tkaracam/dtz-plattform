@@ -3436,6 +3436,7 @@
     const ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY = "dtz_admin_hw_mock_mail_template_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const FORCED_ADMIN_MODE = new URLSearchParams(window.location.search).get("mode") === "docent" ? "docent" : "";
+    const ADMIN_SESSION_MODE = FORCED_ADMIN_MODE === "docent" ? "docent" : "owner";
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
@@ -3454,6 +3455,37 @@
     ];
     const DOCENT_HIDE_FAST_IDS = ["fastAccountsBtn", "fastCoursesBtn", "fastKursBtn", "fastMod6Btn"];
     const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection", "trainingSetSection"];
+
+    (function setupAdminFetchSessionModeHeader() {
+      if (window.__dtzAdminFetchSessionModeWrapped) return;
+      const nativeFetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        try {
+          const inputUrl = typeof input === "string"
+            ? input
+            : (input && typeof input.url === "string" ? input.url : "");
+          const isApiCall = inputUrl.startsWith("./api/") || inputUrl.startsWith("api/") || inputUrl.includes("/api/");
+          if (!isApiCall) return nativeFetch(input, init);
+
+          const mergedHeaders = new Headers((init && init.headers) || (input instanceof Request ? input.headers : undefined));
+          mergedHeaders.set("X-Admin-Mode", ADMIN_SESSION_MODE);
+
+          const nextInit = {
+            ...(init || {}),
+            headers: mergedHeaders,
+            credentials: (init && init.credentials) ? init.credentials : "same-origin"
+          };
+
+          if (input instanceof Request) {
+            return nativeFetch(new Request(input, nextInit));
+          }
+          return nativeFetch(input, nextInit);
+        } catch (_) {
+          return nativeFetch(input, init);
+        }
+      };
+      window.__dtzAdminFetchSessionModeWrapped = true;
+    })();
 
     const adminPaneMap = {
       coursebuilder: "paneCourseBuilder",
