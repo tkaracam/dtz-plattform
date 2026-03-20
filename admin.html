@@ -4283,7 +4283,7 @@
       }
       const roleNow = String(adminContext.role || "");
       if (!FORCED_ADMIN_MODE && roleNow === "docent") {
-        window.location.replace("./admin_docent.html");
+        window.location.replace("./docent_admin.html");
         return;
       }
       if (FORCED_ADMIN_MODE === "docent" && roleNow === "owner") {
@@ -4427,7 +4427,7 @@
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("loginStatus", "ok", "Anmeldung erfolgreich.");
         if (String(payload.role || "") === "docent" && !FORCED_ADMIN_MODE) {
-          window.location.replace("./admin_docent.html");
+          window.location.replace("./docent_admin.html");
           return;
         }
         if (String(payload.role || "") === "owner" && FORCED_ADMIN_MODE === "docent") {
