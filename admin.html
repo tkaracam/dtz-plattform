@@ -3003,8 +3003,10 @@
                 <button id="loadReminderPolicyBtn" type="button" class="ghost-btn">Policy laden</button>
                 <button id="previewReminderPolicyBtn" type="button" class="ghost-btn">Policy Vorschau</button>
                 <button id="saveReminderPolicyBtn" type="button">Policy speichern</button>
+                <button id="dryRunReminderPolicyBtn" type="button" class="ghost-btn">Dry-Run Simulation</button>
               </div>
               <pre id="homeworkReminderPolicyPreview" class="bulk-preview" style="margin-top:10px; white-space:pre-wrap;"></pre>
+              <pre id="homeworkReminderDryRunPreview" class="bulk-preview" style="margin-top:10px; white-space:pre-wrap;"></pre>
               <div id="homeworkReminderPolicyStatus" class="hidden"></div>
             </div>
           </details>
@@ -7777,6 +7779,74 @@
       }
     }
 
+    async function callHomeworkReminderRunApi(body) {
+      const candidates = [
+        "./api/homework_reminder_run.php",
+        "/api/homework_reminder_run.php",
+        `${window.location.origin}/api/homework_reminder_run.php`
+      ];
+      const errors = [];
+      for (const url of candidates) {
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body || {})
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          return payload;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          errors.push(`${url}: ${msg}`);
+        }
+      }
+      throw new Error(errors.join(" | "));
+    }
+
+    async function dryRunHomeworkReminderPolicy() {
+      clearBox("homeworkReminderPolicyStatus");
+      const previewNode = document.getElementById("homeworkReminderDryRunPreview");
+      if (previewNode) previewNode.textContent = "";
+      const levels = [];
+      if (document.getElementById("rpWarn24Enabled")?.checked) levels.push("warn24");
+      if (document.getElementById("rpWarn2Enabled")?.checked) levels.push("warn2");
+      if (document.getElementById("rpExpiredEnabled")?.checked) levels.push("expired");
+      if (!levels.length) {
+        setBox("homeworkReminderPolicyStatus", "error", "Mindestens ein Reminder-Level muss aktiv sein.");
+        return;
+      }
+      try {
+        const payload = await callHomeworkReminderRunApi({
+          dry_run: true,
+          levels,
+          limit: 200
+        });
+        const targets = Array.isArray(payload?.targets) ? payload.targets : [];
+        const compactTargets = targets.slice(0, 30).map(item => ({
+          assignment_id: item?.assignment_id || "",
+          student_username: item?.student_username || "",
+          level: item?.level || "",
+          remaining_seconds: Number(item?.remaining_seconds || 0)
+        }));
+        const output = {
+          dry_run: true,
+          levels: Array.isArray(payload?.levels) ? payload.levels : levels,
+          candidates_found: targets.length,
+          skipped_already_sent: Number(payload?.skipped_already_sent || 0),
+          skipped_by_policy: Number(payload?.skipped_by_policy || 0),
+          sample_targets: compactTargets,
+          created_by_course: payload?.created_by_course || {},
+          created_by_template: payload?.created_by_template || {}
+        };
+        if (previewNode) previewNode.textContent = JSON.stringify(output, null, 2);
+        setBox("homeworkReminderPolicyStatus", "ok", `Dry-Run abgeschlossen. Treffer: ${targets.length}`);
+      } catch (err) {
+        if (previewNode) previewNode.textContent = `Dry-Run Fehler: ${err.message || err}`;
+        setBox("homeworkReminderPolicyStatus", "error", `Dry-Run fehlgeschlagen: ${err.message}`);
+      }
+    }
+
     async function fetchHomeworkAssignmentAnalysis(assignmentId) {
       const candidates = [
         "./api/homework_assignment_analysis.php",
@@ -11467,6 +11537,8 @@
     if (previewReminderPolicyBtn) previewReminderPolicyBtn.addEventListener("click", renderHomeworkReminderPolicyPreview);
     const saveReminderPolicyBtn = document.getElementById("saveReminderPolicyBtn");
     if (saveReminderPolicyBtn) saveReminderPolicyBtn.addEventListener("click", saveHomeworkReminderPolicy);
+    const dryRunReminderPolicyBtn = document.getElementById("dryRunReminderPolicyBtn");
+    if (dryRunReminderPolicyBtn) dryRunReminderPolicyBtn.addEventListener("click", dryRunHomeworkReminderPolicy);
     ["rpCourseOverrides", "rpTemplateOverrides", "rpWarn24Cooldown", "rpWarn24MaxPerDay", "rpWarn2Cooldown", "rpWarn2MaxPerDay", "rpExpiredCooldown", "rpExpiredMaxPerDay"].forEach(id => {
       const node = document.getElementById(id);
       if (node) node.addEventListener("input", renderHomeworkReminderPolicyPreview);
