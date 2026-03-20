@@ -12190,6 +12190,12 @@
         const mailOpenAction = category === "mail"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-mail-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Mail-Aufgabe öffnen"}</button></div>`
           : "";
+        const schreibenOpenAction = category === "schreiben"
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-schreiben-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Schreiben öffnen"}</button></div>`
+          : "";
+        const sprechenOpenAction = category === "sprechen"
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-sprechen-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Sprechen öffnen"}</button></div>`
+          : "";
         const modelltestOpenAction = category === "modelltest"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-modelltest-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Modelltest öffnen"}</button></div>`
           : "";
@@ -12201,6 +12207,8 @@
             ${dtzOpenAction}
             ${a2OpenAction}
             ${mailOpenAction}
+            ${schreibenOpenAction}
+            ${sprechenOpenAction}
             ${modelltestOpenAction}
           </div>
         `;
@@ -12273,13 +12281,31 @@
         }
       }
       if (mailWrap) {
-        mailWrap.innerHTML = grouped.mail.length ? grouped.mail.map(itemHtml).join("") : "Keine Mail-Aufgaben vorhanden.";
+        const writeRows = [...grouped.mail, ...grouped.schreiben, ...grouped.sprechen];
+        mailWrap.innerHTML = writeRows.length ? writeRows.map(itemHtml).join("") : "Keine Mail-Aufgaben vorhanden.";
         mailWrap.querySelectorAll("[data-open-mail-homework]").forEach(btn => {
           btn.addEventListener("click", async () => {
             if (btn.hasAttribute("disabled")) return;
             const assignmentId = String(btn.getAttribute("data-open-mail-homework") || "").trim();
             if (!assignmentId) return;
             await startHomeworkAssignmentById(assignmentId, "portalStatus", "write", "mail-homework");
+          });
+        });
+        mailWrap.querySelectorAll("[data-open-schreiben-homework]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (btn.hasAttribute("disabled")) return;
+            const assignmentId = String(btn.getAttribute("data-open-schreiben-homework") || "").trim();
+            if (!assignmentId) return;
+            await startHomeworkAssignmentById(assignmentId, "portalStatus", "write", "mail-homework");
+          });
+        });
+        mailWrap.querySelectorAll("[data-open-sprechen-homework]").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (btn.hasAttribute("disabled")) return;
+            const assignmentId = String(btn.getAttribute("data-open-sprechen-homework") || "").trim();
+            if (!assignmentId) return;
+            await startHomeworkAssignmentById(assignmentId, "portalStatus");
+            openSpeakingView();
           });
         });
       }

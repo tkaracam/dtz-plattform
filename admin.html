@@ -8847,7 +8847,17 @@
         setBox("homeworkStatus", "ok", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
       } else if (successCount > 0) {
-        const msg = `${successCount} Aufgabe(n) gespeichert, ${failures.length} fehlgeschlagen: ${failures.join(" | ")}`;
+        let rollbackMsg = "";
+        try {
+          const rollback = await callHomeworkAssignApi({
+            action: "delete_group",
+            batch_group_id: groupId
+          });
+          rollbackMsg = ` Rollback ausgeführt (${Number(rollback?.removed_count || 0)} Aufgabe(n) entfernt).`;
+        } catch (rollbackErr) {
+          rollbackMsg = ` Rollback fehlgeschlagen: ${rollbackErr.message}`;
+        }
+        const msg = `${successCount} Aufgabe(n) gespeichert, ${failures.length} fehlgeschlagen: ${failures.join(" | ")}.${rollbackMsg}`;
         setBox("homeworkStatus", "error", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
       } else {
@@ -8855,8 +8865,10 @@
         setBox("homeworkStatus", "error", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
       }
-      if (successCount > 0) {
+      if (successCount > 0 && failures.length === 0) {
         resetHomeworkAssignmentSelections();
+        await refreshAllHomeworkLists();
+      } else if (successCount > 0) {
         await refreshAllHomeworkLists();
       }
     }
