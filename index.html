@@ -6761,7 +6761,8 @@
         unanswered,
         loadedTeils,
         allLoaded: loadedTeils === maxTeil,
-        allAnswered: loadedTeils === maxTeil && total > 0 && unanswered === 0
+        // For flow progression we rely on loaded teils. Some teils can be temporarily unavailable.
+        allAnswered: loadedTeils > 0 && total > 0 && unanswered === 0
       };
     }
 
@@ -6786,7 +6787,7 @@
         loadedTeils += 1;
         if (!teilState.evaluated) return false;
       }
-      return loadedTeils === maxTeil && loadedTeils > 0;
+      return loadedTeils > 0;
     }
 
     async function saveModelltestResult(aggregate) {
