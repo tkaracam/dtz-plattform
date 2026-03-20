@@ -8464,7 +8464,8 @@
       const key = mt ? `mt_${mt[1]}__${String(source.key || requestedKey)}` : String(source.key || requestedKey);
       const script = String(source.script || "");
       if (isModelltestAudioLocked(key, false)) {
-        setDtzModuleStatus(module, "error", "Dieses Audio wurde im Modelltest bereits abgespielt.");
+        clearDtzModuleStatus(module);
+        renderDtzTrainingSet(module);
         return;
       }
 
