@@ -3435,6 +3435,7 @@
     const ADMIN_HW_MOCK_INCLUDE_MAIL_KEY = "dtz_admin_hw_mock_include_mail_v1";
     const ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY = "dtz_admin_hw_mock_mail_template_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
+    const FORCED_ADMIN_MODE = new URLSearchParams(window.location.search).get("mode") === "docent" ? "docent" : "";
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
@@ -4248,6 +4249,15 @@
           permissions: (sessionPayload.permissions && typeof sessionPayload.permissions === "object") ? sessionPayload.permissions : {}
         };
       }
+      const roleNow = String(adminContext.role || "");
+      if (!FORCED_ADMIN_MODE && roleNow === "docent") {
+        window.location.replace("./admin_docent.html");
+        return;
+      }
+      if (FORCED_ADMIN_MODE === "docent" && roleNow === "owner") {
+        window.location.replace("./admin.html");
+        return;
+      }
       applyAdminRoleUi();
       updateAdminIdentityLine();
       updateOwnerOnlyHint();
@@ -4384,6 +4394,14 @@
         const payload = await parseJsonResponse(response);
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
         setBox("loginStatus", "ok", "Anmeldung erfolgreich.");
+        if (String(payload.role || "") === "docent" && !FORCED_ADMIN_MODE) {
+          window.location.replace("./admin_docent.html");
+          return;
+        }
+        if (String(payload.role || "") === "owner" && FORCED_ADMIN_MODE === "docent") {
+          window.location.replace("./admin.html");
+          return;
+        }
         showPanel(payload);
       } catch (err) {
         setBox("loginStatus", "error", `Anmeldung fehlgeschlagen: ${err.message}`);
