@@ -6647,6 +6647,14 @@
       return String(variant === "B" ? modelltestFlowState.writePromptB : modelltestFlowState.writePromptA);
     }
 
+    function isModelltestWritingCompleted() {
+      const writeText = document.getElementById("modelltestWriteText");
+      const text = String(writeText ? writeText.value || "" : "").trim();
+      if (!text) return false;
+      const words = text.split(/\s+/).filter(Boolean).length;
+      return words >= 20;
+    }
+
     function parseModelltestAttachmentParams(rawAttachment) {
       const raw = String(rawAttachment || "").trim();
       if (!raw) return new URLSearchParams();
@@ -6893,11 +6901,16 @@
         }
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
-        if (finishBtn) finishBtn.classList.toggle("hidden", !modelltestFlowState.hasWritingTask);
+        if (finishBtn) {
+          const writingReady = isModelltestWritingCompleted();
+          finishBtn.textContent = "TEST ABGEBEN";
+          finishBtn.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || !writingReady);
+          finishBtn.disabled = !writingReady;
+        }
         if (writePanel) writePanel.classList.toggle("hidden", !modelltestFlowState.hasWritingTask);
         setAccordionOpen("dtzHoerenAccordion", false);
         setAccordionOpen("dtzLesenAccordion", false);
-        setAccordionOpen("workAccordion", false);
+        setAccordionOpen("workAccordion", true);
         lockDtzModuleInputs("hoeren", true);
         lockDtzModuleInputs("lesen", true);
         if (writeText) writeText.disabled = false;
@@ -13624,7 +13637,10 @@
     }
     const modelltestWriteText = document.getElementById("modelltestWriteText");
     if (modelltestWriteText) {
-      modelltestWriteText.addEventListener("input", persistModelltestProgress);
+      modelltestWriteText.addEventListener("input", () => {
+        updateModelltestFlowUi();
+        persistModelltestProgress();
+      });
     }
     document.getElementById("studentLoginBtn").addEventListener("click", loginStudent);
     document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);
