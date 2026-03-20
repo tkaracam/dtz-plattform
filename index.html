@@ -10248,6 +10248,35 @@
       if (topic) {
         return { url: `./a2-themen.html?hw=1&topics=${encodeURIComponent(topic)}&count=50` };
       }
+      if (templateId.startsWith("a2-test-generator-") || templateId.startsWith("a2-test-")) {
+        const textBag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
+        const topicHints = [
+          { needle: "perfekt", value: "Perfekt" },
+          { needle: "nebensatz", value: "Nebensatz" },
+          { needle: "nebensätze", value: "Nebensatz" },
+          { needle: "modalverben", value: "Modalverben" },
+          { needle: "präpositionen", value: "Präpositionen" },
+          { needle: "praepositionen", value: "Präpositionen" },
+          { needle: "trennbare verben", value: "Trennbare Verben" },
+          { needle: "kasus", value: "Kasus" },
+          { needle: "wechselpräpositionen", value: "Wechselpräpositionen" },
+          { needle: "wechselpraepositionen", value: "Wechselpräpositionen" },
+          { needle: "relativsätze", value: "Relativsätze" },
+          { needle: "relativsaetze", value: "Relativsätze" }
+        ];
+        const pickedTopics = [];
+        topicHints.forEach(item => {
+          if (!textBag.includes(item.needle)) return;
+          if (!pickedTopics.includes(item.value)) pickedTopics.push(item.value);
+        });
+        const countMatch = textBag.match(/(\d{1,3})\s*fragen/);
+        const count = countMatch ? Math.max(10, Math.min(100, Number.parseInt(countMatch[1], 10) || 50)) : 50;
+        const params = new URLSearchParams();
+        params.set("hw", "1");
+        if (pickedTopics.length) params.set("topics", pickedTopics.join(","));
+        params.set("count", String(count));
+        return { url: `./a2-themen.html?${params.toString()}` };
+      }
       return null;
     }
 
@@ -10324,7 +10353,7 @@
         const dtzOpenAction = parsedTemplate
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}">${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen</button></div>`
           : "";
-        const a2OpenAction = !parsedTemplate && parsedA2
+        const a2OpenAction = !parsedTemplate && detectStudentHomeworkCategory(row) === "a2"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-a2-homework="${escapeHtml(String(row.id || ""))}">A2-Test öffnen</button></div>`
           : "";
         return `

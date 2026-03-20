@@ -194,6 +194,7 @@ foreach (load_homework_assignments() as $assignment) {
         'template_id' => (string)($assignment['template_id'] ?? ''),
         'title' => (string)($assignment['title'] ?? 'Aufgabe'),
         'description' => (string)($assignment['description'] ?? ''),
+        'attachment' => (string)($assignment['attachment'] ?? ''),
         'duration_minutes' => (int)($assignment['duration_minutes'] ?? 0),
         'due_date' => $deadlineAt !== '' ? $deadlineAt : (string)($assignment['starts_at'] ?? ''),
         'status' => $status,
