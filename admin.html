@@ -6508,7 +6508,7 @@
         });
         persistHomeworkQuickDefaults();
         setBox("homeworkStatus", "ok", `A2-Test gespeichert. Zugewiesen: ${payload.target_count || 0}`);
-        document.getElementById("hwA2StartsAt").value = "";
+        resetHomeworkAssignmentSelections();
         await refreshAllHomeworkLists();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -6710,6 +6710,56 @@
       renderHomeworkTemplateOptions("mail");
       renderHomeworkTemplateOptions("mock");
       renderHomeworkTemplateMultiOptions();
+    }
+
+    function resetHomeworkAssignmentSelections() {
+      const singleSelectIds = [
+        "hwTaskTemplateHoeren",
+        "hwTaskTemplateLesen",
+        "hwTaskTemplateMail",
+        "hwTaskTemplateMock"
+      ];
+      singleSelectIds.forEach(id => {
+        const select = document.getElementById(id);
+        if (select) select.value = "";
+      });
+
+      const multiSelect = document.getElementById("hwTaskTemplatesMulti");
+      if (multiSelect) {
+        Array.from(multiSelect.options).forEach(option => {
+          option.selected = false;
+        });
+      }
+
+      const a2Topics = document.getElementById("hwA2TopicsMulti");
+      if (a2Topics) {
+        Array.from(a2Topics.options).forEach(option => {
+          option.selected = false;
+        });
+      }
+
+      const clearInputIds = [
+        "hwTaskPreviewHoeren",
+        "hwTaskPreviewLesen",
+        "hwTaskPreviewMail",
+        "hwTaskPreviewMock",
+        "hwTaskPreviewMulti",
+        "hwA2GeneratedPreview",
+        "hwStartsAt",
+        "hwA2StartsAt"
+      ];
+      clearInputIds.forEach(id => {
+        const node = document.getElementById(id);
+        if (node) node.value = "";
+      });
+
+      updateHomeworkTemplatePreview("hoeren");
+      updateHomeworkTemplatePreview("lesen");
+      updateHomeworkTemplatePreview("mail");
+      updateHomeworkTemplatePreview("mock");
+      updateHomeworkTemplateMultiPreview();
+      renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
+      renderMultiSelectCheckboxMirror("hwA2TopicsMulti", "hwA2TopicsMultiChecks");
     }
 
     function normalizeHomeworkReminderLevel(level) {
@@ -8277,7 +8327,7 @@
         const templateSelect = document.getElementById(homeworkTemplateSelectIdByCategory(safeCategory));
         if (templateSelect) templateSelect.value = "";
         updateHomeworkTemplatePreview(safeCategory);
-        document.getElementById("hwStartsAt").value = "";
+        resetHomeworkAssignmentSelections();
         listHomeworkAssignments();
       } catch (err) {
         setBox("homeworkStatus", "error", `Aufgabe konnte nicht gespeichert werden: ${err.message}`);
@@ -8379,7 +8429,7 @@
         if (inlineStatus) inlineStatus.textContent = msg;
       }
       if (successCount > 0) {
-        document.getElementById("hwStartsAt").value = "";
+        resetHomeworkAssignmentSelections();
         await refreshAllHomeworkLists();
       }
     }
