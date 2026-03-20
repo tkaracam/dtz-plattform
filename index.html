@@ -215,24 +215,6 @@
       border-color: #f2b7c9;
     }
 
-    #navNiveauBtn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    #navNiveauBtn::after {
-      content: "▾";
-      font-size: 0.82rem;
-      line-height: 1;
-      transition: transform 0.18s ease;
-    }
-
-    #navNiveauBtn[aria-expanded="true"]::after {
-      transform: rotate(180deg);
-    }
-
     .nav-sub-links {
       display: none;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3239,13 +3221,7 @@
         <div class="nav-links">
           <button id="navHomeBtn" class="nav-link" type="button">Start</button>
           <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
-          <button id="navNiveauBtn" class="nav-link" type="button" aria-expanded="false" aria-controls="navNiveauSubmenu">DTZ</button>
-          <div id="navNiveauSubmenu" class="nav-sub-links" aria-label="DTZ Untermenü">
-            <button id="navHoerenBtn" class="nav-sub-link" type="button">Hören</button>
-            <button id="navLesenBtn" class="nav-sub-link" type="button">Lesen</button>
-            <button id="navSchreibenBtn" class="nav-sub-link" type="button">Schreiben</button>
-            <button id="navSprechenBtn" class="nav-sub-link" type="button">Sprechen</button>
-          </div>
+          <button id="navNiveauBtn" class="nav-link" type="button">Sprechen</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
           <button id="navQuickActionsBtn" class="nav-link" type="button">Schnellzugriff</button>
           <button id="navAdminBtn" class="nav-link" type="button">Lehrer-Panel</button>
@@ -10110,10 +10086,6 @@
     function closeNavOnMobile() {
       const nav = document.getElementById("topNav");
       if (nav) nav.classList.remove("open");
-      const submenu = document.getElementById("navNiveauSubmenu");
-      if (submenu) submenu.classList.remove("open");
-      const niveauBtn = document.getElementById("navNiveauBtn");
-      if (niveauBtn) niveauBtn.setAttribute("aria-expanded", "false");
     }
 
     function ensureUsableMainView() {
@@ -14013,23 +13985,9 @@
     const navPortalBtn = document.getElementById("navPortalBtn");
     if (navPortalBtn) navPortalBtn.addEventListener("click", () => navigateToSection("portal"));
     const navNiveauBtn = document.getElementById("navNiveauBtn");
-    const navNiveauSubmenu = document.getElementById("navNiveauSubmenu");
     if (navNiveauBtn) {
-      navNiveauBtn.addEventListener("click", () => {
-        if (!navNiveauSubmenu) return;
-        const willOpen = !navNiveauSubmenu.classList.contains("open");
-        navNiveauSubmenu.classList.toggle("open", willOpen);
-        navNiveauBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-      });
+      navNiveauBtn.addEventListener("click", () => navigateToSection("speaking"));
     }
-    const navHoerenBtn = document.getElementById("navHoerenBtn");
-    if (navHoerenBtn) navHoerenBtn.addEventListener("click", () => navigateToSection("dtz-hoeren"));
-    const navLesenBtn = document.getElementById("navLesenBtn");
-    if (navLesenBtn) navLesenBtn.addEventListener("click", () => navigateToSection("dtz-lesen"));
-    const navSchreibenBtn = document.getElementById("navSchreibenBtn");
-    if (navSchreibenBtn) navSchreibenBtn.addEventListener("click", () => navigateToSection("write"));
-    const navSprechenBtn = document.getElementById("navSprechenBtn");
-    if (navSprechenBtn) navSprechenBtn.addEventListener("click", () => navigateToSection("speaking"));
     const navLidBtn = document.getElementById("navLidBtn");
     if (navLidBtn) navLidBtn.addEventListener("click", () => navigateToSection("lid"));
     const navQuickActionsBtn = document.getElementById("navQuickActionsBtn");
