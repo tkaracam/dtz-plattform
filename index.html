@@ -9186,6 +9186,11 @@
     function renderHoerenTeil4Task(module, state, task) {
       const options = normalizeDtzOptionMap(task.options || {});
       const labels = sortDtzOptionLabels(Object.keys(options));
+      const formatOptionLabel = (label) => {
+        const key = String(label || "").trim();
+        const text = String(options[key] || "").trim();
+        return text ? `${key}) ${text}` : key;
+      };
       const statements = Array.isArray(task.statements) ? task.statements : [];
       const optionsListHtml = labels.map((label) => `
         <li><strong>${escapeHtml(label)})</strong> ${escapeHtml(options[label] || "")}</li>
@@ -9199,11 +9204,11 @@
         let feedback = "";
         if (state.evaluated) {
           if (!selected) {
-            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(correct)}`);
+            feedback = ResultBox("bad", `<strong>Keine Antwort.</strong> Richtige Lösung: ${escapeHtml(formatOptionLabel(correct))}`);
           } else if (selected === correct) {
-            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(correct)}`);
+            feedback = ResultBox("good", `<strong>Richtig.</strong> Lösung: ${escapeHtml(formatOptionLabel(correct))}`);
           } else {
-            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(selected)} | Richtige Lösung: ${escapeHtml(correct)}`);
+            feedback = ResultBox("bad", `<strong>Falsch.</strong> Ihre Antwort: ${escapeHtml(formatOptionLabel(selected))} | Richtige Lösung: ${escapeHtml(formatOptionLabel(correct))}`);
           }
           if (statement.explanation) {
             feedback += ResultBox("", `${escapeHtml(statement.explanation)}`);
@@ -9211,7 +9216,7 @@
         }
         const optionItems = labels.map((label) => {
           const sel = selected === label ? "selected" : "";
-          return `<option value="${escapeHtml(label)}" ${sel}>${escapeHtml(label)}</option>`;
+          return `<option value="${escapeHtml(label)}" ${sel}>${escapeHtml(formatOptionLabel(label))}</option>`;
         }).join("");
         return `
           <article class="lid-question dtz-matching-item">
@@ -9695,17 +9700,45 @@
         return;
       }
 
-      const evaluator = (DTZ_EVALUATORS[module] || {})[state.teil];
-      if (typeof evaluator !== "function") {
-        if (showStatus) setDtzModuleStatus(module, "error", "Für diesen Teil ist keine Auswertung verfügbar.");
-        return;
+      let total = 0;
+      let correct = 0;
+      let unanswered = 0;
+      let usedTeils = 0;
+      if (modelltestFlowState.active) {
+        const maxTeil = getDtzMaxTeil(module);
+        for (let teil = 1; teil <= maxTeil; teil += 1) {
+          const teilState = ensureDtzTeilState(module, teil);
+          const evaluator = (DTZ_EVALUATORS[module] || {})[teil];
+          if (!teilState || !Array.isArray(teilState.tasks) || !teilState.tasks.length || typeof evaluator !== "function") {
+            continue;
+          }
+          const stats = evaluator(teilState);
+          total += Math.max(0, Number(stats && stats.total ? stats.total : 0));
+          correct += Math.max(0, Number(stats && stats.correct ? stats.correct : 0));
+          unanswered += Math.max(0, Number(stats && stats.unanswered ? stats.unanswered : 0));
+          teilState.evaluated = true;
+          usedTeils += 1;
+        }
+        if (usedTeils === 0) {
+          if (showStatus) setDtzModuleStatus(module, "error", "Für diese Aufgabe ist keine Auswertung verfügbar.");
+          return;
+        }
+      } else {
+        const evaluator = (DTZ_EVALUATORS[module] || {})[state.teil];
+        if (typeof evaluator !== "function") {
+          if (showStatus) setDtzModuleStatus(module, "error", "Für diesen Teil ist keine Auswertung verfügbar.");
+          return;
+        }
+        const stats = evaluator(state);
+        total = Math.max(0, Number(stats && stats.total ? stats.total : 0));
+        correct = Math.max(0, Number(stats && stats.correct ? stats.correct : 0));
+        unanswered = Math.max(0, Number(stats && stats.unanswered ? stats.unanswered : 0));
+        state.evaluated = true;
       }
-      const { total, correct, unanswered } = evaluator(state);
 
       const wrong = Math.max(0, total - correct - unanswered);
       const points = correct * 2;
       const maxPoints = total * 2;
-      state.evaluated = true;
       registerHomePractice(module === "lesen" ? "dtz-lesen" : "dtz-hoeren", correct, total);
       void submitAssignedDtzResult(module, state.teil, { total, correct, unanswered, points, maxPoints });
       const isPartial = module === "hoeren" && unanswered > 0;
@@ -9718,7 +9751,8 @@
 
       if (ui.summary) {
         const label = module === "hoeren" ? "Hören" : "Lesen";
-        ui.summary.textContent = `${label} Teil ${state.teil}: ${correct}/${total} richtig | Falsch: ${wrong} | Offen: ${unanswered} | Punkte: ${points}/${maxPoints}${isPartial ? " | Teilweise Auswertung (offene Antworten vorhanden)" : ""}`;
+        const teilLabel = modelltestFlowState.active ? "Gesamt" : `Teil ${state.teil}`;
+        ui.summary.textContent = `${label} ${teilLabel}: ${correct}/${total} richtig | Falsch: ${wrong} | Offen: ${unanswered} | Punkte: ${points}/${maxPoints}${isPartial ? " | Teilweise Auswertung (offene Antworten vorhanden)" : ""}`;
         ui.summary.classList.remove("hidden");
       }
       updateDtzTeilButtons(module);
