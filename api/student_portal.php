@@ -113,7 +113,6 @@ function detect_student_homework_category(array $assignment): string
     if (strpos($bag, 'modelltest') !== false || strpos($bag, 'mock-prüfung') !== false || strpos($bag, 'mock-pruefung') !== false) return 'modelltest';
     if (strpos($bag, 'hören') !== false || strpos($bag, 'hoeren') !== false) return 'hoeren';
     if (strpos($bag, 'lesen') !== false) return 'lesen';
-    if (strpos($bag, 'sprechen') !== false) return 'sprechen';
     if (strpos($bag, 'schreiben') !== false || strpos($bag, 'mail') !== false) return 'mail';
     return 'unknown';
 }

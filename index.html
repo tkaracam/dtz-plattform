@@ -6742,15 +6742,6 @@
       return String(params.get("mock_mail") || "") === "1";
     }
 
-    function detectModelltestHasSpeakingTask() {
-      const ctx = getModelltestAssignmentContext();
-      if (!ctx.isAssigned) return false;
-      const bag = ctx.bag;
-      if (bag.includes("ohne sprechen")) return false;
-      if (bag.includes("sprechen")) return true;
-      return ctx.templateId === "dtz-mock-pruefung-komplett";
-    }
-
     function getModelltestModuleStats(module) {
       const maxTeil = getDtzMaxTeil(module);
       let total = 0;
@@ -7175,10 +7166,8 @@
 
     function openDtzModelltestView() {
       const hasWritingTask = detectModelltestHasWritingTask();
-      const hasSpeakingTask = detectModelltestHasSpeakingTask();
       const visibleCards = ["dtzTrainingCard"];
       if (hasWritingTask) visibleCards.push("workCard");
-      if (hasSpeakingTask) visibleCards.push("speakingCard");
       showCards(visibleCards);
       updateHeroHomeVisibility("dtz");
       setHomeDashboardSection("dtz");
@@ -11952,7 +11941,7 @@
 
     function detectStudentHomeworkCategory(row) {
       const serverCategory = String(row && row.category ? row.category : "").toLowerCase();
-      if (["hoeren", "lesen", "a2", "mail", "modelltest", "sprechen", "schreiben", "unknown"].includes(serverCategory)) {
+      if (["hoeren", "lesen", "a2", "mail", "modelltest", "schreiben", "unknown"].includes(serverCategory)) {
         return serverCategory;
       }
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
@@ -11982,7 +11971,6 @@
       if (bag.includes("modelltest") || bag.includes("mock-prüfung") || bag.includes("mock-pruefung")) return "modelltest";
       if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
       if (bag.includes("lesen")) return "lesen";
-      if (bag.includes("sprechen")) return "sprechen";
       if (bag.includes("schreiben") || bag.includes("mail")) return "mail";
       return "unknown";
     }
@@ -12196,7 +12184,6 @@
         mail: [],
         modelltest: [],
         schreiben: [],
-        sprechen: [],
         unknown: []
       };
 
@@ -12226,9 +12213,6 @@
         const schreibenOpenAction = category === "schreiben"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-schreiben-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Schreiben öffnen"}</button></div>`
           : "";
-        const sprechenOpenAction = category === "sprechen"
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-sprechen-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Sprechen öffnen"}</button></div>`
-          : "";
         const modelltestOpenAction = category === "modelltest"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-modelltest-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "Modelltest öffnen"}</button></div>`
           : "";
@@ -12244,7 +12228,6 @@
             ${a2OpenAction}
             ${mailOpenAction}
             ${schreibenOpenAction}
-            ${sprechenOpenAction}
             ${modelltestOpenAction}
             ${unknownOpenAction}
           </div>
@@ -12304,7 +12287,7 @@
         }
       }
       if (mailWrap) {
-        const writeRows = [...grouped.mail, ...grouped.schreiben, ...grouped.sprechen, ...grouped.unknown];
+        const writeRows = [...grouped.mail, ...grouped.schreiben, ...grouped.unknown];
         mailWrap.innerHTML = writeRows.length ? writeRows.map(itemHtml).join("") : "Keine Mail-Aufgaben vorhanden.";
         mailWrap.querySelectorAll("[data-open-mail-homework]").forEach(btn => {
           btn.addEventListener("click", async () => {
@@ -12320,15 +12303,6 @@
             const assignmentId = String(btn.getAttribute("data-open-schreiben-homework") || "").trim();
             if (!assignmentId) return;
             await startHomeworkAssignmentById(assignmentId, "portalStatus", "write", "mail-homework");
-          });
-        });
-        mailWrap.querySelectorAll("[data-open-sprechen-homework]").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            if (btn.hasAttribute("disabled")) return;
-            const assignmentId = String(btn.getAttribute("data-open-sprechen-homework") || "").trim();
-            if (!assignmentId) return;
-            await startHomeworkAssignmentById(assignmentId, "portalStatus");
-            openSpeakingView();
           });
         });
         mailWrap.querySelectorAll("[data-open-unknown-homework]").forEach(btn => {
