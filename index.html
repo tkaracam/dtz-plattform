@@ -1076,6 +1076,17 @@
       flex: 0 0 auto;
     }
 
+    .a2-option.solution-correct {
+      border-color: #b8dfce;
+      background: #edf9f2;
+    }
+
+    .a2-option.solution-correct .a2-choice-label {
+      background: #d7f1e2;
+      border-color: #9dd2b7;
+      color: #1f7a46;
+    }
+
     .a2-question-card.correct {
       border-color: #b8dfce;
       background: #f4fcf8;
@@ -6057,11 +6068,14 @@
         return;
       }
       wrap.innerHTML = currentA2State.questions.map((q, index) => {
+        const solutionMode = !!q.solutionMode;
         const optionsHtml = q.options.map((opt, optIndex) => {
           const checked = Number(q.selected) === optIndex ? "checked" : "";
           const letter = String.fromCharCode(65 + optIndex);
+          const isSolutionCorrect = solutionMode && String(opt) === String(q.correct);
+          const optionClass = isSolutionCorrect ? "a2-option solution-correct" : "a2-option";
           return `
-            <label class="a2-option">
+            <label class="${optionClass}">
               <input type="radio" name="a2-q-${index}" value="${optIndex}" ${checked}>
               <span><span class="a2-choice-label">${letter}</span>${escapeHtml(opt)}</span>
             </label>
@@ -6154,6 +6168,7 @@
             ...generateA2Question(chosenTopic, idx),
             selected: null,
             correct: null,
+            solutionMode: false,
             resultClass: "",
             result: ""
           };
@@ -6179,20 +6194,26 @@
         const selectedIndex = Number.isFinite(q.selected) ? q.selected : -1;
         const selectedValue = selectedIndex >= 0 ? String(q.options[selectedIndex] || "") : "";
         const computedOk = !!(selectedValue && selectedValue === q.correct);
+        const correctIndex = Array.isArray(q.options)
+          ? q.options.findIndex(item => String(item) === String(q.correct))
+          : -1;
+        const correctLetter = correctIndex >= 0
+          ? String.fromCharCode(65 + correctIndex)
+          : "-";
         if (showSolutions) {
           return {
             ...q,
             correct: computedOk,
+            solutionMode: true,
             resultClass: computedOk ? "ok" : "err",
-            result: computedOk
-              ? `Richtig. Lösung: ${escapeHtml(q.correct)}`
-              : `Falsch. Lösung: ${escapeHtml(q.correct)}`
+            result: `Lösung: ${escapeHtml(correctLetter)}`
           };
         }
         const ok = computedOk;
         return {
           ...q,
           correct: ok,
+          solutionMode: false,
           resultClass: ok ? "ok" : "err",
           result: ok
             ? `Richtig. ${escapeHtml(q.hint)}`
