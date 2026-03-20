@@ -3934,7 +3934,8 @@
       questions: [],
       started: false,
       score: 0,
-      evaluated: false
+      evaluated: false,
+      solutionsShown: false
     };
     let simulationState = {
       active: false,
@@ -6095,8 +6096,8 @@
       const answered = Math.max(answeredByState, answeredByDom);
       const allAnswered = !!(currentA2State.started && total > 0 && answered >= total);
       if (evaluateBtn) evaluateBtn.disabled = !allAnswered;
-      if (showSolutionsBtn) showSolutionsBtn.disabled = !allAnswered;
-      if (backBtn) backBtn.disabled = !currentA2State.evaluated;
+      if (showSolutionsBtn) showSolutionsBtn.disabled = !(allAnswered && currentA2State.evaluated);
+      if (backBtn) backBtn.disabled = !currentA2State.solutionsShown;
     }
 
     function startA2IntegratedTest(config = {}) {
@@ -6119,6 +6120,7 @@
         started: true,
         score: 0,
         evaluated: false,
+        solutionsShown: false,
         questions: Array.from({ length: count }, (_, idx) => {
           const chosenTopic = baseTopic === "Gemischt" ? a2Pick(sourceTopics) : sourceTopics[0];
           return {
@@ -6142,6 +6144,8 @@
       if (!currentA2State.started || !Array.isArray(currentA2State.questions)) return;
       if (!showSolutions) {
         currentA2State.evaluated = true;
+      } else if (currentA2State.evaluated) {
+        currentA2State.solutionsShown = true;
       }
       currentA2State.questions = currentA2State.questions.map(q => {
         if (showSolutions) {
