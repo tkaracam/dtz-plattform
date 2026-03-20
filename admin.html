@@ -2847,7 +2847,7 @@
                 <div class="grid" style="margin-top:8px;">
                   <div>
                     <label for="hwA2QuestionCount">Fragenzahl</label>
-                    <input id="hwA2QuestionCount" type="number" min="10" max="100" value="50">
+                    <input id="hwA2QuestionCount" type="number" min="10" max="50" value="50">
                   </div>
                 </div>
                 <label for="hwA2GeneratedPreview" style="margin-top:8px;">Generierte Aufgabenstellung</label>
@@ -6382,7 +6382,7 @@
       }
 
       const countInput = Number(document.getElementById("hwA2QuestionCount")?.value || 50);
-      const questionCount = Math.max(10, Math.min(100, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+      const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
       const topicLabels = selectedTopics.map(item => item.label);
       const topicKeys = selectedTopics.map(item => item.key);
       const topicQueryValues = selectedTopics.map(item => item.a2Topic);
