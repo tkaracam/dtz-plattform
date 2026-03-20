@@ -7265,6 +7265,14 @@
       return out;
     }
 
+    function normalizeHoerenTeilLabel(value, fallbackTeil) {
+      const raw = normalizeDtzGermanText(String(value || ""));
+      const fallback = `Hören Teil ${Math.max(1, Number.parseInt(String(fallbackTeil || "1"), 10) || 1)}`;
+      const base = raw || fallback;
+      const normalized = base.replace(/^H\s*([1-4])\b/i, (_m, teilNo) => `Hören Teil ${teilNo}`);
+      return normalized;
+    }
+
     function mapHoerenBundleItem(item, teil) {
       const questions = Array.isArray(item.questions)
         ? item.questions.map((q, idx) => ({
@@ -7280,7 +7288,7 @@
       return {
         id: `hoeren_teil${teil}_bundle`,
         type: `hoeren_teil${teil}_bundle`,
-        dtzPart: normalizeDtzGermanText(String(item.dtz_part || `H${teil}`)),
+        dtzPart: normalizeHoerenTeilLabel(String(item.dtz_part || ""), teil),
         title: normalizeDtzGermanText(String(item.title || "")),
         instructions: normalizeDtzGermanText(String(item.instructions || "")),
         audio_script: normalizeDtzGermanText(String(item.audio_script || item.text || "")),
@@ -7313,7 +7321,7 @@
       return {
         id: "hoeren_teil3_dialogcards",
         type: "hoeren_teil3_dialogcards",
-        dtzPart: normalizeDtzGermanText(String(item.dtz_part || "H3 Dialoge")),
+        dtzPart: normalizeHoerenTeilLabel(String(item.dtz_part || "Hören Teil 3 Dialoge"), 3),
         title: normalizeDtzGermanText(String(item.title || "")),
         instructions: normalizeDtzGermanText(String(item.instructions || "")),
         dialogs
@@ -7337,7 +7345,7 @@
       return {
         id: "hoeren_teil4_matching",
         type: "hoeren_teil4_matching",
-        dtzPart: normalizeDtzGermanText(String(item.dtz_part || "H4 Aussagen zuordnen")),
+        dtzPart: normalizeHoerenTeilLabel(String(item.dtz_part || "Hören Teil 4 Aussagen zuordnen"), 4),
         title: normalizeDtzGermanText(String(item.title || "")),
         instructions: normalizeDtzGermanText(String(item.instructions || "")),
         allowReuse: !!item.allow_reuse,
@@ -8822,6 +8830,7 @@
             <h4>${escapeHtml(dialog.title || `Dialog ${idx + 1}`)}</h4>
             ${AudioPlayer(module, `dialog:${dialogId}`, isPlaying, dialog.audio_script || "")}
             <div class="dtz-dialog-task">
+              <div class="muted" style="margin-bottom:6px;"><strong>Frage ${idx * 2 + 1}</strong></div>
               ${TaskInstruction((dialog.trueFalse || {}).statement || "Richtig oder falsch?")}
               ${TrueFalseQuestion({
                 module,
@@ -8833,6 +8842,7 @@
               ${tfFeedback}
             </div>
             <div class="dtz-dialog-task">
+              <div class="muted" style="margin-bottom:6px;"><strong>Frage ${idx * 2 + 2}</strong></div>
               ${TaskInstruction((dialog.detail || {}).question || "Was ist richtig?")}
               ${MultipleChoiceQuestion({
                 module,
@@ -8895,7 +8905,7 @@
         }).join("");
         return `
           <article class="lid-question dtz-matching-item">
-            <h4>${escapeHtml(statement.title || `Aussage ${idx + 1}`)}</h4>
+            <h4>Frage ${idx + 1}: ${escapeHtml(statement.title || `Aussage ${idx + 1}`)}</h4>
             ${AudioPlayer(module, `statement:${key}`, isPlaying, statement.audio_script || statement.question || "")}
             <label class="dtz-matching-label">
               ${escapeHtml(statement.question || "Welche Antwort passt?")}
