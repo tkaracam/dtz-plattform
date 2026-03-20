@@ -2832,16 +2832,17 @@
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid #e5d1da;
-      background: #f8f5f7;
+      background: #eceff4;
+      aspect-ratio: 16 / 9;
     }
 
     .speak-photo img {
       width: 100%;
-      height: clamp(300px, 42vw, 520px);
+      height: clamp(360px, 56vh, 760px);
       object-fit: contain;
       object-position: center;
       display: block;
-      background: #f4f6f9;
+      background: #e9edf3;
     }
 
     .speak-photo-caption {
@@ -3162,6 +3163,12 @@
 
       .lid-option input {
         margin-top: 3px;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .speak-photo img {
+        height: clamp(460px, 62vh, 860px);
       }
     }
 
