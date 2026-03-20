@@ -6013,7 +6013,7 @@
           ["Sie hat am Abend gekocht.", "Sie ist am Abend gekocht.", "Sie hat am Abend kochen."]
         ];
         const row = a2Pick(pool);
-        return { topic, prompt: `Wählen Sie den richtigen Perfekt-Satz (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "haben/sein + Partizip II beachten." };
+        return { topic, prompt: `Wählen Sie den richtigen Perfekt-Satz (${index + 1}).`, options: a2Shuffle(row), answer: row[0], hint: "haben/sein + Partizip II beachten." };
       }
       if (topic === "Nebensatz") {
         const pool = [
@@ -6022,7 +6022,7 @@
           ["Sie lernt viel, weil sie die Prüfung schaffen will.", "Sie lernt viel, weil sie will die Prüfung schaffen.", "Sie lernt viel weil will sie die Prüfung schaffen."]
         ];
         const row = a2Pick(pool);
-        return { topic, prompt: `Wählen Sie den korrekten Nebensatz (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Im Nebensatz steht das Verb am Ende." };
+        return { topic, prompt: `Wählen Sie den korrekten Nebensatz (${index + 1}).`, options: a2Shuffle(row), answer: row[0], hint: "Im Nebensatz steht das Verb am Ende." };
       }
       if (topic === "Modalverben") {
         const pool = [
@@ -6031,7 +6031,7 @@
           ["Wir können den Text verstehen.", "Wir können den Text zu verstehen.", "Wir den Text können verstehen."]
         ];
         const row = a2Pick(pool);
-        return { topic, prompt: `Wählen Sie den richtigen Satz mit Modalverb (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Nach Modalverben steht der Infinitiv ohne 'zu'." };
+        return { topic, prompt: `Wählen Sie den richtigen Satz mit Modalverb (${index + 1}).`, options: a2Shuffle(row), answer: row[0], hint: "Nach Modalverben steht der Infinitiv ohne 'zu'." };
       }
       if (topic === "Präpositionen") {
         const pool = [
@@ -6040,7 +6040,7 @@
           ["Der Kurs beginnt im Oktober.", "Der Kurs beginnt am Oktober.", "Der Kurs beginnt nach Oktober."]
         ];
         const row = a2Pick(pool);
-        return { topic, prompt: `Wählen Sie die richtige Präposition (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Zeit/Ort-Präpositionen genau prüfen." };
+        return { topic, prompt: `Wählen Sie die richtige Präposition (${index + 1}).`, options: a2Shuffle(row), answer: row[0], hint: "Zeit/Ort-Präpositionen genau prüfen." };
       }
       if (topic === "Trennbare Verben") {
         const pool = [
@@ -6049,7 +6049,7 @@
           ["Sie ruft ihre Mutter am Abend an.", "Sie anruft ihre Mutter am Abend.", "Sie ruft an ihre Mutter am Abend an."]
         ];
         const row = a2Pick(pool);
-        return { topic, prompt: `Wählen Sie den korrekten Satz mit trennbarem Verb (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Im Hauptsatz steht die Vorsilbe am Satzende." };
+        return { topic, prompt: `Wählen Sie den korrekten Satz mit trennbarem Verb (${index + 1}).`, options: a2Shuffle(row), answer: row[0], hint: "Im Hauptsatz steht die Vorsilbe am Satzende." };
       }
       const kasusPool = [
         ["Ich gebe dem Mann den Schlüssel.", "Ich gebe den Mann dem Schlüssel.", "Ich gebe der Mann den Schlüssel."],
@@ -6057,7 +6057,7 @@
         ["Wir helfen der Nachbarin heute.", "Wir helfen die Nachbarin heute.", "Wir helfen den Nachbarin heute."]
       ];
       const row = a2Pick(kasusPool);
-      return { topic: "Kasus", prompt: `Wählen Sie den richtigen Kasus-Satz (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Akkusativ/Dativ mit Verbbezug prüfen." };
+      return { topic: "Kasus", prompt: `Wählen Sie den richtigen Kasus-Satz (${index + 1}).`, options: a2Shuffle(row), answer: row[0], hint: "Akkusativ/Dativ mit Verbbezug prüfen." };
     }
 
     function renderA2IntegratedQuestions() {
@@ -6072,7 +6072,7 @@
         const optionsHtml = q.options.map((opt, optIndex) => {
           const checked = Number(q.selected) === optIndex ? "checked" : "";
           const letter = String.fromCharCode(65 + optIndex);
-          const isSolutionCorrect = solutionMode && String(opt) === String(q.correct);
+          const isSolutionCorrect = solutionMode && String(opt) === String(q.answer);
           const optionClass = isSolutionCorrect ? "a2-option solution-correct" : "a2-option";
           return `
             <label class="${optionClass}">
@@ -6084,7 +6084,7 @@
         const resultHtml = q.result
           ? `<div class="a2-result ${escapeHtml(String(q.resultClass || ""))}">${q.result}</div>`
           : "";
-        const rowClass = q.correct === true ? "a2-question-card correct" : (q.correct === false ? "a2-question-card wrong" : "a2-question-card");
+        const rowClass = q.isCorrect === true ? "a2-question-card correct" : (q.isCorrect === false ? "a2-question-card wrong" : "a2-question-card");
         return `
           <article id="a2-card-${index}" class="${rowClass}">
             <div class="a2-question-head"><span>Frage ${index + 1}/${currentA2State.questions.length}</span><span>${escapeHtml(q.topic)}</span></div>
@@ -6115,8 +6115,8 @@
         return;
       }
       const total = currentA2State.questions.length;
-      const checked = currentA2State.questions.filter(q => q.correct === true || q.correct === false).length;
-      const correct = currentA2State.questions.filter(q => q.correct === true).length;
+      const checked = currentA2State.questions.filter(q => q.isCorrect === true || q.isCorrect === false).length;
+      const correct = currentA2State.questions.filter(q => q.isCorrect === true).length;
       const pct = checked > 0 ? Math.round((correct / total) * 100) : 0;
       node.textContent = `A2-Test: ${checked}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
     }
@@ -6167,7 +6167,7 @@
           return {
             ...generateA2Question(chosenTopic, idx),
             selected: null,
-            correct: null,
+            isCorrect: null,
             solutionMode: false,
             resultClass: "",
             result: ""
@@ -6193,9 +6193,9 @@
       currentA2State.questions = currentA2State.questions.map(q => {
         const selectedIndex = Number.isFinite(q.selected) ? q.selected : -1;
         const selectedValue = selectedIndex >= 0 ? String(q.options[selectedIndex] || "") : "";
-        const computedOk = !!(selectedValue && selectedValue === q.correct);
+        const computedOk = !!(selectedValue && selectedValue === q.answer);
         const correctIndex = Array.isArray(q.options)
-          ? q.options.findIndex(item => String(item) === String(q.correct))
+          ? q.options.findIndex(item => String(item) === String(q.answer))
           : -1;
         const correctLetter = correctIndex >= 0
           ? String.fromCharCode(65 + correctIndex)
@@ -6203,21 +6203,21 @@
         if (showSolutions) {
           return {
             ...q,
-            correct: computedOk,
+            isCorrect: computedOk,
             solutionMode: true,
             resultClass: computedOk ? "ok" : "err",
-            result: `Lösung: ${escapeHtml(correctLetter)}`
+            result: `Lösung:${escapeHtml(correctLetter)}`
           };
         }
         const ok = computedOk;
         return {
           ...q,
-          correct: ok,
+          isCorrect: ok,
           solutionMode: false,
           resultClass: ok ? "ok" : "err",
           result: ok
             ? `Richtig. ${escapeHtml(q.hint)}`
-            : `Falsch. Lösung: ${escapeHtml(q.correct)}`
+            : `Falsch. Lösung: ${escapeHtml(q.answer)}`
         };
       });
       renderA2IntegratedQuestions();
