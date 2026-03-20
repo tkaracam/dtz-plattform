@@ -3687,6 +3687,7 @@
               </div>
             </div>
             <p id="speakRecStatus" class="speak-muted">Mikrofon erlauben und direkt sprechen. Nach dem Stoppen erhalten Sie automatisches Feedback.</p>
+            <p class="speak-muted">Datenschutzhinweis: Bei Browser-Spracherkennung kann Transkript-Verarbeitung über den Browser-Anbieter erfolgen.</p>
             <label for="speakTranscript">Transkript</label>
             <textarea id="speakTranscript" class="speak-transcript" placeholder="Transkript erscheint automatisch (Browser-abhängig) oder hier manuell einfügen."></textarea>
             <div class="row-end">
@@ -4079,6 +4080,8 @@
     let speakingLastDurationSec = 0;
     let speakingRecordingTimerId = null;
     let speakingAutoTranscript = "";
+    let speakingRecorderMimeType = "";
+    let currentMainViewMode = "";
     let currentA2HomeworkConfig = null;
     let currentOpenedHomeworkContext = {
       a2AssignmentId: "",
@@ -6033,6 +6036,10 @@
     }
 
     function setMainView(mode) {
+      if (currentMainViewMode === "speaking" && mode !== "speaking") {
+        clearSpeakingRecording();
+      }
+      currentMainViewMode = String(mode || "");
       const map = {
         home: "portalCard",
         correction: "workCard",
@@ -6148,7 +6155,9 @@
       setMainView("speaking");
       setHomeDashboardSection("speaking");
       setAccordionOpen("speakingAccordion", false);
-      generateSpeakingSet();
+      if (!currentSpeakingSet || typeof currentSpeakingSet !== "object") {
+        generateSpeakingSet();
+      }
       setSpeakingTab(1);
     }
 
@@ -10639,6 +10648,20 @@
         .trim();
     }
 
+    function escapeRegexLiteral(value) {
+      return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function speakingKeywordCovered(cleanedText, wordSet, keyword) {
+      const kw = normalizeSpeakingWord(keyword);
+      if (!kw) return false;
+      if (!kw.includes(" ")) {
+        return wordSet.has(kw);
+      }
+      const pattern = new RegExp(`(?:^|\\s)${escapeRegexLiteral(kw).replace(/\s+/g, "\\s+")}(?:$|\\s)`, "u");
+      return pattern.test(cleanedText);
+    }
+
     function collectSpeakingKeywords(partNo) {
       if (partNo === 1) {
         return ["heisse", "jahre", "komme", "wohne", "spreche", "beruf", "freizeit"];
@@ -10682,6 +10705,7 @@
       const partNo = getSpeakingActivePartNo();
       const cleaned = normalizeSpeakingWord(raw);
       const words = cleaned.split(/\s+/).filter(Boolean);
+      const wordSet = new Set(words);
       const uniqueCount = new Set(words).size;
       const durationSec = speakingLastDurationSec > 0
         ? speakingLastDurationSec
@@ -10692,7 +10716,7 @@
       const fillerRate = words.length ? (fillerCount / words.length) : 0;
 
       const keywordPool = collectSpeakingKeywords(partNo);
-      const matched = keywordPool.filter((kw) => cleaned.includes(kw)).length;
+      const matched = keywordPool.filter((kw) => speakingKeywordCovered(cleaned, wordSet, kw)).length;
       const coverage = keywordPool.length ? (matched / keywordPool.length) : 0;
 
       let tempoText = "Tempo: gut.";
@@ -10760,6 +10784,28 @@
       }
     }
 
+    function pickSpeakingRecorderMimeType() {
+      if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+        return "";
+      }
+      const candidates = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg"
+      ];
+      for (const mimeType of candidates) {
+        try {
+          if (MediaRecorder.isTypeSupported(mimeType)) {
+            return mimeType;
+          }
+        } catch (_) {
+        }
+      }
+      return "";
+    }
+
     async function startSpeakingRecording() {
       if (speakingMediaRecorder && speakingMediaRecorder.state === "recording") return;
       const startBtn = document.getElementById("speakRecStartBtn");
@@ -10777,14 +10823,21 @@
         }
         speakingRecorderStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         speakingRecordingChunks = [];
-        speakingMediaRecorder = new MediaRecorder(speakingRecorderStream);
+        speakingRecorderMimeType = pickSpeakingRecorderMimeType();
+        speakingMediaRecorder = speakingRecorderMimeType
+          ? new MediaRecorder(speakingRecorderStream, { mimeType: speakingRecorderMimeType })
+          : new MediaRecorder(speakingRecorderStream);
         speakingMediaRecorder.ondataavailable = (event) => {
           if (event.data && event.data.size > 0) speakingRecordingChunks.push(event.data);
         };
         speakingMediaRecorder.onstop = () => {
           speakingMediaRecorder = null;
           speakingLastDurationSec = Math.max(1, Math.round((Date.now() - speakingRecordingStartMs) / 1000));
-          const blob = new Blob(speakingRecordingChunks, { type: "audio/webm" });
+          const firstChunk = speakingRecordingChunks.length ? speakingRecordingChunks[0] : null;
+          const fallbackType = firstChunk && typeof firstChunk.type === "string" ? firstChunk.type : "";
+          const blobType = speakingRecorderMimeType || fallbackType || "audio/webm";
+          const blob = new Blob(speakingRecordingChunks, { type: blobType });
+          speakingRecorderMimeType = "";
           if (blob.size > 0) {
             speakingRecordingUrl = URL.createObjectURL(blob);
             const audioNode = document.getElementById("speakAudioPreview");
@@ -10856,6 +10909,7 @@
       speakingRecordingChunks = [];
       speakingAutoTranscript = "";
       speakingLastDurationSec = 0;
+      speakingRecorderMimeType = "";
       const audioNode = document.getElementById("speakAudioPreview");
       if (audioNode) {
         audioNode.pause();
@@ -13710,7 +13764,8 @@
     document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);
     document.getElementById("newClassicLidExamBtn").addEventListener("click", generateClassicLidExam);
     document.getElementById("submitClassicLidExamBtn").addEventListener("click", evaluateClassicLidExam);
-    document.getElementById("newSpeakingSetBtn").addEventListener("click", generateSpeakingSet);
+    const newSpeakingSetBtn = document.getElementById("newSpeakingSetBtn");
+    if (newSpeakingSetBtn) newSpeakingSetBtn.addEventListener("click", generateSpeakingSet);
     const buildBskPlanBtn = document.getElementById("buildBskPlanBtn");
     if (buildBskPlanBtn) buildBskPlanBtn.addEventListener("click", generateBskPack);
     const evaluateBskBtn = document.getElementById("evaluateBskBtn");
@@ -13719,10 +13774,14 @@
     if (saveBskBtn) saveBskBtn.addEventListener("click", saveBskResult);
     const refreshBskHistoryBtn = document.getElementById("refreshBskHistoryBtn");
     if (refreshBskHistoryBtn) refreshBskHistoryBtn.addEventListener("click", loadBskHistory);
-    document.getElementById("buildPart1DraftBtn").addEventListener("click", generatePart1Draft);
-    document.getElementById("speakTab1").addEventListener("click", () => setSpeakingTab(1));
-    document.getElementById("speakTab2").addEventListener("click", () => setSpeakingTab(2));
-    document.getElementById("speakTab3").addEventListener("click", () => setSpeakingTab(3));
+    const buildPart1DraftBtn = document.getElementById("buildPart1DraftBtn");
+    if (buildPart1DraftBtn) buildPart1DraftBtn.addEventListener("click", generatePart1Draft);
+    const speakTab1 = document.getElementById("speakTab1");
+    if (speakTab1) speakTab1.addEventListener("click", () => setSpeakingTab(1));
+    const speakTab2 = document.getElementById("speakTab2");
+    if (speakTab2) speakTab2.addEventListener("click", () => setSpeakingTab(2));
+    const speakTab3 = document.getElementById("speakTab3");
+    if (speakTab3) speakTab3.addEventListener("click", () => setSpeakingTab(3));
     const speakRecStartBtn = document.getElementById("speakRecStartBtn");
     if (speakRecStartBtn) speakRecStartBtn.addEventListener("click", startSpeakingRecording);
     const speakRecStopBtn = document.getElementById("speakRecStopBtn");
@@ -13733,7 +13792,8 @@
     if (speakAnalyzeBtn) speakAnalyzeBtn.addEventListener("click", renderSpeakingFeedback);
     const speakTranscript = document.getElementById("speakTranscript");
     if (speakTranscript) speakTranscript.addEventListener("input", renderSpeakingFeedback);
-    document.getElementById("refreshPortalBtn").addEventListener("click", refreshPortalData);
+    const refreshPortalBtn = document.getElementById("refreshPortalBtn");
+    if (refreshPortalBtn) refreshPortalBtn.addEventListener("click", refreshPortalData);
     function preferredHomeworkPanel() {
       const badgeCount = id => {
         const node = document.getElementById(id);
