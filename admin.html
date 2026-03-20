@@ -2870,11 +2870,16 @@
                   <option value="">Bitte Aufgaben wählen</option>
                 </select>
                 <div id="hwTaskTemplatesMultiChecks" class="hw-multi-checklist"></div>
-                <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
                 <label class="hw-multi-check-item" style="margin-top:8px;">
                   <input id="hwMockIncludeMailChk" type="checkbox">
                   <span>Modelltest: Mail schreiben hinzufügen</span>
                 </label>
+                <div style="margin-top:8px;">
+                  <label for="hwMockMailTemplateId">Modelltest Mail-Thema</label>
+                  <select id="hwMockMailTemplateId">
+                    <option value="">Bitte Thema wählen</option>
+                  </select>
+                </div>
                 <div class="grid" style="margin-top:8px;">
                   <div>
                     <label for="hwStartsAt">Startzeit</label>
@@ -3421,6 +3426,7 @@
     const ADMIN_HW_DURATION_VALUE_KEY = "dtz_admin_hw_duration_value_v1";
     const ADMIN_HW_DURATION_UNIT_KEY = "dtz_admin_hw_duration_unit_v1";
     const ADMIN_HW_MOCK_INCLUDE_MAIL_KEY = "dtz_admin_hw_mock_include_mail_v1";
+    const ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY = "dtz_admin_hw_mock_mail_template_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
@@ -6419,12 +6425,14 @@
         .map(option => String(option.value || "").trim())
         .filter(Boolean);
       const includeMailForMock = !!document.getElementById("hwMockIncludeMailChk")?.checked;
+      const mockMailTemplateId = String(document.getElementById("hwMockMailTemplateId")?.value || "").trim();
       setStoredPreference("admin_hw_template_hoeren", templateHoeren || null);
       setStoredPreference("admin_hw_template_lesen", templateLesen || null);
       setStoredPreference("admin_hw_template_mail", templateMail || null);
       setStoredPreference("admin_hw_template_mock", templateMock || null);
       setStoredPreference("admin_hw_templates_multi", templateMulti.length ? templateMulti.join(",") : null);
       setStoredPreference(ADMIN_HW_MOCK_INCLUDE_MAIL_KEY, includeMailForMock ? "1" : "0");
+      setStoredPreference(ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY, mockMailTemplateId || null);
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
       setStoredPreference(ADMIN_HW_DURATION_UNIT_KEY, durationUnit || null);
@@ -6437,6 +6445,7 @@
       const templateMock = getStoredPreference("admin_hw_template_mock");
       const templateMultiRaw = getStoredPreference("admin_hw_templates_multi");
       const includeMailForMockRaw = getStoredPreference(ADMIN_HW_MOCK_INCLUDE_MAIL_KEY);
+      const mockMailTemplateIdRaw = getStoredPreference(ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY);
       const templateMulti = templateMultiRaw
         ? templateMultiRaw.split(",").map(v => String(v || "").trim()).filter(Boolean)
         : [];
@@ -6472,6 +6481,10 @@
       const mockIncludeMailChk = document.getElementById("hwMockIncludeMailChk");
       if (mockIncludeMailChk) {
         mockIncludeMailChk.checked = String(includeMailForMockRaw || "") === "1";
+      }
+      const mockMailTemplateSelect = document.getElementById("hwMockMailTemplateId");
+      if (mockMailTemplateSelect && mockMailTemplateIdRaw && Array.from(mockMailTemplateSelect.options).some(o => o.value === mockMailTemplateIdRaw)) {
+        mockMailTemplateSelect.value = mockMailTemplateIdRaw;
       }
 
       const courseSelect = document.getElementById("hwCourseId");
@@ -6682,6 +6695,14 @@
       return !!document.getElementById("hwMockIncludeMailChk")?.checked;
     }
 
+    function getSelectedMockMailTemplate() {
+      const selectedId = String(document.getElementById("hwMockMailTemplateId")?.value || "").trim();
+      if (!selectedId) return null;
+      const template = HOMEWORK_MAIL_TEMPLATES.find(item => String(item.id || "") === selectedId) || null;
+      if (!template) return null;
+      return getHomeworkTemplateCategory(template) === "mail" ? template : null;
+    }
+
     function applyMockMailOptionToDescription(rawDescription, includeMail) {
       let description = String(rawDescription || "").trim();
       description = description.replace(/\n?-?\s*Hinweis:\s*ohne Schreiben\s*\(nur Hören \+ Lesen\)\.?\s*$/i, "").trim();
@@ -6779,16 +6800,16 @@
 	      const fragment = document.createDocumentFragment();
 	      groups.forEach(group => {
 	        const labelLower = String(group.label || "").trim().toLowerCase();
-	        const isMailGroup = labelLower === "mail-aufgabe";
+	        const isAccordionGroup = labelLower === "mail-aufgabe" || labelLower === "hören" || labelLower === "hoeren";
 	        let groupWrap;
 	        let listHost;
-	        if (isMailGroup) {
+	        if (isAccordionGroup) {
 	          const details = document.createElement("details");
 	          details.className = "hw-multi-checklist-group";
 	          details.open = true;
 	          const summary = document.createElement("summary");
 	          summary.className = "hw-multi-checklist-title";
-	          summary.textContent = group.label || "Mail-Aufgabe";
+	          summary.textContent = group.label || "Aufgaben";
 	          details.appendChild(summary);
 	          const body = document.createElement("div");
 	          body.style.marginTop = "8px";
@@ -6840,7 +6861,7 @@
       });
     }
 
-    function renderHomeworkTemplateMultiOptions() {
+	    function renderHomeworkTemplateMultiOptions() {
       const select = document.getElementById("hwTaskTemplatesMulti");
       if (!select) return;
       const currentValues = new Set(
@@ -6871,8 +6892,28 @@
       Array.from(select.options).forEach(option => {
         option.selected = currentValues.has(String(option.value || ""));
       });
-      updateHomeworkTemplateMultiPreview();
-      renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
+	      updateHomeworkTemplateMultiPreview();
+	      renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
+	      renderMockMailTemplateOptions();
+	    }
+
+    function renderMockMailTemplateOptions() {
+      const select = document.getElementById("hwMockMailTemplateId");
+      if (!select) return;
+      const currentValue = String(select.value || "").trim();
+      const options = ['<option value="">Bitte Thema wählen</option>'];
+      HOMEWORK_MAIL_TEMPLATES
+        .filter(template => getHomeworkTemplateCategory(template) === "mail")
+        .forEach(template => {
+          const id = String(template.id || "").trim();
+          const title = String(template.title || "Mail-Aufgabe").trim();
+          if (!id) return;
+          options.push(`<option value="${escapeHtml(id)}">${escapeHtml(title)}</option>`);
+        });
+      select.innerHTML = options.join("");
+      if (currentValue && Array.from(select.options).some(o => o.value === currentValue)) {
+        select.value = currentValue;
+      }
     }
 
     function renderAllHomeworkTemplateOptions() {
@@ -6908,6 +6949,10 @@
           option.selected = false;
         });
       }
+      const mockMailTemplateSelect = document.getElementById("hwMockMailTemplateId");
+      if (mockMailTemplateSelect) mockMailTemplateSelect.value = "";
+      const mockIncludeMailChk = document.getElementById("hwMockIncludeMailChk");
+      if (mockIncludeMailChk) mockIncludeMailChk.checked = false;
 
       const clearInputIds = [
         "hwTaskPreviewHoeren",
@@ -8469,7 +8514,16 @@
       if (isModelltestTemplateId(String(selectedTemplate?.id || ""))) {
         const includeMail = isMockMailOptionEnabled();
         description = applyMockMailOptionToDescription(description, includeMail);
-        attachment = `mock_mail=${includeMail ? "1" : "0"}`;
+        const params = new URLSearchParams();
+        params.set("mock_mail", includeMail ? "1" : "0");
+        if (includeMail) {
+          const selectedMockMail = getSelectedMockMailTemplate();
+          if (selectedMockMail) {
+            params.set("mock_mail_title", String(selectedMockMail.title || "").trim());
+            params.set("mock_mail_prompt", String(selectedMockMail.prompt || "").trim());
+          }
+        }
+        attachment = params.toString();
       }
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
       const effectiveCourseId = courseId || String(selectedCourseId || "").trim();
@@ -8586,9 +8640,19 @@
         const description = isModelltestTemplateId(String(template?.id || ""))
           ? applyMockMailOptionToDescription(baseDescription, includeMail)
           : baseDescription;
-        const attachment = isModelltestTemplateId(String(template?.id || ""))
-          ? `mock_mail=${includeMail ? "1" : "0"}`
-          : "";
+        let attachment = "";
+        if (isModelltestTemplateId(String(template?.id || ""))) {
+          const params = new URLSearchParams();
+          params.set("mock_mail", includeMail ? "1" : "0");
+          if (includeMail) {
+            const selectedMockMail = getSelectedMockMailTemplate();
+            if (selectedMockMail) {
+              params.set("mock_mail_title", String(selectedMockMail.title || "").trim());
+              params.set("mock_mail_prompt", String(selectedMockMail.prompt || "").trim());
+            }
+          }
+          attachment = params.toString();
+        }
         if (!title || !description) {
           failures.push(`${String(template?.id || "aufgabe")}: ungültige Vorlage`);
           continue;

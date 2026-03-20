@@ -6647,8 +6647,32 @@
       return String(variant === "B" ? modelltestFlowState.writePromptB : modelltestFlowState.writePromptA);
     }
 
+    function parseModelltestAttachmentParams(rawAttachment) {
+      const raw = String(rawAttachment || "").trim();
+      if (!raw) return new URLSearchParams();
+      try {
+        if (raw.includes("://")) {
+          const url = new URL(raw);
+          return new URLSearchParams(url.search || "");
+        }
+      } catch (_) {
+        // fall through
+      }
+      const cleaned = raw.startsWith("?") ? raw.slice(1) : raw;
+      return new URLSearchParams(cleaned);
+    }
+
     function ensureModelltestWritePrompts() {
       if (modelltestFlowState.writePromptA && modelltestFlowState.writePromptB) return;
+      const ctx = getModelltestAssignmentContext();
+      const params = parseModelltestAttachmentParams(ctx.attachment || "");
+      const attachmentPrompt = String(params.get("mock_mail_prompt") || "").trim();
+      if (attachmentPrompt) {
+        const prompt = attachmentPrompt.replace(/^aufgabe\s*[ab]\s*:\s*/i, "").trim();
+        modelltestFlowState.writePromptA = `Aufgabe A: ${prompt}`;
+        modelltestFlowState.writePromptB = `Aufgabe B: ${prompt}`;
+        return;
+      }
       const pool = [
         {
           a: "Aufgabe A: Sie können morgen nicht am Kurs teilnehmen. Schreiben Sie Ihrer Lehrkraft eine formelle E-Mail und erklären Sie den Grund.",
