@@ -1913,6 +1913,20 @@
       box-shadow: 0 12px 24px rgba(205, 98, 87, 0.28);
     }
 
+    .dtz-teil-btn.completed {
+      background: linear-gradient(120deg, #2ea972, #59c88e);
+      border-color: #9fdfbe;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(43, 141, 98, 0.24);
+    }
+
+    .dtz-teil-btn.completed.active {
+      background: linear-gradient(120deg, #1f965f, #45b87e);
+      border-color: #91d8b3;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(34, 121, 84, 0.28);
+    }
+
     .dtz-meta-row-hidden {
       display: none !important;
     }
@@ -3794,12 +3808,6 @@
             <span class="card-accordion-icon">▾</span>
           </summary>
           <div class="dtz-module-body">
-            <div id="dtzHoerenTeilButtons" class="dtz-teil-btn-row">
-              <button type="button" class="dtz-teil-btn active" data-dtz-module="hoeren" data-dtz-teil="1">Teil 1</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="2">Teil 2</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="3">Teil 3</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="4">Teil 4</button>
-            </div>
             <div class="dtz-meta-row dtz-meta-row-hidden">
               <div>
                 <label for="dtzHoerenTeilSelect">Teil auswählen</label>
@@ -3815,6 +3823,12 @@
             <div id="dtzHoerenStatus" class="hidden"></div>
             <div id="dtzHoerenSummary" class="dtz-summary hidden"></div>
             <div id="dtzHoerenList" class="lid-list dtz-list"></div>
+            <div id="dtzHoerenTeilButtons" class="dtz-teil-btn-row">
+              <button type="button" class="dtz-teil-btn active" data-dtz-module="hoeren" data-dtz-teil="1">Teil 1</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="2">Teil 2</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="3">Teil 3</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="hoeren" data-dtz-teil="4">Teil 4</button>
+            </div>
             <div class="row-end dtz-action-row">
               <div class="btn-wrap">
                 <button id="dtzHoerenEvaluateBtn" type="button">AUSWERTEN</button>
@@ -3834,13 +3848,6 @@
             <span class="card-accordion-icon">▾</span>
           </summary>
           <div class="dtz-module-body">
-            <div id="dtzLesenTeilButtons" class="dtz-teil-btn-row">
-              <button type="button" class="dtz-teil-btn active" data-dtz-module="lesen" data-dtz-teil="1">Teil 1</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="2">Teil 2</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="3">Teil 3</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="4">Teil 4</button>
-              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="5">Teil 5</button>
-            </div>
             <div class="dtz-meta-row dtz-meta-row-hidden">
               <div>
                 <label for="dtzLesenTeilSelect">Teil auswählen</label>
@@ -3857,6 +3864,13 @@
             <div id="dtzLesenStatus" class="hidden"></div>
             <div id="dtzLesenSummary" class="dtz-summary hidden"></div>
             <div id="dtzLesenList" class="lid-list dtz-list"></div>
+            <div id="dtzLesenTeilButtons" class="dtz-teil-btn-row">
+              <button type="button" class="dtz-teil-btn active" data-dtz-module="lesen" data-dtz-teil="1">Teil 1</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="2">Teil 2</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="3">Teil 3</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="4">Teil 4</button>
+              <button type="button" class="dtz-teil-btn" data-dtz-module="lesen" data-dtz-teil="5">Teil 5</button>
+            </div>
             <div class="row-end dtz-action-row">
               <div class="btn-wrap">
                 <button id="dtzLesenEvaluateBtn" type="button">AUSWERTEN</button>
@@ -7630,7 +7644,15 @@
       const teil = syncDtzTeilFromSelect(module);
       buttons.forEach((btn) => {
         const btnTeil = Number(btn.getAttribute("data-dtz-teil") || "0");
+        const teilState = ensureDtzTeilState(module, btnTeil);
+        const evaluator = (DTZ_EVALUATORS[module] || {})[btnTeil];
+        let completed = false;
+        if (teilState && teilState.evaluated && typeof evaluator === "function") {
+          const stats = evaluator(teilState);
+          completed = Number(stats && stats.total ? stats.total : 0) > 0 && Number(stats && stats.unanswered ? stats.unanswered : 0) === 0;
+        }
         btn.classList.toggle("active", btnTeil === teil);
+        btn.classList.toggle("completed", completed);
       });
     }
 
@@ -9125,6 +9147,7 @@
         ui.summary.textContent = `${label} Teil ${state.teil}: ${correct}/${total} richtig | Falsch: ${wrong} | Offen: ${unanswered} | Punkte: ${points}/${maxPoints}${isPartial ? " | Teilweise Auswertung (offene Antworten vorhanden)" : ""}`;
         ui.summary.classList.remove("hidden");
       }
+      updateDtzTeilButtons(module);
       renderDtzTrainingSet(module);
       if (showStatus) {
         if (isPartial) {
