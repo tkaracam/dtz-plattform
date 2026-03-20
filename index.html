@@ -11086,7 +11086,7 @@
       }
     }
 
-    async function startHomeworkAssignmentById(assignmentId, statusBoxId = "portalWriteStatus") {
+    async function startHomeworkAssignmentById(assignmentId, statusBoxId = "portalWriteStatus", openTarget = "portal") {
       const id = String(assignmentId || "").trim();
       if (!id) return false;
       clearStatus(statusBoxId);
@@ -11102,7 +11102,11 @@
         setStatus("ok", "Aufgabe geöffnet. Sie können jetzt bearbeiten.", statusBoxId);
         await loadCurrentAssignedHomework();
         await refreshPortalData();
-        openPortalPanel("write");
+        if (String(openTarget || "").toLowerCase() === "write") {
+          navigateToSection("write");
+        } else {
+          openPortalPanel("write");
+        }
         return true;
       } catch (err) {
         setStatus("error", `Aufgabe konnte nicht geöffnet werden: ${err.message}`, statusBoxId);
@@ -11567,7 +11571,7 @@
             if (btn.hasAttribute("disabled")) return;
             const assignmentId = String(btn.getAttribute("data-open-mail-homework") || "").trim();
             if (!assignmentId) return;
-            await startHomeworkAssignmentById(assignmentId, "portalWriteStatus");
+            await startHomeworkAssignmentById(assignmentId, "portalWriteStatus", "write");
           });
         });
       }
