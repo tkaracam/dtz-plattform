@@ -11903,6 +11903,10 @@
     }
 
     function detectStudentHomeworkCategory(row) {
+      const serverCategory = String(row && row.category ? row.category : "").toLowerCase();
+      if (["hoeren", "lesen", "a2", "mail", "modelltest", "sprechen", "schreiben"].includes(serverCategory)) {
+        return serverCategory;
+      }
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
       if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(templateId)) return "hoeren";
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(templateId)) return "lesen";

@@ -72,6 +72,52 @@ function read_jsonl_records(string $pattern): array
     return $out;
 }
 
+function detect_student_homework_category(array $assignment): string
+{
+    $templateId = mb_strtolower(trim((string)($assignment['template_id'] ?? '')));
+    if (preg_match('/^dtz-hoeren-teil[1-4]-fragenpaket$/', $templateId) === 1) {
+        return 'hoeren';
+    }
+    if (preg_match('/^dtz-lesen-teil[1-5]-fragenpaket$/', $templateId) === 1) {
+        return 'lesen';
+    }
+    if (
+        $templateId === 'dtz-mock-pruefung-komplett'
+        || $templateId === 'dtz-mock-prüfung-komplett'
+        || strpos($templateId, 'modelltest') !== false
+        || strpos($templateId, 'mock-pruefung') !== false
+        || strpos($templateId, 'mock-prüfung') !== false
+    ) {
+        return 'modelltest';
+    }
+    if (
+        strpos($templateId, 'a2-thema-') === 0
+        || strpos($templateId, 'a2-test-') === 0
+        || strpos($templateId, 'a2-test-generator-') === 0
+    ) {
+        return 'a2';
+    }
+
+    $title = mb_strtolower(trim((string)($assignment['title'] ?? '')));
+    $description = mb_strtolower(trim((string)($assignment['description'] ?? '')));
+    $attachment = mb_strtolower(trim((string)($assignment['attachment'] ?? '')));
+    $bag = trim($title . ' ' . $description . ' ' . $attachment);
+
+    if (preg_match('/^(mail|mail-aufgabe)\b/u', $title) === 1) return 'mail';
+    if (preg_match('/^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/u', $title) === 1) return 'modelltest';
+    if (preg_match('/^h[öo]ren\b/u', $title) === 1 || preg_match('/h[öo]ren\s*teil\s*[1-4]/u', $title) === 1) return 'hoeren';
+    if (preg_match('/^lesen\b/u', $title) === 1 || preg_match('/lesen\s*teil\s*[1-5]/u', $title) === 1) return 'lesen';
+    if (preg_match('/^a2\b|^a2-/u', $title) === 1 || strpos($title, 'a2-grammatik') !== false) return 'a2';
+
+    if (strpos($bag, 'a2') !== false) return 'a2';
+    if (strpos($bag, 'modelltest') !== false || strpos($bag, 'mock-prüfung') !== false || strpos($bag, 'mock-pruefung') !== false) return 'modelltest';
+    if (strpos($bag, 'hören') !== false || strpos($bag, 'hoeren') !== false) return 'hoeren';
+    if (strpos($bag, 'lesen') !== false) return 'lesen';
+    if (strpos($bag, 'sprechen') !== false) return 'sprechen';
+    if (strpos($bag, 'schreiben') !== false || strpos($bag, 'mail') !== false) return 'mail';
+    return 'mail';
+}
+
 $simRecords = [];
 $letterRecords = [];
 $approvedLetterResults = [];
@@ -195,6 +241,7 @@ foreach (load_homework_assignments() as $assignment) {
         'title' => (string)($assignment['title'] ?? 'Aufgabe'),
         'description' => (string)($assignment['description'] ?? ''),
         'attachment' => (string)($assignment['attachment'] ?? ''),
+        'category' => detect_student_homework_category($assignment),
         'duration_minutes' => (int)($assignment['duration_minutes'] ?? 0),
         'due_date' => $deadlineAt !== '' ? $deadlineAt : (string)($assignment['starts_at'] ?? ''),
         'status' => $status,
@@ -207,7 +254,7 @@ foreach (load_homework_assignments() as $assignment) {
 usort($homeworks, static function (array $a, array $b): int {
     return strcmp((string)($b['due_date'] ?? ''), (string)($a['due_date'] ?? ''));
 });
-$homeworks = array_slice($homeworks, 0, 30);
+$homeworks = array_slice($homeworks, 0, 100);
 
 $notesRaw = read_json_file_array($storageDir . '/teacher_notes.json');
 $teacherNotes = [];
