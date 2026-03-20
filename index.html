@@ -892,6 +892,23 @@
       box-shadow: 0 16px 30px rgba(205, 98, 87, 0.4);
     }
 
+    .task-solved-btn,
+    .task-solved-btn:disabled {
+      background: linear-gradient(120deg, #2ea972, #59c88e);
+      border: 1px solid #9fdfbe;
+      box-shadow: 0 12px 24px rgba(43, 141, 98, 0.24);
+      color: #ffffff;
+      opacity: 1;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .task-solved-btn:hover,
+    .task-solved-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 12px 24px rgba(43, 141, 98, 0.24);
+    }
+
     .top-nav .nav-link,
     .top-nav .nav-toggle {
       box-shadow: none;
@@ -10588,8 +10605,7 @@
       };
 
       rows.forEach(row => {
-        const status = String((row && row.status) || "").toLowerCase();
-        if (status === "abgegeben") return;
+        if (isHomeworkSolvedStatus((row && row.status) || "")) return;
         const category = detectStudentHomeworkCategory(row);
         const key = category === "hoeren"
           ? "hoeren"
@@ -10634,19 +10650,16 @@
       const expiredNode = document.getElementById("portalTodayExpired");
       if (activeNode || warn24Node || expiredNode) {
         const activeCount = rows.reduce((sum, row) => {
-          const status = String((row && row.status) || "").toLowerCase();
-          return status === "abgegeben" ? sum : (sum + 1);
+          return isHomeworkSolvedStatus((row && row.status) || "") ? sum : (sum + 1);
         }, 0);
         const warn24Count = rows.reduce((sum, row) => {
-          const status = String((row && row.status) || "").toLowerCase();
           const level = String((row && row.reminder_level) || "").toLowerCase();
-          if (status === "abgegeben") return sum;
+          if (isHomeworkSolvedStatus((row && row.status) || "")) return sum;
           return level === "warn24" ? (sum + 1) : sum;
         }, 0);
         const expiredCount = rows.reduce((sum, row) => {
-          const status = String((row && row.status) || "").toLowerCase();
           const level = String((row && row.reminder_level) || "").toLowerCase();
-          if (status === "abgegeben") return sum;
+          if (isHomeworkSolvedStatus((row && row.status) || "")) return sum;
           return level === "expired" ? (sum + 1) : sum;
         }, 0);
         if (activeNode) activeNode.textContent = String(activeCount);
@@ -10669,6 +10682,16 @@
       if (bag.includes("sprechen")) return "sprechen";
       if (bag.includes("schreiben") || bag.includes("mail")) return "schreiben";
       return "schreiben";
+    }
+
+    function isHomeworkSolvedStatus(statusRaw) {
+      const status = String(statusRaw || "").trim().toLowerCase();
+      return status === "abgegeben"
+        || status === "gelöst"
+        || status === "geloest"
+        || status === "gelost"
+        || status === "completed"
+        || status === "done";
     }
 
     function parseDtzHomeworkTemplate(templateIdRaw) {
@@ -10791,7 +10814,7 @@
         setStatus("error", "Keine A2-Aufgaben gefunden.", "portalStatus");
         return;
       }
-      const pending = rows.filter(row => String((row && row.status) || "").toLowerCase() !== "abgegeben");
+      const pending = rows.filter(row => !isHomeworkSolvedStatus((row && row.status) || ""));
       const source = pending.length ? pending : rows;
       const topicSet = [];
       const countCandidates = [];
@@ -10857,7 +10880,7 @@
 
       const itemHtml = row => {
         const statusRaw = String(row.status || "offen").toLowerCase();
-        const isDone = statusRaw === "abgegeben";
+        const isDone = isHomeworkSolvedStatus(statusRaw);
         const stateClass = isDone ? "homework-done" : "homework-pending";
         const reminderLevel = String(row.reminder_level || "none").toLowerCase();
         const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
@@ -10865,10 +10888,10 @@
         const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
         const parsedA2 = parseA2HomeworkTemplate(row);
         const dtzOpenAction = parsedTemplate
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}">${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "ghost-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}">${isDone ? "Gelöst" : `${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen`}</button></div>`
           : "";
         const a2OpenAction = !parsedTemplate && detectStudentHomeworkCategory(row) === "a2"
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" data-open-a2-homework="${escapeHtml(String(row.id || ""))}">A2-Test öffnen</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : ""}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "A2-Test öffnen"}</button></div>`
           : "";
         return `
           <div class="portal-item ${stateClass}">
@@ -10903,7 +10926,7 @@
         if (!grouped.a2.length) {
           a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
         } else {
-          const pendingA2 = grouped.a2.filter(row => String((row && row.status) || "").toLowerCase() !== "abgegeben");
+          const pendingA2 = grouped.a2.filter(row => !isHomeworkSolvedStatus((row && row.status) || ""));
           const source = pendingA2.length ? pendingA2 : grouped.a2;
           const topics = [];
           source.forEach(row => {
@@ -10912,17 +10935,18 @@
             });
           });
           const totalDuration = source.reduce((sum, row) => sum + Math.max(0, Number(row && row.duration_minutes ? row.duration_minutes : 0)), 0);
-          const allDone = source.every(row => String((row && row.status) || "").toLowerCase() === "abgegeben");
+          const allDone = source.every(row => isHomeworkSolvedStatus((row && row.status) || ""));
           const dueLabel = formatDisplayDate(String((source[0] && source[0].due_date) || "")) || "-";
           const assignmentRows = source.map(row => {
             const rowStatus = String((row && row.status) || "offen");
+            const rowDone = isHomeworkSolvedStatus(rowStatus);
             const rowDue = formatDisplayDate(String((row && row.due_date) || "")) || "-";
             return `
               <div class="portal-item" style="margin-top:8px;">
                 <strong>${escapeHtml(String((row && row.title) || "A2-Aufgabe"))}</strong>
                 <div>Dauer: ${escapeHtml(formatDurationMinutes(row && row.duration_minutes))} | Fällig: ${escapeHtml(rowDue)} | Status: ${escapeHtml(rowStatus)}</div>
                 <div class="row-end" style="margin-top:6px;">
-                  <button type="button" data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">A2-Test öffnen</button>
+                  <button type="button" class="${rowDone ? "task-solved-btn" : ""}" ${rowDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">${rowDone ? "Gelöst" : "A2-Test öffnen"}</button>
                 </div>
               </div>
             `;
@@ -10966,7 +10990,7 @@
         openPortalPanel("hoerenHomework", false);
       } else if (assigned && assigned.module === "lesen") {
         openPortalPanel("lesenHomework", false);
-      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && String((row && row.status) || "").toLowerCase() !== "abgegeben")) {
+      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && !isHomeworkSolvedStatus((row && row.status) || ""))) {
         openPortalPanel("a2Homework", false);
       }
 
