@@ -2509,6 +2509,7 @@
             <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
             <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
+            <button id="fastDeleteCourseBtn" type="button" class="admin-fastlane-btn course-shortcut-delete-btn">Kurs löschen</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen</button>
             <button id="fastMod6Btn" type="button" class="admin-fastlane-btn owner-only hidden">MOD6</button>
           </div>
@@ -2870,6 +2871,10 @@
                 </select>
                 <div id="hwTaskTemplatesMultiChecks" class="hw-multi-checklist"></div>
                 <small class="muted">Beispiel: 1x Hören + 2x Lesen + 1x Mail auswählen und unten einmal zuweisen.</small>
+                <label class="hw-multi-check-item" style="margin-top:8px;">
+                  <input id="hwMockIncludeMailChk" type="checkbox">
+                  <span>Modelltest: Mail schreiben hinzufügen</span>
+                </label>
                 <label for="hwTaskPreviewMulti" style="margin-top:8px;">Ausgewählte Aufgaben</label>
                 <textarea id="hwTaskPreviewMulti" rows="6" readonly></textarea>
                 <div class="grid" style="margin-top:8px;">
@@ -2928,8 +2933,6 @@
                     </select>
                   </div>
                 </div>
-                <label for="hwA2GeneratedPreview" style="margin-top:8px;">Generierte Aufgabenstellung</label>
-                <textarea id="hwA2GeneratedPreview" rows="7"></textarea>
                 <div class="actions" style="margin-top:14px;">
                   <button id="generateA2HomeworkBtn" type="button" class="ghost-btn">A2-Test generieren</button>
                   <button id="assignA2HomeworkBtn" type="button">A2-Test als Hausaufgabe zuweisen</button>
@@ -3419,12 +3422,13 @@
     const ADMIN_HW_COURSE_KEY = "dtz_admin_hw_course_v1";
     const ADMIN_HW_DURATION_VALUE_KEY = "dtz_admin_hw_duration_value_v1";
     const ADMIN_HW_DURATION_UNIT_KEY = "dtz_admin_hw_duration_unit_v1";
+    const ADMIN_HW_MOCK_INCLUDE_MAIL_KEY = "dtz_admin_hw_mock_include_mail_v1";
     const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
-    const DOCENT_ALLOWED_PANES = new Set(["homeworks", "coursebuilder", "progress"]);
-    const DOCENT_QUICK_PANES = new Set(["homeworks", "coursebuilder", "progress"]);
+    const DOCENT_ALLOWED_PANES = new Set(["homeworks", "coursebuilder", "progress", "archive"]);
+    const DOCENT_QUICK_PANES = new Set(["homeworks", "coursebuilder", "progress", "archive"]);
     const DOCENT_HIDE_MENU_IDS = [
       "jumpAccountsBtn",
       "jumpCourseBuilderBtn",
@@ -3436,7 +3440,7 @@
       "jumpJessBtn",
       "toggleAndereBtn"
     ];
-    const DOCENT_HIDE_FAST_IDS = ["fastAccountsBtn", "fastCoursesBtn", "fastKursBtn", "fastArchiveBtn", "fastMod6Btn"];
+    const DOCENT_HIDE_FAST_IDS = ["fastAccountsBtn", "fastCoursesBtn", "fastKursBtn", "fastMod6Btn"];
     const DOCENT_HIDE_SECTION_IDS = ["courseShortcutSection", "trainingSetSection"];
 
     const adminPaneMap = {
@@ -6295,11 +6299,13 @@
       const templateMulti = Array.from(document.getElementById("hwTaskTemplatesMulti")?.selectedOptions || [])
         .map(option => String(option.value || "").trim())
         .filter(Boolean);
+      const includeMailForMock = !!document.getElementById("hwMockIncludeMailChk")?.checked;
       setStoredPreference("admin_hw_template_hoeren", templateHoeren || null);
       setStoredPreference("admin_hw_template_lesen", templateLesen || null);
       setStoredPreference("admin_hw_template_mail", templateMail || null);
       setStoredPreference("admin_hw_template_mock", templateMock || null);
       setStoredPreference("admin_hw_templates_multi", templateMulti.length ? templateMulti.join(",") : null);
+      setStoredPreference(ADMIN_HW_MOCK_INCLUDE_MAIL_KEY, includeMailForMock ? "1" : "0");
       setStoredPreference(ADMIN_HW_COURSE_KEY, courseId || null);
       setStoredPreference(ADMIN_HW_DURATION_VALUE_KEY, durationValue || null);
       setStoredPreference(ADMIN_HW_DURATION_UNIT_KEY, durationUnit || null);
@@ -6311,6 +6317,7 @@
       const templateMail = getStoredPreference("admin_hw_template_mail");
       const templateMock = getStoredPreference("admin_hw_template_mock");
       const templateMultiRaw = getStoredPreference("admin_hw_templates_multi");
+      const includeMailForMockRaw = getStoredPreference(ADMIN_HW_MOCK_INCLUDE_MAIL_KEY);
       const templateMulti = templateMultiRaw
         ? templateMultiRaw.split(",").map(v => String(v || "").trim()).filter(Boolean)
         : [];
@@ -6342,6 +6349,10 @@
         Array.from(multiSelect.options).forEach(option => {
           option.selected = selectedSet.has(String(option.value || ""));
         });
+      }
+      const mockIncludeMailChk = document.getElementById("hwMockIncludeMailChk");
+      if (mockIncludeMailChk) {
+        mockIncludeMailChk.checked = String(includeMailForMockRaw || "") === "1";
       }
 
       const courseSelect = document.getElementById("hwCourseId");
@@ -6542,6 +6553,23 @@
       const templateId = String(select?.value || "").trim();
       if (!templateId) return null;
       return HOMEWORK_MAIL_TEMPLATES.find(item => String(item.id || "") === templateId) || null;
+    }
+
+    function isModelltestTemplateId(templateId) {
+      return String(templateId || "").trim().toLowerCase() === "dtz-mock-pruefung-komplett";
+    }
+
+    function isMockMailOptionEnabled() {
+      return !!document.getElementById("hwMockIncludeMailChk")?.checked;
+    }
+
+    function applyMockMailOptionToDescription(rawDescription, includeMail) {
+      let description = String(rawDescription || "").trim();
+      description = description.replace(/\n?-?\s*Hinweis:\s*ohne Schreiben\s*\(nur Hören \+ Lesen\)\.?\s*$/i, "").trim();
+      if (!includeMail && !/ohne schreiben/i.test(description)) {
+        description += "\n- Hinweis: ohne Schreiben (nur Hören + Lesen).";
+      }
+      return description;
     }
 
     function updateHomeworkTemplatePreview(category = "hoeren") {
@@ -8296,8 +8324,13 @@
       const selectedTemplate = getSelectedHomeworkTemplate(safeCategory);
       const title = String(selectedTemplate?.title || "").trim();
       const customDescription = String(document.getElementById(homeworkTemplatePreviewIdByCategory(safeCategory))?.value || "").trim();
-      const description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
-      const attachment = "";
+      let description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
+      let attachment = "";
+      if (isModelltestTemplateId(String(selectedTemplate?.id || ""))) {
+        const includeMail = isMockMailOptionEnabled();
+        description = applyMockMailOptionToDescription(description, includeMail);
+        attachment = `mock_mail=${includeMail ? "1" : "0"}`;
+      }
       const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
       const effectiveCourseId = courseId || String(selectedCourseId || "").trim();
       const durationValue = Number(document.getElementById("hwDurationValue")?.value || 0);
@@ -8408,7 +8441,14 @@
       const groupLabel = `Mehrfachzuweisung ${formatDisplayDateTime(new Date().toISOString()) || new Date().toLocaleString("de-DE")}`;
       for (const template of selectedTemplates) {
         const title = String(template?.title || "").trim();
-        const description = buildHomeworkTemplateDescription(template);
+        const includeMail = isModelltestTemplateId(String(template?.id || "")) ? isMockMailOptionEnabled() : false;
+        const baseDescription = buildHomeworkTemplateDescription(template);
+        const description = isModelltestTemplateId(String(template?.id || ""))
+          ? applyMockMailOptionToDescription(baseDescription, includeMail)
+          : baseDescription;
+        const attachment = isModelltestTemplateId(String(template?.id || ""))
+          ? `mock_mail=${includeMail ? "1" : "0"}`
+          : "";
         if (!title || !description) {
           failures.push(`${String(template?.id || "aufgabe")}: ungültige Vorlage`);
           continue;
@@ -8419,7 +8459,7 @@
             template_id: String(template?.id || ""),
             title,
             description,
-            attachment: "",
+            attachment,
             target_type: "course",
             course_id: effectiveCourseId,
             usernames: [],
@@ -11022,6 +11062,16 @@
     const fastProgressBtn = document.getElementById("fastProgressBtn");
     if (fastProgressBtn) {
       fastProgressBtn.addEventListener("click", () => openAdminPane("progress"));
+    }
+    const fastDeleteCourseBtn = document.getElementById("fastDeleteCourseBtn");
+    if (fastDeleteCourseBtn) {
+      fastDeleteCourseBtn.addEventListener("click", () => {
+        if (!selectedCourseId) {
+          window.alert("Bitte zuerst einen Kurs auswählen.");
+          return;
+        }
+        deleteCourse(selectedCourseId);
+      });
     }
     const fastSelectedCourseWorkspaceBtn = document.getElementById("fastSelectedCourseWorkspaceBtn");
     if (fastSelectedCourseWorkspaceBtn) {

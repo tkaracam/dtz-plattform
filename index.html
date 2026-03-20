@@ -6676,11 +6676,13 @@
       const templateId = String(item.template_id || "").toLowerCase();
       const title = String(item.title || "");
       const description = String(item.description || "");
-      const bag = `${title} ${description} ${templateId}`.toLowerCase();
+      const attachment = String(item.attachment || "");
+      const bag = `${title} ${description} ${templateId} ${attachment}`.toLowerCase();
       return {
         isAssigned: assignmentId !== "",
         assignmentId,
         templateId,
+        attachment,
         bag
       };
     }
@@ -6689,6 +6691,8 @@
       const ctx = getModelltestAssignmentContext();
       if (!ctx.isAssigned) return false;
       const bag = ctx.bag;
+      if (bag.includes("mock_mail=0")) return false;
+      if (bag.includes("mock_mail=1")) return true;
       if (bag.includes("ohne schreiben") || bag.includes("nur hören lesen") || bag.includes("nur hoeren lesen")) {
         return false;
       }
