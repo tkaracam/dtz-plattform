@@ -10868,7 +10868,7 @@
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}">${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen</button></div>`
           : "";
         const a2OpenAction = !parsedTemplate && detectStudentHomeworkCategory(row) === "a2"
-          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="ghost-btn" data-open-a2-homework="${escapeHtml(String(row.id || ""))}">A2-Test öffnen</button></div>`
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" data-open-a2-homework="${escapeHtml(String(row.id || ""))}">A2-Test öffnen</button></div>`
           : "";
         return `
           <div class="portal-item ${stateClass}">
@@ -10922,7 +10922,7 @@
                 <strong>${escapeHtml(String((row && row.title) || "A2-Aufgabe"))}</strong>
                 <div>Dauer: ${escapeHtml(formatDurationMinutes(row && row.duration_minutes))} | Fällig: ${escapeHtml(rowDue)} | Status: ${escapeHtml(rowStatus)}</div>
                 <div class="row-end" style="margin-top:6px;">
-                  <button type="button" class="ghost-btn" data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">A2-Test öffnen</button>
+                  <button type="button" data-open-a2-homework="${escapeHtml(String((row && row.id) || ""))}">A2-Test öffnen</button>
                 </div>
               </div>
             `;
