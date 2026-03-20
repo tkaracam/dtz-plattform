@@ -7244,9 +7244,7 @@
     }
 
     function getSafeModelltestAudioKey(audioKey) {
-      const key = String(audioKey || "").trim();
-      if (!key) return "";
-      return key.startsWith("mt_") ? key : "";
+      return String(audioKey || "").trim();
     }
 
     function hasModelltestAudioPlayed(audioKey) {
@@ -7255,7 +7253,12 @@
       const bag = modelltestFlowState && typeof modelltestFlowState.playedAudioByKey === "object"
         ? modelltestFlowState.playedAudioByKey
         : {};
-      return !!bag[key];
+      if (bag[key]) return true;
+      if (key.startsWith("mt_")) return false;
+      return Object.keys(bag).some((storedKey) => {
+        const safeStored = String(storedKey || "").trim();
+        return safeStored === key || safeStored.endsWith(`__${key}`);
+      });
     }
 
     function markModelltestAudioPlayed(audioKey) {
