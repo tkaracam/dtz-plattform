@@ -986,12 +986,77 @@
       flex: 1 1 0;
     }
 
-    .a2-embed-frame {
-      width: 100%;
-      min-height: 76vh;
-      border: 1px solid var(--line);
+    .a2-toolbar {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      margin-top: 10px;
+    }
+
+    .a2-controls {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .a2-question-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .a2-question-card {
+      border: 1px solid #efd8c8;
       border-radius: 12px;
-      background: #fff;
+      background: #fffdfa;
+      padding: 10px 12px;
+    }
+
+    .a2-question-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: 0.82rem;
+      color: #856253;
+    }
+
+    .a2-question-prompt {
+      margin: 0 0 8px;
+      color: #4e3d35;
+    }
+
+    .a2-options {
+      display: grid;
+      gap: 7px;
+    }
+
+    .a2-option {
+      border: 1px solid #e8d7cb;
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #ffffff;
+    }
+
+    .a2-question-card.correct {
+      border-color: #b8dfce;
+      background: #f4fcf8;
+    }
+
+    .a2-question-card.wrong {
+      border-color: #f0c4b9;
+      background: #fff7f4;
+    }
+
+    .a2-result {
+      margin-top: 6px;
+      font-size: 0.84rem;
+      color: #6f4d41;
     }
 
     .lid-top-actions {
@@ -3555,13 +3620,52 @@
 
       <section id="a2EmbedCard" class="card hidden">
         <h2 class="section-title">A2-Themen</h2>
-        <p class="section-subtitle">A2-Übungen direkt in der Hauptseite.</p>
+        <p class="section-subtitle">A2 direkt integriert: wie Hören/Lesen als internes Trainingsmodul.</p>
+        <div id="a2Toolbar" class="a2-toolbar">
+          <div class="a2-controls">
+            <div>
+              <label for="a2TopicSelect">Thema</label>
+              <select id="a2TopicSelect">
+                <option value="Perfekt">Perfekt</option>
+                <option value="Nebensatz">Nebensatz</option>
+                <option value="Modalverben">Modalverben</option>
+                <option value="Präpositionen">Präpositionen</option>
+                <option value="Trennbare Verben">Trennbare Verben</option>
+                <option value="Kasus">Kasus</option>
+                <option value="Gemischt">Gemischt</option>
+              </select>
+            </div>
+            <div>
+              <label for="a2QuestionCountSelect">Fragen</label>
+              <select id="a2QuestionCountSelect">
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50" selected>50</option>
+                <option value="60">60</option>
+              </select>
+            </div>
+          </div>
+          <div class="btn-wrap">
+            <button id="a2StartBtn" type="button">Test starten</button>
+          </div>
+        </div>
+        <div id="a2Status" class="hidden"></div>
+        <div class="row-end" style="margin-top:8px;">
+          <div class="btn-wrap">
+            <button id="a2EvaluateBtn" type="button" class="secondary-btn">Auswerten</button>
+          </div>
+          <div class="btn-wrap">
+            <button id="a2ShowSolutionsBtn" type="button" class="secondary-btn">Lösungen zeigen</button>
+          </div>
+        </div>
+        <div id="a2StatsBox" class="portal-item" style="margin-top:10px;">Noch kein A2-Test gestartet.</div>
         <div class="row-end">
           <div class="btn-wrap">
             <button id="backToPortalFromA2Btn" type="button" class="secondary-btn">Zurück zum Portal</button>
           </div>
         </div>
-        <iframe id="a2EmbedFrame" class="a2-embed-frame" title="A2-Themen"></iframe>
+        <div id="a2QuestionList" class="a2-question-list"></div>
       </section>
 
       <section id="dtzHubCard" class="card hidden">
@@ -3797,6 +3901,13 @@
     let speakingLastDurationSec = 0;
     let speakingRecordingTimerId = null;
     let speakingAutoTranscript = "";
+    let currentA2HomeworkConfig = null;
+    let currentA2State = {
+      topic: "Perfekt",
+      questions: [],
+      started: false,
+      score: 0
+    };
     let simulationState = {
       active: false,
       locked: false,
@@ -5764,17 +5875,251 @@
       setHomeDashboardSection("niveau");
     }
 
-    function openA2ThemesInApp(rawUrl = "./a2-themen.html") {
-      const frame = document.getElementById("a2EmbedFrame");
-      const fallback = new URL("./a2-themen.html", window.location.href).href;
-      const safeUrl = resolveSafeHttpUrl(rawUrl) || fallback;
+    function normalizeA2TopicToken(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[ä]/g, "ae")
+        .replace(/[ö]/g, "oe")
+        .replace(/[ü]/g, "ue")
+        .replace(/[ß]/g, "ss")
+        .replace(/\s+/g, "-");
+    }
+
+    function parseA2ConfigFromInput(rawInput) {
+      const fallback = { topics: [], count: 50, homeworkMode: false };
+      if (rawInput && typeof rawInput === "object" && !Array.isArray(rawInput)) {
+        const topics = Array.isArray(rawInput.topics) ? rawInput.topics : [];
+        const count = Number.parseInt(String(rawInput.count || "50"), 10);
+        return {
+          topics: topics.filter(Boolean),
+          count: Number.isFinite(count) ? Math.max(10, Math.min(100, count)) : 50,
+          homeworkMode: !!rawInput.homeworkMode
+        };
+      }
+      const safeUrl = resolveSafeHttpUrl(rawInput);
+      if (!safeUrl) return fallback;
+      try {
+        const url = new URL(safeUrl);
+        const rawTopics = String(url.searchParams.get("topics") || "");
+        const rawCount = Number.parseInt(String(url.searchParams.get("count") || "50"), 10);
+        const rawHw = String(url.searchParams.get("hw") || "").trim().toLowerCase();
+        const topicAliases = {
+          perfekt: "Perfekt",
+          nebensatz: "Nebensatz",
+          nebensaetze: "Nebensatz",
+          modalverben: "Modalverben",
+          praepositionen: "Präpositionen",
+          praeposition: "Präpositionen",
+          trennbare-verben: "Trennbare Verben",
+          kasus: "Kasus",
+          wechselpraepositionen: "Präpositionen",
+          relativsaetze: "Nebensatz"
+        };
+        const topics = rawTopics
+          .split(",")
+          .map(item => normalizeA2TopicToken(item))
+          .map(token => topicAliases[token] || "")
+          .filter(Boolean);
+        return {
+          topics: topics.filter((item, index, arr) => arr.indexOf(item) === index),
+          count: Number.isFinite(rawCount) ? Math.max(10, Math.min(100, rawCount)) : 50,
+          homeworkMode: rawHw === "1" || rawHw === "true"
+        };
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function a2Pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function a2Shuffle(list) {
+      return shuffleArray(Array.isArray(list) ? list : []);
+    }
+
+    function generateA2Question(topic, index) {
+      if (topic === "Perfekt") {
+        const pool = [
+          ["Ich habe gestern Deutsch gelernt.", "Ich bin gestern Deutsch gelernt.", "Ich habe gestern Deutsch lernen."],
+          ["Wir haben die Hausaufgaben gemacht.", "Wir sind die Hausaufgaben gemacht.", "Wir haben die Hausaufgaben machen."],
+          ["Sie hat am Abend gekocht.", "Sie ist am Abend gekocht.", "Sie hat am Abend kochen."]
+        ];
+        const row = a2Pick(pool);
+        return { topic, prompt: `Wählen Sie den richtigen Perfekt-Satz (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "haben/sein + Partizip II beachten." };
+      }
+      if (topic === "Nebensatz") {
+        const pool = [
+          ["Ich bleibe zu Hause, weil ich krank bin.", "Ich bleibe zu Hause, weil ich bin krank.", "Ich bleibe zu Hause weil bin ich krank."],
+          ["Wir kommen später, weil der Bus verspätet ist.", "Wir kommen später, weil der Bus ist verspätet.", "Wir kommen später weil ist der Bus verspätet."],
+          ["Sie lernt viel, weil sie die Prüfung schaffen will.", "Sie lernt viel, weil sie will die Prüfung schaffen.", "Sie lernt viel weil will sie die Prüfung schaffen."]
+        ];
+        const row = a2Pick(pool);
+        return { topic, prompt: `Wählen Sie den korrekten Nebensatz (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Im Nebensatz steht das Verb am Ende." };
+      }
+      if (topic === "Modalverben") {
+        const pool = [
+          ["Ich muss morgen früh arbeiten.", "Ich muss morgen früh zu arbeiten.", "Ich morgen früh muss arbeiten."],
+          ["Du darfst heute früher gehen.", "Du darfst heute früher zu gehen.", "Du heute früher darfst gehen."],
+          ["Wir können den Text verstehen.", "Wir können den Text zu verstehen.", "Wir den Text können verstehen."]
+        ];
+        const row = a2Pick(pool);
+        return { topic, prompt: `Wählen Sie den richtigen Satz mit Modalverb (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Nach Modalverben steht der Infinitiv ohne 'zu'." };
+      }
+      if (topic === "Präpositionen") {
+        const pool = [
+          ["Der Termin ist am Montag um 9 Uhr.", "Der Termin ist im Montag an 9 Uhr.", "Der Termin ist zu Montag bei 9 Uhr."],
+          ["Ich fahre nach Berlin und gehe zum Arzt.", "Ich fahre zu Berlin und gehe am Arzt.", "Ich fahre in Berlin und gehe zu dem Arzt."],
+          ["Der Kurs beginnt im Oktober.", "Der Kurs beginnt am Oktober.", "Der Kurs beginnt nach Oktober."]
+        ];
+        const row = a2Pick(pool);
+        return { topic, prompt: `Wählen Sie die richtige Präposition (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Zeit/Ort-Präpositionen genau prüfen." };
+      }
+      if (topic === "Trennbare Verben") {
+        const pool = [
+          ["Ich stehe jeden Tag um 6 Uhr auf.", "Ich aufstehe jeden Tag um 6 Uhr.", "Ich stehe auf jeden Tag um 6 Uhr auf."],
+          ["Wir kaufen heute im Supermarkt ein.", "Wir einkaufen heute im Supermarkt.", "Wir kaufen ein heute im Supermarkt ein."],
+          ["Sie ruft ihre Mutter am Abend an.", "Sie anruft ihre Mutter am Abend.", "Sie ruft an ihre Mutter am Abend an."]
+        ];
+        const row = a2Pick(pool);
+        return { topic, prompt: `Wählen Sie den korrekten Satz mit trennbarem Verb (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Im Hauptsatz steht die Vorsilbe am Satzende." };
+      }
+      const kasusPool = [
+        ["Ich gebe dem Mann den Schlüssel.", "Ich gebe den Mann dem Schlüssel.", "Ich gebe der Mann den Schlüssel."],
+        ["Sie sieht den neuen Lehrer.", "Sie sieht dem neuen Lehrer.", "Sie sieht der neue Lehrer."],
+        ["Wir helfen der Nachbarin heute.", "Wir helfen die Nachbarin heute.", "Wir helfen den Nachbarin heute."]
+      ];
+      const row = a2Pick(kasusPool);
+      return { topic: "Kasus", prompt: `Wählen Sie den richtigen Kasus-Satz (${index + 1}).`, options: a2Shuffle(row), correct: row[0], hint: "Akkusativ/Dativ mit Verbbezug prüfen." };
+    }
+
+    function renderA2IntegratedQuestions() {
+      const wrap = document.getElementById("a2QuestionList");
+      if (!wrap) return;
+      if (!currentA2State.started || !currentA2State.questions.length) {
+        wrap.innerHTML = "";
+        return;
+      }
+      wrap.innerHTML = currentA2State.questions.map((q, index) => {
+        const optionsHtml = q.options.map((opt, optIndex) => {
+          const checked = Number(q.selected) === optIndex ? "checked" : "";
+          return `
+            <label class="a2-option">
+              <input type="radio" name="a2-q-${index}" value="${optIndex}" ${checked}>
+              <span>${escapeHtml(opt)}</span>
+            </label>
+          `;
+        }).join("");
+        const resultHtml = q.result
+          ? `<div class="a2-result">${q.result}</div>`
+          : "";
+        const rowClass = q.correct === true ? "a2-question-card correct" : (q.correct === false ? "a2-question-card wrong" : "a2-question-card");
+        return `
+          <article id="a2-card-${index}" class="${rowClass}">
+            <div class="a2-question-head"><span>Frage ${index + 1}/${currentA2State.questions.length}</span><span>${escapeHtml(q.topic)}</span></div>
+            <p class="a2-question-prompt">${escapeHtml(q.prompt)}</p>
+            <div class="a2-options">${optionsHtml}</div>
+            ${resultHtml}
+          </article>
+        `;
+      }).join("");
+      wrap.querySelectorAll("input[type='radio'][name^='a2-q-']").forEach(input => {
+        input.addEventListener("change", () => {
+          const name = String(input.getAttribute("name") || "");
+          const match = name.match(/^a2-q-(\d+)$/);
+          if (!match) return;
+          const idx = Number.parseInt(match[1], 10);
+          if (!Number.isFinite(idx) || !currentA2State.questions[idx]) return;
+          currentA2State.questions[idx].selected = Number.parseInt(String(input.value || ""), 10);
+        });
+      });
+    }
+
+    function renderA2IntegratedStats() {
+      const node = document.getElementById("a2StatsBox");
+      if (!node) return;
+      if (!currentA2State.started || !currentA2State.questions.length) {
+        node.textContent = "Noch kein A2-Test gestartet.";
+        return;
+      }
+      const total = currentA2State.questions.length;
+      const checked = currentA2State.questions.filter(q => q.correct === true || q.correct === false).length;
+      const correct = currentA2State.questions.filter(q => q.correct === true).length;
+      const pct = checked > 0 ? Math.round((correct / total) * 100) : 0;
+      node.textContent = `A2-Test: ${checked}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
+    }
+
+    function startA2IntegratedTest(config = {}) {
+      const topicSelect = document.getElementById("a2TopicSelect");
+      const countSelect = document.getElementById("a2QuestionCountSelect");
+      const status = document.getElementById("a2Status");
+      const toolbar = document.getElementById("a2Toolbar");
+      const topics = Array.isArray(config.topics) ? config.topics.filter(Boolean) : [];
+      const count = Math.max(10, Math.min(100, Number.parseInt(String(config.count || (countSelect ? countSelect.value : "50")), 10) || 50));
+      const homeworkMode = !!config.homeworkMode;
+      if (toolbar) toolbar.style.display = homeworkMode ? "none" : "";
+      if (countSelect) countSelect.value = String(Math.min(60, Math.max(20, count)));
+      const baseTopic = topics.length > 1 ? "Gemischt" : (topics[0] || String((topicSelect && topicSelect.value) || "Perfekt"));
+      if (topicSelect) topicSelect.value = baseTopic;
+      const sourceTopics = topics.length ? topics : (baseTopic === "Gemischt"
+        ? ["Perfekt", "Nebensatz", "Modalverben", "Präpositionen", "Trennbare Verben", "Kasus"]
+        : [baseTopic]);
+      currentA2State = {
+        topic: baseTopic,
+        started: true,
+        score: 0,
+        questions: Array.from({ length: count }, (_, idx) => {
+          const chosenTopic = baseTopic === "Gemischt" ? a2Pick(sourceTopics) : sourceTopics[0];
+          return {
+            ...generateA2Question(chosenTopic, idx),
+            selected: null,
+            correct: null,
+            result: ""
+          };
+        })
+      };
+      if (status) {
+        status.className = "ok";
+        status.textContent = homeworkMode
+          ? "Hausaufgabe aktiv: nur der zugewiesene A2-Test ist geöffnet."
+          : "A2-Test gestartet.";
+      }
+      renderA2IntegratedQuestions();
+      renderA2IntegratedStats();
+    }
+
+    function evaluateA2IntegratedTest(showSolutions = false) {
+      if (!currentA2State.started || !Array.isArray(currentA2State.questions)) return;
+      currentA2State.questions = currentA2State.questions.map(q => {
+        if (showSolutions) {
+          return {
+            ...q,
+            correct: false,
+            result: `Lösung: ${escapeHtml(q.correct)}`
+          };
+        }
+        const selectedIndex = Number.isFinite(q.selected) ? q.selected : -1;
+        const selectedValue = selectedIndex >= 0 ? String(q.options[selectedIndex] || "") : "";
+        const ok = selectedValue && selectedValue === q.correct;
+        return {
+          ...q,
+          correct: ok,
+          result: ok
+            ? `Richtig. ${escapeHtml(q.hint)}`
+            : `Falsch. Lösung: ${escapeHtml(q.correct)}`
+        };
+      });
+      renderA2IntegratedQuestions();
+      renderA2IntegratedStats();
+    }
+
+    function openA2ThemesInApp(rawInput = "./a2-themen.html") {
+      const cfg = parseA2ConfigFromInput(rawInput);
+      currentA2HomeworkConfig = cfg.homeworkMode ? cfg : null;
       setMainView("a2");
       setHomeDashboardSection("niveau");
-      if (frame && frame.getAttribute("src") !== safeUrl) {
-        frame.setAttribute("src", safeUrl);
-      } else if (frame && !frame.getAttribute("src")) {
-        frame.setAttribute("src", safeUrl);
-      }
+      startA2IntegratedTest(cfg);
     }
 
     function openB1View() {
@@ -11995,6 +12340,28 @@
         const route = getDashboardStartRoute();
         navigateToSection(route);
       });
+    }
+    const a2StartBtn = document.getElementById("a2StartBtn");
+    if (a2StartBtn) {
+      a2StartBtn.addEventListener("click", () => {
+        const topicSelect = document.getElementById("a2TopicSelect");
+        const countSelect = document.getElementById("a2QuestionCountSelect");
+        const topic = String((topicSelect && topicSelect.value) || "Perfekt");
+        const count = Number.parseInt(String((countSelect && countSelect.value) || "50"), 10);
+        startA2IntegratedTest({
+          topics: topic === "Gemischt" ? [] : [topic],
+          count: Number.isFinite(count) ? count : 50,
+          homeworkMode: false
+        });
+      });
+    }
+    const a2EvaluateBtn = document.getElementById("a2EvaluateBtn");
+    if (a2EvaluateBtn) {
+      a2EvaluateBtn.addEventListener("click", () => evaluateA2IntegratedTest(false));
+    }
+    const a2ShowSolutionsBtn = document.getElementById("a2ShowSolutionsBtn");
+    if (a2ShowSolutionsBtn) {
+      a2ShowSolutionsBtn.addEventListener("click", () => evaluateA2IntegratedTest(true));
     }
     const backToPortalFromA2Btn = document.getElementById("backToPortalFromA2Btn");
     if (backToPortalFromA2Btn) backToPortalFromA2Btn.addEventListener("click", () => navigateToSection("portal"));
