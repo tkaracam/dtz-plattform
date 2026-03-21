@@ -10125,7 +10125,7 @@
       { key: "hoeren", label: "DTZ Hören öffnen", hint: "Hören Training", keywords: "dtz hoeren b1", action: () => navigateToSection("dtz-hoeren") },
       { key: "lesen", label: "DTZ Lesen öffnen", hint: "Lesen Training", keywords: "dtz lesen b1", action: () => navigateToSection("dtz-lesen") },
       { key: "home", label: "Startseite öffnen", hint: "Zum Hauptbereich", keywords: "start home", action: () => navigateToSection("home") },
-      { key: "admin", label: "Lehrer-Panel öffnen", hint: "Admin-Bereich", keywords: "admin lehrer panel", action: () => { window.location.href = "./admin.html"; } }
+      { key: "admin", label: "Lehrer-Panel öffnen", hint: "Dozent-Bereich", keywords: "admin lehrer panel dozent", action: () => { window.location.href = "./docent_admin.html"; } }
     ];
 
     let paletteSelectionIndex = 0;
@@ -13995,7 +13995,7 @@
     if (navLidBtn) navLidBtn.addEventListener("click", () => navigateToSection("lid"));
     const navAdminBtn = document.getElementById("navAdminBtn");
     if (navAdminBtn) navAdminBtn.addEventListener("click", () => {
-      window.location.href = "./admin.html";
+      window.location.href = "./docent_admin.html";
     });
     const levelLidBtn = document.getElementById("levelLidBtn");
     if (levelLidBtn) levelLidBtn.addEventListener("click", () => navigateToSection("lid"));
