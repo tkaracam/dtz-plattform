@@ -2510,6 +2510,7 @@
             <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
             <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
+            <button id="fastAttendanceBtn" type="button" class="admin-fastlane-btn">Anwesenheit</button>
             <button id="fastDeleteCourseBtn" type="button" class="admin-fastlane-btn course-shortcut-delete-btn">Kurs löschen</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen</button>
             <button id="fastMod6Btn" type="button" class="admin-fastlane-btn owner-only hidden">MOD6</button>
@@ -3486,14 +3487,14 @@
     const ADMIN_HW_DURATION_UNIT_KEY = "dtz_admin_hw_duration_unit_v1";
     const ADMIN_HW_MOCK_INCLUDE_MAIL_KEY = "dtz_admin_hw_mock_include_mail_v1";
     const ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY = "dtz_admin_hw_mock_mail_template_v1";
-    const ARCHIVED_ADMIN_PANES = new Set(["attendance", "notify", "room"]);
+    const ARCHIVED_ADMIN_PANES = new Set(["notify", "room"]);
     const FORCED_ADMIN_MODE = new URLSearchParams(window.location.search).get("mode") === "docent" ? "docent" : "";
     const ADMIN_SESSION_MODE = FORCED_ADMIN_MODE === "docent" ? "docent" : "owner";
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
-    const DOCENT_ALLOWED_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "archive"]);
-    const DOCENT_QUICK_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "archive"]);
+    const DOCENT_ALLOWED_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "attendance", "archive"]);
+    const DOCENT_QUICK_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "attendance", "archive"]);
     const DOCENT_HIDE_MENU_IDS = [
       "jumpAccountsBtn",
       "jumpCourseBuilderBtn",
@@ -3548,6 +3549,7 @@
       kurs: "paneKurs",
       homeworks: "paneHomeworks",
       progress: "paneProgress",
+      attendance: "paneAttendance",
       audit: "paneAudit",
       archive: "paneArchive",
       mod6: "paneMod6"
@@ -3561,6 +3563,7 @@
       kurs: "Kurs",
       homeworks: "Hausaufgaben",
       progress: "Fortschritt",
+      attendance: "Anwesenheit",
       audit: "Audit",
       archive: "Mail Korrekturen",
       mod6: "MOD6"
@@ -9237,20 +9240,31 @@
             <td>${escapeHtml(name)}</td>
             <td>
               <select data-att-status="${i}">
-                <option value="present">Present</option>
-                <option value="late">Late</option>
-                <option value="absent">Absent</option>
-                <option value="excused">Excused</option>
+                <option value="present">Anwesend</option>
+                <option value="late">Verspätet</option>
+                <option value="absent">Fehlend</option>
+                <option value="excused">Entschuldigt</option>
               </select>
             </td>
-            <td><input type="text" data-att-note="${i}" placeholder="Notiz (optional)"></td>
+            <td>
+              <select data-att-reason="${i}">
+                <option value="">-</option>
+                <option value="sick">Krankheit</option>
+                <option value="transport">Transport</option>
+                <option value="work">Arbeit</option>
+                <option value="family">Familie</option>
+                <option value="appointment">Termin</option>
+                <option value="other">Sonstiges</option>
+              </select>
+            </td>
+            <td><input type="text" data-att-note="${i}" placeholder="Begründung / Notiz"></td>
           </tr>
         `;
       }).join("");
       wrap.innerHTML = `
         <table>
           <thead>
-            <tr><th>Username</th><th>Name</th><th>Status</th><th>Not</th></tr>
+            <tr><th>Username</th><th>Name</th><th>Status</th><th>Grund</th><th>Notiz</th></tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
@@ -9261,10 +9275,12 @@
       const users = getSelectedCourseUsers();
       return users.map((u, i) => {
         const statusEl = document.querySelector(`[data-att-status="${i}"]`);
+        const reasonEl = document.querySelector(`[data-att-reason="${i}"]`);
         const noteEl = document.querySelector(`[data-att-note="${i}"]`);
         return {
           username: String(u.username || ""),
           status: String(statusEl ? statusEl.value : "present"),
+          reason: String(reasonEl ? reasonEl.value : "").trim(),
           note: String(noteEl ? noteEl.value : "").trim()
         };
       });
@@ -9284,6 +9300,19 @@
       }
       if (!rows.length) {
         setBox("attendanceStatus", "error", "Bitte zuerst auf 'Teilnehmer laden' klicken.");
+        return;
+      }
+      const missingReason = rows.find(row => {
+        const st = String(row.status || "");
+        const rs = String(row.reason || "");
+        const nt = String(row.note || "");
+        if (st === "late" || st === "absent") {
+          return rs === "" && nt === "";
+        }
+        return false;
+      });
+      if (missingReason) {
+        setBox("attendanceStatus", "error", "Für 'Verspätet' und 'Fehlend' bitte Grund oder Notiz eintragen.");
         return;
       }
       try {
@@ -9492,21 +9521,52 @@
       }
       const rows = records.map(r => {
         const risk = Number(r.absence_rate || 0) > 30 ? `<span class="source-alert">Risk >30%</span>` : "";
+        const detailRows = Array.isArray(r.rows) ? r.rows : [];
+        const lateOrAbsent = detailRows.filter(row => {
+          const st = String(row && row.status ? row.status : "");
+          return st === "late" || st === "absent";
+        });
+        const detailsHtml = lateOrAbsent.length
+          ? `<details><summary>${lateOrAbsent.length} Auffälligkeit(en)</summary><ul style="margin:8px 0 0 18px;">${
+              lateOrAbsent.map(row => {
+                const uname = escapeHtml(String(row && row.username ? row.username : "-"));
+                const st = String(row && row.status ? row.status : "");
+                const statusLabel = st === "late" ? "Verspätet" : "Fehlend";
+                const reasonMap = {
+                  sick: "Krankheit",
+                  transport: "Transport",
+                  work: "Arbeit",
+                  family: "Familie",
+                  appointment: "Termin",
+                  other: "Sonstiges"
+                };
+                const reasonRaw = String(row && row.reason ? row.reason : "");
+                const reasonLabel = reasonMap[reasonRaw] || "";
+                const note = escapeHtml(String(row && row.note ? row.note : ""));
+                const reasonPart = reasonLabel ? ` · Grund: ${escapeHtml(reasonLabel)}` : "";
+                const notePart = note ? ` · Notiz: ${note}` : "";
+                return `<li><strong>${uname}</strong> · ${statusLabel}${reasonPart}${notePart}</li>`;
+              }).join("")
+            }</ul></details>`
+          : "";
         return `
           <tr>
             <td class="mono">${escapeHtml(formatDisplayDate(r.lesson_date || ""))}</td>
             <td>${escapeHtml(r.course_name || "-")}</td>
             <td class="mono">${escapeHtml(`${r.present || 0}/${r.total || 0}`)}</td>
+            <td class="mono">${escapeHtml(String(r.late || 0))}</td>
+            <td class="mono">${escapeHtml(String(r.absent || 0))}</td>
             <td class="mono">${escapeHtml(`${r.absence_rate || 0}%`)}</td>
             <td>${r.locked ? "Ja" : "Nein"}</td>
             <td>${risk}</td>
+            <td>${detailsHtml}</td>
           </tr>
         `;
       }).join("");
       wrap.innerHTML = `
         <table>
           <thead>
-            <tr><th>Datum</th><th>Kurs</th><th>Present/Total</th><th>Fehlquote</th><th>Locked</th><th>Risk</th></tr>
+            <tr><th>Datum</th><th>Kurs</th><th>Anwesend/Total</th><th>Verspätet</th><th>Fehlend</th><th>Fehlquote</th><th>Locked</th><th>Risk</th><th>Details</th></tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
@@ -11804,6 +11864,10 @@
     const fastProgressBtn = document.getElementById("fastProgressBtn");
     if (fastProgressBtn) {
       fastProgressBtn.addEventListener("click", () => openAdminPane("progress"));
+    }
+    const fastAttendanceBtn = document.getElementById("fastAttendanceBtn");
+    if (fastAttendanceBtn) {
+      fastAttendanceBtn.addEventListener("click", () => openAdminPane("attendance"));
     }
     const fastDeleteCourseBtn = document.getElementById("fastDeleteCourseBtn");
     if (fastDeleteCourseBtn) {

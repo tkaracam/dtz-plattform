@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -48,7 +48,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -77,24 +77,28 @@ if (!is_array($rows) || count($rows) === 0) {
 }
 
 $allowed = ['present', 'late', 'absent', 'excused'];
+$allowedReasons = ['', 'sick', 'transport', 'work', 'family', 'appointment', 'other'];
 $sanitizedRows = [];
 foreach ($rows as $row) {
     if (!is_array($row)) continue;
     $username = mb_strtolower(trim((string)($row['username'] ?? '')));
     $status = trim((string)($row['status'] ?? ''));
+    $reason = trim((string)($row['reason'] ?? ''));
     $note = trim((string)($row['note'] ?? ''));
     if ($username === '' || !preg_match('/^[a-z0-9._-]{3,32}$/', $username)) continue;
     if (!in_array($status, $allowed, true)) $status = 'present';
+    if (!in_array($reason, $allowedReasons, true)) $reason = '';
     $sanitizedRows[] = [
         'username' => $username,
         'status' => $status,
+        'reason' => $reason,
         'note' => $note,
     ];
 }
 
 if (!$sanitizedRows) {
     http_response_code(400);
-    echo json_encode(['error' => 'Keine gueltigen Teilnehmerdaten.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Keine gültigen Teilnehmerdaten.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
