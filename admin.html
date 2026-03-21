@@ -2883,6 +2883,7 @@
                   <input id="studentSelectAllChk" type="checkbox">
                   Alle auswählen
                 </label>
+                <button id="deleteSelectedStudentsBtn" type="button" class="danger-btn">Löschen</button>
                 <button id="clearStudentSelectionBtn" type="button" class="ghost-btn">Auswahl löschen</button>
                 <span id="studentSelectionCount" class="student-selection-count">0 ausgewählt</span>
               </div>
@@ -5286,6 +5287,10 @@
       const countNode = document.getElementById("studentSelectionCount");
       if (countNode) {
         countNode.textContent = `${selectedCount} ausgewählt`;
+      }
+      const deleteSelectedBtn = document.getElementById("deleteSelectedStudentsBtn");
+      if (deleteSelectedBtn) {
+        deleteSelectedBtn.disabled = selectedCount === 0;
       }
       const selectAll = document.getElementById("studentSelectAllChk");
       if (selectAll) {
@@ -10466,6 +10471,56 @@
       }
     }
 
+    async function deleteSelectedStudentsFromAccounts() {
+      clearBox("userStatus");
+      const selected = Array.from(selectedStudentUsernames).filter(Boolean);
+      if (!selected.length) {
+        setBox("userStatus", "error", "Bitte zuerst Konten auswählen.");
+        return;
+      }
+      const scopedCourse = getAccountsScopeCourse();
+      const removeFromCourseMode = !!scopedCourse;
+      const confirmed = removeFromCourseMode
+        ? window.confirm(`${selected.length} ausgewählte Teilnehmende aus Kurs "${scopedCourse.name || scopedCourse.course_id}" entfernen?`)
+        : window.confirm(`${selected.length} ausgewählte Konten wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`);
+      if (!confirmed) return;
+
+      let success = 0;
+      const failed = [];
+      for (const username of selected) {
+        try {
+          if (removeFromCourseMode) {
+            await removeUserFromCourseMembers(scopedCourse.course_id, username);
+          } else {
+            const response = await fetch("./api/student_manage.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "delete",
+                username
+              })
+            });
+            const payload = await parseJsonResponse(response);
+            if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+          }
+          success += 1;
+          selectedStudentUsernames.delete(username);
+        } catch (err) {
+          failed.push(`${username} (${err.message})`);
+        }
+      }
+
+      await listCourses();
+      await listStudents();
+      if (failed.length) {
+        setBox("userStatus", "error", `${success} erfolgreich, ${failed.length} fehlgeschlagen: ${failed.slice(0, 3).join(" | ")}`);
+        return;
+      }
+      setBox("userStatus", "ok", removeFromCourseMode
+        ? `${success} Teilnehmende aus dem Kurs entfernt.`
+        : `${success} Konten gelöscht.`);
+    }
+
     function renderTeachers(users) {
       teacherUsers = Array.isArray(users) ? users.slice() : [];
       const wrap = document.getElementById("teacherListWrap");
@@ -12268,6 +12323,7 @@
     document.getElementById("studentSelectAllChk").addEventListener("change", event => {
       setAllStudentsSelected(!!event.target.checked);
     });
+    document.getElementById("deleteSelectedStudentsBtn").addEventListener("click", deleteSelectedStudentsFromAccounts);
     document.getElementById("clearStudentSelectionBtn").addEventListener("click", () => {
       setAllStudentsSelected(false);
     });
