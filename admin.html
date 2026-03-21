@@ -5657,6 +5657,35 @@
       });
       const payload = await parseJsonResponse(response);
       if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+      course.members = members.slice();
+    }
+
+    async function removeUsersFromCourseMembers(courseId, usernames) {
+      const id = String(courseId || "").trim();
+      const normalizedTargets = new Set(
+        (Array.isArray(usernames) ? usernames : [])
+          .map(name => String(name || "").trim().toLowerCase())
+          .filter(Boolean)
+      );
+      if (!id || !normalizedTargets.size) return;
+      const course = getCourseById(id);
+      if (!course) throw new Error("Kurs wurde nicht gefunden.");
+      const members = (Array.isArray(course.members) ? course.members : [])
+        .map(u => String(u || "").trim().toLowerCase())
+        .filter(Boolean)
+        .filter(member => !normalizedTargets.has(member));
+      const response = await fetch("./api/course_manage.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "set_members",
+          course_id: id,
+          members
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+      course.members = members.slice();
     }
 
     function renderCourseSelect() {
@@ -10808,11 +10837,17 @@
 
       let success = 0;
       const failed = [];
-      for (const username of selected) {
+      if (removeFromCourseMode) {
         try {
-          if (removeFromCourseMode) {
-            await removeUserFromCourseMembers(scopedCourse.course_id, username);
-          } else {
+          await removeUsersFromCourseMembers(scopedCourse.course_id, selected);
+          success = selected.length;
+          selected.forEach(username => selectedStudentUsernames.delete(username));
+        } catch (err) {
+          failed.push(`Kurs-Update fehlgeschlagen (${err.message})`);
+        }
+      } else {
+        for (const username of selected) {
+          try {
             const response = await fetch("./api/student_manage.php", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -10823,11 +10858,11 @@
             });
             const payload = await parseJsonResponse(response);
             if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+            success += 1;
+            selectedStudentUsernames.delete(username);
+          } catch (err) {
+            failed.push(`${username} (${err.message})`);
           }
-          success += 1;
-          selectedStudentUsernames.delete(username);
-        } catch (err) {
-          failed.push(`${username} (${err.message})`);
         }
       }
 
