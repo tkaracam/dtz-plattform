@@ -1016,6 +1016,91 @@
       color: #27476a;
     }
 
+    .attendance-name-cell {
+      display: grid;
+      gap: 2px;
+    }
+
+    .attendance-name-cell .meta {
+      font-size: 0.8rem;
+      color: #6a7280;
+    }
+
+    .attendance-miss-toggle {
+      width: 24px;
+      height: 24px;
+      margin-top: 2px;
+      accent-color: #d94a4a;
+      cursor: pointer;
+    }
+
+    .attendance-eu-wrap {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .attendance-eu-wrap.enabled {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .attendance-eu-chip {
+      border: 1px solid #d6dce7;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      color: #4c5667;
+      background: #f7f9fc;
+    }
+
+    .attendance-eu-wrap input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .attendance-eu-wrap input[type="radio"]:checked + .attendance-eu-chip.eu-e {
+      background: #d9f6de;
+      border-color: #81c58e;
+      color: #16642b;
+    }
+
+    .attendance-eu-wrap input[type="radio"]:checked + .attendance-eu-chip.eu-u {
+      background: #ffe2e2;
+      border-color: #df8787;
+      color: #9a1f1f;
+    }
+
+    .att-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.7em;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .att-badge-e {
+      background: #d9f6de;
+      color: #16642b;
+      border: 1px solid #81c58e;
+    }
+
+    .att-badge-u {
+      background: #ffe2e2;
+      color: #9a1f1f;
+      border: 1px solid #df8787;
+    }
+
     .archive-card-list {
       display: grid;
       gap: 10px;
@@ -9232,19 +9317,29 @@
         wrap.innerHTML = "<p>Dieser Kurs hat noch keine Teilnehmenden. Bitte Kursmitglieder bearbeiten.</p>";
         return;
       }
+      const courseName = String(document.getElementById("attendanceCourse").value || "").trim();
       const rows = users.map((u, i) => {
         const name = u.display_name ? `${u.display_name} (${u.username})` : u.username;
         return `
           <tr>
-            <td class="mono">${escapeHtml(u.username)}</td>
-            <td>${escapeHtml(name)}</td>
+            <td class="attendance-name-cell">
+              <strong>${escapeHtml(name)}</strong>
+              <span class="meta mono">${escapeHtml(u.username)}</span>
+            </td>
             <td>
-              <select data-att-status="${i}">
-                <option value="present">Anwesend</option>
-                <option value="late">Verspätet</option>
-                <option value="absent">Fehlend</option>
-                <option value="excused">Entschuldigt</option>
-              </select>
+              <input type="checkbox" class="attendance-miss-toggle" data-att-absent="${i}" aria-label="Fehlend markieren (X)">
+            </td>
+            <td>
+              <div class="attendance-eu-wrap" data-att-eu-wrap="${i}">
+                <label>
+                  <input type="radio" name="att-eu-${i}" value="excused" data-att-eu="${i}" checked>
+                  <span class="attendance-eu-chip eu-e">E</span>
+                </label>
+                <label>
+                  <input type="radio" name="att-eu-${i}" value="absent" data-att-eu="${i}">
+                  <span class="attendance-eu-chip eu-u">U</span>
+                </label>
+              </div>
             </td>
             <td>
               <select data-att-reason="${i}">
@@ -9257,29 +9352,45 @@
                 <option value="other">Sonstiges</option>
               </select>
             </td>
-            <td><input type="text" data-att-note="${i}" placeholder="Begründung / Notiz"></td>
+            <td><input type="text" data-att-note="${i}" placeholder="Warum fehlte / Notiz"></td>
           </tr>
         `;
       }).join("");
       wrap.innerHTML = `
+        <p class="section-subtitle" style="margin-bottom:8px;">Kurs: <strong>${escapeHtml(courseName || "-")}</strong> · X = fehlt · E = entschuldigt · U = unentschuldigt</p>
         <table>
           <thead>
-            <tr><th>Username</th><th>Name</th><th>Status</th><th>Grund</th><th>Notiz</th></tr>
+            <tr><th>Teilnehmer</th><th>Fehlt (X)</th><th>E / U</th><th>Grund</th><th>Notiz</th></tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       `;
+      users.forEach((_, i) => {
+        const absentEl = document.querySelector(`[data-att-absent="${i}"]`);
+        const euWrap = document.querySelector(`[data-att-eu-wrap="${i}"]`);
+        const toggleEu = () => {
+          if (!absentEl || !euWrap) return;
+          euWrap.classList.toggle("enabled", !!absentEl.checked);
+        };
+        if (absentEl) {
+          absentEl.addEventListener("change", toggleEu);
+        }
+        toggleEu();
+      });
     }
 
     function collectAttendanceRows() {
       const users = getSelectedCourseUsers();
       return users.map((u, i) => {
-        const statusEl = document.querySelector(`[data-att-status="${i}"]`);
+        const absentEl = document.querySelector(`[data-att-absent="${i}"]`);
+        const euEl = document.querySelector(`input[data-att-eu="${i}"]:checked`);
         const reasonEl = document.querySelector(`[data-att-reason="${i}"]`);
         const noteEl = document.querySelector(`[data-att-note="${i}"]`);
+        const isAbsent = !!(absentEl && absentEl.checked);
+        const status = isAbsent ? String(euEl ? euEl.value : "absent") : "present";
         return {
           username: String(u.username || ""),
-          status: String(statusEl ? statusEl.value : "present"),
+          status,
           reason: String(reasonEl ? reasonEl.value : "").trim(),
           note: String(noteEl ? noteEl.value : "").trim()
         };
@@ -9306,13 +9417,13 @@
         const st = String(row.status || "");
         const rs = String(row.reason || "");
         const nt = String(row.note || "");
-        if (st === "late" || st === "absent") {
+        if (st === "absent" || st === "excused") {
           return rs === "" && nt === "";
         }
         return false;
       });
       if (missingReason) {
-        setBox("attendanceStatus", "error", "Für 'Verspätet' und 'Fehlend' bitte Grund oder Notiz eintragen.");
+        setBox("attendanceStatus", "error", "Bei fehlenden Teilnehmenden bitte Grund oder Notiz eintragen.");
         return;
       }
       try {
@@ -9522,16 +9633,20 @@
       const rows = records.map(r => {
         const risk = Number(r.absence_rate || 0) > 30 ? `<span class="source-alert">Risk >30%</span>` : "";
         const detailRows = Array.isArray(r.rows) ? r.rows : [];
-        const lateOrAbsent = detailRows.filter(row => {
+        const missingRows = detailRows.filter(row => {
           const st = String(row && row.status ? row.status : "");
-          return st === "late" || st === "absent";
+          return st === "absent" || st === "excused";
         });
-        const detailsHtml = lateOrAbsent.length
-          ? `<details><summary>${lateOrAbsent.length} Auffälligkeit(en)</summary><ul style="margin:8px 0 0 18px;">${
-              lateOrAbsent.map(row => {
+        const detailsHtml = missingRows.length
+          ? `<details><summary>${missingRows.length} Fehlt-Eintrag/Einträge</summary><ul style="margin:8px 0 0 18px;">${
+              missingRows.map(row => {
                 const uname = escapeHtml(String(row && row.username ? row.username : "-"));
                 const st = String(row && row.status ? row.status : "");
-                const statusLabel = st === "late" ? "Verspätet" : "Fehlend";
+                const isExcused = st === "excused";
+                const marker = isExcused
+                  ? `<span class="att-badge att-badge-e">E</span>`
+                  : `<span class="att-badge att-badge-u">U</span>`;
+                const statusLabel = isExcused ? "Entschuldigt" : "Unentschuldigt";
                 const reasonMap = {
                   sick: "Krankheit",
                   transport: "Transport",
@@ -9545,7 +9660,7 @@
                 const note = escapeHtml(String(row && row.note ? row.note : ""));
                 const reasonPart = reasonLabel ? ` · Grund: ${escapeHtml(reasonLabel)}` : "";
                 const notePart = note ? ` · Notiz: ${note}` : "";
-                return `<li><strong>${uname}</strong> · ${statusLabel}${reasonPart}${notePart}</li>`;
+                return `<li>${marker} <strong>${uname}</strong> · ${statusLabel}${reasonPart}${notePart}</li>`;
               }).join("")
             }</ul></details>`
           : "";
@@ -9554,7 +9669,7 @@
             <td class="mono">${escapeHtml(formatDisplayDate(r.lesson_date || ""))}</td>
             <td>${escapeHtml(r.course_name || "-")}</td>
             <td class="mono">${escapeHtml(`${r.present || 0}/${r.total || 0}`)}</td>
-            <td class="mono">${escapeHtml(String(r.late || 0))}</td>
+            <td class="mono">${escapeHtml(String(r.excused || 0))}</td>
             <td class="mono">${escapeHtml(String(r.absent || 0))}</td>
             <td class="mono">${escapeHtml(`${r.absence_rate || 0}%`)}</td>
             <td>${r.locked ? "Ja" : "Nein"}</td>
@@ -9566,7 +9681,7 @@
       wrap.innerHTML = `
         <table>
           <thead>
-            <tr><th>Datum</th><th>Kurs</th><th>Anwesend/Total</th><th>Verspätet</th><th>Fehlend</th><th>Fehlquote</th><th>Locked</th><th>Risk</th><th>Details</th></tr>
+            <tr><th>Datum</th><th>Kurs</th><th>Anwesend/Total</th><th>E</th><th>U</th><th>Fehlquote</th><th>Locked</th><th>Risk</th><th>Details</th></tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
