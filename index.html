@@ -7105,6 +7105,8 @@
           if (completed) {
             markAssignmentSolvedClient(assignmentId);
             await refreshPortalData();
+            openPortalView();
+            openPortalPanel("modelltestHomework", false);
           } else {
             setStatus("error", "Modelltest wurde gespeichert, aber Abgabe konnte nicht abgeschlossen werden.", "statusBox");
           }
@@ -9790,6 +9792,7 @@
     function evaluateDtzTrainingSet(module, showStatus = true) {
       const state = getDtzState(module);
       const ui = getDtzUi(module);
+      const requirement = getActiveAssignedDtzRequirement();
       if (!Array.isArray(state.tasks) || !state.tasks.length) {
         if (showStatus) setDtzModuleStatus(module, "error", "Bitte zuerst Aufgaben laden.");
         return;
@@ -9837,10 +9840,15 @@
       registerHomePractice(module === "lesen" ? "dtz-lesen" : "dtz-hoeren", correct, total);
       void submitAssignedDtzResult(module, state.teil, { total, correct, unanswered, points, maxPoints });
       const isPartial = module === "hoeren" && unanswered > 0;
+      const isAssignedSubmit = !!(requirement && requirement.module === module && Number(requirement.teil) === Number(state.teil));
       if (unanswered === 0) {
         const solvedAssignmentId = String(((currentOpenedHomeworkContext.dtzByModule || {})[module] || "")).trim();
         if (markAssignmentSolvedClient(solvedAssignmentId)) {
           void refreshPortalData();
+        }
+        if (isAssignedSubmit) {
+          openPortalView();
+          openPortalPanel(module === "lesen" ? "lesenHomework" : "hoerenHomework", false);
         }
       }
 
