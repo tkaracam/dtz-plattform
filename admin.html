@@ -1047,6 +1047,27 @@
       pointer-events: auto;
     }
 
+    .attendance-day-cell {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      min-width: 96px;
+    }
+
+    .attendance-week-head {
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .attendance-week-head small {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.72rem;
+      color: #6a7280;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
     .attendance-eu-chip {
       border: 1px solid #d6dce7;
       border-radius: 999px;
@@ -3200,7 +3221,7 @@
         <div id="paneAttendance" class="admin-pane">
         <div id="attendanceSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Anwesenheit (sperrbar)</h2>
-          <p class="section-subtitle">Sitzung speichern und dann sperren. Gesperrte Sitzungen können nicht bearbeitet werden.</p>
+          <p class="section-subtitle">Wochenliste (Montag bis Freitag) speichern und danach sperren.</p>
 
           <div class="grid">
             <div>
@@ -3214,7 +3235,7 @@
               <input id="attendanceCourse" type="text" placeholder="z. B. B1-Abendkurs" readonly>
             </div>
             <div>
-              <label for="attendanceDate">Unterrichtsdatum</label>
+              <label for="attendanceDate">Woche (Referenzdatum)</label>
               <input id="attendanceDate" type="date">
             </div>
           </div>
@@ -3230,8 +3251,8 @@
           </div>
           <div class="actions">
             <button id="loadAttendanceStudentsBtn" type="button">Teilnehmer laden</button>
-            <button id="saveAttendanceBtn" type="button">Anwesenheit speichern</button>
-            <button id="lockAttendanceBtn" type="button">Sitzung sperren</button>
+            <button id="saveAttendanceBtn" type="button">Wochenliste speichern</button>
+            <button id="lockAttendanceBtn" type="button">Woche sperren</button>
             <button id="listAttendanceBtn" class="ghost-btn" type="button">Anwesenheitsliste</button>
           </div>
           <div id="attendanceStatus" class="hidden"></div>
@@ -3525,6 +3546,7 @@
     let selectedCourseId = "";
     let accountsScopeCourseId = "";
     let currentAttendanceSessionId = "";
+    let currentAttendanceWeekSessionsByDate = {};
     let currentAlertTargets = [];
     let currentAttendanceRequests = [];
     let currentRooms = [];
@@ -9305,7 +9327,77 @@
       return currentStudents.filter(u => !!u.active && members.has(String(u.username || "")));
     }
 
-    function renderAttendanceEditor() {
+    function toIsoDateLocal(dateObj) {
+      if (!(dateObj instanceof Date)) return "";
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function getAttendanceWeekDays() {
+      const refValue = String(document.getElementById("attendanceDate").value || "").trim();
+      const refDate = refValue ? new Date(`${refValue}T12:00:00`) : new Date();
+      const weekday = refDate.getDay();
+      const mondayOffset = (weekday + 6) % 7;
+      const monday = new Date(refDate);
+      monday.setDate(refDate.getDate() - mondayOffset);
+      const labels = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+      return labels.map((label, idx) => {
+        const day = new Date(monday);
+        day.setDate(monday.getDate() + idx);
+        return {
+          index: idx,
+          label,
+          iso: toIsoDateLocal(day),
+          short: `${String(day.getDate()).padStart(2, "0")}.${String(day.getMonth() + 1).padStart(2, "0")}`
+        };
+      });
+    }
+
+    async function loadAttendanceWeekSessions(courseId, weekDays) {
+      currentAttendanceWeekSessionsByDate = {};
+      if (!courseId || !Array.isArray(weekDays) || !weekDays.length) return;
+      try {
+        const response = await fetch("./api/attendance_list.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date_from: String(weekDays[0]?.iso || ""),
+            date_to: String(weekDays[weekDays.length - 1]?.iso || ""),
+            course_query: "",
+            course_id: courseId,
+            limit: 100
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const records = Array.isArray(payload.records) ? payload.records : [];
+        records.forEach(record => {
+          const lessonDate = String(record.lesson_date || "");
+          if (!lessonDate) return;
+          const rows = Array.isArray(record.rows) ? record.rows : [];
+          const rowMap = {};
+          rows.forEach(row => {
+            const uname = String(row && row.username ? row.username : "");
+            if (!uname) return;
+            rowMap[uname] = {
+              status: String(row.status || "present"),
+              reason: String(row.reason || ""),
+              note: String(row.note || "")
+            };
+          });
+          currentAttendanceWeekSessionsByDate[lessonDate] = {
+            session_id: String(record.session_id || ""),
+            rowMap
+          };
+        });
+      } catch (_err) {
+        currentAttendanceWeekSessionsByDate = {};
+      }
+    }
+
+    async function renderAttendanceEditor() {
       const wrap = document.getElementById("attendanceEditWrap");
       const courseId = String(document.getElementById("attendanceCourseId").value || "");
       if (!courseId) {
@@ -9318,81 +9410,84 @@
         return;
       }
       const courseName = String(document.getElementById("attendanceCourse").value || "").trim();
+      const weekDays = getAttendanceWeekDays();
+      wrap.innerHTML = "<p>Lade Wochenliste...</p>";
+      await loadAttendanceWeekSessions(courseId, weekDays);
       const rows = users.map((u, i) => {
         const name = u.display_name ? `${u.display_name} (${u.username})` : u.username;
+        const dayCells = weekDays.map(day => {
+          const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
+          const status = existing ? String(existing.status || "present") : "present";
+          const isAbsent = status === "absent" || status === "excused";
+          const isExcused = status === "excused";
+          return `
+            <td>
+              <div class="attendance-day-cell">
+                <input type="checkbox" class="attendance-miss-toggle" data-att-absent="${i}-${day.index}" ${isAbsent ? "checked" : ""} aria-label="Fehlend markieren (X)">
+                <div class="attendance-eu-wrap ${isAbsent ? "enabled" : ""}" data-att-eu-wrap="${i}-${day.index}">
+                  <label>
+                    <input type="radio" name="att-eu-${i}-${day.index}" value="excused" data-att-eu="${i}-${day.index}" ${isExcused ? "checked" : ""}>
+                    <span class="attendance-eu-chip eu-e">E</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="att-eu-${i}-${day.index}" value="absent" data-att-eu="${i}-${day.index}" ${!isExcused ? "checked" : ""}>
+                    <span class="attendance-eu-chip eu-u">U</span>
+                  </label>
+                </div>
+              </div>
+            </td>
+          `;
+        }).join("");
         return `
           <tr>
             <td class="attendance-name-cell">
               <strong>${escapeHtml(name)}</strong>
               <span class="meta mono">${escapeHtml(u.username)}</span>
             </td>
-            <td>
-              <input type="checkbox" class="attendance-miss-toggle" data-att-absent="${i}" aria-label="Fehlend markieren (X)">
-            </td>
-            <td>
-              <div class="attendance-eu-wrap" data-att-eu-wrap="${i}">
-                <label>
-                  <input type="radio" name="att-eu-${i}" value="excused" data-att-eu="${i}" checked>
-                  <span class="attendance-eu-chip eu-e">E</span>
-                </label>
-                <label>
-                  <input type="radio" name="att-eu-${i}" value="absent" data-att-eu="${i}">
-                  <span class="attendance-eu-chip eu-u">U</span>
-                </label>
-              </div>
-            </td>
-            <td>
-              <select data-att-reason="${i}">
-                <option value="">-</option>
-                <option value="sick">Krankheit</option>
-                <option value="transport">Transport</option>
-                <option value="work">Arbeit</option>
-                <option value="family">Familie</option>
-                <option value="appointment">Termin</option>
-                <option value="other">Sonstiges</option>
-              </select>
-            </td>
-            <td><input type="text" data-att-note="${i}" placeholder="Warum fehlte / Notiz"></td>
+            ${dayCells}
           </tr>
         `;
       }).join("");
+      const dayHeaders = weekDays.map(day => `<th class="attendance-week-head">${day.label}<small>${escapeHtml(day.short)}</small></th>`).join("");
       wrap.innerHTML = `
-        <p class="section-subtitle" style="margin-bottom:8px;">Kurs: <strong>${escapeHtml(courseName || "-")}</strong> · X = fehlt · E = entschuldigt · U = unentschuldigt</p>
+        <p class="section-subtitle" style="margin-bottom:8px;">Kurs: <strong>${escapeHtml(courseName || "-")}</strong> · Montag bis Freitag · X = fehlt · E = entschuldigt · U = unentschuldigt</p>
         <table>
           <thead>
-            <tr><th>Teilnehmer</th><th>Fehlt (X)</th><th>E / U</th><th>Grund</th><th>Notiz</th></tr>
+            <tr><th>Teilnehmer</th>${dayHeaders}</tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       `;
       users.forEach((_, i) => {
-        const absentEl = document.querySelector(`[data-att-absent="${i}"]`);
-        const euWrap = document.querySelector(`[data-att-eu-wrap="${i}"]`);
-        const toggleEu = () => {
-          if (!absentEl || !euWrap) return;
-          euWrap.classList.toggle("enabled", !!absentEl.checked);
-        };
-        if (absentEl) {
-          absentEl.addEventListener("change", toggleEu);
-        }
-        toggleEu();
+        weekDays.forEach(day => {
+          const key = `${i}-${day.index}`;
+          const absentEl = document.querySelector(`[data-att-absent="${key}"]`);
+          const euWrap = document.querySelector(`[data-att-eu-wrap="${key}"]`);
+          const toggleEu = () => {
+            if (!absentEl || !euWrap) return;
+            euWrap.classList.toggle("enabled", !!absentEl.checked);
+          };
+          if (absentEl) {
+            absentEl.addEventListener("change", toggleEu);
+          }
+          toggleEu();
+        });
       });
     }
 
-    function collectAttendanceRows() {
+    function collectAttendanceRows(dayIndex) {
       const users = getSelectedCourseUsers();
       return users.map((u, i) => {
-        const absentEl = document.querySelector(`[data-att-absent="${i}"]`);
-        const euEl = document.querySelector(`input[data-att-eu="${i}"]:checked`);
-        const reasonEl = document.querySelector(`[data-att-reason="${i}"]`);
-        const noteEl = document.querySelector(`[data-att-note="${i}"]`);
+        const key = `${i}-${dayIndex}`;
+        const absentEl = document.querySelector(`[data-att-absent="${key}"]`);
+        const euEl = document.querySelector(`input[data-att-eu="${key}"]:checked`);
         const isAbsent = !!(absentEl && absentEl.checked);
         const status = isAbsent ? String(euEl ? euEl.value : "absent") : "present";
         return {
           username: String(u.username || ""),
           status,
-          reason: String(reasonEl ? reasonEl.value : "").trim(),
-          note: String(noteEl ? noteEl.value : "").trim()
+          reason: "",
+          note: ""
         };
       });
     }
@@ -9401,49 +9496,46 @@
       clearBox("attendanceStatus");
       const courseId = String(document.getElementById("attendanceCourseId").value || "");
       const courseName = document.getElementById("attendanceCourse").value.trim();
-      const lessonDate = document.getElementById("attendanceDate").value;
       const evidenceNote = document.getElementById("attendanceEvidence").value.trim();
       const teacherNote = document.getElementById("attendanceTeacherNote").value.trim();
-      const rows = collectAttendanceRows();
-      if (!courseId || !courseName || !lessonDate) {
-        setBox("attendanceStatus", "error", "Kursauswahl und Kurstermin sind erforderlich.");
+      const weekDays = getAttendanceWeekDays();
+      if (!courseId || !courseName || !weekDays.length) {
+        setBox("attendanceStatus", "error", "Kursauswahl und Wochenbezug sind erforderlich.");
         return;
       }
-      if (!rows.length) {
+      if (!getSelectedCourseUsers().length) {
         setBox("attendanceStatus", "error", "Bitte zuerst auf 'Teilnehmer laden' klicken.");
         return;
       }
-      const missingReason = rows.find(row => {
-        const st = String(row.status || "");
-        const rs = String(row.reason || "");
-        const nt = String(row.note || "");
-        if (st === "absent" || st === "excused") {
-          return rs === "" && nt === "";
-        }
-        return false;
-      });
-      if (missingReason) {
-        setBox("attendanceStatus", "error", "Bei fehlenden Teilnehmenden bitte Grund oder Notiz eintragen.");
-        return;
-      }
       try {
-        const response = await fetch("./api/attendance_save.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            session_id: currentAttendanceSessionId,
-            course_id: courseId,
-            course_name: courseName,
-            lesson_date: lessonDate,
-            evidence_note: evidenceNote,
-            teacher_note: teacherNote,
-            rows
-          })
-        });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        currentAttendanceSessionId = String(payload.session_id || "");
-        setBox("attendanceStatus", "ok", `Anwesenheit gespeichert (ID: ${currentAttendanceSessionId}).`);
+        const savedDays = [];
+        for (const day of weekDays) {
+          const rows = collectAttendanceRows(day.index);
+          const existingSessionId = String(currentAttendanceWeekSessionsByDate[day.iso]?.session_id || "");
+          const response = await fetch("./api/attendance_save.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session_id: existingSessionId,
+              course_id: courseId,
+              course_name: courseName,
+              lesson_date: day.iso,
+              evidence_note: evidenceNote,
+              teacher_note: teacherNote,
+              rows
+            })
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(`${day.label}: ${payload.error || `Fehler ${response.status}`}`);
+          const sessionId = String(payload.session_id || "");
+          currentAttendanceWeekSessionsByDate[day.iso] = {
+            session_id: sessionId,
+            rowMap: {}
+          };
+          savedDays.push(day.label);
+        }
+        currentAttendanceSessionId = String(currentAttendanceWeekSessionsByDate[weekDays[0]?.iso || ""]?.session_id || "");
+        setBox("attendanceStatus", "ok", `Wochenliste gespeichert (${savedDays.join(", ")}).`);
         listAttendanceSessions();
       } catch (err) {
         setBox("attendanceStatus", "error", `Fehler beim Speichern der Anwesenheit: ${err.message}`);
@@ -9452,19 +9544,25 @@
 
     async function lockAttendance() {
       clearBox("attendanceStatus");
-      if (!currentAttendanceSessionId) {
-        setBox("attendanceStatus", "error", "Bitte zuerst die Anwesenheit speichern.");
+      const weekDays = getAttendanceWeekDays();
+      const sessionIds = weekDays
+        .map(day => String(currentAttendanceWeekSessionsByDate[day.iso]?.session_id || ""))
+        .filter(Boolean);
+      if (!sessionIds.length) {
+        setBox("attendanceStatus", "error", "Bitte zuerst die Wochenliste speichern.");
         return;
       }
       try {
-        const response = await fetch("./api/attendance_lock.php", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: currentAttendanceSessionId })
-        });
-        const payload = await parseJsonResponse(response);
-        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-        setBox("attendanceStatus", "ok", "Sitzung wurde gesperrt und kann nicht mehr bearbeitet werden.");
+        for (const sessionId of sessionIds) {
+          const response = await fetch("./api/attendance_lock.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: sessionId })
+          });
+          const payload = await parseJsonResponse(response);
+          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        }
+        setBox("attendanceStatus", "ok", "Woche wurde gesperrt und kann nicht mehr bearbeitet werden.");
         listAttendanceSessions();
       } catch (err) {
         setBox("attendanceStatus", "error", `Sperren fehlgeschlagen: ${err.message}`);
@@ -11813,6 +11911,9 @@
       renderAttendanceEditor();
       listAttendanceSessions();
     });
+    document.getElementById("attendanceDate").addEventListener("change", () => {
+      renderAttendanceEditor();
+    });
     document.getElementById("loadAlertTargetsBtn").addEventListener("click", loadAlertTargets);
     document.getElementById("copyEmailAlertsBtn").addEventListener("click", copyEmailAlerts);
     document.getElementById("copyWhatsappAlertsBtn").addEventListener("click", copyWhatsappAlerts);
@@ -11832,7 +11933,7 @@
     document.getElementById("loadAuditBtn").addEventListener("click", loadAuditLogs);
     document.getElementById("loadAttendanceStudentsBtn").addEventListener("click", () => {
       renderAttendanceEditor();
-      setBox("attendanceStatus", "ok", "Teilnehmer-Editor ist bereit.");
+      setBox("attendanceStatus", "ok", "Wochenliste ist bereit.");
     });
     document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendance);
     document.getElementById("lockAttendanceBtn").addEventListener("click", lockAttendance);
