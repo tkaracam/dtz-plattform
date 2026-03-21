@@ -8733,7 +8733,6 @@
       }
       const tableRows = rows.map(course => `
         <tr>
-          <td class="mono">${escapeHtml(String(course.course_id || "-"))}</td>
           <td>${escapeHtml(String(course.name || "-"))}</td>
           <td class="mono">${escapeHtml(String(course.members_total ?? 0))}</td>
           <td class="mono">${escapeHtml(String(course.active_homeworks ?? 0))}</td>
@@ -8748,7 +8747,6 @@
         <table>
           <thead>
             <tr>
-              <th>ID</th>
               <th>Kurs</th>
               <th>TN</th>
               <th>Aktive HW</th>
