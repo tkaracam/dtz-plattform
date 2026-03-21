@@ -1558,6 +1558,13 @@
       gap: 6px;
     }
 
+    .hw-multi-checklist-group.hw-multi-checklist-accordion {
+      border: 1px solid #d7e4f1;
+      border-radius: 10px;
+      background: #f8fbff;
+      padding: 6px;
+    }
+
     .hw-multi-checklist-title {
       font-size: 0.78rem;
       letter-spacing: 0.04em;
@@ -1565,6 +1572,36 @@
       color: #4e5a70;
       font-weight: 700;
       margin-top: 2px;
+    }
+
+    .hw-multi-checklist-group.hw-multi-checklist-accordion > .hw-multi-checklist-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      border: 1px solid #c9d9ec;
+      border-radius: 9px;
+      padding: 8px 10px;
+      margin: 0;
+      cursor: pointer;
+      background: linear-gradient(120deg, #ff5f87, #ff8f66);
+      color: #fff;
+      letter-spacing: 0.06em;
+    }
+
+    .hw-multi-checklist-group.hw-multi-checklist-accordion > .hw-multi-checklist-title::-webkit-details-marker {
+      display: none;
+    }
+
+    .hw-multi-checklist-group.hw-multi-checklist-accordion > .hw-multi-checklist-title::after {
+      content: "+";
+      font-weight: 900;
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    .hw-multi-checklist-group.hw-multi-checklist-accordion[open] > .hw-multi-checklist-title::after {
+      content: "−";
     }
 
     .hw-multi-check-item {
@@ -7283,13 +7320,15 @@
 	      const fragment = document.createDocumentFragment();
 	      groups.forEach(group => {
 	        const labelLower = String(group.label || "").trim().toLowerCase();
-	        const isAccordionGroup = labelLower === "mail-aufgabe" || labelLower === "hören" || labelLower === "hoeren";
+	        const isHoerenGroup = labelLower === "hören" || labelLower === "hoeren";
+	        const isLesenGroup = labelLower === "lesen";
+	        const isAccordionGroup = isHoerenGroup || isLesenGroup;
 	        let groupWrap;
 	        let listHost;
 	        if (isAccordionGroup) {
 	          const details = document.createElement("details");
-	          details.className = "hw-multi-checklist-group";
-	          details.open = true;
+	          details.className = "hw-multi-checklist-group hw-multi-checklist-accordion";
+	          details.open = false;
 	          const summary = document.createElement("summary");
 	          summary.className = "hw-multi-checklist-title";
 	          summary.textContent = group.label || "Aufgaben";
