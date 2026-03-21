@@ -95,7 +95,7 @@
 
     .nav-brand {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: center;
       gap: 0;
       font-weight: 900;
@@ -109,6 +109,8 @@
     }
 
     .nav-brand .brand-main {
+      display: inline-block;
+      line-height: 1;
       background: linear-gradient(120deg, #ff5f87, #ff8f66);
       -webkit-background-clip: text;
       background-clip: text;
@@ -117,12 +119,12 @@
     }
 
     .nav-brand .brand-edu {
+      display: inline-block;
       font-size: 0.5em;
       font-weight: 800;
       line-height: 1;
       margin-left: 2px;
-      position: relative;
-      top: -0.02em;
+      vertical-align: baseline;
       color: #8b1e2d;
       -webkit-text-stroke: 0;
     }
