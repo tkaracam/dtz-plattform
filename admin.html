@@ -7470,6 +7470,11 @@
       const select = document.getElementById(selectId);
       const container = document.getElementById(containerId);
       if (!select || !container) return;
+      const openAccordionLabels = new Set(
+        Array.from(container.querySelectorAll("details.hw-multi-checklist-accordion[open] > summary.hw-multi-checklist-title"))
+          .map(node => String(node.textContent || "").trim().toLowerCase())
+          .filter(Boolean)
+      );
 
       const selectedSet = new Set(
         Array.from(select.selectedOptions)
@@ -7507,8 +7512,8 @@
       }
 
 	      const fragment = document.createDocumentFragment();
-	      groups.forEach(group => {
-	        const labelLower = String(group.label || "").trim().toLowerCase();
+		      groups.forEach(group => {
+		        const labelLower = String(group.label || "").trim().toLowerCase();
 	        const isHoerenGroup = labelLower === "hören" || labelLower === "hoeren";
 	        const isLesenGroup = labelLower === "lesen";
 	        const isMailGroup = labelLower === "mail-aufgabe";
@@ -7518,16 +7523,17 @@
 	        const isAccordionGroup = isHoerenGroup || isLesenGroup || isMailGroup || isModelltestGroup || isA2Group || isA2TopicAccordion;
 	        let groupWrap;
 	        let listHost;
-	        if (isAccordionGroup) {
-	          const details = document.createElement("details");
-	          details.className = "hw-multi-checklist-group hw-multi-checklist-accordion";
-	          details.open = false;
-	          const summary = document.createElement("summary");
-	          summary.className = "hw-multi-checklist-title";
-	          summary.textContent = group.label || (isA2TopicAccordion ? "A2-Test Generator · Themen (Mehrfachauswahl)" : "Aufgaben");
-	          details.appendChild(summary);
-	          const body = document.createElement("div");
-	          body.style.marginTop = "8px";
+		        if (isAccordionGroup) {
+		          const details = document.createElement("details");
+		          details.className = "hw-multi-checklist-group hw-multi-checklist-accordion";
+		          const summary = document.createElement("summary");
+		          summary.className = "hw-multi-checklist-title";
+		          const summaryText = group.label || (isA2TopicAccordion ? "A2-Test Generator · Themen (Mehrfachauswahl)" : "Aufgaben");
+		          summary.textContent = summaryText;
+              details.open = openAccordionLabels.has(String(summaryText).trim().toLowerCase());
+		          details.appendChild(summary);
+		          const body = document.createElement("div");
+		          body.style.marginTop = "8px";
 	          details.appendChild(body);
 	          groupWrap = details;
 	          listHost = body;
