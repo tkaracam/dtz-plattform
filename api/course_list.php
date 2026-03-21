@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur GET wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur GET wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -22,12 +22,20 @@ $courses = load_courses();
 $users = load_student_users();
 
 $students = [];
+$isDocent = normalize_admin_role_key((string)($admin['role_key'] ?? '')) === 'docent';
+$docentUsername = auth_lower_text((string)($admin['username'] ?? ''));
 foreach ($users as $u) {
     if (!is_array($u)) continue;
     if (!admin_can_access_student_record($u, $admin)) continue;
+    $username = (string)($u['username'] ?? '');
+    $realDisplayName = (string)($u['display_name'] ?? '');
+    $nickname = $isDocent ? get_docent_student_nickname($docentUsername, $username) : '';
+    $effectiveDisplay = $nickname !== '' ? $nickname : $realDisplayName;
     $students[] = [
-        'username' => (string)($u['username'] ?? ''),
-        'display_name' => (string)($u['display_name'] ?? ''),
+        'username' => $username,
+        'display_name' => $effectiveDisplay,
+        'real_display_name' => $realDisplayName,
+        'nickname' => $nickname,
         'email' => (string)($u['email'] ?? ''),
         'phone' => (string)($u['phone'] ?? ''),
         'active' => (bool)($u['active'] ?? false),

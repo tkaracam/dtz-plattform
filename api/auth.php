@@ -266,6 +266,103 @@ function write_student_users(array $users): bool
     return file_put_contents(student_users_file(), $json . PHP_EOL, LOCK_EX) !== false;
 }
 
+function student_nicknames_file(): string
+{
+    return __DIR__ . '/storage/student_nicknames.json';
+}
+
+function load_student_nicknames(): array
+{
+    $file = student_nicknames_file();
+    if (!is_file($file)) {
+        return [];
+    }
+    $raw = file_get_contents($file);
+    if ($raw === false || trim($raw) === '') {
+        return [];
+    }
+    $data = json_decode($raw, true);
+    return is_array($data) ? $data : [];
+}
+
+function write_student_nicknames(array $data): bool
+{
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if ($json === false) {
+        return false;
+    }
+    return file_put_contents(student_nicknames_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function get_docent_student_nickname(string $docentUsername, string $studentUsername): string
+{
+    $docent = auth_lower_text($docentUsername);
+    $student = auth_lower_text($studentUsername);
+    if ($docent === '' || $student === '') {
+        return '';
+    }
+    $all = load_student_nicknames();
+    if (!is_array($all[$docent] ?? null)) {
+        return '';
+    }
+    $nick = trim((string)($all[$docent][$student] ?? ''));
+    return $nick;
+}
+
+function set_docent_student_nickname(string $docentUsername, string $studentUsername, string $nickname): bool
+{
+    $docent = auth_lower_text($docentUsername);
+    $student = auth_lower_text($studentUsername);
+    if ($docent === '' || $student === '') {
+        return false;
+    }
+    $all = load_student_nicknames();
+    if (!is_array($all[$docent] ?? null)) {
+        $all[$docent] = [];
+    }
+    $nick = trim($nickname);
+    if ($nick === '') {
+        unset($all[$docent][$student]);
+        if (empty($all[$docent])) {
+            unset($all[$docent]);
+        }
+    } else {
+        $all[$docent][$student] = mb_substr($nick, 0, 64);
+    }
+    return write_student_nicknames($all);
+}
+
+function remove_student_nickname_for_all_docents(string $studentUsername): bool
+{
+    $student = auth_lower_text($studentUsername);
+    if ($student === '') {
+        return false;
+    }
+    $all = load_student_nicknames();
+    $changed = false;
+    foreach ($all as $docent => $map) {
+        if (!is_array($map)) {
+            continue;
+        }
+        if (array_key_exists($student, $map)) {
+            unset($all[$docent][$student]);
+            $changed = true;
+        }
+        if (empty($all[$docent])) {
+            unset($all[$docent]);
+            $changed = true;
+        }
+    }
+    if (!$changed) {
+        return true;
+    }
+    return write_student_nicknames($all);
+}
+
 function load_member_users(): array
 {
     $file = member_users_file();

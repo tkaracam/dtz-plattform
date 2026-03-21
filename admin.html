@@ -5060,10 +5060,19 @@
         const isActive = !!user.active;
         const username = String(user.username || "");
         const canAssignDocent = isOwnerAdmin();
+        const canSetNickname = isDocentSimpleMode();
         const assignDocentRow = canAssignDocent
           ? `
               <div class="student-action-row">
                 <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Dozent zuweisen</button>
+                <span class="action-spacer" aria-hidden="true"></span>
+              </div>
+            `
+          : "";
+        const nicknameRow = canSetNickname
+          ? `
+              <div class="student-action-row">
+                <button type="button" data-action="set-nickname" data-username="${escapeHtml(username)}">Nickname</button>
                 <span class="action-spacer" aria-hidden="true"></span>
               </div>
             `
@@ -5094,10 +5103,12 @@
                 <span class="action-spacer" aria-hidden="true"></span>
               </div>
               <div id="${escapeHtml(contactPanelId)}" class="student-contact-panel hidden">
-                <div><b>Anzeigename:</b> ${escapeHtml(user.display_name || "-")}</div>
+                <div><b>Anzeigename:</b> ${escapeHtml(user.real_display_name || user.display_name || "-")}</div>
+                <div><b>Dozent-Nickname:</b> ${escapeHtml(user.nickname || "-")}</div>
                 <div><b>E-Mail:</b> ${escapeHtml(user.email || "-")}</div>
                 <div><b>WhatsApp:</b> ${escapeHtml(user.phone || "-")}</div>
               </div>
+              ${nicknameRow}
               ${assignDocentRow}
             </div>
           </td>
@@ -5143,6 +5154,10 @@
           if (!panel) return;
           panel.classList.toggle("hidden");
         });
+      });
+      wrap.querySelectorAll("button[data-action='set-nickname']").forEach(btn => {
+        const username = btn.getAttribute("data-username") || "";
+        btn.addEventListener("click", () => setStudentNicknamePrompt(username));
       });
       wrap.querySelectorAll("input[data-student-select]").forEach(input => {
         input.addEventListener("change", () => {
@@ -10139,6 +10154,37 @@
         listStudents();
       } catch (err) {
         setBox("userStatus", "error", `Kontaktaktualisierung fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function setStudentNicknamePrompt(username) {
+      clearBox("userStatus");
+      if (!isDocentSimpleMode()) {
+        setBox("userStatus", "error", "Nickname kann nur im Dozent-Modus gesetzt werden.");
+        return;
+      }
+      const user = currentStudents.find(u => String(u.username || "") === username);
+      if (!user) return;
+      const currentNickname = String(user.nickname || "").trim();
+      const nickname = window.prompt(`Nickname für ${username} (leer = entfernen):`, currentNickname);
+      if (nickname === null) return;
+      try {
+        const response = await fetch("./api/student_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_nickname",
+            username,
+            nickname: String(nickname || "").trim()
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const applied = String(payload.nickname || "").trim();
+        setBox("userStatus", "ok", applied ? `Nickname gespeichert: ${applied}` : "Nickname entfernt.");
+        listStudents();
+      } catch (err) {
+        setBox("userStatus", "error", `Nickname konnte nicht gespeichert werden: ${err.message}`);
       }
     }
 

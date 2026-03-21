@@ -30,6 +30,7 @@ if (!is_array($body)) {
 
 $action = trim((string)($body['action'] ?? ''));
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
+$needsStudentWrite = true;
 
 if (!preg_match('/^[a-z0-9._-]{3,32}$/', $username)) {
     http_response_code(400);
@@ -109,6 +110,24 @@ if ($action === 'reset_password') {
     }
     $users[$foundIndex]['teacher_username'] = $teacherUsername;
     $users[$foundIndex]['updated_at'] = gmdate('c');
+} elseif ($action === 'set_nickname') {
+    if (normalize_admin_role_key((string)($admin['role_key'] ?? '')) !== 'docent') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Nickname kann nur von Dozenten gesetzt werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $nickname = trim((string)($body['nickname'] ?? ''));
+    if (mb_strlen($nickname) > 64) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Nickname darf maximal 64 Zeichen haben.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!set_docent_student_nickname((string)($admin['username'] ?? ''), $username, $nickname)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Nickname konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $needsStudentWrite = false;
 } elseif ($action === 'delete') {
     $deletedUser = $users[$foundIndex];
     array_splice($users, $foundIndex, 1);
@@ -142,6 +161,7 @@ if ($action === 'reset_password') {
     if ($coursesChanged) {
         write_courses($courses);
     }
+    remove_student_nickname_for_all_docents($username);
     append_audit_log('student_manage', [
         'username' => $username,
         'action' => $action,
@@ -162,10 +182,12 @@ if ($action === 'reset_password') {
     exit;
 }
 
-if (!write_student_users($users)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Änderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
+if ($needsStudentWrite) {
+    if (!write_student_users($users)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Änderung konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 
 $auditPayload = [
@@ -175,8 +197,15 @@ $auditPayload = [
 if ($action === 'assign_teacher') {
     $auditPayload['teacher_username'] = (string)($users[$foundIndex]['teacher_username'] ?? '');
 }
+if ($action === 'set_nickname') {
+    $auditPayload['nickname'] = trim((string)($body['nickname'] ?? ''));
+}
 append_audit_log('student_manage', $auditPayload);
 
+$nicknameOut = '';
+if (normalize_admin_role_key((string)($admin['role_key'] ?? '')) === 'docent') {
+    $nicknameOut = get_docent_student_nickname((string)($admin['username'] ?? ''), $username);
+}
 echo json_encode([
     'ok' => true,
     'username' => $username,
@@ -185,4 +214,5 @@ echo json_encode([
     'email' => (string)($users[$foundIndex]['email'] ?? ''),
     'phone' => (string)($users[$foundIndex]['phone'] ?? ''),
     'teacher_username' => (string)($users[$foundIndex]['teacher_username'] ?? ''),
+    'nickname' => $nicknameOut,
 ], JSON_UNESCAPED_UNICODE);
