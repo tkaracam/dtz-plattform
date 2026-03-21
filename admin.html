@@ -1106,7 +1106,7 @@
 
     .attendance-mobile-days {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
     }
 
@@ -1118,6 +1118,7 @@
       justify-items: center;
       gap: 4px;
       background: #fff;
+      min-width: 0;
     }
 
     .attendance-mobile-day-label {
@@ -1165,17 +1166,28 @@
 
       .attendance-mobile-day .attendance-day-cell {
         min-width: 0;
-        gap: 4px;
+        gap: 3px;
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: center;
       }
 
       .attendance-mobile-day .attendance-miss-toggle {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
       }
 
       .attendance-mobile-day .attendance-eu-chip {
-        padding: 1px 6px;
+        padding: 1px 7px;
         font-size: 0.66rem;
+      }
+
+      .attendance-mobile-day .attendance-eu-wrap {
+        gap: 3px;
+      }
+
+      .attendance-mobile-day-label {
+        font-size: 0.7rem;
       }
 
       .attendance-risk-row {
@@ -1186,6 +1198,10 @@
       .attendance-risk-row .error {
         font-size: 0.88rem;
         padding: 10px 8px;
+      }
+
+      .attendance-mobile-name .meta {
+        display: none;
       }
     }
 
@@ -9606,7 +9622,7 @@
         const displayName = String(u.display_name || "").trim();
         const nickname = String(u.nickname || "").trim();
         const usernameWithNickname = nickname ? `${username} (${nickname})` : username;
-        const showMeta = displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
+        const showMeta = !isDocentSimpleMode() && displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
         const titleText = isDocentSimpleMode() ? usernameWithNickname : (showMeta ? displayName : username);
         const dayCells = weekDays.map(day => {
           const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
@@ -9646,7 +9662,7 @@
         const displayName = String(u.display_name || "").trim();
         const nickname = String(u.nickname || "").trim();
         const usernameWithNickname = nickname ? `${username} (${nickname})` : username;
-        const showMeta = displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
+        const showMeta = !isDocentSimpleMode() && displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
         const titleText = isDocentSimpleMode() ? usernameWithNickname : (showMeta ? displayName : username);
         const dayBlocks = weekDays.map(day => {
           const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
