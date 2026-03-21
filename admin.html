@@ -4763,16 +4763,13 @@
       return out;
     }
 
-    function easyPassword(length = 6) {
-      const safeLength = clamp(length, 6, 10, 6);
-      const syllables = ["la", "mi", "no", "ra", "se", "ti", "ko", "pa", "lu", "ne"];
-      let out = "";
-      while (out.length < Math.max(4, safeLength - 2)) {
-        out += syllables[Math.floor(Math.random() * syllables.length)];
-      }
-      out = out.slice(0, Math.max(4, safeLength - 2));
-      const digits = String(Math.floor(Math.random() * 90) + 10);
-      return `${out}${digits}`.slice(0, safeLength);
+    function easyPassword(length = 8) {
+      const safeLength = clamp(length, 6, 12, 8);
+      const prefix = "dtz";
+      const digitCount = Math.max(3, safeLength - prefix.length);
+      const max = Number(`1${"0".repeat(digitCount)}`) - 1;
+      const num = String(Math.floor(Math.random() * max)).padStart(digitCount, "0");
+      return `${prefix}${num}`.slice(0, safeLength);
     }
 
     function normalizePrefix(raw) {
@@ -4869,7 +4866,7 @@
             failedRows.push(`Index ${i}: Benutzername konnte nicht erzeugt werden`);
             continue;
           }
-          const password = easyPassword(6);
+          const password = easyPassword(8);
           try {
             await createStudentViaApi(username, password, "", "", "", createExtra);
             existingUsernames.add(username.toLowerCase());
