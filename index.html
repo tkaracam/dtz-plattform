@@ -11539,12 +11539,15 @@
       const lesenTeilButtonsWrap = document.getElementById("dtzLesenTeilButtons");
       if (moduleSwitchWrap) {
         moduleSwitchWrap.classList.toggle("hidden", !!requirement);
+        moduleSwitchWrap.style.display = requirement ? "none" : "";
       }
       if (hoerenTeilButtonsWrap) {
         hoerenTeilButtonsWrap.classList.toggle("hidden", !!requirement);
+        hoerenTeilButtonsWrap.style.display = requirement ? "none" : "";
       }
       if (lesenTeilButtonsWrap) {
         lesenTeilButtonsWrap.classList.toggle("hidden", !!requirement);
+        lesenTeilButtonsWrap.style.display = requirement ? "none" : "";
       }
       if (hoerenOpenBtn) {
         hoerenOpenBtn.disabled = !!(requirement && requirement.module !== "hoeren");
@@ -12277,6 +12280,16 @@
       }
       navigateToSection(parsed.module === "lesen" ? "dtz-lesen" : "dtz-hoeren");
       window.setTimeout(() => {
+        const switchWrap = document.getElementById("dtzModuleSwitchWrap");
+        const lesenTeils = document.getElementById("dtzLesenTeilButtons");
+        if (switchWrap) {
+          switchWrap.classList.add("hidden");
+          switchWrap.style.display = "none";
+        }
+        if (lesenTeils) {
+          lesenTeils.classList.add("hidden");
+          lesenTeils.style.display = "none";
+        }
         const ui = getDtzUi(parsed.module);
         if (ui.teilSelect) ui.teilSelect.value = String(parsed.teil);
         loadDtzTrainingSet(parsed.module);
