@@ -47,17 +47,32 @@
 
     .brand {
       display: inline-flex;
-      align-items: center;
-      gap: 10px;
+      align-items: baseline;
+      gap: 0;
       text-decoration: none;
-      color: var(--text);
-      font-weight: 700;
+      font-weight: 900;
+      font-size: 0.81rem;
     }
 
-    .brand img {
-      height: 44px;
-      width: auto;
-      display: block;
+    .brand .brand-main {
+      display: inline-block;
+      line-height: 1;
+      background: linear-gradient(120deg, #ff5f87, #ff8f66);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -webkit-text-stroke: 0.56px #2f2a33;
+    }
+
+    .brand .brand-edu {
+      display: inline-block;
+      font-size: 0.5em;
+      font-weight: 800;
+      line-height: 1;
+      margin-left: 2px;
+      vertical-align: baseline;
+      color: #8b1e2d;
+      -webkit-text-stroke: 0;
     }
 
     .back-link {
@@ -121,8 +136,7 @@
   <main class="wrap">
     <header class="topbar">
       <a class="brand" href="index.html">
-        <img src="assets/dtzlib-logo.png" alt="DTZ-LID Logo">
-        <span>DTZ-LID</span>
+        <span class="brand-main">DTZ-LiD</span><span class="brand-edu">edu</span>
       </a>
       <a class="back-link" href="index.html">Zurück zur Startseite</a>
     </header>
