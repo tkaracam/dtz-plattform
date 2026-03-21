@@ -5241,18 +5241,32 @@
       const createdRows = [];
       const failedRows = [];
       for (let i = 1; i <= count; i += 1) {
-        const username = buildUniqueCourseUsername(prefix, i, existingUsernames);
-        if (!username) {
-          failedRows.push(`Index ${i}: Benutzername konnte nicht erzeugt werden`);
-          continue;
-        }
+        const username = `${prefix}-${String(i)}`.slice(0, 32);
         const password = randomSixDigitPassword();
+        const usernameKey = username.toLowerCase();
         try {
-          await createStudentViaApi(username, password, "", "", "", createExtra);
-          existingUsernames.add(username.toLowerCase());
+          if (existingUsernames.has(usernameKey)) {
+            await resetStudentPasswordViaApi(username, password);
+          } else {
+            await createStudentViaApi(username, password, "", "", "", createExtra);
+            existingUsernames.add(usernameKey);
+          }
           createdRows.push({ username, password });
         } catch (err) {
-          failedRows.push(`${username}: ${err.message}`);
+          const msg = String(err && err.message ? err.message : "");
+          // If username already exists but wasn't in current local list, try reuse via password reset.
+          if (/bereits|existiert|schon vorhanden|already exists/i.test(msg)) {
+            try {
+              await resetStudentPasswordViaApi(username, password);
+              existingUsernames.add(usernameKey);
+              createdRows.push({ username, password });
+              continue;
+            } catch (resetErr) {
+              failedRows.push(`${username}: ${resetErr.message}`);
+              continue;
+            }
+          }
+          failedRows.push(`${username}: ${msg || "Unbekannter Fehler"}`);
         }
       }
 
@@ -5409,6 +5423,21 @@
           phone,
           password,
           ...extra
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+      return payload;
+    }
+
+    async function resetStudentPasswordViaApi(username, newPassword) {
+      const response = await fetch("./api/student_manage.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reset_password",
+          username,
+          new_password: newPassword
         })
       });
       const payload = await parseJsonResponse(response);
