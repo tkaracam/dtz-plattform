@@ -12039,6 +12039,16 @@
 
         if (startBtn) startBtn.disabled = true;
       });
+      if (hideAttachmentForAssignedModelltest) {
+        ["currentAssignmentAttachmentWrap", "portalCurrentAssignmentAttachmentWrap"].forEach(id => {
+          const wrap = document.getElementById(id);
+          if (wrap) wrap.classList.add("hidden");
+        });
+        ["currentAssignmentAttachment", "portalCurrentAssignmentAttachment"].forEach(id => {
+          const link = document.getElementById(id);
+          if (link instanceof HTMLAnchorElement) link.href = "#";
+        });
+      }
       applyAssignmentStartButtonState();
       updateHoerenChecklistVisibility();
       applyAssignedDtzLock();
