@@ -11985,7 +11985,16 @@
 
       const attachment = String(currentAssignedHomework.attachment || "").trim();
       const safeAttachmentUrl = resolveSafeHttpUrl(attachment);
-      const hideAttachmentForAssignedModelltest = detectStudentHomeworkCategory(currentAssignedHomework) === "modelltest";
+      const currentTpl = String(currentAssignedHomework.template_id || "").trim().toLowerCase();
+      const currentTitle = String(currentAssignedHomework.title || "").trim().toLowerCase();
+      const hideAttachmentForAssignedModelltest =
+        detectStudentHomeworkCategory(currentAssignedHomework) === "modelltest"
+        || currentTpl === "dtz-mock-pruefung-komplett"
+        || currentTpl === "dtz-mock-prüfung-komplett"
+        || currentTpl.includes("modelltest")
+        || currentTpl.includes("mock-pruefung")
+        || currentTpl.includes("mock-prüfung")
+        || /^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/.test(currentTitle);
       getAssignmentUiSets().forEach(set => {
         const titleNode = document.getElementById(set.titleId);
         const descNode = document.getElementById(set.descId);
