@@ -7424,6 +7424,7 @@
         Array.from(multiSelect.options).forEach(option => {
           option.selected = false;
         });
+        multiSelect.selectedIndex = -1;
       }
 
       const a2Topics = document.getElementById("hwA2TopicsMulti");
@@ -7459,6 +7460,10 @@
       updateHomeworkTemplateMultiPreview();
       renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
       renderMultiSelectCheckboxMirror("hwA2TopicsMulti", "hwA2TopicsMultiChecks");
+      const mirrorChecks = document.querySelectorAll("#hwTaskTemplatesMultiChecks input[type='checkbox'][data-mirror-value]");
+      mirrorChecks.forEach(node => {
+        if (node instanceof HTMLInputElement) node.checked = false;
+      });
     }
 
     function normalizeHomeworkReminderLevel(level) {
@@ -9465,14 +9470,12 @@
         const msg = `${successCount} Aufgabe(n) gespeichert. Zugewiesen gesamt: ${totalAssignedTargets}`;
         setBox("homeworkStatus", "ok", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
+        resetHomeworkAssignmentSelections();
+        await refreshAllHomeworkLists();
       } catch (err) {
         const msg = `Keine Aufgabe gespeichert: ${err.message || "unbekannter Fehler"}`;
         setBox("homeworkStatus", "error", msg);
         if (inlineStatus) inlineStatus.textContent = msg;
-      }
-      if (successCount > 0) {
-        resetHomeworkAssignmentSelections();
-        await refreshAllHomeworkLists();
       }
     }
 
