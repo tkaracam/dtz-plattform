@@ -5208,18 +5208,22 @@
 
     function buildUniqueCourseUsername(base, index, existingUsernames) {
       const root = String(base || "kurs").slice(0, 24) || "kurs";
-      const first = `${root}-${String(index).padStart(2, "0")}`.slice(0, 32);
+      const first = `${root}-${String(index)}`.slice(0, 32);
       if (!existingUsernames.has(first.toLowerCase())) {
         return first;
       }
       for (let attempt = 0; attempt < 200; attempt += 1) {
         const salt = String(Math.floor(Math.random() * 90) + 10);
-        const candidate = `${root}-${String(index).padStart(2, "0")}-${salt}`.slice(0, 32);
+        const candidate = `${root}-${String(index)}-${salt}`.slice(0, 32);
         if (!existingUsernames.has(candidate.toLowerCase())) {
           return candidate;
         }
       }
       return "";
+    }
+
+    function randomSixDigitPassword() {
+      return String(Math.floor(100000 + Math.random() * 900000));
     }
 
     async function createStudentsForCourse(courseId, courseName, count) {
@@ -5242,7 +5246,7 @@
           failedRows.push(`Index ${i}: Benutzername konnte nicht erzeugt werden`);
           continue;
         }
-        const password = easyPassword(8);
+        const password = randomSixDigitPassword();
         try {
           await createStudentViaApi(username, password, "", "", "", createExtra);
           existingUsernames.add(username.toLowerCase());
