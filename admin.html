@@ -7725,6 +7725,16 @@
       mirrorChecks.forEach(node => {
         if (node instanceof HTMLInputElement) node.checked = false;
       });
+
+      // Persistierte Vorlagenauswahl ebenfalls löschen, damit beim erneuten Öffnen
+      // keine alten Mehrfach-/Vorlagen-Selektionen automatisch zurückkommen.
+      setStoredPreference("admin_hw_template_hoeren", null);
+      setStoredPreference("admin_hw_template_lesen", null);
+      setStoredPreference("admin_hw_template_mail", null);
+      setStoredPreference("admin_hw_template_mock", null);
+      setStoredPreference("admin_hw_templates_multi", null);
+      setStoredPreference(ADMIN_HW_MOCK_INCLUDE_MAIL_KEY, null);
+      setStoredPreference(ADMIN_HW_MOCK_MAIL_TEMPLATE_KEY, null);
     }
 
     function normalizeHomeworkReminderLevel(level) {
