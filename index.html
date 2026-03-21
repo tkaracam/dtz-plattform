@@ -13428,9 +13428,10 @@
     function buildTeacherCorrectionHtml(result) {
       const mistakes = Array.isArray(result.mistakes) ? result.mistakes.slice() : [];
       const correctedText = String(result.corrected_letter || "").trim();
+      const correctedHtml = formatLetterAsEmailHtml(correctedText);
 
       if (!mistakes.length) {
-        return `<div class="corr-final-text">${escapeHtml(correctedText)}</div>`;
+        return `<div class="corr-final-text">${correctedHtml}</div>`;
       }
 
       mistakes.sort((a, b) => Number(a.line || 0) - Number(b.line || 0));
@@ -13445,7 +13446,7 @@
       const finalBlock = correctedText
         ? `
           <div class="corr-final-title">Vollständig korrigierte Fassung</div>
-          <div class="corr-final-text">${escapeHtml(correctedText)}</div>
+          <div class="corr-final-text">${correctedHtml}</div>
         `
         : "";
 
@@ -13455,11 +13456,21 @@
     function renderTeacherCorrection(result) {
       const wrap = document.getElementById("portalCorrectionPreview") || document.getElementById("correctedLetter");
       if (!wrap) return;
-      const topic = String(result.topic || result.task_prompt || "").trim();
-      const topicHtml = topic ? `<div class="muted" style="margin-bottom:6px;"><strong>Bewertung zur Aufgabe:</strong> ${escapeHtml(topic)}</div>` : "";
       const feedback = String(result.teacher_feedback_de || "").trim();
       const feedbackHtml = feedback ? `<div class="muted" style="margin-bottom:6px;"><strong>Kurzfeedback:</strong> ${escapeHtml(feedback)}</div>` : "";
-      wrap.innerHTML = `${topicHtml}${feedbackHtml}${buildTeacherCorrectionHtml(result)}`;
+      wrap.innerHTML = `${feedbackHtml}${buildTeacherCorrectionHtml(result)}`;
+    }
+
+    function formatLetterAsEmailHtml(text) {
+      const raw = String(text || "").replace(/\r\n/g, "\n").trim();
+      if (!raw) return "";
+      const blocks = raw
+        .split(/\n{2,}/)
+        .map(part => part.trim())
+        .filter(Boolean);
+      return blocks
+        .map(part => `<p style="margin:0 0 10px 0;">${escapeHtml(part).replace(/\n/g, "<br>")}</p>`)
+        .join("");
     }
 
     function escapeHtml(text) {
