@@ -12290,9 +12290,7 @@
       const itemHtml = row => {
         const isDone = isHomeworkRowSolved(row);
         const stateClass = isDone ? "homework-done" : "homework-pending";
-        const reminderLevel = String(row.reminder_level || "none").toLowerCase();
-        const reminderLabel = String(row.reminder_label || "Keine Fristwarnung").trim();
-        const reminderClass = ["warn24", "warn2", "expired"].includes(reminderLevel) ? reminderLevel : "none";
+        const startsAtLabel = formatDisplayDateTimeShort(String(row.starts_at || "")) || "-";
         const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
         const category = detectStudentHomeworkCategory(row);
         const dtzOpenAction = parsedTemplate
@@ -12317,7 +12315,7 @@
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status_label || row.status || "offen")}</div>
-            <span class="portal-reminder ${escapeHtml(reminderClass)}">Erinnerung: ${escapeHtml(reminderLabel)}</span>
+            <span class="portal-reminder">Start: ${escapeHtml(startsAtLabel)}</span>
             ${dtzOpenAction}
             ${a2OpenAction}
             ${mailOpenAction}
@@ -13511,6 +13509,23 @@
       const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
       if (m) return `${m[3]}.${m[2]}.${m[1]}`;
       return raw;
+    }
+
+    function formatDisplayDateTimeShort(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = String(d.getFullYear());
+        const hour = String(d.getHours()).padStart(2, "0");
+        const minute = String(d.getMinutes()).padStart(2, "0");
+        return `${day}.${month}.${year} ${hour}:${minute}`;
+      }
+      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
+      if (m) return `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}`;
+      return formatDisplayDate(raw);
     }
 
     function normalizeDateString(value) {
