@@ -7528,27 +7528,33 @@
         return;
       }
 
+      const effectiveGroups = containerId === "hwA2TopicsMultiChecks"
+        ? [{
+            label: "A2-TEST GENERATOR · THEMEN (MEHRFACHAUSWAHL)",
+            options: groups.flatMap(group => Array.isArray(group.options) ? group.options : [])
+          }]
+        : groups;
+
 	      const fragment = document.createDocumentFragment();
-		      groups.forEach(group => {
-		        const labelLower = String(group.label || "").trim().toLowerCase();
+	      effectiveGroups.forEach(group => {
+	        const labelLower = String(group.label || "").trim().toLowerCase();
 	        const isHoerenGroup = labelLower === "hören" || labelLower === "hoeren";
 	        const isLesenGroup = labelLower === "lesen";
 	        const isMailGroup = labelLower === "mail-aufgabe";
 	        const isModelltestGroup = labelLower === "modelltest";
 	        const isA2Group = labelLower === "a2-themen";
-	        const isA2TopicAccordion = containerId === "hwA2TopicsMultiChecks";
-	        const isAccordionGroup = isHoerenGroup || isLesenGroup || isMailGroup || isModelltestGroup || isA2Group || isA2TopicAccordion;
+	        const isAccordionGroup = isHoerenGroup || isLesenGroup || isMailGroup || isModelltestGroup || isA2Group;
 	        let groupWrap;
 	        let listHost;
-		        if (isAccordionGroup) {
-		          const details = document.createElement("details");
-		          details.className = "hw-multi-checklist-group hw-multi-checklist-accordion";
-		          const summary = document.createElement("summary");
-		          summary.className = "hw-multi-checklist-title";
-		          const summaryText = group.label || (isA2TopicAccordion ? "A2-Test Generator · Themen (Mehrfachauswahl)" : "Aufgaben");
-		          summary.textContent = summaryText;
+	        if (isAccordionGroup) {
+	          const details = document.createElement("details");
+	          details.className = "hw-multi-checklist-group hw-multi-checklist-accordion";
+	          const summary = document.createElement("summary");
+	          summary.className = "hw-multi-checklist-title";
+	          const summaryText = group.label || "Aufgaben";
+	          summary.textContent = summaryText;
               details.open = openAccordionLabels.has(String(summaryText).trim().toLowerCase());
-		          details.appendChild(summary);
+	          details.appendChild(summary);
 		          const body = document.createElement("div");
 		          body.style.marginTop = "8px";
 	          details.appendChild(body);
