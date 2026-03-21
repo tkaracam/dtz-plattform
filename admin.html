@@ -2889,47 +2889,6 @@
           </details>
 
           <details class="fold-section">
-            <summary>Schnellgenerator (mehrere Schüler)</summary>
-            <div class="fold-section-content">
-              <p class="section-subtitle">Erzeugt sofort Benutzername+Passwort und legt die Konten in Serie an.</p>
-
-              <div class="grid">
-                <div>
-                  <label for="bulkPrefix">Präfix</label>
-                  <input id="bulkPrefix" type="text" value="kurs" placeholder="z. B. kurs">
-                </div>
-                <div>
-                  <label for="bulkCount">Anzahl</label>
-                  <input id="bulkCount" type="number" min="1" max="100" value="20">
-                </div>
-              </div>
-
-              <div class="grid">
-                <div>
-                  <label for="bulkStart">Startnummer</label>
-                  <input id="bulkStart" type="number" min="1" max="9999" value="1">
-                </div>
-                <div>
-                  <label for="bulkPwdLength">Passwortlänge</label>
-                  <input id="bulkPwdLength" type="number" min="6" max="10" value="6">
-                </div>
-              </div>
-
-              <div class="actions">
-                <button id="bulkGenerateBtn" type="button">Liste generieren</button>
-                <button id="bulkCreateBtn" type="button">Konten anlegen</button>
-                <button id="quickCreate20Btn" type="button">20 Konten sofort</button>
-                <button id="bulkCopyBtn" class="ghost-btn" type="button">Liste kopieren</button>
-                <button id="bulkCsvBtn" class="ghost-btn" type="button">CSV downloaden</button>
-                <button id="bulkPdfBtn" class="ghost-btn" type="button">PDF drucken</button>
-              </div>
-
-              <textarea id="bulkPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
-              <div id="bulkStatus" class="hidden"></div>
-            </div>
-          </details>
-
-          <details class="fold-section">
             <summary>Bestehende Konten</summary>
             <div class="fold-section-content">
               <div class="actions" style="margin-top: 0;">
@@ -4686,7 +4645,6 @@
       updateKursHomeworkTemplatePreview();
       setAdminPane(activeAdminPane || "accounts");
       renderRecentRoomTasks();
-      renderBulkPreview(buildBulkCredentials());
       if (document.getElementById("attendanceDate")) {
         document.getElementById("attendanceDate").value = new Date().toISOString().slice(0, 10);
       }
@@ -4848,10 +4806,15 @@
     }
 
     function buildBulkCredentials() {
-      const prefix = normalizePrefix(document.getElementById("bulkPrefix").value);
-      const count = clamp(document.getElementById("bulkCount").value, 1, 100, 20);
-      const start = clamp(document.getElementById("bulkStart").value, 1, 9999, 1);
-      const pwdLength = clamp(document.getElementById("bulkPwdLength").value, 6, 10, 6);
+      const prefixEl = document.getElementById("bulkPrefix");
+      const countEl = document.getElementById("bulkCount");
+      const startEl = document.getElementById("bulkStart");
+      const pwdLenEl = document.getElementById("bulkPwdLength");
+      if (!prefixEl || !countEl || !startEl || !pwdLenEl) return [];
+      const prefix = normalizePrefix(prefixEl.value);
+      const count = clamp(countEl.value, 1, 100, 20);
+      const start = clamp(startEl.value, 1, 9999, 1);
+      const pwdLength = clamp(pwdLenEl.value, 6, 10, 6);
       const base = prefix || "kurs";
       const pad = String(start + count - 1).length;
       const rows = [];
@@ -4999,11 +4962,13 @@
 
     function renderBulkPreview(rows) {
       const box = document.getElementById("bulkPreview");
+      if (!box) return;
       box.value = rows.map(item => `${item.username};${item.password}`).join("\n");
     }
 
     function parseBulkPreviewRows() {
       const box = document.getElementById("bulkPreview");
+      if (!box) return [];
       const lines = String(box.value || "")
         .split("\n")
         .map(line => line.trim())
@@ -6062,35 +6027,6 @@
                 <button type="button" id="courseStudentGeneratePwdBtn" class="ghost-btn">Passwort generieren</button>
                 <button type="button" id="courseStudentCreateBtn">Teilnehmer erstellen</button>
               </div>
-            </div>
-          </details>
-
-          <details class="fold-section">
-            <summary>Schnellgenerator (mehrere Schüler)</summary>
-            <div class="fold-section-content">
-              <div class="grid" style="margin-top:0;">
-                <div>
-                  <label for="courseBulkPrefixInput">Präfix</label>
-                  <input id="courseBulkPrefixInput" type="text" value="${escapeHtml(courseSlug)}" placeholder="z. B. kurs">
-                </div>
-                <div>
-                  <label for="courseBulkCountInput">Anzahl</label>
-                  <input id="courseBulkCountInput" type="number" min="1" max="100" value="20">
-                </div>
-                <div>
-                  <label for="courseBulkStartInput">Startnummer</label>
-                  <input id="courseBulkStartInput" type="number" min="1" max="9999" value="1">
-                </div>
-                <div>
-                  <label for="courseBulkPwdLengthInput">Passwortlänge</label>
-                  <input id="courseBulkPwdLengthInput" type="number" min="6" max="10" value="6">
-                </div>
-              </div>
-              <div class="actions">
-                <button type="button" id="courseBulkGenerateBtn" class="ghost-btn">Liste generieren</button>
-                <button type="button" id="courseBulkCreateBtn">Konten anlegen</button>
-              </div>
-              <textarea id="courseBulkPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
             </div>
           </details>
 
@@ -12174,10 +12110,6 @@
     document.getElementById("generatePwdBtn").addEventListener("click", () => {
       document.getElementById("newStudentPassword").value = randomPassword();
     });
-    document.getElementById("bulkGenerateBtn").addEventListener("click", () => {
-      clearBox("bulkStatus");
-      renderBulkPreview(buildBulkCredentials());
-    });
     document.getElementById("createCourseBtn").addEventListener("click", createCourse);
     document.getElementById("refreshCoursesBtn").addEventListener("click", listCourses);
     document.getElementById("courseSwitchSelect").addEventListener("change", event => {
@@ -12373,11 +12305,6 @@
     document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendance);
     document.getElementById("lockAttendanceBtn").addEventListener("click", lockAttendance);
     document.getElementById("listAttendanceBtn").addEventListener("click", listAttendanceSessions);
-    document.getElementById("bulkCreateBtn").addEventListener("click", createBulkStudents);
-    document.getElementById("quickCreate20Btn").addEventListener("click", quickCreate20Students);
-    document.getElementById("bulkCopyBtn").addEventListener("click", copyBulkList);
-    document.getElementById("bulkCsvBtn").addEventListener("click", downloadBulkCsv);
-    document.getElementById("bulkPdfBtn").addEventListener("click", downloadBulkPdf);
     document.getElementById("createCourseWithStudentsBtn").addEventListener("click", createCourseWithStudents);
     document.getElementById("copyCourseBuilderListBtn").addEventListener("click", copyCourseBuilderList);
     const shortcutOpenCourseBuilderBtn = document.getElementById("shortcutOpenCourseBuilderBtn");
