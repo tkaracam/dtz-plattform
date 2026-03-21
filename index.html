@@ -7192,6 +7192,7 @@
       const maxTeil = getDtzMaxTeil(normalizedModule);
       const isAssignedModelltest = !!currentModelltestAssignmentId();
       const excludeMap = isAssignedModelltest ? buildAssignedDtzExcludeMap() : {};
+
       for (let teil = 1; teil <= maxTeil; teil += 1) {
         const state = ensureDtzTeilState(normalizedModule, teil);
         const count = getDtzQuestionCount(normalizedModule, teil);
@@ -7200,51 +7201,58 @@
         const maxAttempts = excludeSet.size > 0 ? 8 : 1;
         let loaded = false;
         let lastErr = null;
+
         for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-        try {
-          const response = await fetch("./api/student_training_set.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              module: normalizedModule,
-              count,
-              teil
-            })
-          });
-          const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
-          if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
-          const set = payload && payload.set ? payload.set : {};
-          let items = Array.isArray(set.items) ? set.items : [];
-          if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
-          if (excludeSet.size) {
-            items = items.filter(item => {
-              const qid = String(item && item.template_id ? item.template_id : "").trim();
-              return qid === "" || !excludeSet.has(qid);
+          try {
+            const response = await fetch("./api/student_training_set.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                module: normalizedModule,
+                count,
+                teil
+              })
             });
-          }
-          if (!items.length) {
-            throw new Error("Keine konfliktfreien Aufgaben verfügbar.");
-          }
-          state.set = items;
-          state.tasks = buildDtzTasks(normalizedModule, teil, items);
-          if (!state.answers || typeof state.answers !== "object") {
+            const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
+            if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+            const set = payload && payload.set ? payload.set : {};
+            let items = Array.isArray(set.items) ? set.items : [];
+            if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
+
+            if (excludeSet.size) {
+              items = items.filter(item => {
+                const qid = String(item && item.template_id ? item.template_id : "").trim();
+                return qid === "" || !excludeSet.has(qid);
+              });
+            }
+
+            if (!items.length) {
+              throw new Error("Keine konfliktfreien Aufgaben verfügbar.");
+            }
+
+            state.set = items;
+            state.tasks = buildDtzTasks(normalizedModule, teil, items);
+            if (!state.answers || typeof state.answers !== "object") {
+              state.answers = {};
+            }
+            state.evaluated = false;
+            state.lastLoadedAt = new Date().toISOString();
+            loaded = true;
+            break;
+          } catch (_) {
+            lastErr = _;
+            state.set = [];
+            state.tasks = [];
             state.answers = {};
+            state.evaluated = false;
           }
-          state.evaluated = false;
-          state.lastLoadedAt = new Date().toISOString();
-          loaded = true;
-          break;
-        } catch (_) {
-          lastErr = _;
-          state.set = [];
-          state.tasks = [];
-          state.answers = {};
-          state.evaluated = false;
+        }
+
+        if (!loaded) {
+          throw new Error(lastErr && lastErr.message ? lastErr.message : "Keine konfliktfreien Aufgaben verfügbar.");
         }
       }
-      if (!loaded) {
-        throw new Error(lastErr && lastErr.message ? lastErr.message : "Keine konfliktfreien Aufgaben verfügbar.");
-      }
+
       renderDtzTrainingSet(normalizedModule);
     }
 
