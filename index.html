@@ -3886,7 +3886,10 @@
                 <button id="dtzHoerenEvaluateBtn" type="button">AUSWERTEN</button>
               </div>
               <div class="btn-wrap">
-                <button id="modelltestToLesenBtn" type="button" class="portal-open-btn hidden">Hören abschließen · Lesen starten</button>
+                <button id="modelltestCloseHoerenBtn" type="button" class="portal-open-btn hidden">Hören abschließen</button>
+              </div>
+              <div class="btn-wrap">
+                <button id="modelltestToLesenBtn" type="button" class="portal-open-btn hidden">Lesen starten</button>
               </div>
               <div class="btn-wrap">
                 <button id="dtzHoerenNewBtn" type="button">NEUE AUFGABEN</button>
@@ -4099,6 +4102,7 @@
       timerId: null,
       assignmentId: "",
       hasWritingTask: true,
+      hoerenClosed: false,
       writeVariant: "A",
       writePromptA: "",
       writePromptB: "",
@@ -6168,6 +6172,8 @@
       modelltestFlowState.active = false;
       const flowCard = document.getElementById("modelltestFlowCard");
       if (flowCard) flowCard.classList.add("hidden");
+      const modelltestCloseHoerenBtn = document.getElementById("modelltestCloseHoerenBtn");
+      if (modelltestCloseHoerenBtn) modelltestCloseHoerenBtn.classList.add("hidden");
       const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
       if (modelltestToLesenBtn) modelltestToLesenBtn.classList.add("hidden");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
@@ -6545,6 +6551,8 @@
       modelltestFlowState.active = false;
       const flowCard = document.getElementById("modelltestFlowCard");
       if (flowCard) flowCard.classList.add("hidden");
+      const modelltestCloseHoerenBtn = document.getElementById("modelltestCloseHoerenBtn");
+      if (modelltestCloseHoerenBtn) modelltestCloseHoerenBtn.classList.add("hidden");
       const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
       if (modelltestToLesenBtn) modelltestToLesenBtn.classList.add("hidden");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
@@ -6600,6 +6608,7 @@
         };
         const payload = {
           stage: String(modelltestFlowState.stage || "hoeren"),
+          hoerenClosed: !!modelltestFlowState.hoerenClosed,
           hoerenRemainingSec: Math.max(0, Number(modelltestFlowState.hoerenRemainingSec || 0)),
           lesenRemainingSec: Math.max(0, Number(modelltestFlowState.lesenRemainingSec || 0)),
           schreibenRemainingSec: Math.max(0, Number(modelltestFlowState.schreibenRemainingSec || 0)),
@@ -6628,6 +6637,7 @@
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== "object") return false;
         modelltestFlowState.stage = String(parsed.stage || "hoeren");
+        modelltestFlowState.hoerenClosed = !!parsed.hoerenClosed;
         modelltestFlowState.hoerenRemainingSec = Math.max(0, Number(parsed.hoerenRemainingSec || 35 * 60));
         modelltestFlowState.lesenRemainingSec = Math.max(0, Number(parsed.lesenRemainingSec || 45 * 60));
         modelltestFlowState.schreibenRemainingSec = Math.max(0, Number(parsed.schreibenRemainingSec || 30 * 60));
@@ -6854,6 +6864,7 @@
       const flowCard = document.getElementById("modelltestFlowCard");
       const stageChip = document.getElementById("modelltestStageChip");
       const timerChip = document.getElementById("modelltestTimerChip");
+      const closeHoerenBtn = document.getElementById("modelltestCloseHoerenBtn");
       const toLesenBtn = document.getElementById("modelltestToLesenBtn");
       const toSchreibenBtn = document.getElementById("modelltestToSchreibenBtn");
       const finishBtn = document.getElementById("modelltestFinishBtn");
@@ -6890,8 +6901,10 @@
           timerChip.textContent = formatExamTimer(modelltestFlowState.hoerenRemainingSec);
           timerChip.classList.toggle("warn", modelltestFlowState.hoerenRemainingSec <= 5 * 60);
         }
+        if (closeHoerenBtn) closeHoerenBtn.classList.remove("hidden");
+        if (closeHoerenBtn) closeHoerenBtn.disabled = !hoerenStats.allAnswered || !hoerenEvaluated || !!modelltestFlowState.hoerenClosed;
         if (toLesenBtn) toLesenBtn.classList.remove("hidden");
-        if (toLesenBtn) toLesenBtn.disabled = !hoerenStats.allAnswered || !hoerenEvaluated;
+        if (toLesenBtn) toLesenBtn.disabled = !modelltestFlowState.hoerenClosed;
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) finishBtn.classList.add("hidden");
         if (writePanel) writePanel.classList.add("hidden");
@@ -6907,6 +6920,7 @@
           timerChip.textContent = formatExamTimer(modelltestFlowState.lesenRemainingSec);
           timerChip.classList.toggle("warn", modelltestFlowState.lesenRemainingSec <= 5 * 60);
         }
+        if (closeHoerenBtn) closeHoerenBtn.classList.add("hidden");
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.remove("hidden");
         if (toSchreibenBtn) {
@@ -6929,6 +6943,7 @@
           timerChip.textContent = formatExamTimer(modelltestFlowState.schreibenRemainingSec);
           timerChip.classList.toggle("warn", modelltestFlowState.schreibenRemainingSec <= 5 * 60);
         }
+        if (closeHoerenBtn) closeHoerenBtn.classList.add("hidden");
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) {
@@ -6947,6 +6962,7 @@
       } else {
         if (stageChip) stageChip.textContent = "Phase: Abgeschlossen";
         if (timerChip) timerChip.classList.add("hidden");
+        if (closeHoerenBtn) closeHoerenBtn.classList.add("hidden");
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) finishBtn.classList.add("hidden");
@@ -6986,17 +7002,28 @@
       }, 1000);
     }
 
-    async function advanceModelltestToLesen(fromTimeout = false) {
+    function closeModelltestHoerenPhase(fromTimeout = false) {
       const hoerenStats = getModelltestModuleStats("hoeren");
       if (!fromTimeout && !hoerenStats.allAnswered) {
         setDtzModuleStatus("hoeren", "error", "Bitte zuerst alle Hören-Fragen beantworten.");
-        return;
+        return false;
       }
       if (!fromTimeout && !isModelltestModuleEvaluated("hoeren")) {
         setDtzModuleStatus("hoeren", "error", "Bitte zuerst auf „AUSWERTEN“ klicken.");
-        return;
+        return false;
       }
       markModelltestModuleEvaluated("hoeren");
+      modelltestFlowState.hoerenClosed = true;
+      updateModelltestFlowUi();
+      persistModelltestProgress();
+      return true;
+    }
+
+    async function advanceModelltestToLesen(fromTimeout = false) {
+      if (!modelltestFlowState.hoerenClosed) {
+        const closed = closeModelltestHoerenPhase(fromTimeout);
+        if (!closed) return;
+      }
       modelltestFlowState.stage = "lesen";
       startModelltestStageTimer("lesen");
       if (fromTimeout) {
@@ -7161,6 +7188,7 @@
       modelltestFlowState.finished = false;
       modelltestFlowState.assignmentId = assignmentId;
       modelltestFlowState.hasWritingTask = detectModelltestHasWritingTask();
+      modelltestFlowState.hoerenClosed = false;
       modelltestFlowState.stage = "hoeren";
       modelltestFlowState.hoerenRemainingSec = 35 * 60;
       modelltestFlowState.lesenRemainingSec = 45 * 60;
@@ -13962,6 +13990,12 @@
     const portalStartAssignmentBtn = document.getElementById("portalStartAssignmentBtn");
     if (portalStartAssignmentBtn) {
       portalStartAssignmentBtn.addEventListener("click", () => startCurrentAssignment("portalStartAssignmentBtn", "portalWriteStatus"));
+    }
+    const modelltestCloseHoerenBtn = document.getElementById("modelltestCloseHoerenBtn");
+    if (modelltestCloseHoerenBtn) {
+      modelltestCloseHoerenBtn.addEventListener("click", () => {
+        closeModelltestHoerenPhase(false);
+      });
     }
     const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
     if (modelltestToLesenBtn) {
