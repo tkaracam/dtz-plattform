@@ -2020,8 +2020,8 @@
       --ink: #3c3b45;
       --muted: #77757f;
       --line: rgba(199, 202, 210, 0.6);
-      --accent: #f2849e;
-      --accent-2: #f5a4bb;
+      --accent: #ff5f87;
+      --accent-2: #ff8f66;
       --danger: #8a3026;
       --danger-soft: #f9e7e4;
       --ok-soft: #e5f4ec;
@@ -2300,6 +2300,25 @@
 
     .admin-fastlane-btn:hover {
       color: #f2849e;
+      border-color: #f2b7c9;
+      box-shadow: none;
+    }
+
+    body.docent-mode .admin-fastlane-btn,
+    body.docent-mode .admin-quick-btn,
+    body.docent-mode .ghost-btn,
+    body.docent-mode .admin-menu-trigger {
+      background: linear-gradient(120deg, #ff5f87, #ff8f66);
+      border-color: #f2b7c9;
+      color: #ffffff;
+      box-shadow: none;
+    }
+
+    body.docent-mode .admin-fastlane-btn:hover,
+    body.docent-mode .admin-quick-btn:hover,
+    body.docent-mode .ghost-btn:hover,
+    body.docent-mode .admin-menu-trigger:hover {
+      color: #ffffff;
       border-color: #f2b7c9;
       box-shadow: none;
     }
@@ -4424,6 +4443,7 @@
 
     function applyAdminRoleUi() {
       const owner = isOwnerAdmin();
+      document.body.classList.toggle("docent-mode", isDocentSimpleMode());
       document.querySelectorAll(".owner-only").forEach(node => {
         node.classList.toggle("hidden", !owner);
       });
