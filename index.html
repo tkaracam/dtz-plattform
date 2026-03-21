@@ -3165,7 +3165,8 @@
       }
 
       .dtz-ads-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
       }
 
       .dtz-module-body {
@@ -11463,6 +11464,9 @@
           await loadCurrentAssignedHomework();
           await loadStudentPortal();
           setDtzModuleStatus(module, "ok", "Aufgabe gespeichert und abgegeben.");
+          // Nach erfolgreicher Abgabe automatisch zurück ins Schüler-Portal.
+          openPortalView();
+          openPortalPanel(module === "lesen" ? "lesenHomework" : "hoerenHomework", false);
         } else {
           setDtzModuleStatus(module, "ok", "Zwischenstand gespeichert.");
         }
