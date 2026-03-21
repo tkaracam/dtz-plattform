@@ -729,9 +729,20 @@
 
     .progress-summary-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin-top: 10px;
+    }
+
+    .progress-actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .progress-actions-row button {
+      width: 100%;
     }
 
     .progress-card {
@@ -2427,8 +2438,8 @@
     }
 
     #fastProgressBtn {
-      border-color: #98d9bd;
-      background: linear-gradient(120deg, #2ea972, #59c88e);
+      border-color: #a9bfdc;
+      background: linear-gradient(120deg, #4d78b9, #5f8cd1);
       color: #ffffff;
     }
 
@@ -2811,7 +2822,11 @@
       }
 
       .progress-summary-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .progress-actions-row {
+        grid-template-columns: 1fr;
       }
 
       .homework-reminder-summary {
@@ -3519,7 +3534,7 @@
                 <label for="progressDateTo">Datum bis</label>
                 <input id="progressDateTo" type="date">
               </div>
-              <div class="actions">
+              <div class="actions progress-actions-row">
                 <button id="refreshProgressBtn" type="button">Daten aktualisieren</button>
                 <button id="progressReportCsvBtn" type="button" class="ghost-btn">Bericht CSV</button>
                 <button id="progressReportPdfBtn" type="button" class="ghost-btn">Bericht PDF</button>
@@ -3529,9 +3544,15 @@
             <div id="progressStatus" class="hidden"></div>
             <div id="progressSummaryWrap" class="progress-summary-grid"></div>
             <div id="progressCoursesWrap" class="progress-block"></div>
-            <div id="progressStudentsWrap" class="progress-block"></div>
+            <details id="progressStudentsDetails" class="progress-block">
+              <summary>Teilnehmende im Zeitraum</summary>
+              <div id="progressStudentsWrap" class="fold-section-content" style="padding-top:10px;"></div>
+            </details>
             <div id="progressRiskWrap" class="progress-block"></div>
-            <div id="progressTrendWrap" class="progress-block"></div>
+            <details id="progressTrendDetails" class="progress-block">
+              <summary>Trend (letzte 4 Wochen)</summary>
+              <div id="progressTrendWrap" class="fold-section-content" style="padding-top:10px;"></div>
+            </details>
             <div id="progressRecentWrap" class="progress-block"></div>
           </div>
         </div>
@@ -8732,13 +8753,24 @@
       const wrap = document.getElementById("progressStudentsWrap");
       if (!wrap) return;
       const rows = Array.isArray(students) ? students : [];
+      const resolveNickname = (student) => {
+        const explicit = String(student && student.student_nickname || "").trim();
+        if (explicit) return explicit;
+        const username = String(student && student.student_username || "").trim().toLowerCase();
+        if (!username) return "";
+        const match = (Array.isArray(currentStudents) ? currentStudents : []).find(user => (
+          String(user && user.username || "").trim().toLowerCase() === username
+        ));
+        return String(match && match.nickname || "").trim();
+      };
       if (!rows.length) {
-        wrap.innerHTML = "<h4>Teilnehmende im Zeitraum</h4><p>Keine Teilnehmerdaten verfügbar.</p>";
+        wrap.innerHTML = "<p>Keine Teilnehmerdaten verfügbar.</p>";
         return;
       }
       const tableRows = rows.map(student => {
         const name = String(student.student_name || "").trim();
         const displayName = name !== "" ? name : String(student.student_username || "-");
+        const nickname = resolveNickname(student) || "-";
         const avgScore = student.avg_score_window == null ? "-" : `${escapeHtml(String(student.avg_score_window))}/20`;
         const dtzCorrect = Number(student.dtz_correct_window || 0);
         const dtzWrong = Number(student.dtz_wrong_window || 0);
@@ -8751,7 +8783,7 @@
         return `
           <tr>
             <td>${escapeHtml(displayName)}</td>
-            <td class="mono">${escapeHtml(String(student.student_username || "-"))}</td>
+            <td class="mono">${escapeHtml(nickname)}</td>
             <td class="mono">${escapeHtml(String(submitted))}/${escapeHtml(String(assigned))}</td>
             <td class="mono">${escapeHtml(String(completion))}%</td>
             <td class="mono">${escapeHtml(String(pending))}</td>
@@ -8764,12 +8796,11 @@
         `;
       }).join("");
       wrap.innerHTML = `
-        <h4>Teilnehmende im Zeitraum</h4>
         <table>
           <thead>
             <tr>
               <th>Name</th>
-              <th>Benutzername</th>
+              <th>Nickname</th>
               <th>Abgaben</th>
               <th>Quote</th>
               <th>Offen</th>
@@ -8834,7 +8865,7 @@
       if (!wrap) return;
       const rows = Array.isArray(weeks) ? weeks : [];
       if (!rows.length) {
-        wrap.innerHTML = "<h4>Trend (letzte 4 Wochen)</h4><p>Keine Trenddaten verfügbar.</p>";
+        wrap.innerHTML = "<p>Keine Trenddaten verfügbar.</p>";
         return;
       }
       const width = 600;
@@ -8863,7 +8894,6 @@
         </tr>
       `).join("");
       wrap.innerHTML = `
-        <h4>Trend (letzte 4 Wochen)</h4>
         <div class="progress-trend-legend">
           <span><i class="progress-trend-line" style="background:#2f8f83;"></i>Abgabequote</span>
           <span><i class="progress-trend-line" style="background:#da6fa1;"></i>Ø Punkte (auf % skaliert)</span>
@@ -9102,9 +9132,9 @@
         const trendWrap = document.getElementById("progressTrendWrap");
         const recentWrap = document.getElementById("progressRecentWrap");
         if (coursesWrap) coursesWrap.innerHTML = "<h4>Kursvergleich</h4><p>Keine Daten.</p>";
-        if (studentsWrap) studentsWrap.innerHTML = "<h4>Teilnehmende im Zeitraum</h4><p>Keine Daten.</p>";
+        if (studentsWrap) studentsWrap.innerHTML = "<p>Keine Daten.</p>";
         if (riskWrap) riskWrap.innerHTML = "<h4>Risikogruppe (&lt; 50%)</h4><p>Keine Daten.</p>";
-        if (trendWrap) trendWrap.innerHTML = "<h4>Trend (letzte 4 Wochen)</h4><p>Keine Daten.</p>";
+        if (trendWrap) trendWrap.innerHTML = "<p>Keine Daten.</p>";
         if (recentWrap) recentWrap.innerHTML = "<h4>Zuletzt freigegebene Korrekturen</h4><p>Keine Daten.</p>";
       }
     }
