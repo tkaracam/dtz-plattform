@@ -3050,28 +3050,34 @@
                   <input id="newStudentUsername" type="text" placeholder="z. B. kursa-01">
                 </div>
                 <div>
-                  <label for="newStudentDisplayName">Anzeigename (optional)</label>
-                  <input id="newStudentDisplayName" type="text" placeholder="z. B. Ayse Yilmaz">
-                </div>
-              </div>
-
-              <div class="grid">
-                <div>
                   <label for="newStudentPassword">Passwort</label>
                   <input id="newStudentPassword" type="text" placeholder="Passwort eingeben oder generieren">
                 </div>
-                <div>
-                  <label for="newStudentEmail">E-Mail (optional)</label>
-                  <input id="newStudentEmail" type="text" placeholder="z. B. teilnehmer@mail.com">
+              </div>
+
+              <details class="fold-section" style="margin-top:10px;">
+                <summary>Optionale Felder</summary>
+                <div class="fold-section-content">
+                  <div class="grid">
+                    <div>
+                      <label for="newStudentDisplayName">Anzeigename (optional)</label>
+                      <input id="newStudentDisplayName" type="text" placeholder="z. B. Ayse Yilmaz">
+                    </div>
+                    <div>
+                      <label for="newStudentEmail">E-Mail (optional)</label>
+                      <input id="newStudentEmail" type="text" placeholder="z. B. teilnehmer@mail.com">
+                    </div>
+                    <div>
+                      <label for="newStudentPhone">WhatsApp Telefon (optional)</label>
+                      <input id="newStudentPhone" type="text" placeholder="z. B. 905551112233">
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label for="newStudentPhone">WhatsApp Telefon (optional)</label>
-                  <input id="newStudentPhone" type="text" placeholder="z. B. 905551112233">
-                </div>
-                <div class="actions">
-                  <button id="generatePwdBtn" type="button">Passwort generieren</button>
-                  <button id="createStudentBtn" type="button">Zugang erstellen</button>
-                </div>
+              </details>
+
+              <div class="actions" style="margin-top:10px;">
+                <button id="generatePwdBtn" type="button">Passwort generieren</button>
+                <button id="createStudentBtn" type="button">Zugang erstellen</button>
               </div>
 
               <div id="userStatus" class="hidden"></div>
