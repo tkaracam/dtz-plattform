@@ -69,6 +69,10 @@ if ($timed) {
         exit;
     }
     $expiresAt = gmdate('c', time() + ($durationMinutes * 60));
+} else {
+    // Notizen ohne explizite Dauer werden ebenfalls automatisch archiviert (Standard: 7 Tage).
+    $durationMinutes = 7 * 24 * 60;
+    $expiresAt = gmdate('c', time() + ($durationMinutes * 60));
 }
 
 $allCourses = load_courses();

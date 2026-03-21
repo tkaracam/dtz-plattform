@@ -305,6 +305,14 @@ foreach ($notesRaw as $row) {
         continue;
     }
     $expiresAt = trim((string)($row['expires_at'] ?? ''));
+    if ($expiresAt === '') {
+        // Backward compatibility: alte Notizen ohne expires_at ebenfalls automatisch archivieren.
+        $createdAt = trim((string)($row['created_at'] ?? ''));
+        $createdTs = $createdAt !== '' ? strtotime($createdAt) : false;
+        if ($createdTs !== false && (int)$createdTs > 0) {
+            $expiresAt = gmdate('c', ((int)$createdTs) + (7 * 24 * 3600));
+        }
+    }
     if ($expiresAt !== '') {
         $expiresTs = strtotime($expiresAt);
         if ($expiresTs !== false && (int)$expiresTs > 0 && $nowTs >= (int)$expiresTs) {
