@@ -11985,6 +11985,7 @@
 
       const attachment = String(currentAssignedHomework.attachment || "").trim();
       const safeAttachmentUrl = resolveSafeHttpUrl(attachment);
+      const hideAttachmentForAssignedModelltest = detectStudentHomeworkCategory(currentAssignedHomework) === "modelltest";
       getAssignmentUiSets().forEach(set => {
         const titleNode = document.getElementById(set.titleId);
         const descNode = document.getElementById(set.descId);
@@ -12018,7 +12019,7 @@
         }
 
         if (attachWrap && attachLink) {
-          if (safeAttachmentUrl) {
+          if (safeAttachmentUrl && !hideAttachmentForAssignedModelltest) {
             attachWrap.classList.remove("hidden");
             attachLink.href = safeAttachmentUrl;
           } else {
