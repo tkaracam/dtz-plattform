@@ -7322,7 +7322,11 @@
 	        const labelLower = String(group.label || "").trim().toLowerCase();
 	        const isHoerenGroup = labelLower === "hören" || labelLower === "hoeren";
 	        const isLesenGroup = labelLower === "lesen";
-	        const isAccordionGroup = isHoerenGroup || isLesenGroup;
+	        const isMailGroup = labelLower === "mail-aufgabe";
+	        const isModelltestGroup = labelLower === "modelltest";
+	        const isA2Group = labelLower === "a2-themen";
+	        const isA2TopicAccordion = containerId === "hwA2TopicsMultiChecks";
+	        const isAccordionGroup = isHoerenGroup || isLesenGroup || isMailGroup || isModelltestGroup || isA2Group || isA2TopicAccordion;
 	        let groupWrap;
 	        let listHost;
 	        if (isAccordionGroup) {
@@ -7331,7 +7335,7 @@
 	          details.open = false;
 	          const summary = document.createElement("summary");
 	          summary.className = "hw-multi-checklist-title";
-	          summary.textContent = group.label || "Aufgaben";
+	          summary.textContent = group.label || (isA2TopicAccordion ? "A2-Test Generator · Themen (Mehrfachauswahl)" : "Aufgaben");
 	          details.appendChild(summary);
 	          const body = document.createElement("div");
 	          body.style.marginTop = "8px";
