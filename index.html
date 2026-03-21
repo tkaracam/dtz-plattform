@@ -8816,21 +8816,26 @@
             feedback += ResultBox("", `${escapeHtml(row.explanation)}`);
           }
         }
-        const optionMap = {};
-        labels.forEach((label) => { optionMap[label] = ""; });
-        const optionHtml = OptionGroup({
-          module: "lesen",
-          inputName: `dtz_lesen_t2_${row.key}`,
-          dataKey: row.key,
-          optionsMap: optionMap,
-          selected
-        });
+        const optionItems = labels.map((label) => {
+          const key = String(label || "").trim().toUpperCase();
+          if (!key) return "";
+          const isSelected = selected === key ? "selected" : "";
+          return `<option value="${escapeHtml(key)}" ${isSelected}>${escapeHtml(key)}</option>`;
+        }).filter(Boolean).join("");
+        const optionHtml = `
+          <label style="display:block;">
+            <select data-dtz-module="lesen" data-dtz-key="${escapeHtml(String(row.key || ""))}">
+              <option value="">Bitte auswählen…</option>
+              ${optionItems}
+            </select>
+          </label>
+        `;
         return `
           <article class="${rowClass}">
             <h4>Situation ${row.no}</h4>
             <p class="lid-stimulus">${escapeHtml(row.prompt)}</p>
             ${TaskInstruction(row.question)}
-            <div class="lid-options">${optionHtml}</div>
+            <div>${optionHtml}</div>
             ${feedback}
           </article>
         `;
