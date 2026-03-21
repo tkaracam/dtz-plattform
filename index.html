@@ -99,12 +99,19 @@
       gap: 0;
       font-weight: 900;
       font-size: 1.16rem;
-      color: #ff5f87;
       letter-spacing: 0.02em;
       white-space: nowrap;
       cursor: pointer;
       min-width: 0;
       margin-left: -4px;
+    }
+
+    .nav-brand .brand-main {
+      background: linear-gradient(120deg, #ff5f87, #ff8f66);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -webkit-text-stroke: 0.7px #2f2a33;
     }
 
     .nav-brand .brand-edu {
@@ -3224,7 +3231,7 @@
 <body>
   <div class="container">
     <nav id="topNav" class="top-nav">
-      <div id="navLogoBtn" class="nav-brand" role="button" tabindex="0" aria-label="Zum Hauptmenü">DTZ-LiD <span class="brand-edu">edu</span></div>
+      <div id="navLogoBtn" class="nav-brand" role="button" tabindex="0" aria-label="Zum Hauptmenü"><span class="brand-main">DTZ-LiD</span><span class="brand-edu">edu</span></div>
       <div class="nav-right">
         <div id="memberPanel" class="nav-member hidden">
           <div class="pill">
