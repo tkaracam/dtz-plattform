@@ -9502,14 +9502,14 @@
       const monday = new Date(refDate);
       monday.setDate(refDate.getDate() - mondayOffset);
       const labels = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
-      const shortLabels = ["Mon", "Die", "Mit", "Don", "Fre"];
+      const shortLabels = ["Mo", "Di", "Mi", "Do", "Fr"];
       return labels.map((label, idx) => {
         const day = new Date(monday);
         day.setDate(monday.getDate() + idx);
         return {
           index: idx,
           label,
-          short_label: shortLabels[idx] || label.slice(0, 3),
+          short_label: shortLabels[idx] || label.slice(0, 2),
           iso: toIsoDateLocal(day),
           short: `${String(day.getDate()).padStart(2, "0")}.${String(day.getMonth() + 1).padStart(2, "0")}`
         };
@@ -9671,7 +9671,7 @@
           const isExcused = status === "excused";
           return `
             <div class="attendance-mobile-day">
-              <div class="attendance-mobile-day-label">${escapeHtml(day.short_label || day.label.slice(0, 3))}</div>
+              <div class="attendance-mobile-day-label">${escapeHtml(day.short_label || day.label.slice(0, 2))}</div>
               <div class="attendance-day-cell">
                 <input type="checkbox" class="attendance-miss-toggle" data-att-absent="${i}-${day.index}" ${isAbsent ? "checked" : ""} aria-label="Fehlend markieren (X)">
                 <div class="attendance-eu-wrap ${isAbsent ? "enabled" : ""}" data-att-eu-wrap="${i}-${day.index}">
