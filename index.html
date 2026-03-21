@@ -12179,7 +12179,22 @@
       return null;
     }
 
-    function openHomeworkDtzTeil(templateIdRaw, assignmentIdRaw = "") {
+    function getHomeworkOpenBlockReason(row) {
+      if (!row || typeof row !== "object") return "";
+      const status = String(row.status || "").trim().toLowerCase();
+      if (status === "planned") return "Diese Aufgabe ist noch nicht freigeschaltet.";
+      if (status === "expired") return "Diese Aufgabe ist bereits abgelaufen.";
+      if (status === "archived") return "Diese Aufgabe ist archiviert.";
+      if (status === "submitted") return "Diese Aufgabe wurde bereits abgegeben.";
+      return "";
+    }
+
+    function openHomeworkDtzTeil(templateIdRaw, assignmentIdRaw = "", row = null) {
+      const blockedReason = getHomeworkOpenBlockReason(row);
+      if (blockedReason) {
+        setStatus("error", blockedReason, "portalStatus");
+        return;
+      }
       const parsed = parseDtzHomeworkTemplate(templateIdRaw);
       if (!parsed) {
         setStatus("error", "Für diese Aufgabe ist kein DTZ-Teil verknüpft.", "portalStatus");
@@ -12314,6 +12329,11 @@
         if (grouped[cat]) grouped[cat].push(row);
         else grouped.schreiben.push(row);
       });
+      const homeworkRowById = new Map(
+        rows
+          .map(row => [String((row && row.id) || "").trim(), row])
+          .filter(entry => !!entry[0])
+      );
 
       const itemHtml = row => {
         const isDone = isHomeworkRowSolved(row);
@@ -12370,7 +12390,7 @@
           btn.addEventListener("click", () => {
             const templateId = String(btn.getAttribute("data-open-dtz-teil") || "");
             const assignmentId = String(btn.getAttribute("data-open-hw-assignment") || "");
-            openHomeworkDtzTeil(templateId, assignmentId);
+            openHomeworkDtzTeil(templateId, assignmentId, homeworkRowById.get(assignmentId) || null);
           });
         });
       }
@@ -12380,7 +12400,7 @@
           btn.addEventListener("click", () => {
             const templateId = String(btn.getAttribute("data-open-dtz-teil") || "");
             const assignmentId = String(btn.getAttribute("data-open-hw-assignment") || "");
-            openHomeworkDtzTeil(templateId, assignmentId);
+            openHomeworkDtzTeil(templateId, assignmentId, homeworkRowById.get(assignmentId) || null);
           });
         });
       }
