@@ -3614,6 +3614,23 @@
               <label for="teacherNoteText">Notiz</label>
               <textarea id="teacherNoteText" class="bulk-preview" rows="6" placeholder="z. B. Morgen bitte pünktlich um 08:30 im Kursraum sein."></textarea>
             </div>
+            <div style="margin-top:10px;">
+              <label class="hw-multi-check-item"><input id="teacherNoteTimedChk" type="checkbox"><span>Notiz zeitlich begrenzen</span></label>
+            </div>
+            <div id="teacherNoteTimingWrap" class="grid" style="margin-top:8px; display:none;">
+              <div>
+                <label for="teacherNoteDurationValue">Dauer</label>
+                <input id="teacherNoteDurationValue" type="number" min="1" max="365" value="1">
+              </div>
+              <div>
+                <label for="teacherNoteDurationUnit">Einheit</label>
+                <select id="teacherNoteDurationUnit">
+                  <option value="day" selected>Tag(e)</option>
+                  <option value="hour">Stunde(n)</option>
+                  <option value="minute">Minute(n)</option>
+                </select>
+              </div>
+            </div>
             <div class="actions" style="margin-top:10px;">
               <button id="sendTeacherNoteBtn" type="button">Notiz senden</button>
             </div>
@@ -6015,11 +6032,22 @@
       usersWrap.style.display = targetType === "users" ? "block" : "none";
     }
 
+    function syncTeacherNoteTimingVisibility() {
+      const timedChk = document.getElementById("teacherNoteTimedChk");
+      const timingWrap = document.getElementById("teacherNoteTimingWrap");
+      if (!timedChk || !timingWrap) return;
+      timingWrap.style.display = timedChk.checked ? "grid" : "none";
+    }
+
     async function sendTeacherNote() {
       clearBox("teacherNoteStatus");
       const courseId = String((document.getElementById("teacherNoteCourseId") || {}).value || "").trim();
       const targetType = String((document.getElementById("teacherNoteTargetType") || {}).value || "course").trim();
       const note = String((document.getElementById("teacherNoteText") || {}).value || "").trim();
+      const timedChk = document.getElementById("teacherNoteTimedChk");
+      const timed = !!(timedChk && timedChk.checked);
+      const durationValue = Number((document.getElementById("teacherNoteDurationValue") || {}).value || 0);
+      const durationUnit = String((document.getElementById("teacherNoteDurationUnit") || {}).value || "day").trim();
       const btn = document.getElementById("sendTeacherNoteBtn");
       if (!courseId) {
         setBox("teacherNoteStatus", "error", "Bitte Kurs auswählen.");
@@ -6036,6 +6064,16 @@
         setBox("teacherNoteStatus", "error", "Bitte mindestens einen Teilnehmenden auswählen.");
         return;
       }
+      if (timed) {
+        if (!Number.isFinite(durationValue) || durationValue <= 0) {
+          setBox("teacherNoteStatus", "error", "Bitte gültige Dauer eingeben.");
+          return;
+        }
+        if (!["minute", "hour", "day"].includes(durationUnit)) {
+          setBox("teacherNoteStatus", "error", "Ungültige Zeit-Einheit.");
+          return;
+        }
+      }
 
       if (btn) {
         btn.disabled = true;
@@ -6049,7 +6087,10 @@
             target_type: targetType,
             course_id: courseId,
             usernames,
-            note
+            note,
+            timed,
+            duration_value: timed ? durationValue : 0,
+            duration_unit: timed ? durationUnit : ""
           })
         });
         const payload = await parseJsonResponse(response);
@@ -6057,6 +6098,8 @@
         setBox("teacherNoteStatus", "ok", `Notiz gesendet: ${Number(payload.sent_count || 0)} Empfänger.`);
         const noteInput = document.getElementById("teacherNoteText");
         if (noteInput) noteInput.value = "";
+        if (timedChk) timedChk.checked = false;
+        syncTeacherNoteTimingVisibility();
         setTeacherNoteUserSelection(false);
       } catch (err) {
         setBox("teacherNoteStatus", "error", `Senden fehlgeschlagen: ${err.message}`);
@@ -13224,6 +13267,11 @@
         syncTeacherNoteTargetVisibility();
         renderTeacherNoteUsersList();
       });
+    }
+    const teacherNoteTimedChk = document.getElementById("teacherNoteTimedChk");
+    if (teacherNoteTimedChk) {
+      teacherNoteTimedChk.addEventListener("change", () => syncTeacherNoteTimingVisibility());
+      syncTeacherNoteTimingVisibility();
     }
     const teacherNoteSelectAllBtn = document.getElementById("teacherNoteSelectAllBtn");
     if (teacherNoteSelectAllBtn) {

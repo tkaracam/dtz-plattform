@@ -304,11 +304,19 @@ foreach ($notesRaw as $row) {
     if ($target !== '' && $target !== $username && $target !== '*') {
         continue;
     }
+    $expiresAt = trim((string)($row['expires_at'] ?? ''));
+    if ($expiresAt !== '') {
+        $expiresTs = strtotime($expiresAt);
+        if ($expiresTs !== false && (int)$expiresTs > 0 && $nowTs >= (int)$expiresTs) {
+            continue;
+        }
+    }
     $teacherNotes[] = [
         'id' => (string)($row['id'] ?? ''),
         'created_at' => (string)($row['created_at'] ?? ''),
         'note' => (string)($row['note'] ?? ''),
         'teacher' => (string)($row['teacher'] ?? 'Lehrkraft'),
+        'expires_at' => $expiresAt,
     ];
 }
 usort($teacherNotes, static function (array $a, array $b): int {

@@ -31,6 +31,9 @@ $targetType = trim((string)($body['target_type'] ?? 'course'));
 $courseId = trim((string)($body['course_id'] ?? ''));
 $noteText = trim((string)($body['note'] ?? ''));
 $usernamesRaw = $body['usernames'] ?? [];
+$timed = !empty($body['timed']);
+$durationValue = (int)($body['duration_value'] ?? 0);
+$durationUnit = trim((string)($body['duration_unit'] ?? ''));
 
 if ($noteText === '') {
     http_response_code(400);
@@ -38,6 +41,35 @@ if ($noteText === '') {
     exit;
 }
 $noteText = mb_substr($noteText, 0, 1200);
+
+$durationMinutes = 0;
+$expiresAt = '';
+if ($timed) {
+    if ($durationValue <= 0) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Dauer.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $multiplier = 0;
+    if ($durationUnit === 'minute') {
+        $multiplier = 1;
+    } elseif ($durationUnit === 'hour') {
+        $multiplier = 60;
+    } elseif ($durationUnit === 'day') {
+        $multiplier = 1440;
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Zeit-Einheit.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $durationMinutes = $durationValue * $multiplier;
+    if ($durationMinutes > 525600) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Dauer ist zu lang (max. 365 Tage).'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $expiresAt = gmdate('c', time() + ($durationMinutes * 60));
+}
 
 $allCourses = load_courses();
 $course = null;
@@ -154,6 +186,9 @@ foreach ($recipients as $idx => $uname) {
         'teacher_username' => $teacherUsername,
         'course_id' => is_array($course) ? (string)($course['course_id'] ?? '') : $courseId,
         'target_type' => $targetType,
+        'timed' => $timed,
+        'duration_minutes' => $durationMinutes,
+        'expires_at' => $expiresAt,
     ];
     $current[] = $row;
     $added[] = $row;

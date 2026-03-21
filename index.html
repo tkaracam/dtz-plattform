@@ -12620,6 +12620,7 @@
           <div class="portal-item">
             <strong>${escapeHtml(formatDisplayDate(String(row.created_at || "")) || "-")} | ${escapeHtml(row.teacher || "Lehrkraft")}</strong>
             <div>${escapeHtml(row.note || "-")}</div>
+            ${row.expires_at ? `<div class="section-subtitle" style="margin-top:6px;">Gültig bis: ${escapeHtml(formatDisplayDate(String(row.expires_at || "")) || "-")}</div>` : ""}
           </div>
         `
       );
