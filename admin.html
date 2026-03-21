@@ -2442,6 +2442,12 @@
       color: #ffffff;
     }
 
+    #fastTeacherNotesBtn {
+      border-color: #c9b5e6;
+      background: linear-gradient(120deg, #7d6acb, #a07ed9);
+      color: #ffffff;
+    }
+
     #fastAttendanceBtn {
       border-color: #9fd9d3;
       background: linear-gradient(120deg, #2fae9c, #4d96da);
@@ -2497,6 +2503,7 @@
     }
 
     #fastHomeworksBtn:hover,
+    #fastTeacherNotesBtn:hover,
     #fastAttendanceBtn:hover,
     #fastArchiveBtn:hover,
     #fastProgressBtn:hover,
@@ -2938,6 +2945,7 @@
         <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger" disabled>Menü</button>
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
+          <button id="jumpTeacherNotesBtn" class="admin-menu-item" type="button">Notiz senden</button>
           <button id="jumpAttendanceBtn" class="admin-menu-item archived-module hidden" type="button">Anwesenheit</button>
           <button id="jumpArchiveBtn" class="admin-menu-item" type="button">Mail Korrekturen</button>
           <button id="jumpProgressBtn" class="admin-menu-item" type="button">Fortschritt</button>
@@ -3001,6 +3009,7 @@
           <p class="admin-fastlane-head">Schnellzugriff</p>
           <div class="admin-fastlane-actions">
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
+            <button id="fastTeacherNotesBtn" type="button" class="admin-fastlane-btn">Notiz senden</button>
             <button id="fastAttendanceBtn" type="button" class="admin-fastlane-btn">Anwesenheit</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen <span id="fastArchiveNotifyBadge" class="fastlane-notify-badge hidden">0</span></button>
             <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
@@ -3524,6 +3533,43 @@
         </div>
         </div>
 
+        <div id="paneTeacherNotes" class="admin-pane">
+          <div class="bulk-wrap">
+            <h2 class="section-title" style="font-size: 1.35rem;">Notiz senden</h2>
+            <p class="section-subtitle">Notiz an einen gesamten Kurs oder gezielt an ausgewählte Teilnehmende senden.</p>
+            <div class="grid">
+              <div>
+                <label for="teacherNoteCourseId">Kurs</label>
+                <select id="teacherNoteCourseId">
+                  <option value="">Bitte Kurs auswählen</option>
+                </select>
+              </div>
+              <div>
+                <label for="teacherNoteTargetType">Empfänger</label>
+                <select id="teacherNoteTargetType">
+                  <option value="course">Gesamter Kurs</option>
+                  <option value="users">Ausgewählte Teilnehmende</option>
+                </select>
+              </div>
+            </div>
+            <div id="teacherNoteUsersWrap" style="margin-top:10px; display:none;">
+              <div class="actions" style="margin-top:0;">
+                <button id="teacherNoteSelectAllBtn" type="button" class="ghost-btn">Alle auswählen</button>
+                <button id="teacherNoteClearAllBtn" type="button" class="ghost-btn">Auswahl löschen</button>
+              </div>
+              <div id="teacherNoteUsersList" class="hw-user-grid" style="margin-top:8px;"></div>
+            </div>
+            <div style="margin-top:10px;">
+              <label for="teacherNoteText">Notiz</label>
+              <textarea id="teacherNoteText" class="bulk-preview" rows="6" placeholder="z. B. Morgen bitte pünktlich um 08:30 im Kursraum sein."></textarea>
+            </div>
+            <div class="actions" style="margin-top:10px;">
+              <button id="sendTeacherNoteBtn" type="button">Notiz senden</button>
+            </div>
+            <div id="teacherNoteStatus" class="hidden"></div>
+          </div>
+        </div>
+
         <div id="paneProgress" class="admin-pane">
           <div id="progressSection" class="bulk-wrap">
             <h2 class="section-title" style="font-size: 1.35rem;">Fortschritt Live</h2>
@@ -3967,8 +4013,8 @@
     const IS_JESS_MODE = new URLSearchParams(window.location.search).get("view") === "jess";
     const JESS_STACK_PANES = ["accounts", "courses", "kurs", "homeworks", "archive"];
     const JESS_HIDE_MENU_IDS = ["jumpAccountsBtn", "jumpCourseBuilderBtn", "jumpCoursesBtn", "jumpKursBtn", "jumpHomeworkBtn", "jumpProgressBtn", "jumpArchiveBtn", "jumpMod6Btn", "jumpJessBtn"];
-    const DOCENT_ALLOWED_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "attendance", "archive"]);
-    const DOCENT_QUICK_PANES = new Set(["accounts", "homeworks", "coursebuilder", "progress", "attendance", "archive"]);
+    const DOCENT_ALLOWED_PANES = new Set(["accounts", "homeworks", "teachernotes", "coursebuilder", "progress", "attendance", "archive"]);
+    const DOCENT_QUICK_PANES = new Set(["accounts", "homeworks", "teachernotes", "coursebuilder", "progress", "attendance", "archive"]);
     const DOCENT_HIDE_MENU_IDS = [
       "jumpCoursesBtn",
       "jumpKursBtn",
@@ -4018,6 +4064,7 @@
       courses: "paneCourses",
       kurs: "paneKurs",
       homeworks: "paneHomeworks",
+      teachernotes: "paneTeacherNotes",
       progress: "paneProgress",
       attendance: "paneAttendance",
       audit: "paneAudit",
@@ -4032,6 +4079,7 @@
       courses: "Kurse",
       kurs: "Kurs",
       homeworks: "Hausaufgaben",
+      teachernotes: "Notiz senden",
       progress: "Fortschritt",
       attendance: "Anwesenheit",
       audit: "Audit",
@@ -5840,6 +5888,133 @@
 
       renderAccountsScopeCourseSelect();
       renderProgressCourseFilter();
+      renderTeacherNoteCourseSelect();
+    }
+
+    function renderTeacherNoteCourseSelect() {
+      const select = document.getElementById("teacherNoteCourseId");
+      if (!select) return;
+      const previous = String(select.value || selectedCourseId || "").trim();
+      const options = ['<option value="">Bitte Kurs auswählen</option>'];
+      currentCourses
+        .filter(c => !!c.active)
+        .forEach(c => {
+          const id = String(c.course_id || "").trim();
+          if (!id) return;
+          options.push(`<option value="${escapeHtml(id)}">${escapeHtml(getCourseLabel(c, false))}</option>`);
+        });
+      select.innerHTML = options.join("");
+      if (previous && Array.from(select.options).some(o => o.value === previous)) {
+        select.value = previous;
+      } else if (selectedCourseId && Array.from(select.options).some(o => o.value === selectedCourseId)) {
+        select.value = selectedCourseId;
+      }
+      syncTeacherNoteTargetVisibility();
+      renderTeacherNoteUsersList();
+    }
+
+    function renderTeacherNoteUsersList() {
+      const list = document.getElementById("teacherNoteUsersList");
+      if (!list) return;
+      const courseId = String((document.getElementById("teacherNoteCourseId") || {}).value || "").trim();
+      const course = getCourseById(courseId);
+      if (!courseId || !course) {
+        list.innerHTML = '<p class="section-subtitle">Bitte zuerst Kurs auswählen.</p>';
+        return;
+      }
+      const members = new Set(
+        (Array.isArray(course.members) ? course.members : [])
+          .map(v => String(v || "").trim().toLowerCase())
+          .filter(Boolean)
+      );
+      const users = currentStudents
+        .filter(user => {
+          const uname = String(user && user.username ? user.username : "").trim().toLowerCase();
+          return uname && members.has(uname) && !!user.active;
+        })
+        .sort((a, b) => String(a.username || "").localeCompare(String(b.username || ""), "de"));
+
+      if (!users.length) {
+        list.innerHTML = '<p class="section-subtitle">Keine aktiven Teilnehmenden im Kurs.</p>';
+        return;
+      }
+      list.innerHTML = users.map(user => {
+        const uname = String(user.username || "").trim();
+        const nickname = String(user.nickname || "").trim();
+        const label = nickname ? `${uname} (${nickname})` : uname;
+        return `
+          <label class="hw-user-item">
+            <input type="checkbox" data-teacher-note-user="${escapeHtml(uname)}">
+            <span>${escapeHtml(label)}</span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function setTeacherNoteUserSelection(checked) {
+      document.querySelectorAll("[data-teacher-note-user]").forEach(el => {
+        if (el instanceof HTMLInputElement) el.checked = !!checked;
+      });
+    }
+
+    function syncTeacherNoteTargetVisibility() {
+      const targetType = String((document.getElementById("teacherNoteTargetType") || {}).value || "course").trim();
+      const usersWrap = document.getElementById("teacherNoteUsersWrap");
+      if (!usersWrap) return;
+      usersWrap.style.display = targetType === "users" ? "block" : "none";
+    }
+
+    async function sendTeacherNote() {
+      clearBox("teacherNoteStatus");
+      const courseId = String((document.getElementById("teacherNoteCourseId") || {}).value || "").trim();
+      const targetType = String((document.getElementById("teacherNoteTargetType") || {}).value || "course").trim();
+      const note = String((document.getElementById("teacherNoteText") || {}).value || "").trim();
+      const btn = document.getElementById("sendTeacherNoteBtn");
+      if (!courseId) {
+        setBox("teacherNoteStatus", "error", "Bitte Kurs auswählen.");
+        return;
+      }
+      if (!note) {
+        setBox("teacherNoteStatus", "error", "Bitte Notiz eingeben.");
+        return;
+      }
+      const usernames = Array.from(document.querySelectorAll("[data-teacher-note-user]:checked"))
+        .map(node => String(node.getAttribute("data-teacher-note-user") || "").trim().toLowerCase())
+        .filter(Boolean);
+      if (targetType === "users" && !usernames.length) {
+        setBox("teacherNoteStatus", "error", "Bitte mindestens einen Teilnehmenden auswählen.");
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Wird gesendet...";
+      }
+      try {
+        const response = await fetch("./api/teacher_note_send.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            target_type: targetType,
+            course_id: courseId,
+            usernames,
+            note
+          })
+        });
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        setBox("teacherNoteStatus", "ok", `Notiz gesendet: ${Number(payload.sent_count || 0)} Empfänger.`);
+        const noteInput = document.getElementById("teacherNoteText");
+        if (noteInput) noteInput.value = "";
+        setTeacherNoteUserSelection(false);
+      } catch (err) {
+        setBox("teacherNoteStatus", "error", `Senden fehlgeschlagen: ${err.message}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Notiz senden";
+        }
+      }
     }
 
     function renderProgressCourseFilter() {
@@ -6073,6 +6248,7 @@
     function setSelectedCourse(courseId, openEditor = false) {
       const id = String(courseId || "").trim();
       selectedCourseId = id;
+      if (id) courseBuilderCurrentCourseId = id;
       kursHomeworkReminderFilter = "all";
       setStoredPreference(ADMIN_LAST_COURSE_KEY, id || null);
       getCourseSwitcherSelects().forEach(select => {
@@ -6087,6 +6263,11 @@
         setAccountsScopeCourse(id);
       }
       updateCourseSwitchHint();
+      const noteCourseSelect = document.getElementById("teacherNoteCourseId");
+      if (noteCourseSelect && id && Array.from(noteCourseSelect.options).some(o => o.value === id)) {
+        noteCourseSelect.value = id;
+      }
+      renderTeacherNoteUsersList();
       updateKursPaneSummary();
       renderCourseShortcutButtons();
       if (openEditor) {
@@ -12878,6 +13059,13 @@
       closeAdminMenu();
       openAdminPane("homeworks");
     });
+    const jumpTeacherNotesBtn = document.getElementById("jumpTeacherNotesBtn");
+    if (jumpTeacherNotesBtn) {
+      jumpTeacherNotesBtn.addEventListener("click", () => {
+        closeAdminMenu();
+        openAdminPane("teachernotes");
+      });
+    }
     document.getElementById("jumpProgressBtn").addEventListener("click", () => {
       closeAdminMenu();
       openAdminPane("progress");
@@ -12943,6 +13131,10 @@
     if (fastHomeworksBtn) {
       fastHomeworksBtn.addEventListener("click", () => openAdminPane("homeworks"));
     }
+    const fastTeacherNotesBtn = document.getElementById("fastTeacherNotesBtn");
+    if (fastTeacherNotesBtn) {
+      fastTeacherNotesBtn.addEventListener("click", () => openAdminPane("teachernotes"));
+    }
     const fastProgressBtn = document.getElementById("fastProgressBtn");
     if (fastProgressBtn) {
       fastProgressBtn.addEventListener("click", () => openAdminPane("progress"));
@@ -12968,6 +13160,31 @@
     const fastArchiveBtn = document.getElementById("fastArchiveBtn");
     if (fastArchiveBtn) {
       fastArchiveBtn.addEventListener("click", () => openAdminPane("archive"));
+    }
+    const teacherNoteCourseId = document.getElementById("teacherNoteCourseId");
+    if (teacherNoteCourseId) {
+      teacherNoteCourseId.addEventListener("change", () => {
+        renderTeacherNoteUsersList();
+      });
+    }
+    const teacherNoteTargetType = document.getElementById("teacherNoteTargetType");
+    if (teacherNoteTargetType) {
+      teacherNoteTargetType.addEventListener("change", () => {
+        syncTeacherNoteTargetVisibility();
+        renderTeacherNoteUsersList();
+      });
+    }
+    const teacherNoteSelectAllBtn = document.getElementById("teacherNoteSelectAllBtn");
+    if (teacherNoteSelectAllBtn) {
+      teacherNoteSelectAllBtn.addEventListener("click", () => setTeacherNoteUserSelection(true));
+    }
+    const teacherNoteClearAllBtn = document.getElementById("teacherNoteClearAllBtn");
+    if (teacherNoteClearAllBtn) {
+      teacherNoteClearAllBtn.addEventListener("click", () => setTeacherNoteUserSelection(false));
+    }
+    const sendTeacherNoteBtn = document.getElementById("sendTeacherNoteBtn");
+    if (sendTeacherNoteBtn) {
+      sendTeacherNoteBtn.addEventListener("click", sendTeacherNote);
     }
     const fastTeacherGuideBtn = document.getElementById("fastTeacherGuideBtn");
     if (fastTeacherGuideBtn) {

@@ -3461,7 +3461,7 @@
       <!-- dtz-build: portal-modelltest-tab-2026-03-20 -->
       <section id="portalCard" class="card hidden">
         <h2 class="section-title">Schüler-Portal</h2>
-        <p class="section-subtitle">Hausaufgaben, Lehrkraft-Notizen und Zertifikatsfortschritt.</p>
+        <p class="section-subtitle">Hausaufgaben und Lehrkraft-Notizen.</p>
         <div class="row-end portal-card-actions">
           <div class="btn-wrap">
             <button id="refreshPortalBtn" type="button">Portal aktualisieren</button>
@@ -3472,6 +3472,18 @@
         <section class="portal-section">
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
+              <details id="portalTeacherNotesAccordion" class="card-accordion" style="margin-top:12px;">
+                <summary class="card-accordion-summary">
+                  <div class="title-wrap">
+                    <h3 style="margin:0;">Lehrkraft-Notizen</h3>
+                    <p class="section-subtitle">Hinweise und Mitteilungen Ihrer Lehrkraft.</p>
+                  </div>
+                  <span class="card-accordion-icon">▾</span>
+                </summary>
+                <div class="card-accordion-body">
+                  <div id="portalTeacherNotesWrap" class="portal-list">Noch keine Notizen.</div>
+                </div>
+              </details>
               <details id="portalHoerenHomeworkAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
@@ -10048,6 +10060,7 @@
     }
 
     const PORTAL_PANEL_TO_ACCORDION = {
+      teacherNotes: "portalTeacherNotesAccordion",
       hoerenHomework: "portalHoerenHomeworkAccordion",
       lesenHomework: "portalLesenHomeworkAccordion",
       a2Homework: "portalA2HomeworkAccordion",
@@ -12595,10 +12608,12 @@
         openPortalPanel("write", false);
       } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "modelltest" && !isHomeworkRowSolved(row))) {
         openPortalPanel("modelltestHomework", false);
+      } else if (notes.length) {
+        openPortalPanel("teacherNotes", false);
       }
 
       renderPortalList(
-        "portalNotesWrap",
+        "portalTeacherNotesWrap",
         notes,
         "Noch keine Notizen.",
         row => `
