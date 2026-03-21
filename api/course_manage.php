@@ -77,8 +77,16 @@ function rewrite_jsonl_file_course_manage(string $file, callable $keep, ?int &$r
     return file_put_contents($file, $payload, LOCK_EX) !== false;
 }
 
-function cleanup_course_related_data(string $courseId, array &$stats): bool
+function cleanup_course_related_data(string $courseId, array $deletedUsernames, array &$stats): bool
 {
+    $deletedUserMap = [];
+    foreach ($deletedUsernames as $uname) {
+        $key = auth_lower_text((string)$uname);
+        if ($key !== '') {
+            $deletedUserMap[$key] = true;
+        }
+    }
+
     $stats = [
         'homework_removed' => 0,
         'homework_attempts_removed' => 0,
@@ -115,9 +123,16 @@ function cleanup_course_related_data(string $courseId, array &$stats): bool
     $attemptsFile = $storageDir . '/homework_attempts.jsonl';
     if (!rewrite_jsonl_file_course_manage(
         $attemptsFile,
-        static function (array $row) use ($removedAssignmentIds): bool {
+        static function (array $row) use ($removedAssignmentIds, $deletedUserMap): bool {
             $assignmentId = trim((string)($row['assignment_id'] ?? ''));
-            return $assignmentId === '' || !isset($removedAssignmentIds[$assignmentId]);
+            if ($assignmentId !== '' && isset($removedAssignmentIds[$assignmentId])) {
+                return false;
+            }
+            $studentUsername = auth_lower_text((string)($row['student_username'] ?? ''));
+            if ($studentUsername !== '' && isset($deletedUserMap[$studentUsername])) {
+                return false;
+            }
+            return true;
         },
         $stats['homework_attempts_removed']
     )) {
@@ -141,9 +156,17 @@ function cleanup_course_related_data(string $courseId, array &$stats): bool
         $removedHere = 0;
         $ok = rewrite_jsonl_file_course_manage(
             (string)$lettersFile,
-            static function (array $row) use ($removedAssignmentIds, &$removedUploadIds): bool {
+            static function (array $row) use ($removedAssignmentIds, $deletedUserMap, &$removedUploadIds): bool {
                 $assignmentId = trim((string)($row['assignment_id'] ?? ''));
+                $studentUsername = auth_lower_text((string)($row['student_username'] ?? ''));
                 if ($assignmentId !== '' && isset($removedAssignmentIds[$assignmentId])) {
+                    $uploadId = trim((string)($row['upload_id'] ?? ''));
+                    if ($uploadId !== '') {
+                        $removedUploadIds[$uploadId] = true;
+                    }
+                    return false;
+                }
+                if ($studentUsername !== '' && isset($deletedUserMap[$studentUsername])) {
                     $uploadId = trim((string)($row['upload_id'] ?? ''));
                     if ($uploadId !== '') {
                         $removedUploadIds[$uploadId] = true;
@@ -180,7 +203,9 @@ function cleanup_course_related_data(string $courseId, array &$stats): bool
             if (!is_array($row)) {
                 continue;
             }
-            if (trim((string)($row['course_id'] ?? '')) === $courseId) {
+            $rowCourseId = trim((string)($row['course_id'] ?? ''));
+            $rowStudent = auth_lower_text((string)($row['student_username'] ?? ''));
+            if ($rowCourseId === $courseId || ($rowStudent !== '' && isset($deletedUserMap[$rowStudent]))) {
                 $stats['teacher_notes_removed']++;
                 continue;
             }
@@ -235,6 +260,48 @@ function cleanup_course_related_data(string $courseId, array &$stats): bool
                 return false;
             }
         }
+    }
+
+    return true;
+}
+
+function delete_student_accounts_for_course_members(array $usernames, array &$stats): bool
+{
+    $stats['student_accounts_removed'] = 0;
+    if (count($usernames) === 0) {
+        return true;
+    }
+    $targetMap = [];
+    foreach ($usernames as $uname) {
+        $key = auth_lower_text((string)$uname);
+        if ($key !== '') {
+            $targetMap[$key] = true;
+        }
+    }
+    if (count($targetMap) === 0) {
+        return true;
+    }
+
+    $students = load_student_users();
+    $nextStudents = [];
+    foreach ($students as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $uname = auth_lower_text((string)($row['username'] ?? ''));
+        if ($uname !== '' && isset($targetMap[$uname])) {
+            $stats['student_accounts_removed']++;
+            continue;
+        }
+        $nextStudents[] = $row;
+    }
+
+    if ($stats['student_accounts_removed'] > 0 && !write_student_users($nextStudents)) {
+        return false;
+    }
+
+    foreach (array_keys($targetMap) as $uname) {
+        remove_student_nickname_for_all_docents((string)$uname);
     }
 
     return true;
@@ -348,6 +415,7 @@ if ($action === 'create') {
     $found = false;
     $nextCourses = [];
     $cleanupStats = [];
+    $deletedMembers = [];
     foreach ($courses as $c) {
         if (!is_array($c)) {
             continue;
@@ -361,6 +429,13 @@ if ($action === 'create') {
             echo json_encode(['error' => 'Keine Berechtigung für diesen Kurs.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
+        $members = is_array($c['members'] ?? null) ? $c['members'] : [];
+        foreach ($members as $member) {
+            $uname = auth_lower_text((string)$member);
+            if ($uname !== '') {
+                $deletedMembers[$uname] = true;
+            }
+        }
         $found = true;
     }
     if (!$found) {
@@ -368,11 +443,42 @@ if ($action === 'create') {
         echo json_encode(['error' => 'Kurs nicht gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    if (!cleanup_course_related_data($courseId, $cleanupStats)) {
+    $deletedMemberUsernames = array_keys($deletedMembers);
+
+    if (!cleanup_course_related_data($courseId, $deletedMemberUsernames, $cleanupStats)) {
         http_response_code(500);
         echo json_encode(['error' => 'Kursbezogene Daten konnten nicht vollständig gelöscht werden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    if (!delete_student_accounts_for_course_members($deletedMemberUsernames, $cleanupStats)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Teilnehmerkonten konnten nicht vollständig gelöscht werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $cleanupStats['memberships_removed_other_courses'] = 0;
+    if (count($deletedMemberUsernames) > 0) {
+        $memberMap = array_fill_keys($deletedMemberUsernames, true);
+        foreach ($nextCourses as &$courseRow) {
+            if (!is_array($courseRow)) {
+                continue;
+            }
+            $members = is_array($courseRow['members'] ?? null) ? $courseRow['members'] : [];
+            $before = count($members);
+            $members = array_values(array_filter($members, static function ($m) use ($memberMap): bool {
+                $uname = auth_lower_text((string)$m);
+                return $uname === '' || !isset($memberMap[$uname]);
+            }));
+            if ($before !== count($members)) {
+                $cleanupStats['memberships_removed_other_courses'] += ($before - count($members));
+                $courseRow['members'] = $members;
+                $courseRow['updated_at'] = gmdate('c');
+            }
+        }
+        unset($courseRow);
+    }
+
     $courses = $nextCourses;
 } else {
     http_response_code(400);
