@@ -1141,6 +1141,16 @@
     }
 
     @media (max-width: 760px) {
+      #attendanceSection .actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      #attendanceSection .actions button {
+        width: 100%;
+      }
+
       .attendance-week-table {
         display: none;
       }
@@ -5156,6 +5166,8 @@
       filteredUsers.forEach(user => {
         const isActive = !!user.active;
         const username = String(user.username || "");
+        const nickname = String(user.nickname || "").trim();
+        const usernameWithNickname = isDocentSimpleMode() && nickname ? `${username} (${nickname})` : username;
         const canAssignDocent = isOwnerAdmin();
         const canSetNickname = isDocentSimpleMode();
         const assignDocentRow = canAssignDocent
@@ -5181,7 +5193,7 @@
         tr.id = rowId;
         tr.innerHTML = `
           <td class="select-col"><input type="checkbox" class="student-row-select" data-student-select="${escapeHtml(username)}" ${selected}></td>
-          <td class="mono">${escapeHtml(username)}</td>
+          <td class="mono">${escapeHtml(usernameWithNickname)}</td>
           <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
           <td>${isActive ? "Ja" : "Nein"}</td>
           <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
@@ -9587,8 +9599,10 @@
       const rows = users.map((u, i) => {
         const username = String(u.username || "");
         const displayName = String(u.display_name || "").trim();
+        const nickname = String(u.nickname || "").trim();
+        const usernameWithNickname = nickname ? `${username} (${nickname})` : username;
         const showMeta = displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
-        const titleText = showMeta ? displayName : username;
+        const titleText = isDocentSimpleMode() ? usernameWithNickname : (showMeta ? displayName : username);
         const dayCells = weekDays.map(day => {
           const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
           const status = existing ? String(existing.status || "present") : "present";
@@ -9625,8 +9639,10 @@
       const mobileCards = users.map((u, i) => {
         const username = String(u.username || "");
         const displayName = String(u.display_name || "").trim();
+        const nickname = String(u.nickname || "").trim();
+        const usernameWithNickname = nickname ? `${username} (${nickname})` : username;
         const showMeta = displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
-        const titleText = showMeta ? displayName : username;
+        const titleText = isDocentSimpleMode() ? usernameWithNickname : (showMeta ? displayName : username);
         const dayBlocks = weekDays.map(day => {
           const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
           const status = existing ? String(existing.status || "present") : "present";
