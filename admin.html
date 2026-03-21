@@ -3021,7 +3021,7 @@
         <div id="paneCourseBuilder" class="admin-pane">
           <div class="bulk-wrap">
             <h2 class="section-title" style="font-size: 1.35rem;">Kurs erstellen</h2>
-            <p class="section-subtitle">Kursname eingeben und Teilnehmendenzahl festlegen. Konten werden automatisch erzeugt.</p>
+            <p class="section-subtitle">1) Erst Kurs erstellen. 2) Danach optional TN für diesen Kurs erzeugen.</p>
             <div class="grid">
               <div>
                 <label for="courseBuilderName">Kursname</label>
@@ -3033,7 +3033,8 @@
               </div>
             </div>
             <div class="actions">
-              <button id="createCourseWithStudentsBtn" type="button">Kurs + TN erstellen</button>
+              <button id="createCourseOnlyBtn" type="button">Kurs erstellen</button>
+              <button id="createStudentsForCourseBtn" type="button">TN erstellen</button>
               <button id="copyCourseBuilderListBtn" type="button" class="ghost-btn">Liste kopieren</button>
             </div>
             <textarea id="courseBuilderPreview" class="bulk-preview" readonly placeholder="Benutzername;Passwort"></textarea>
@@ -3908,6 +3909,7 @@
     let selectedStudentUsernames = new Set();
     let currentCourses = [];
     let selectedCourseId = "";
+    let courseBuilderCurrentCourseId = "";
     let accountsScopeCourseId = "";
     let currentAttendanceSessionId = "";
     let currentAttendanceWeekSessionsByDate = {};
@@ -5073,12 +5075,60 @@
       return "";
     }
 
-    async function createCourseWithStudents() {
+    async function createStudentsForCourse(courseId, courseName, count) {
+      const preview = document.getElementById("courseBuilderPreview");
+      const prefix = buildCourseUserPrefix(courseName || courseId || "kurs");
+      const existingUsernames = new Set(
+        currentStudents.map(u => String(u.username || "").trim().toLowerCase()).filter(Boolean)
+      );
+      const createExtra = {};
+      const teacherUsername = String(adminContext.username || "").trim().toLowerCase();
+      if (teacherUsername) {
+        createExtra.teacher_username = teacherUsername;
+      }
+
+      const createdRows = [];
+      const failedRows = [];
+      for (let i = 1; i <= count; i += 1) {
+        const username = buildUniqueCourseUsername(prefix, i, existingUsernames);
+        if (!username) {
+          failedRows.push(`Index ${i}: Benutzername konnte nicht erzeugt werden`);
+          continue;
+        }
+        const password = easyPassword(8);
+        try {
+          await createStudentViaApi(username, password, "", "", "", createExtra);
+          existingUsernames.add(username.toLowerCase());
+          createdRows.push({ username, password });
+        } catch (err) {
+          failedRows.push(`${username}: ${err.message}`);
+        }
+      }
+
+      if (createdRows.length) {
+        const memberRes = await fetch("./api/course_manage.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "set_members",
+            course_id: courseId,
+            members: createdRows.map(row => row.username)
+          })
+        });
+        const memberPayload = await parseJsonResponse(memberRes);
+        if (!memberRes.ok) throw new Error(memberPayload.error || `Fehler: ${memberRes.status}`);
+      }
+
+      if (preview) {
+        preview.value = createdRows.map(row => `${row.username};${row.password}`).join("\n");
+      }
+      return { createdRows, failedRows };
+    }
+
+    async function createCourseOnlyFromBuilder() {
       clearBox("courseBuilderStatus");
       const courseName = String(document.getElementById("courseBuilderName")?.value || "").trim();
-      const count = clamp(document.getElementById("courseBuilderCount")?.value, 1, 100, 20);
-      const preview = document.getElementById("courseBuilderPreview");
-      const btn = document.getElementById("createCourseWithStudentsBtn");
+      const btn = document.getElementById("createCourseOnlyBtn");
       if (!courseName) {
         setBox("courseBuilderStatus", "error", "Kursname ist erforderlich.");
         return;
@@ -5087,7 +5137,6 @@
         btn.disabled = true;
         btn.textContent = "Wird erstellt...";
       }
-
       try {
         const courseRes = await fetch("./api/course_manage.php", {
           method: "POST",
@@ -5096,73 +5145,62 @@
         });
         const coursePayload = await parseJsonResponse(courseRes);
         if (!courseRes.ok) throw new Error(coursePayload.error || `Fehler: ${courseRes.status}`);
-
         const courseId = String(coursePayload.course_id || "").trim();
         if (!courseId) throw new Error("course_id fehlt.");
-
-        const prefix = buildCourseUserPrefix(courseName);
-        const existingUsernames = new Set(
-          currentStudents.map(u => String(u.username || "").trim().toLowerCase()).filter(Boolean)
-        );
-        const createExtra = {};
-        const teacherUsername = String(adminContext.username || "").trim().toLowerCase();
-        if (teacherUsername) {
-          createExtra.teacher_username = teacherUsername;
+        courseBuilderCurrentCourseId = courseId;
+        await listCourses();
+        setSelectedCourse(courseId, true);
+        setAccountsScopeCourse(courseId);
+        setBox("courseBuilderStatus", "ok", `Kurs erstellt: ${courseName}. Jetzt optional TN erstellen.`);
+      } catch (err) {
+        setBox("courseBuilderStatus", "error", `Kurs-Erstellung fehlgeschlagen: ${err.message}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Kurs erstellen";
         }
+      }
+    }
 
-        const createdRows = [];
-        const failedRows = [];
-        for (let i = 1; i <= count; i += 1) {
-          const username = buildUniqueCourseUsername(prefix, i, existingUsernames);
-          if (!username) {
-            failedRows.push(`Index ${i}: Benutzername konnte nicht erzeugt werden`);
-            continue;
-          }
-          const password = easyPassword(8);
-          try {
-            await createStudentViaApi(username, password, "", "", "", createExtra);
-            existingUsernames.add(username.toLowerCase());
-            createdRows.push({ username, password });
-          } catch (err) {
-            failedRows.push(`${username}: ${err.message}`);
-          }
-        }
-
-        if (createdRows.length) {
-          const memberRes = await fetch("./api/course_manage.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "set_members",
-              course_id: courseId,
-              members: createdRows.map(row => row.username)
-            })
-          });
-          const memberPayload = await parseJsonResponse(memberRes);
-          if (!memberRes.ok) throw new Error(memberPayload.error || `Fehler: ${memberRes.status}`);
-        }
-
-        if (preview) {
-          preview.value = createdRows.map(row => `${row.username};${row.password}`).join("\n");
-        }
-
+    async function createStudentsForBuilderCourse() {
+      clearBox("courseBuilderStatus");
+      const courseName = String(document.getElementById("courseBuilderName")?.value || "").trim();
+      const count = clamp(document.getElementById("courseBuilderCount")?.value, 1, 100, 20);
+      const btn = document.getElementById("createStudentsForCourseBtn");
+      const courseId = String(courseBuilderCurrentCourseId || selectedCourseId || "").trim();
+      if (!courseId) {
+        setBox("courseBuilderStatus", "error", "Bitte zuerst einen Kurs erstellen oder auswählen.");
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "TN werden erstellt...";
+      }
+      try {
+        const course = getCourseById(courseId);
+        const effectiveName = String((course && course.name) || courseName || courseId).trim();
+        const { createdRows, failedRows } = await createStudentsForCourse(courseId, effectiveName, count);
         await listStudents();
         await listCourses();
         setSelectedCourse(courseId, true);
         setAccountsScopeCourse(courseId);
 
         if (createdRows.length === count) {
-          setBox("courseBuilderStatus", "ok", `Kurs erstellt: ${courseName}. ${createdRows.length} TN wurden angelegt.`);
+          setBox("courseBuilderStatus", "ok", `${createdRows.length} TN wurden für ${effectiveName} angelegt.`);
         } else {
           const sample = failedRows.slice(0, 3).join(" | ");
-          setBox("courseBuilderStatus", createdRows.length > 0 ? "ok" : "error", `Kurs erstellt: ${courseName}. ${createdRows.length}/${count} TN angelegt.${sample ? ` Fehler: ${sample}` : ""}`);
+          setBox(
+            "courseBuilderStatus",
+            createdRows.length > 0 ? "ok" : "error",
+            `${createdRows.length}/${count} TN für ${effectiveName} angelegt.${sample ? ` Fehler: ${sample}` : ""}`
+          );
         }
       } catch (err) {
-        setBox("courseBuilderStatus", "error", `Kurs/TN-Erstellung fehlgeschlagen: ${err.message}`);
+        setBox("courseBuilderStatus", "error", `TN-Erstellung fehlgeschlagen: ${err.message}`);
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = "Kurs + TN erstellen";
+          btn.textContent = "TN erstellen";
         }
       }
     }
@@ -12761,7 +12799,10 @@
     document.getElementById("listAttendanceBtn").addEventListener("click", listAttendanceSessions);
     document.getElementById("attendanceWeekPdfBtn").addEventListener("click", downloadAttendanceWeekPdf);
     document.getElementById("attendanceMonthPdfBtn").addEventListener("click", downloadAttendanceMonthPdf);
-    document.getElementById("createCourseWithStudentsBtn").addEventListener("click", createCourseWithStudents);
+    const createCourseOnlyBtn = document.getElementById("createCourseOnlyBtn");
+    if (createCourseOnlyBtn) createCourseOnlyBtn.addEventListener("click", createCourseOnlyFromBuilder);
+    const createStudentsForCourseBtn = document.getElementById("createStudentsForCourseBtn");
+    if (createStudentsForCourseBtn) createStudentsForCourseBtn.addEventListener("click", createStudentsForBuilderCourse);
     document.getElementById("copyCourseBuilderListBtn").addEventListener("click", copyCourseBuilderList);
     const shortcutOpenCourseBuilderBtn = document.getElementById("shortcutOpenCourseBuilderBtn");
     if (shortcutOpenCourseBuilderBtn) {
