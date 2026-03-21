@@ -1351,6 +1351,13 @@
       margin-top: 8px;
     }
 
+    .student-multi-select-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
     .student-multi-select-label {
       display: inline-flex;
       align-items: center;
@@ -1379,7 +1386,8 @@
     }
 
     #userListWrap table {
-      min-width: 860px;
+      min-width: 540px;
+      white-space: normal;
     }
 
     #userListWrap th.select-col,
@@ -1404,7 +1412,8 @@
     }
 
     #userListWrap td.actions-col {
-      min-width: 260px;
+      min-width: 220px;
+      white-space: normal;
     }
 
     #userListWrap td .student-actions-stack {
@@ -1417,6 +1426,10 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
+    }
+
+    #userListWrap td .student-action-row-single {
+      grid-template-columns: 1fr;
     }
 
     #userListWrap td .student-action-row button {
@@ -1434,6 +1447,32 @@
       min-height: 30px;
       border-radius: var(--radius-sm);
       visibility: hidden;
+    }
+
+    #userListWrap td .student-more-actions {
+      border: 1px solid #ead7df;
+      border-radius: 10px;
+      background: #fff7fb;
+      padding: 4px 6px;
+    }
+
+    #userListWrap td .student-more-actions > summary {
+      cursor: pointer;
+      list-style: none;
+      color: #5e4c57;
+      font-weight: 700;
+      font-size: 0.78rem;
+      outline: none;
+    }
+
+    #userListWrap td .student-more-actions > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    #userListWrap td .student-more-actions-body {
+      display: grid;
+      gap: 6px;
+      margin-top: 6px;
     }
 
     #userListWrap td .student-contact-panel {
@@ -1920,7 +1959,7 @@
       }
 
       #userListWrap table {
-        min-width: 720px;
+        min-width: 500px;
       }
 
       #userListWrap th:nth-child(8),
@@ -1934,6 +1973,14 @@
 
       #userListWrap .user-actions-mobile {
         display: none !important;
+      }
+
+      .student-multi-select-bar {
+        align-items: flex-start;
+      }
+
+      .student-selection-count {
+        width: 100%;
       }
 
       #paneArchive .grid {
@@ -3019,9 +3066,6 @@
           <details class="fold-section">
             <summary>Bestehende Konten</summary>
             <div class="fold-section-content">
-              <div class="actions" style="margin-top: 0;">
-                <button id="refreshStudentsInlineBtn" type="button" class="ghost-btn">Schülerliste aktualisieren</button>
-              </div>
               <div class="grid" style="margin-top: 10px;">
                 <div>
                   <label for="studentAccountFilterInput">Schüler suchen</label>
@@ -3029,12 +3073,14 @@
                 </div>
               </div>
               <div class="student-multi-select-bar">
-                <label class="student-multi-select-label" for="studentSelectAllChk">
-                  <input id="studentSelectAllChk" type="checkbox">
-                  Alle auswählen
-                </label>
+                <div class="student-multi-select-left">
+                  <button id="refreshStudentsInlineBtn" type="button" class="ghost-btn">Schülerliste aktualisieren</button>
+                  <label class="student-multi-select-label" for="studentSelectAllChk">
+                    <input id="studentSelectAllChk" type="checkbox">
+                    Alle auswählen
+                  </label>
+                </div>
                 <button id="deleteSelectedStudentsBtn" type="button" class="danger-btn">Löschen</button>
-                <button id="clearStudentSelectionBtn" type="button" class="ghost-btn">Auswahl löschen</button>
                 <span id="studentSelectionCount" class="student-selection-count">0 ausgewählt</span>
               </div>
               <div id="userListWrap" style="margin-top: 10px;"></div>
@@ -5331,9 +5377,6 @@
           <tr>
             <th class="select-col">Auswahl</th>
             <th>Benutzername</th>
-            <th>Lehrkraft</th>
-            <th>Aktiv</th>
-            <th>Erstellt</th>
             <th>Aktionen</th>
           </tr>
         </thead>
@@ -5352,18 +5395,13 @@
           ? `
               <div class="student-action-row">
                 <button type="button" data-action="assign-teacher" data-username="${escapeHtml(username)}">Dozent zuweisen</button>
-                <span class="action-spacer" aria-hidden="true"></span>
               </div>
             `
           : "";
         const nicknameRow = canSetNickname
-          ? `
-              <div class="student-action-row">
-                <button type="button" data-action="set-nickname" data-username="${escapeHtml(username)}">Nickname</button>
-                <span class="action-spacer" aria-hidden="true"></span>
-              </div>
-            `
+          ? `<div class="student-action-row student-action-row-single"><button type="button" data-action="set-nickname" data-username="${escapeHtml(username)}">Nickname</button></div>`
           : "";
+        const removeLabel = inScopedMode ? "Aus Kurs entfernen" : "Löschen";
         const contactPanelId = `contact-panel-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
         const rowId = `row-${username.replace(/[^a-z0-9_-]/gi, "_")}`;
         const selected = selectedStudentUsernames.has(username) ? "checked" : "";
@@ -5372,31 +5410,34 @@
         tr.innerHTML = `
           <td class="select-col"><input type="checkbox" class="student-row-select" data-student-select="${escapeHtml(username)}" ${selected}></td>
           <td class="mono">${escapeHtml(usernameWithNickname)}</td>
-          <td class="mono">${escapeHtml(user.teacher_username || "-")}</td>
-          <td>${isActive ? "Ja" : "Nein"}</td>
-          <td class="mono">${escapeHtml(formatDisplayDateTime(user.created_at || ""))}</td>
           <td class="actions-col">
             <div class="student-actions-stack user-actions-desktop">
-              <div class="student-action-row">
-                <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
-                <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
-              </div>
-              <div class="student-action-row">
-                <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
-                <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">${inScopedMode ? "Aus Kurs entfernen" : "Löschen"}</button>
-              </div>
-              <div class="student-action-row">
-                <button type="button" class="ghost-btn" data-action="toggle-contact-details" data-target="${escapeHtml(contactPanelId)}">Kontaktdetails</button>
-                <span class="action-spacer" aria-hidden="true"></span>
-              </div>
-              <div id="${escapeHtml(contactPanelId)}" class="student-contact-panel hidden">
-                <div><b>Anzeigename:</b> ${escapeHtml(user.real_display_name || user.display_name || "-")}</div>
-                <div><b>Dozent-Nickname:</b> ${escapeHtml(user.nickname || "-")}</div>
-                <div><b>E-Mail:</b> ${escapeHtml(user.email || "-")}</div>
-                <div><b>WhatsApp:</b> ${escapeHtml(user.phone || "-")}</div>
-              </div>
               ${nicknameRow}
-              ${assignDocentRow}
+              <div class="student-action-row student-action-row-single">
+                <button type="button" data-action="reset-password" data-username="${escapeHtml(username)}">Passwort zurücksetzen</button>
+              </div>
+              <div class="student-action-row student-action-row-single">
+                <button type="button" class="danger-btn" data-action="delete-user" data-username="${escapeHtml(username)}">${removeLabel}</button>
+              </div>
+              <details class="student-more-actions">
+                <summary>Mehr</summary>
+                <div class="student-more-actions-body">
+                  <div class="student-action-row">
+                    <button type="button" data-action="toggle-active" data-username="${escapeHtml(username)}" data-active="${isActive ? "1" : "0"}">${isActive ? "Deaktivieren" : "Aktivieren"}</button>
+                    <button type="button" data-action="edit-contact" data-username="${escapeHtml(username)}">Kontakt</button>
+                  </div>
+                  <div class="student-action-row student-action-row-single">
+                    <button type="button" class="ghost-btn" data-action="toggle-contact-details" data-target="${escapeHtml(contactPanelId)}">Kontaktdetails</button>
+                  </div>
+                  ${assignDocentRow}
+                  <div id="${escapeHtml(contactPanelId)}" class="student-contact-panel hidden">
+                    <div><b>Anzeigename:</b> ${escapeHtml(user.real_display_name || user.display_name || "-")}</div>
+                    <div><b>Dozent-Nickname:</b> ${escapeHtml(user.nickname || "-")}</div>
+                    <div><b>E-Mail:</b> ${escapeHtml(user.email || "-")}</div>
+                    <div><b>WhatsApp:</b> ${escapeHtml(user.phone || "-")}</div>
+                  </div>
+                </div>
+              </details>
             </div>
           </td>
         `;
@@ -12678,9 +12719,6 @@
       setAllStudentsSelected(!!event.target.checked);
     });
     document.getElementById("deleteSelectedStudentsBtn").addEventListener("click", deleteSelectedStudentsFromAccounts);
-    document.getElementById("clearStudentSelectionBtn").addEventListener("click", () => {
-      setAllStudentsSelected(false);
-    });
     document.querySelectorAll(".admin-quick-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         openAdminPane(btn.dataset.pane);
