@@ -1082,6 +1082,103 @@
       color: #445065;
     }
 
+    .attendance-mobile-list {
+      display: none;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .attendance-mobile-card {
+      border: 1px solid #ead8df;
+      border-radius: 12px;
+      background: #fffdfd;
+      padding: 9px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .attendance-mobile-name {
+      font-weight: 700;
+      color: #2f3342;
+      font-size: 0.95rem;
+      line-height: 1.2;
+    }
+
+    .attendance-mobile-days {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .attendance-mobile-day {
+      border: 1px solid #eddce4;
+      border-radius: 10px;
+      padding: 6px 4px;
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      background: #fff;
+    }
+
+    .attendance-mobile-day-label {
+      font-size: 0.72rem;
+      color: #5d6172;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.01em;
+    }
+
+    .attendance-risk-row {
+      margin-top: 0;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .attendance-risk-row > .ok,
+    .attendance-risk-row > .error {
+      margin: 0;
+    }
+
+    @media (max-width: 760px) {
+      .attendance-week-table {
+        display: none;
+      }
+
+      .attendance-mobile-list {
+        display: grid;
+      }
+
+      .attendance-day-type {
+        display: none;
+      }
+
+      .attendance-mobile-day .attendance-day-cell {
+        min-width: 0;
+        gap: 4px;
+      }
+
+      .attendance-mobile-day .attendance-miss-toggle {
+        width: 16px;
+        height: 16px;
+      }
+
+      .attendance-mobile-day .attendance-eu-chip {
+        padding: 1px 6px;
+        font-size: 0.66rem;
+      }
+
+      .attendance-risk-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .attendance-risk-row .ok,
+      .attendance-risk-row .error {
+        font-size: 0.88rem;
+        padding: 10px 8px;
+      }
+    }
+
     .attendance-eu-chip {
       border: 1px solid #d6dce7;
       border-radius: 999px;
@@ -9372,12 +9469,14 @@
       const monday = new Date(refDate);
       monday.setDate(refDate.getDate() - mondayOffset);
       const labels = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+      const shortLabels = ["Mon", "Die", "Mit", "Don", "Fre"];
       return labels.map((label, idx) => {
         const day = new Date(monday);
         day.setDate(monday.getDate() + idx);
         return {
           index: idx,
           label,
+          short_label: shortLabels[idx] || label.slice(0, 3),
           iso: toIsoDateLocal(day),
           short: `${String(day.getDate()).padStart(2, "0")}.${String(day.getMonth() + 1).padStart(2, "0")}`
         };
@@ -9523,18 +9622,57 @@
           </tr>
         `;
       }).join("");
+      const mobileCards = users.map((u, i) => {
+        const username = String(u.username || "");
+        const displayName = String(u.display_name || "").trim();
+        const showMeta = displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
+        const titleText = showMeta ? displayName : username;
+        const dayBlocks = weekDays.map(day => {
+          const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
+          const status = existing ? String(existing.status || "present") : "present";
+          const isAbsent = status === "absent" || status === "excused";
+          const isExcused = status === "excused";
+          return `
+            <div class="attendance-mobile-day">
+              <div class="attendance-mobile-day-label">${escapeHtml(day.short_label || day.label.slice(0, 3))}</div>
+              <div class="attendance-day-cell">
+                <input type="checkbox" class="attendance-miss-toggle" data-att-absent="${i}-${day.index}" ${isAbsent ? "checked" : ""} aria-label="Fehlend markieren (X)">
+                <div class="attendance-eu-wrap ${isAbsent ? "enabled" : ""}" data-att-eu-wrap="${i}-${day.index}">
+                  <label>
+                    <input type="radio" name="att-eu-${i}-${day.index}" value="excused" data-att-eu="${i}-${day.index}" ${isExcused ? "checked" : ""}>
+                    <span class="attendance-eu-chip eu-e">E</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="att-eu-${i}-${day.index}" value="absent" data-att-eu="${i}-${day.index}" ${!isExcused ? "checked" : ""}>
+                    <span class="attendance-eu-chip eu-u">U</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+        return `
+          <article class="attendance-mobile-card">
+            <div class="attendance-mobile-name">${escapeHtml(titleText)}${showMeta ? ` <span class="meta mono">${escapeHtml(username)}</span>` : ""}</div>
+            <div class="attendance-mobile-days">${dayBlocks}</div>
+          </article>
+        `;
+      }).join("");
       const dayHeaders = weekDays.map(day => {
         const existingType = String(currentAttendanceWeekSessionsByDate[day.iso]?.day_type || "unterricht");
         return `<th class="attendance-week-head">${day.label}<small>${escapeHtml(day.short)}</small><select class="attendance-day-type" data-att-day-type="${day.index}"><option value="unterricht" ${existingType === "unterricht" ? "selected" : ""}>Unterricht</option><option value="feiertag" ${existingType === "feiertag" ? "selected" : ""}>Feiertag</option></select></th>`;
       }).join("");
+      const isMobileAttendance = window.matchMedia("(max-width: 760px)").matches;
       wrap.innerHTML = `
         <p class="section-subtitle" style="margin-bottom:8px;">Kurs: <strong>${escapeHtml(courseName || "-")}</strong> · Montag bis Freitag · X = fehlt · E = entschuldigt · U = unentschuldigt · Tag optional als Feiertag markieren</p>
-        <table>
-          <thead>
-            <tr><th>Teilnehmer</th>${dayHeaders}</tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
+        ${isMobileAttendance
+          ? `<div class="attendance-mobile-list">${mobileCards}</div>`
+          : `<table class="attendance-week-table">
+              <thead>
+                <tr><th>Teilnehmer</th>${dayHeaders}</tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>`}
       `;
       users.forEach((_, i) => {
         weekDays.forEach(day => {
@@ -9560,10 +9698,8 @@
       });
     }
 
-    function collectAttendanceRows(dayIndex) {
+    function collectAttendanceRows(dayIndex, dayType = "unterricht") {
       const users = getSelectedCourseUsers();
-      const dayTypeEl = document.querySelector(`[data-att-day-type="${dayIndex}"]`);
-      const dayType = String(dayTypeEl ? dayTypeEl.value : "unterricht");
       return users.map((u, i) => {
         if (dayType === "feiertag") {
           return {
@@ -9605,10 +9741,11 @@
       try {
         const savedDays = [];
         for (const day of weekDays) {
-          const rows = collectAttendanceRows(day.index);
           const existingSessionId = String(currentAttendanceWeekSessionsByDate[day.iso]?.session_id || "");
+          const existingDayType = String(currentAttendanceWeekSessionsByDate[day.iso]?.day_type || "unterricht");
           const dayTypeEl = document.querySelector(`[data-att-day-type="${day.index}"]`);
-          const dayType = String(dayTypeEl ? dayTypeEl.value : "unterricht");
+          const dayType = String(dayTypeEl ? dayTypeEl.value : existingDayType);
+          const rows = collectAttendanceRows(day.index, dayType);
           const noteForDay = dayType === "feiertag"
             ? addFeiertagMarker(teacherNote)
             : removeFeiertagMarker(teacherNote);
@@ -9820,7 +9957,7 @@
       const warnCount = records.filter(r => Number(r.absence_rate || 0) >= 20 && Number(r.absence_rate || 0) <= 30).length;
       const critCount = records.filter(r => Number(r.absence_rate || 0) > 30).length;
       riskWrap.innerHTML = `
-        <div class="grid" style="margin-top:0;">
+        <div class="attendance-risk-row">
           <div class="ok"><strong>Warnung (>=20%):</strong> ${warnCount}</div>
           <div class="error"><strong>Kritisch (>30%):</strong> ${critCount}</div>
         </div>
@@ -12045,6 +12182,16 @@
     });
     document.getElementById("attendanceDate").addEventListener("change", () => {
       renderAttendanceEditor();
+    });
+    let attendanceResizeTimer = null;
+    window.addEventListener("resize", () => {
+      if (attendanceResizeTimer) window.clearTimeout(attendanceResizeTimer);
+      attendanceResizeTimer = window.setTimeout(() => {
+        const pane = document.getElementById("paneAttendance");
+        const courseId = String(document.getElementById("attendanceCourseId")?.value || "");
+        if (!pane || pane.classList.contains("hidden") || !courseId) return;
+        renderAttendanceEditor();
+      }, 140);
     });
     document.getElementById("loadAlertTargetsBtn").addEventListener("click", loadAlertTargets);
     document.getElementById("copyEmailAlertsBtn").addEventListener("click", copyEmailAlerts);
