@@ -12290,7 +12290,17 @@
       const itemHtml = row => {
         const isDone = isHomeworkRowSolved(row);
         const stateClass = isDone ? "homework-done" : "homework-pending";
-        const startsAtLabel = formatDisplayDateTimeShort(String(row.starts_at || "")) || "-";
+        const startsRaw = String(row.starts_at || "").trim();
+        const startsAtLabel = formatDisplayDateTimeShort(startsRaw) || "-";
+        let endsRaw = String(row.due_date || "").trim();
+        const durationMinutes = Number(row.duration_minutes || 0);
+        if ((endsRaw === "" || endsRaw === startsRaw) && startsRaw && Number.isFinite(durationMinutes) && durationMinutes > 0) {
+          const startTs = Date.parse(startsRaw);
+          if (Number.isFinite(startTs)) {
+            endsRaw = new Date(startTs + durationMinutes * 60000).toISOString();
+          }
+        }
+        const endsAtLabel = formatDisplayDateTimeShort(endsRaw) || "-";
         const parsedTemplate = parseDtzHomeworkTemplate(String(row.template_id || ""));
         const category = detectStudentHomeworkCategory(row);
         const dtzOpenAction = parsedTemplate
@@ -12315,7 +12325,7 @@
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status_label || row.status || "offen")}</div>
-            <span class="portal-reminder">Start: ${escapeHtml(startsAtLabel)}</span>
+            <span class="portal-reminder">Start: ${escapeHtml(startsAtLabel)}<br>endet: ${escapeHtml(endsAtLabel)}</span>
             ${dtzOpenAction}
             ${a2OpenAction}
             ${mailOpenAction}
