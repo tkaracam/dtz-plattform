@@ -1519,6 +1519,11 @@
       text-decoration: underline;
     }
 
+    .assignment-attachment.blend-tone,
+    .assignment-attachment.blend-tone a {
+      color: #eaf0f8 !important;
+    }
+
     .assignment-actions {
       display: flex;
       flex-wrap: wrap;
@@ -12027,27 +12032,19 @@
         }
 
         if (attachWrap && attachLink) {
-          if (safeAttachmentUrl && !hideAttachmentForAssignedModelltest) {
+          if (safeAttachmentUrl) {
             attachWrap.classList.remove("hidden");
+            attachWrap.classList.toggle("blend-tone", hideAttachmentForAssignedModelltest);
             attachLink.href = safeAttachmentUrl;
           } else {
             attachWrap.classList.add("hidden");
+            attachWrap.classList.remove("blend-tone");
             attachLink.href = "#";
           }
         }
 
         if (startBtn) startBtn.disabled = true;
       });
-      if (hideAttachmentForAssignedModelltest) {
-        ["currentAssignmentAttachmentWrap", "portalCurrentAssignmentAttachmentWrap"].forEach(id => {
-          const wrap = document.getElementById(id);
-          if (wrap) wrap.classList.add("hidden");
-        });
-        ["currentAssignmentAttachment", "portalCurrentAssignmentAttachment"].forEach(id => {
-          const link = document.getElementById(id);
-          if (link instanceof HTMLAnchorElement) link.href = "#";
-        });
-      }
       applyAssignmentStartButtonState();
       updateHoerenChecklistVisibility();
       applyAssignedDtzLock();
