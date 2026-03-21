@@ -6988,12 +6988,12 @@
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) {
-          const writingReady = isModelltestWritingCompleted();
+          const writingReady = isAssignedModelltest ? true : isModelltestWritingCompleted();
           finishBtn.textContent = "TEST ABGEBEN";
           finishBtn.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || !writingReady);
           finishBtn.disabled = !writingReady;
         }
-        if (writePanel) writePanel.classList.toggle("hidden", !modelltestFlowState.hasWritingTask);
+        if (writePanel) writePanel.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || isAssignedModelltest);
         setAccordionOpen("dtzHoerenAccordion", false);
         setAccordionOpen("dtzLesenAccordion", false);
         setAccordionOpen("workAccordion", true);
