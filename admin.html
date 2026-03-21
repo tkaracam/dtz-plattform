@@ -3398,6 +3398,8 @@
             <button id="saveAttendanceBtn" type="button">Wochenliste speichern</button>
             <button id="lockAttendanceBtn" type="button">Woche sperren</button>
             <button id="listAttendanceBtn" class="ghost-btn" type="button">Anwesenheitsliste</button>
+            <button id="attendanceWeekPdfBtn" class="ghost-btn" type="button">PDF Woche</button>
+            <button id="attendanceMonthPdfBtn" class="ghost-btn" type="button">PDF Monat</button>
           </div>
           <div id="attendanceStatus" class="hidden"></div>
           <div id="attendanceRiskWrap" style="margin-top:10px;"></div>
@@ -3691,6 +3693,7 @@
     let accountsScopeCourseId = "";
     let currentAttendanceSessionId = "";
     let currentAttendanceWeekSessionsByDate = {};
+    let currentAttendanceListRecords = [];
     let currentAlertTargets = [];
     let currentAttendanceRequests = [];
     let currentRooms = [];
@@ -9991,6 +9994,7 @@
     function renderAttendanceSessions(records) {
       const wrap = document.getElementById("attendanceListWrap");
       const riskWrap = document.getElementById("attendanceRiskWrap");
+      currentAttendanceListRecords = Array.isArray(records) ? records : [];
       const warnCount = records.filter(r => Number(r.absence_rate || 0) >= 20 && Number(r.absence_rate || 0) <= 30).length;
       const critCount = records.filter(r => Number(r.absence_rate || 0) > 30).length;
       riskWrap.innerHTML = `
@@ -10059,6 +10063,169 @@
           <tbody>${rows}</tbody>
         </table>
       `;
+    }
+
+    function attendanceReasonDetail(row, record) {
+      const status = String(row && row.status ? row.status : "");
+      const isExcused = status === "excused";
+      const base = isExcused ? "Entschuldigt" : "Unentschuldigt";
+      const reasonMap = {
+        sick: "Krankheit",
+        transport: "Transport",
+        work: "Arbeit",
+        family: "Familie",
+        appointment: "Termin",
+        other: "Sonstiges"
+      };
+      const reasonRaw = String(row && row.reason ? row.reason : "");
+      const reasonLabel = reasonMap[reasonRaw] || "";
+      const note = String(row && row.note ? row.note : "").trim();
+      const dayType = String(record && record.day_type ? record.day_type : "");
+      const dayTypePart = dayType === "feiertag" ? "Feiertag" : "";
+      return [base, reasonLabel, note, dayTypePart].filter(Boolean).join(" · ");
+    }
+
+    function collectAttendanceMissingEntries(records) {
+      const safeRecords = Array.isArray(records) ? records : [];
+      const rows = [];
+      safeRecords.forEach(record => {
+        const lessonDate = String(record && record.lesson_date ? record.lesson_date : "");
+        const courseName = String(record && record.course_name ? record.course_name : "");
+        const detailRows = Array.isArray(record && record.rows) ? record.rows : [];
+        detailRows.forEach(row => {
+          const status = String(row && row.status ? row.status : "");
+          if (status !== "absent" && status !== "excused") return;
+          const username = String(row && row.username ? row.username : "").trim();
+          const student = currentStudents.find(u => String(u && u.username ? u.username : "").trim() === username) || null;
+          const displayName = student ? String(student.display_name || "").trim() : "";
+          const who = displayName ? `${displayName} (${username})` : (username || "-");
+          rows.push({
+            lessonDate,
+            weekday: lessonDate ? new Date(`${lessonDate}T12:00:00`).toLocaleDateString("de-DE", { weekday: "short" }) : "-",
+            who,
+            reason: attendanceReasonDetail(row, record),
+            courseName
+          });
+        });
+      });
+      rows.sort((a, b) => String(a.lessonDate).localeCompare(String(b.lessonDate)));
+      return rows;
+    }
+
+    async function fetchAttendanceRecordsInRange(dateFrom, dateTo, courseId) {
+      const response = await fetch("./api/attendance_list.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date_from: dateFrom,
+          date_to: dateTo,
+          course_query: "",
+          course_id: courseId,
+          limit: 200
+        })
+      });
+      const payload = await parseJsonResponse(response);
+      if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+      return Array.isArray(payload.records) ? payload.records : [];
+    }
+
+    function openAttendancePdfReport(title, periodLabel, records) {
+      const rows = collectAttendanceMissingEntries(records);
+      const selectedCourseName = String(document.getElementById("attendanceCourse")?.value || "").trim() || "-";
+      const createdAt = formatDisplayDateTime(new Date().toISOString()) || "-";
+      const bodyRows = rows.length
+        ? rows.map(item => `
+            <tr>
+              <td>${escapeHtml(formatDisplayDate(item.lessonDate) || item.lessonDate || "-")}</td>
+              <td>${escapeHtml(item.weekday || "-")}</td>
+              <td>${escapeHtml(item.who || "-")}</td>
+              <td>${escapeHtml(item.reason || "-")}</td>
+              <td>${escapeHtml(item.courseName || "-")}</td>
+            </tr>
+          `).join("")
+        : `<tr><td colspan="5">Keine Fehlzeiten im ausgewählten Zeitraum.</td></tr>`;
+
+      const win = window.open("", "_blank");
+      if (!win) {
+        setBox("attendanceStatus", "error", "Popup blockiert. Bitte Popups erlauben.");
+        return;
+      }
+      win.document.write(`
+        <!doctype html>
+        <html lang="de">
+          <head>
+            <meta charset="utf-8">
+            <title>${escapeHtml(title)}</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 18px; color: #1f2c3f; }
+              h1 { margin: 0 0 8px; font-size: 20px; }
+              p.meta { margin: 0 0 12px; color: #4f6078; font-size: 13px; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { border: 1px solid #b7c4d7; padding: 7px; text-align: left; vertical-align: top; font-size: 12px; }
+              th { background: #eef4fd; }
+            </style>
+          </head>
+          <body>
+            <h1>${escapeHtml(title)}</h1>
+            <p class="meta">Kurs: ${escapeHtml(selectedCourseName)} | Zeitraum: ${escapeHtml(periodLabel)} | Erstellt: ${escapeHtml(createdAt)}</p>
+            <table>
+              <thead>
+                <tr><th>Datum</th><th>Tag</th><th>Teilnehmer</th><th>Warum fehlend</th><th>Kurs</th></tr>
+              </thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+          </body>
+        </html>
+      `);
+      win.document.close();
+      win.focus();
+      win.print();
+      setBox("attendanceStatus", "ok", `${title} geöffnet. Als PDF speichern.`);
+    }
+
+    async function downloadAttendanceWeekPdf() {
+      clearBox("attendanceStatus");
+      try {
+        const courseId = String(document.getElementById("attendanceCourseId")?.value || "").trim();
+        if (!courseId) {
+          setBox("attendanceStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+          return;
+        }
+        const weekDays = getAttendanceWeekDays();
+        const from = String(weekDays[0]?.iso || "");
+        const to = String(weekDays[weekDays.length - 1]?.iso || "");
+        if (!from || !to) {
+          setBox("attendanceStatus", "error", "Woche konnte nicht berechnet werden.");
+          return;
+        }
+        const records = await fetchAttendanceRecordsInRange(from, to, courseId);
+        openAttendancePdfReport("Anwesenheit Woche – Wer war wann warum nicht da?", `${formatDisplayDate(from)} bis ${formatDisplayDate(to)}`, records);
+      } catch (err) {
+        setBox("attendanceStatus", "error", `Wochen-PDF fehlgeschlagen: ${err.message}`);
+      }
+    }
+
+    async function downloadAttendanceMonthPdf() {
+      clearBox("attendanceStatus");
+      try {
+        const courseId = String(document.getElementById("attendanceCourseId")?.value || "").trim();
+        if (!courseId) {
+          setBox("attendanceStatus", "error", "Bitte zuerst einen Kurs auswählen.");
+          return;
+        }
+        const refValue = String(document.getElementById("attendanceDate")?.value || "").trim();
+        const refDate = refValue ? new Date(`${refValue}T12:00:00`) : new Date();
+        const year = refDate.getFullYear();
+        const month = refDate.getMonth();
+        const fromDate = new Date(year, month, 1, 12, 0, 0);
+        const toDate = new Date(year, month + 1, 0, 12, 0, 0);
+        const from = toIsoDateLocal(fromDate);
+        const to = toIsoDateLocal(toDate);
+        const records = await fetchAttendanceRecordsInRange(from, to, courseId);
+        openAttendancePdfReport("Anwesenheit Monat – Wer war wann warum nicht da?", `${formatDisplayDate(from)} bis ${formatDisplayDate(to)}`, records);
+      } catch (err) {
+        setBox("attendanceStatus", "error", `Monats-PDF fehlgeschlagen: ${err.message}`);
+      }
     }
 
     async function listAttendanceSessions() {
@@ -12305,6 +12472,8 @@
     document.getElementById("saveAttendanceBtn").addEventListener("click", saveAttendance);
     document.getElementById("lockAttendanceBtn").addEventListener("click", lockAttendance);
     document.getElementById("listAttendanceBtn").addEventListener("click", listAttendanceSessions);
+    document.getElementById("attendanceWeekPdfBtn").addEventListener("click", downloadAttendanceWeekPdf);
+    document.getElementById("attendanceMonthPdfBtn").addEventListener("click", downloadAttendanceMonthPdf);
     document.getElementById("createCourseWithStudentsBtn").addEventListener("click", createCourseWithStudents);
     document.getElementById("copyCourseBuilderListBtn").addEventListener("click", copyCourseBuilderList);
     const shortcutOpenCourseBuilderBtn = document.getElementById("shortcutOpenCourseBuilderBtn");
