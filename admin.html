@@ -1594,6 +1594,57 @@
       word-break: break-word;
     }
 
+    #teacherNoteUsersList .teacher-note-user-item {
+      border: 1px solid #e2d3df;
+      background: #fff8fc;
+      border-radius: 12px;
+      padding: 7px 10px;
+      transition: border-color .15s ease, background .15s ease;
+    }
+
+    #teacherNoteUsersList .teacher-note-user-item:hover {
+      border-color: #d5bed0;
+      background: #fff3f8;
+    }
+
+    #teacherNoteUsersList input[data-teacher-note-user] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
+      border: 1.6px solid #bfa0b4;
+      border-radius: 5px;
+      background: #fff;
+      margin: 0;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      box-shadow: none;
+      flex: 0 0 18px;
+    }
+
+    #teacherNoteUsersList input[data-teacher-note-user]:checked {
+      border-color: #4d78b9;
+      background: linear-gradient(120deg, #4d78b9, #5f8cd1);
+    }
+
+    #teacherNoteUsersList input[data-teacher-note-user]:checked::after {
+      content: "";
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 4px;
+      height: 9px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    #teacherNoteUsersList input[data-teacher-note-user]:focus-visible {
+      box-shadow: 0 0 0 2px rgba(77, 120, 185, 0.2);
+    }
+
     .hw-user-actions {
       margin: 8px 0;
       display: flex;
@@ -5943,7 +5994,7 @@
         const nickname = String(user.nickname || "").trim();
         const label = nickname ? `${uname} (${nickname})` : uname;
         return `
-          <label class="hw-user-item">
+          <label class="hw-user-item teacher-note-user-item">
             <input type="checkbox" data-teacher-note-user="${escapeHtml(uname)}">
             <span>${escapeHtml(label)}</span>
           </label>
