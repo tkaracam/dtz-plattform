@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DTZ-LiD edu · Lehrkraft-Anleitung</title>
+  <style>
+    :root {
+      --bg: #fffaf6;
+      --paper: #ffffff;
+      --line: #ecd9d2;
+      --text: #2f3442;
+      --muted: #6c7282;
+      --accent: #ff5f87;
+      --accent2: #ff8f66;
+      --ok: #1ea975;
+      --info: #4d78b9;
+      --warn: #d35a50;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #fffdfb 0%, var(--bg) 100%);
+    }
+    .wrap {
+      width: min(1100px, calc(100% - 24px));
+      margin: 20px auto 28px;
+      display: grid;
+      gap: 14px;
+    }
+    .hero {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+    }
+    h1 { margin: 0; font-size: clamp(1.35rem, 2.8vw, 2rem); }
+    .sub { margin: 6px 0 0; color: var(--muted); }
+    .chips { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      border: 1px solid #e6d6de;
+      background: #fff7fb;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #6d5361;
+    }
+    .layout {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1.1fr .9fr;
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    h2 { margin: 0 0 8px; font-size: 1.05rem; }
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .quick .q {
+      border: 1px solid #e9dde2;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+      font-size: 0.87rem;
+    }
+    .q strong { display: block; margin-bottom: 4px; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .step {
+      border-radius: 12px;
+      border: 1px solid #ecdde4;
+      background: #fff;
+      padding: 10px;
+      min-height: 110px;
+    }
+    .step .n {
+      display: inline-flex;
+      width: 24px;
+      height: 24px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: linear-gradient(120deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .step h3 { margin: 0 0 6px; font-size: .94rem; }
+    .step ul { margin: 0; padding-left: 16px; color: var(--muted); font-size: .84rem; }
+    .panel {
+      border: 1px dashed #d9c9d0;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .b {
+      text-align: center;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      padding: 8px 6px;
+      font-size: .82rem;
+    }
+    .pink { background: linear-gradient(120deg, #ff5f87, #ff8f66); }
+    .blue { background: linear-gradient(120deg, #4d78b9, #5f8cd1); }
+    .green { background: linear-gradient(120deg, #1ea975, #45bf8e); }
+    .red { background: linear-gradient(120deg, #d35a50, #e3796f); }
+    .violet { background: linear-gradient(120deg, #7a67c9, #a07ad8); }
+    .teal { background: linear-gradient(120deg, #2fae9c, #4d96da); }
+    details {
+      border: 1px solid #e9dce2;
+      border-radius: 12px;
+      background: #fff;
+      padding: 8px 10px;
+    }
+    summary { cursor: pointer; font-weight: 700; }
+    .checklist { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+    .hint { color: #5b6070; font-size: .9rem; }
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .84rem;
+      margin-top: 4px;
+    }
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .quick, .btn-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Lehrkraft-Anleitung · Dozent Admin</h1>
+      <p class="sub">Schritt-für-Schritt, direkt für den Alltag im Unterricht. Fokus: Kurs, Hausaufgaben, Anwesenheit, Korrekturen, Fortschritt.</p>
+      <div class="chips">
+        <span class="chip">Pfad: `docent_admin.html`</span>
+        <span class="chip">Empfohlen: Schnellzugriff nutzen</span>
+        <span class="chip">Workflow: Planen -> Zuweisen -> Prüfen -> Auswerten</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <article class="card">
+        <h2>Schnellstart (5 Minuten)</h2>
+        <div class="quick">
+          <div class="q"><strong>1. Login</strong>Dozent-Konto in `docent_admin.html`</div>
+          <div class="q"><strong>2. Kurs prüfen</strong>`Kurs erstellen` oder vorhandenen Kurs öffnen</div>
+          <div class="q"><strong>3. Schüler prüfen</strong>`Schülerzugänge` kontrollieren</div>
+          <div class="q"><strong>4. Aufgaben setzen</strong>Mehrfachauswahl + Startzeit + Dauer</div>
+          <div class="q"><strong>5. Rückläufe prüfen</strong>`Mail Korrekturen` + Feedback</div>
+          <div class="q"><strong>6. Status checken</strong>`Fortschritt` + Bericht CSV/PDF</div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Visual: Schnellzugriff</h2>
+        <div class="panel">
+          <div class="hint">Empfohlene Reihenfolge im Unterrichtstag:</div>
+          <div class="btn-grid">
+            <div class="b pink">Hausaufgaben</div>
+            <div class="b teal">Anwesenheit</div>
+            <div class="b violet">Mail Korrekturen</div>
+            <div class="b blue">Fortschritt</div>
+            <div class="b green">Kurs erstellen</div>
+            <div class="b red">Kurs löschen</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Hauptablauf (Schritt für Schritt)</h2>
+      <div class="flow">
+        <div class="step">
+          <div class="n">1</div>
+          <h3>Kurs vorbereiten</h3>
+          <ul>
+            <li>Kursname setzen</li>
+            <li>Teilnehmende prüfen</li>
+            <li>Zeitraum planen</li>
+          </ul>
+        </div>
+        <div class="step">
+          <div class="n">2</div>
+          <h3>Aufgaben zuweisen</h3>
+          <ul>
+            <li>Hören/Lesen/Mail/Modelltest wählen</li>
+            <li>Start + Dauer setzen</li>
+            <li>Batch-Zuweisung ausführen</li>
+          </ul>
+        </div>
+        <div class="step">
+          <div class="n">3</div>
+          <h3>Abgaben bearbeiten</h3>
+          <ul>
+            <li>Mail-Korrekturen öffnen</li>
+            <li>Punkte + Feedback freigeben</li>
+            <li>Offene Fälle reduzieren</li>
+          </ul>
+        </div>
+        <div class="step">
+          <div class="n">4</div>
+          <h3>Fortschritt prüfen</h3>
+          <ul>
+            <li>Kursfilter setzen</li>
+            <li>Teilnehmende + Trend prüfen</li>
+            <li>CSV/PDF Bericht exportieren</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Detailhilfe nach Bereich</h2>
+      <details>
+        <summary>Hausaufgaben richtig zuweisen</summary>
+        <ul class="checklist">
+          <li>Mehrfachauswahl nutzen, wenn mehrere Aufgaben gleichzeitig fällig sein sollen.</li>
+          <li>Startzeit immer setzen, damit Anzeige im Portal korrekt ist.</li>
+          <li>Dauer realistisch planen (z. B. Hören 35 Min, Lesen 45 Min).</li>
+          <li>Modelltest ohne Mail: `DTZ Modelltest (ohne Mail Schreiben)` wählen.</li>
+          <li>Modelltest mit Mail: `MODELLTEST: Mail schreiben hinzufügen` aktivieren und Thema auswählen.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Anwesenheit sauber führen</summary>
+        <ul class="checklist">
+          <li>Wöchentlich Montag-Freitag markieren.</li>
+          <li>`E` und `U` konsequent setzen, damit Risikoquote korrekt bleibt.</li>
+          <li>Bei Abschluss `Woche sperren` verwenden.</li>
+          <li>PDF-Export für Doku (Woche/Monat) nutzen.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Fortschritt richtig lesen</summary>
+        <ul class="checklist">
+          <li>Erst `Daten aktualisieren`, dann Berichte exportieren.</li>
+          <li>KPI-Karten zeigen Kurszustand auf einen Blick (Quote, offen, Risiko).</li>
+          <li>`Teilnehmende im Zeitraum` zeigt Name + Dozent-Nickname.</li>
+          <li>`Trend (letzte 4 Wochen)` für Kursentwicklung nutzen.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Typische Probleme und schnelle Lösung</h2>
+      <ul class="checklist">
+        <li><strong>Keine Aufgabe im Schülerportal:</strong> Kurszuordnung und Startzeit prüfen.</li>
+        <li><strong>Zu viele offene Aufgaben:</strong> kürzere Dauer + klarere Auswahl pro Woche.</li>
+        <li><strong>Niedrige Quote:</strong> zuerst Hören/Lesen separat, dann Modelltest.</li>
+        <li><strong>Unklare Leistung:</strong> `Fortschritt` filtern und Bericht PDF exportieren.</li>
+      </ul>
+    </section>
+
+    <div class="footer">DTZ-LiD edu · Lehrkraft-Anleitung (Dozent Admin)</div>
+  </main>
+</body>
+</html>
