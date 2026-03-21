@@ -4043,6 +4043,7 @@
     let assignmentTimeWarningSent = {};
     let serverTimeOffsetMs = 0;
     let writeOpenedFromPortalMail = false;
+    let dtzHomeworkBackTrapActive = false;
     let taskStatus = {};
     let currentTaskIndex = 0;
     let taskFilter = "all";
@@ -12212,6 +12213,14 @@
       }
       const moduleState = getDtzModuleState(parsed.module);
       moduleState.selectedTeil = parsed.teil;
+      if (window.history && typeof window.history.pushState === "function") {
+        try {
+          window.history.pushState({ dtz_hw_open: true }, "", window.location.href);
+          dtzHomeworkBackTrapActive = true;
+        } catch (_) {
+          dtzHomeworkBackTrapActive = false;
+        }
+      }
       navigateToSection(parsed.module === "lesen" ? "dtz-lesen" : "dtz-hoeren");
       window.setTimeout(() => {
         const ui = getDtzUi(parsed.module);
@@ -13994,6 +14003,15 @@
       }
     });
     window.addEventListener("popstate", () => {
+      const dtzCard = document.getElementById("dtzTrainingCard");
+      const dtzVisible = !!(dtzCard && !dtzCard.classList.contains("hidden"));
+      const hasAssignedDtz = !!getActiveAssignedDtzRequirement();
+      if (dtzHomeworkBackTrapActive && dtzVisible && hasAssignedDtz) {
+        dtzHomeworkBackTrapActive = false;
+        openPortalView();
+        openPortalPanel("homework", false);
+        return;
+      }
       const workCard = document.getElementById("workCard");
       const inWriteView = !!(workCard && !workCard.classList.contains("hidden"));
       if (!writeOpenedFromPortalMail || !inWriteView) return;
