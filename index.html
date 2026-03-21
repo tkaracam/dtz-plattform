@@ -12553,7 +12553,21 @@
           renderResult(payload.letter_corrections[0]);
         }
       } catch (err) {
-        setPortalStatus("error", `Portal konnte nicht geladen werden: ${err.message}`);
+        const message = String(err && err.message ? err.message : "");
+        const lowered = message.toLowerCase();
+        const unauthorized =
+          lowered.includes("nicht autorisiert") ||
+          lowered.includes("bitte zuerst als schüler anmelden") ||
+          lowered.includes("unauthorized") ||
+          lowered.includes("401");
+        if (unauthorized) {
+          clearStudentSessionCache();
+          currentStudentUsername = "";
+          showStudentLogin();
+          resetRoomView();
+          return;
+        }
+        setPortalStatus("error", `Portal konnte nicht geladen werden: ${message}`);
       }
     }
 
