@@ -3004,6 +3004,7 @@
             <button id="fastAttendanceBtn" type="button" class="admin-fastlane-btn">Anwesenheit</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen <span id="fastArchiveNotifyBadge" class="fastlane-notify-badge hidden">0</span></button>
             <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
+            <button id="fastTeacherGuideBtn" type="button" class="admin-fastlane-btn">Lehrkraft-Anleitung</button>
             <button id="fastCourseBuilderBtn" type="button" class="admin-fastlane-btn">Kurs erstellen</button>
             <button id="fastDeleteCourseBtn" type="button" class="admin-fastlane-btn course-shortcut-delete-btn">Kurs löschen</button>
             <button id="fastAccountsBtn" type="button" class="admin-fastlane-btn">Schülerzugänge</button>
@@ -12917,6 +12918,12 @@
     const fastArchiveBtn = document.getElementById("fastArchiveBtn");
     if (fastArchiveBtn) {
       fastArchiveBtn.addEventListener("click", () => openAdminPane("archive"));
+    }
+    const fastTeacherGuideBtn = document.getElementById("fastTeacherGuideBtn");
+    if (fastTeacherGuideBtn) {
+      fastTeacherGuideBtn.addEventListener("click", () => {
+        window.open("./docs/LEHRKRAFT-KURZANLEITUNG.md", "_blank", "noopener,noreferrer");
+      });
     }
     const fastMod6Btn = document.getElementById("fastMod6Btn");
     if (fastMod6Btn) {
