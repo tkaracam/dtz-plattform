@@ -1068,6 +1068,18 @@
       letter-spacing: 0;
     }
 
+    .attendance-day-type {
+      margin-top: 6px;
+      width: 100%;
+      min-width: 96px;
+      font-size: 0.74rem;
+      padding: 4px 6px;
+      border-radius: 8px;
+      border: 1px solid #d6dce7;
+      background: #fff;
+      color: #445065;
+    }
+
     .attendance-eu-chip {
       border: 1px solid #d6dce7;
       border-radius: 999px;
@@ -9355,6 +9367,20 @@
       });
     }
 
+    function hasFeiertagMarker(noteText) {
+      return /\[FEIERTAG\]/i.test(String(noteText || ""));
+    }
+
+    function addFeiertagMarker(noteText) {
+      const note = String(noteText || "").trim();
+      if (hasFeiertagMarker(note)) return note;
+      return note ? `[FEIERTAG] ${note}` : "[FEIERTAG]";
+    }
+
+    function removeFeiertagMarker(noteText) {
+      return String(noteText || "").replace(/\[FEIERTAG\]\s*/ig, "").trim();
+    }
+
     async function loadAttendanceWeekSessions(courseId, weekDays) {
       currentAttendanceWeekSessionsByDate = {};
       if (!courseId || !Array.isArray(weekDays) || !weekDays.length) return;
@@ -9389,12 +9415,41 @@
           });
           currentAttendanceWeekSessionsByDate[lessonDate] = {
             session_id: String(record.session_id || ""),
-            rowMap
+            rowMap,
+            day_type: hasFeiertagMarker(String(record.teacher_note || "")) ? "feiertag" : "unterricht"
           };
         });
       } catch (_err) {
         currentAttendanceWeekSessionsByDate = {};
       }
+    }
+
+    function applyAttendanceDayTypeUI(dayIndex) {
+      const typeEl = document.querySelector(`[data-att-day-type="${dayIndex}"]`);
+      const isHoliday = !!(typeEl && typeEl.value === "feiertag");
+      const absentEls = document.querySelectorAll(`[data-att-absent$="-${dayIndex}"]`);
+      const euWrapEls = document.querySelectorAll(`[data-att-eu-wrap$="-${dayIndex}"]`);
+      const euEls = document.querySelectorAll(`[data-att-eu$="-${dayIndex}"]`);
+      absentEls.forEach(el => {
+        if (!(el instanceof HTMLInputElement)) return;
+        if (isHoliday) {
+          el.checked = false;
+          el.disabled = true;
+        } else {
+          el.disabled = false;
+        }
+      });
+      euEls.forEach(el => {
+        if (!(el instanceof HTMLInputElement)) return;
+        el.disabled = isHoliday;
+      });
+      euWrapEls.forEach(el => {
+        if (!(el instanceof HTMLElement)) return;
+        const cell = el.closest(".attendance-day-cell");
+        const absentEl = cell ? cell.querySelector("input.attendance-miss-toggle") : null;
+        const enabled = !isHoliday && !!(absentEl instanceof HTMLInputElement && absentEl.checked);
+        el.classList.toggle("enabled", enabled);
+      });
     }
 
     async function renderAttendanceEditor() {
@@ -9448,9 +9503,12 @@
           </tr>
         `;
       }).join("");
-      const dayHeaders = weekDays.map(day => `<th class="attendance-week-head">${day.label}<small>${escapeHtml(day.short)}</small></th>`).join("");
+      const dayHeaders = weekDays.map(day => {
+        const existingType = String(currentAttendanceWeekSessionsByDate[day.iso]?.day_type || "unterricht");
+        return `<th class="attendance-week-head">${day.label}<small>${escapeHtml(day.short)}</small><select class="attendance-day-type" data-att-day-type="${day.index}"><option value="unterricht" ${existingType === "unterricht" ? "selected" : ""}>Unterricht</option><option value="feiertag" ${existingType === "feiertag" ? "selected" : ""}>Feiertag</option></select></th>`;
+      }).join("");
       wrap.innerHTML = `
-        <p class="section-subtitle" style="margin-bottom:8px;">Kurs: <strong>${escapeHtml(courseName || "-")}</strong> · Montag bis Freitag · X = fehlt · E = entschuldigt · U = unentschuldigt</p>
+        <p class="section-subtitle" style="margin-bottom:8px;">Kurs: <strong>${escapeHtml(courseName || "-")}</strong> · Montag bis Freitag · X = fehlt · E = entschuldigt · U = unentschuldigt · Tag optional als Feiertag markieren</p>
         <table>
           <thead>
             <tr><th>Teilnehmer</th>${dayHeaders}</tr>
@@ -9473,11 +9531,28 @@
           toggleEu();
         });
       });
+      weekDays.forEach(day => {
+        const typeEl = document.querySelector(`[data-att-day-type="${day.index}"]`);
+        if (typeEl) {
+          typeEl.addEventListener("change", () => applyAttendanceDayTypeUI(day.index));
+        }
+        applyAttendanceDayTypeUI(day.index);
+      });
     }
 
     function collectAttendanceRows(dayIndex) {
       const users = getSelectedCourseUsers();
+      const dayTypeEl = document.querySelector(`[data-att-day-type="${dayIndex}"]`);
+      const dayType = String(dayTypeEl ? dayTypeEl.value : "unterricht");
       return users.map((u, i) => {
+        if (dayType === "feiertag") {
+          return {
+            username: String(u.username || ""),
+            status: "present",
+            reason: "",
+            note: ""
+          };
+        }
         const key = `${i}-${dayIndex}`;
         const absentEl = document.querySelector(`[data-att-absent="${key}"]`);
         const euEl = document.querySelector(`input[data-att-eu="${key}"]:checked`);
@@ -9512,6 +9587,11 @@
         for (const day of weekDays) {
           const rows = collectAttendanceRows(day.index);
           const existingSessionId = String(currentAttendanceWeekSessionsByDate[day.iso]?.session_id || "");
+          const dayTypeEl = document.querySelector(`[data-att-day-type="${day.index}"]`);
+          const dayType = String(dayTypeEl ? dayTypeEl.value : "unterricht");
+          const noteForDay = dayType === "feiertag"
+            ? addFeiertagMarker(teacherNote)
+            : removeFeiertagMarker(teacherNote);
           const response = await fetch("./api/attendance_save.php", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -9521,7 +9601,7 @@
               course_name: courseName,
               lesson_date: day.iso,
               evidence_note: evidenceNote,
-              teacher_note: teacherNote,
+              teacher_note: noteForDay,
               rows
             })
           });
@@ -9530,7 +9610,8 @@
           const sessionId = String(payload.session_id || "");
           currentAttendanceWeekSessionsByDate[day.iso] = {
             session_id: sessionId,
-            rowMap: {}
+            rowMap: {},
+            day_type: dayType
           };
           savedDays.push(day.label);
         }
