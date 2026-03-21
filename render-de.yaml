@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: dtz-plattform-de
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /index.html
+    disk:
+      name: dtz-storage-de
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
+      - key: ADMIN_PANEL_USERNAME
+        value: admin
+      - key: ADMIN_PANEL_PASSWORD
+        sync: false
+      - key: BSK_MODULE_ENABLED
+        value: "0"
