@@ -1,0 +1,10 @@
+[
+    {
+        "username": "dozent.yasin",
+        "display_name": "Dozent Yasin",
+        "password_hash": "$2y$12$WMx7uBocmIFetnAy9ysUu.x/KpjOHItnXFKHx3gTFtuyR0doixwPu",
+        "active": true,
+        "created_at": "2026-03-20T17:07:41+00:00",
+        "updated_at": "2026-03-21T13:15:00+00:00"
+    }
+]
