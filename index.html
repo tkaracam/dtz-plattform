@@ -3816,9 +3816,6 @@
         <div id="a2StatsBox" class="portal-item" style="margin-top:10px;">Noch kein A2-Test gestartet.</div>
         <div class="row-end a2-action-row" style="margin-top:10px;">
           <div class="btn-wrap">
-            <button id="a2CorrectBtn" type="button" class="secondary-btn" disabled>KORRIGIEREN</button>
-          </div>
-          <div class="btn-wrap">
             <button id="a2SubmitBtn" type="button" class="dtz-submit-btn" disabled>ABGEBEN</button>
           </div>
         </div>
@@ -6317,7 +6314,7 @@
       }
       wrap.innerHTML = currentA2State.questions.map((q, index) => {
         const solutionMode = !!q.solutionMode;
-        const inputsLocked = !!currentA2State.corrected;
+        const inputsLocked = !!currentA2State.submitted;
         const optionsHtml = q.options.map((opt, optIndex) => {
           const checked = Number(q.selected) === optIndex ? "checked" : "";
           const disabledAttr = inputsLocked ? "disabled" : "";
@@ -6372,7 +6369,6 @@
     }
 
     function updateA2ActionStates() {
-      const correctBtn = document.getElementById("a2CorrectBtn");
       const submitBtn = document.getElementById("a2SubmitBtn");
       const questions = Array.isArray(currentA2State.questions) ? currentA2State.questions : [];
       const total = questions.length;
@@ -6385,8 +6381,7 @@
       ).size;
       const answered = Math.max(answeredByState, answeredByDom);
       const allAnswered = !!(currentA2State.started && total > 0 && answered >= total);
-      if (correctBtn) correctBtn.disabled = !(allAnswered && !currentA2State.corrected);
-      if (submitBtn) submitBtn.disabled = !(allAnswered && currentA2State.corrected && !currentA2State.submitted);
+      if (submitBtn) submitBtn.disabled = !(allAnswered && !currentA2State.submitted);
     }
 
     function startA2IntegratedTest(config = {}) {
@@ -6480,7 +6475,10 @@
     async function submitA2IntegratedHomework() {
       if (!currentA2State.started || !Array.isArray(currentA2State.questions) || !currentA2State.questions.length) return;
       const allAnswered = currentA2State.questions.every(q => Number.isFinite(q.selected));
-      if (!allAnswered || !currentA2State.corrected || currentA2State.submitted) return;
+      if (!allAnswered || currentA2State.submitted) return;
+
+      // Direktabgabe: Bewertung wird beim Abgeben einmal berechnet.
+      evaluateA2IntegratedTest(false);
 
       const solvedAssignmentId = String(currentOpenedHomeworkContext.a2AssignmentId || "").trim();
       const solvedAssignmentIds = Array.isArray(currentOpenedHomeworkContext.a2AssignmentIds)
@@ -14294,10 +14292,6 @@
           homeworkMode: false
         });
       });
-    }
-    const a2CorrectBtn = document.getElementById("a2CorrectBtn");
-    if (a2CorrectBtn) {
-      a2CorrectBtn.addEventListener("click", () => evaluateA2IntegratedTest(true));
     }
     const a2SubmitBtn = document.getElementById("a2SubmitBtn");
     if (a2SubmitBtn) {
