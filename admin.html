@@ -5318,6 +5318,7 @@
       const courseName = String(document.getElementById("courseBuilderName")?.value || "").trim();
       const count = clamp(document.getElementById("courseBuilderCount")?.value, 1, 100, 20);
       const btn = document.getElementById("createStudentsForCourseBtn");
+      const preview = document.getElementById("courseBuilderPreview");
       const courseId = String(courseBuilderCurrentCourseId || selectedCourseId || "").trim();
       if (!courseId) {
         setBox("courseBuilderStatus", "error", "Bitte zuerst einen Kurs erstellen oder auswählen.");
@@ -5328,6 +5329,9 @@
         btn.textContent = "TN werden erstellt...";
       }
       try {
+        // Always refresh users before generation so deleted accounts are not treated as still existing.
+        await listStudents();
+        if (preview) preview.value = "";
         const course = getCourseById(courseId);
         const effectiveName = String((course && course.name) || courseName || courseId).trim();
         const { createdRows, failedRows } = await createStudentsForCourse(courseId, effectiveName, count);
