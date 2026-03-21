@@ -207,6 +207,7 @@ usort($approvedLetterCorrections, static function (array $a, array $b): int {
 
 $homeworks = [];
 $nowTs = time();
+$autoArchiveAfterSeconds = 2 * 24 * 3600;
 foreach (load_homework_assignments() as $assignment) {
     if (!is_array($assignment)) {
         continue;
@@ -221,6 +222,12 @@ foreach (load_homework_assignments() as $assignment) {
     $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
     $deadlineTs = (int)($state['deadline_ts'] ?? 0);
     $expired = ($submittedAt === '' && $deadlineTs > 0 && $nowTs >= $deadlineTs);
+    $autoArchivedByAge = ($deadlineTs > 0 && $nowTs >= ($deadlineTs + $autoArchiveAfterSeconds));
+    if ($autoArchivedByAge) {
+        // Student portal should only show currently relevant tasks.
+        // Expired tasks older than 2 days are auto-archived for the student view.
+        continue;
+    }
     $reminder = homework_reminder_for_state($state, $nowTs);
     $assignmentStatus = mb_strtolower(trim((string)($assignment['status'] ?? 'active')));
     $startsAt = trim((string)($assignment['starts_at'] ?? ''));
