@@ -12325,7 +12325,7 @@
           <div class="portal-item ${stateClass}">
             <strong>${escapeHtml(row.title || "Aufgabe")}</strong>
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status_label || row.status || "offen")}</div>
-            <span class="portal-reminder">Start: ${escapeHtml(startsAtLabel)}<br>endet: ${escapeHtml(endsAtLabel)}</span>
+            <span class="portal-reminder">Start: ${escapeHtml(startsAtLabel)}<br>Ende: ${escapeHtml(endsAtLabel)}</span>
             ${dtzOpenAction}
             ${a2OpenAction}
             ${mailOpenAction}
