@@ -2728,7 +2728,7 @@
 
     <nav class="admin-topbar">
       <div class="admin-topbar-right">
-        <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger">Menü</button>
+        <button id="adminMenuToggleBtn" type="button" class="admin-menu-trigger" disabled>Menü</button>
         <div id="adminMenuDropdown" class="admin-menu-dropdown hidden">
           <button id="jumpHomeworkBtn" class="admin-menu-item" type="button">Hausaufgaben</button>
           <button id="jumpAttendanceBtn" class="admin-menu-item archived-module hidden" type="button">Anwesenheit</button>
@@ -4549,7 +4549,16 @@
       if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
     }
 
+    function setAdminMenuEnabled(enabled) {
+      const btn = document.getElementById("adminMenuToggleBtn");
+      if (!btn) return;
+      btn.disabled = !enabled;
+      if (!enabled) closeAdminMenu();
+    }
+
     function toggleAdminMenu() {
+      const btn = document.getElementById("adminMenuToggleBtn");
+      if (btn && btn.disabled) return;
       const menu = document.getElementById("adminMenuDropdown");
       if (!menu) return;
       menu.classList.toggle("hidden");
@@ -4638,6 +4647,7 @@
       applyAdminRoleUi();
       updateAdminIdentityLine();
       updateOwnerOnlyHint();
+      setAdminMenuEnabled(true);
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
@@ -4688,6 +4698,7 @@
       applyAdminRoleUi();
       updateAdminIdentityLine();
       updateOwnerOnlyHint();
+      setAdminMenuEnabled(false);
       const bulkPrefixInput = document.getElementById("bulkPrefix");
       if (bulkPrefixInput) {
         bulkPrefixInput.readOnly = false;
