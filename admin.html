@@ -1645,6 +1645,26 @@
       box-shadow: 0 0 0 2px rgba(77, 120, 185, 0.2);
     }
 
+    .teacher-note-archive-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .teacher-note-archive-item {
+      border: 1px solid #decfda;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: #fff8fc;
+    }
+
+    .teacher-note-archive-meta {
+      font-size: 0.8rem;
+      color: #6b5d67;
+      margin-bottom: 4px;
+      font-family: "SF Mono", Menlo, Consolas, monospace;
+    }
+
     .hw-user-actions {
       margin: 8px 0;
       display: flex;
@@ -3635,6 +3655,17 @@
               <button id="sendTeacherNoteBtn" type="button">Notiz senden</button>
             </div>
             <div id="teacherNoteStatus" class="hidden"></div>
+            <div style="margin-top:16px;">
+              <h3 class="section-title" style="font-size:1rem; margin:0;">Notiz-Archiv</h3>
+              <p class="section-subtitle" style="margin-top:4px;">Archivierte Notizen des ausgewählten Kurses anzeigen.</p>
+              <div class="actions" style="margin-top:8px;">
+                <button id="loadTeacherNoteArchiveBtn" type="button" class="ghost-btn">Archiv laden</button>
+              </div>
+              <div id="teacherNoteArchiveStatus" class="hidden"></div>
+              <div id="teacherNoteArchiveWrap" class="teacher-note-archive-list">
+                <div class="section-subtitle">Noch nicht geladen.</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -6107,6 +6138,56 @@
         if (btn) {
           btn.disabled = false;
           btn.textContent = "Notiz senden";
+        }
+      }
+    }
+
+    async function loadTeacherNoteArchive() {
+      clearBox("teacherNoteArchiveStatus");
+      const courseId = String((document.getElementById("teacherNoteCourseId") || {}).value || "").trim();
+      const wrap = document.getElementById("teacherNoteArchiveWrap");
+      const btn = document.getElementById("loadTeacherNoteArchiveBtn");
+      if (!wrap) return;
+      if (!courseId) {
+        setBox("teacherNoteArchiveStatus", "error", "Bitte Kurs auswählen.");
+        return;
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Wird geladen...";
+      }
+      wrap.innerHTML = '<div class="section-subtitle">Archiv wird geladen...</div>';
+      try {
+        const qs = new URLSearchParams({ archived: "1", course_id: courseId, limit: "120" });
+        const response = await fetch(`./api/teacher_note_list.php?${qs.toString()}`);
+        const payload = await parseJsonResponse(response);
+        if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+        const rows = Array.isArray(payload.notes) ? payload.notes : [];
+        if (!rows.length) {
+          wrap.innerHTML = '<div class="section-subtitle">Keine archivierten Notizen gefunden.</div>';
+          setBox("teacherNoteArchiveStatus", "ok", "Archiv geladen.");
+          return;
+        }
+        wrap.innerHTML = rows.map(row => {
+          const created = formatDisplayDateTime(String(row.created_at || "")) || "-";
+          const expires = formatDisplayDateTime(String(row.expires_at || "")) || "-";
+          const target = String(row.student_username || "").trim() || "*";
+          const teacher = String(row.teacher || "Lehrkraft").trim() || "Lehrkraft";
+          return `
+            <div class="teacher-note-archive-item">
+              <div class="teacher-note-archive-meta">${escapeHtml(created)} · Ende: ${escapeHtml(expires)} · TN: ${escapeHtml(target)} · ${escapeHtml(teacher)}</div>
+              <div>${escapeHtml(String(row.note || "-"))}</div>
+            </div>
+          `;
+        }).join("");
+        setBox("teacherNoteArchiveStatus", "ok", `${rows.length} archivierte Notiz(en) geladen.`);
+      } catch (err) {
+        wrap.innerHTML = '<div class="section-subtitle">Archiv konnte nicht geladen werden.</div>';
+        setBox("teacherNoteArchiveStatus", "error", `Archiv laden fehlgeschlagen: ${err.message}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Archiv laden";
         }
       }
     }
@@ -13259,6 +13340,9 @@
     if (teacherNoteCourseId) {
       teacherNoteCourseId.addEventListener("change", () => {
         renderTeacherNoteUsersList();
+        clearBox("teacherNoteArchiveStatus");
+        const wrap = document.getElementById("teacherNoteArchiveWrap");
+        if (wrap) wrap.innerHTML = '<div class="section-subtitle">Kurs gewechselt. Archiv neu laden.</div>';
       });
     }
     const teacherNoteTargetType = document.getElementById("teacherNoteTargetType");
@@ -13280,6 +13364,10 @@
     const teacherNoteClearAllBtn = document.getElementById("teacherNoteClearAllBtn");
     if (teacherNoteClearAllBtn) {
       teacherNoteClearAllBtn.addEventListener("click", () => setTeacherNoteUserSelection(false));
+    }
+    const loadTeacherNoteArchiveBtn = document.getElementById("loadTeacherNoteArchiveBtn");
+    if (loadTeacherNoteArchiveBtn) {
+      loadTeacherNoteArchiveBtn.addEventListener("click", () => { void loadTeacherNoteArchive(); });
     }
     const sendTeacherNoteBtn = document.getElementById("sendTeacherNoteBtn");
     if (sendTeacherNoteBtn) {
