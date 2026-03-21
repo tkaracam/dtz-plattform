@@ -3837,7 +3837,7 @@
           </div>
           <div id="modelltestResultBox" class="hidden" style="margin-top:10px;"></div>
         </div>
-        <div class="dtz-training-modules">
+        <div id="dtzModuleSwitchWrap" class="dtz-training-modules">
           <button id="dtzHoerenOpenBtn" type="button" class="dtz-module-btn">Hören (Teil 1-4)</button>
           <button id="dtzLesenOpenBtn" type="button" class="dtz-module-btn">Lesen (Teil 1-5)</button>
         </div>
@@ -9924,7 +9924,7 @@
       } finally {
         const blockedByRequirement = !!(requirement && requirement.module !== normalizedModule);
         if (ui.evaluateBtn) ui.evaluateBtn.disabled = blockedByRequirement;
-        if (ui.newBtn) ui.newBtn.disabled = blockedByRequirement;
+        if (ui.newBtn) ui.newBtn.disabled = !!requirement || blockedByRequirement;
       }
     }
 
@@ -11496,6 +11496,10 @@
       const requirement = getActiveAssignedDtzRequirement();
       const hoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
       const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
+      const moduleSwitchWrap = document.getElementById("dtzModuleSwitchWrap");
+      if (moduleSwitchWrap) {
+        moduleSwitchWrap.classList.toggle("hidden", !!requirement);
+      }
       if (hoerenOpenBtn) {
         hoerenOpenBtn.disabled = !!(requirement && requirement.module !== "hoeren");
       }
@@ -11516,7 +11520,8 @@
           ui.evaluateBtn.disabled = !!(requirement && requirement.module !== module);
         }
         if (ui.newBtn) {
-          ui.newBtn.disabled = !!(requirement && requirement.module !== module);
+          // Assigned DTZ homework stays bound to the assigned set.
+          ui.newBtn.disabled = !!requirement;
         }
         const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
         teilButtons.forEach(btn => {
