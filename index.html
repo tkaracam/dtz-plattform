@@ -927,6 +927,17 @@
       box-shadow: 0 15px 28px rgba(205, 98, 87, 0.34);
     }
 
+    .dtz-submit-btn {
+      background: linear-gradient(120deg, #1f7a46, #2da35f);
+      border: 1px solid #7ad5a2;
+      box-shadow: 0 12px 24px rgba(26, 112, 63, 0.28);
+      color: #ffffff;
+    }
+
+    .dtz-submit-btn:hover {
+      box-shadow: 0 15px 28px rgba(26, 112, 63, 0.34);
+    }
+
     .top-nav .nav-link,
     .top-nav .nav-toggle {
       box-shadow: none;
@@ -4070,7 +4081,8 @@
       dtzByModule: {
         hoeren: "",
         lesen: ""
-      }
+      },
+      dtzRequirement: null
     };
     let modelltestFlowState = {
       active: false,
@@ -6158,6 +6170,7 @@
       if (lesenTeilButtons) lesenTeilButtons.classList.remove("hidden");
       currentOpenedHomeworkContext.dtzByModule.hoeren = "";
       currentOpenedHomeworkContext.dtzByModule.lesen = "";
+      currentOpenedHomeworkContext.dtzRequirement = null;
       setMainView("dtz");
       setHomeDashboardSection("dtz");
     }
@@ -6515,8 +6528,6 @@
       const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
       if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
       if (lesenTeilButtons) lesenTeilButtons.classList.remove("hidden");
-      currentOpenedHomeworkContext.dtzByModule.hoeren = "";
-      currentOpenedHomeworkContext.dtzByModule.lesen = "";
       showCards(["dtzTrainingCard"]);
       updateHeroHomeVisibility("dtz");
       setAccordionOpen("dtzHoerenAccordion", false);
@@ -7158,6 +7169,7 @@
     }
 
     function openDtzModelltestView() {
+      currentOpenedHomeworkContext.dtzRequirement = null;
       const hasWritingTask = detectModelltestHasWritingTask();
       const visibleCards = ["dtzTrainingCard"];
       if (hasWritingTask) visibleCards.push("workCard");
@@ -11395,9 +11407,22 @@
     }
 
     function getActiveAssignedDtzRequirement() {
-      if (!currentAssignedHomework || !currentAssignedHomeworkState) return null;
-      if (currentAssignedHomeworkState.submitted_at) return null;
-      return resolveAssignedDtzRequirement();
+      if (currentAssignedHomework && currentAssignedHomeworkState) {
+        if (currentAssignedHomeworkState.submitted_at) return null;
+        const assigned = resolveAssignedDtzRequirement();
+        if (assigned) return assigned;
+      }
+      const fallback = currentOpenedHomeworkContext && currentOpenedHomeworkContext.dtzRequirement;
+      if (!fallback || typeof fallback !== "object") return null;
+      const module = fallback.module === "lesen" ? "lesen" : (fallback.module === "hoeren" ? "hoeren" : "");
+      const teil = Number.parseInt(String(fallback.teil || "0"), 10);
+      if (!module) return null;
+      if (!Number.isFinite(teil) || teil < 1) return null;
+      if (module === "hoeren" && teil > 4) return null;
+      if (module === "lesen" && teil > 5) return null;
+      const assignmentId = String(fallback.assignmentId || "").trim();
+      if (!assignmentId || isClientSolvedAssignment(assignmentId)) return null;
+      return { module, teil };
     }
 
     async function submitAssignedDtzResult(module, teil, stats) {
@@ -11405,7 +11430,10 @@
       if (!requirement) return;
       if (requirement.module !== module || Number(requirement.teil) !== Number(teil)) return;
 
-      const assignmentId = String((currentAssignedHomework && currentAssignedHomework.id) || "").trim();
+      let assignmentId = String((currentAssignedHomework && currentAssignedHomework.id) || "").trim();
+      if (!assignmentId) {
+        assignmentId = String((((currentOpenedHomeworkContext || {}).dtzRequirement || {}).assignmentId) || "").trim();
+      }
       if (!assignmentId) return;
 
       const total = Math.max(0, Number(stats.total || 0));
@@ -11518,11 +11546,14 @@
           ui.teilSelect.disabled = !!requirement;
         }
         if (ui.evaluateBtn) {
+          ui.evaluateBtn.textContent = requirement ? "ABGEBEN" : "AUSWERTEN";
+          ui.evaluateBtn.classList.toggle("dtz-submit-btn", !!requirement);
           ui.evaluateBtn.disabled = !!(requirement && requirement.module !== module);
         }
         if (ui.newBtn) {
           // Assigned DTZ homework stays bound to the assigned set.
           ui.newBtn.disabled = !!requirement;
+          ui.newBtn.classList.toggle("hidden", !!requirement);
         }
         const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
         teilButtons.forEach(btn => {
@@ -12207,6 +12238,11 @@
         return;
       }
       currentOpenedHomeworkContext.dtzByModule[parsed.module] = assignmentId;
+      currentOpenedHomeworkContext.dtzRequirement = {
+        module: parsed.module,
+        teil: parsed.teil,
+        assignmentId
+      };
       const moduleUi = getDtzUi(parsed.module);
       if (moduleUi.teilSelect) {
         moduleUi.teilSelect.value = String(parsed.teil);
@@ -12937,6 +12973,7 @@
         clearStudentSessionCache();
         solvedHomeworkAssignments = new Set();
         currentOpenedHomeworkContext = { a2AssignmentId: "", a2AssignmentIds: [], dtzByModule: { hoeren: "", lesen: "" } };
+        currentOpenedHomeworkContext.dtzRequirement = null;
         currentStudentUsername = "";
         currentRoom = null;
         stopRoomPolling();
