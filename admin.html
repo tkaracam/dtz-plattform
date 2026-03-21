@@ -9469,7 +9469,10 @@
       wrap.innerHTML = "<p>Lade Wochenliste...</p>";
       await loadAttendanceWeekSessions(courseId, weekDays);
       const rows = users.map((u, i) => {
-        const name = u.display_name ? `${u.display_name} (${u.username})` : u.username;
+        const username = String(u.username || "");
+        const displayName = String(u.display_name || "").trim();
+        const showMeta = displayName !== "" && displayName.toLowerCase() !== username.toLowerCase();
+        const titleText = showMeta ? displayName : username;
         const dayCells = weekDays.map(day => {
           const existing = currentAttendanceWeekSessionsByDate[day.iso]?.rowMap?.[String(u.username || "")] || null;
           const status = existing ? String(existing.status || "present") : "present";
@@ -9496,8 +9499,8 @@
         return `
           <tr>
             <td class="attendance-name-cell">
-              <strong>${escapeHtml(name)}</strong>
-              <span class="meta mono">${escapeHtml(u.username)}</span>
+              <strong>${escapeHtml(titleText)}</strong>
+              ${showMeta ? `<span class="meta mono">${escapeHtml(username)}</span>` : ""}
             </td>
             ${dayCells}
           </tr>
