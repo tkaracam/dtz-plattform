@@ -4573,6 +4573,19 @@
       toggleBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
     }
 
+    function adminApiUrl(path) {
+      const cleanPath = String(path || "").trim();
+      if (!cleanPath) return cleanPath;
+      if (FORCED_ADMIN_MODE !== "docent") return cleanPath;
+      try {
+        const url = new URL(cleanPath, window.location.origin);
+        if (!url.searchParams.has("mode")) url.searchParams.set("mode", "docent");
+        return `${url.pathname}${url.search}${url.hash}`;
+      } catch (_) {
+        return cleanPath;
+      }
+    }
+
     async function parseJsonResponse(response) {
       const raw = await response.text();
       let payload = {};
@@ -4614,7 +4627,7 @@
 
     async function checkSession() {
       try {
-        const response = await fetch("./api/admin_session.php", { method: "GET" });
+        const response = await fetch(adminApiUrl("./api/admin_session.php"), { method: "GET" });
         const payload = await parseJsonResponse(response);
         if (response.ok && payload.authenticated) {
           showPanel(payload);
@@ -4774,7 +4787,7 @@
           setBox("loginStatus", "error", "Bitte Passwort eingeben.");
           return;
         }
-        const response = await fetch("./api/admin_login.php", {
+        const response = await fetch(adminApiUrl("./api/admin_login.php"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
@@ -4802,7 +4815,7 @@
     async function logout() {
       clearBox("panelStatus");
       try {
-        await fetch("./api/admin_logout.php", { method: "POST" });
+        await fetch(adminApiUrl("./api/admin_logout.php"), { method: "POST" });
       } finally {
         showLogin();
       }

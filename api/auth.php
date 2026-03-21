@@ -17,10 +17,21 @@ function start_secure_session(): void
 {
     if (session_status() !== PHP_SESSION_ACTIVE) {
         $requestedAdminMode = auth_lower_text((string)($_SERVER['HTTP_X_ADMIN_MODE'] ?? ''));
+        if ($requestedAdminMode === '') {
+            $requestedAdminMode = auth_lower_text((string)($_GET['mode'] ?? ''));
+        }
         if ($requestedAdminMode === 'docent') {
             session_name('DTZSESSID_DOCENT');
         } elseif ($requestedAdminMode === 'owner' || $requestedAdminMode === 'hauptadmin') {
             session_name('DTZSESSID_OWNER');
+        } else {
+            $hasDocentCookie = isset($_COOKIE['DTZSESSID_DOCENT']);
+            $hasOwnerCookie = isset($_COOKIE['DTZSESSID_OWNER']);
+            if ($hasDocentCookie && !$hasOwnerCookie) {
+                session_name('DTZSESSID_DOCENT');
+            } elseif ($hasOwnerCookie && !$hasDocentCookie) {
+                session_name('DTZSESSID_OWNER');
+            }
         }
     }
 
