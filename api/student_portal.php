@@ -269,6 +269,10 @@ foreach (load_homework_assignments() as $assignment) {
         'reminder_label' => (string)($reminder['label'] ?? 'Keine Fristwarnung'),
         'reminder_urgent' => !empty($reminder['urgent']),
         'remaining_seconds' => (int)($reminder['remaining_seconds'] ?? 0),
+        'dtz_bundle_ids' => array_values(array_filter(array_map(
+            static fn($it) => trim((string)($it['template_id'] ?? '')),
+            is_array(($assignment['dtz_bundle']['items'] ?? null)) ? $assignment['dtz_bundle']['items'] : []
+        ))),
     ];
 }
 usort($homeworks, static function (array $a, array $b): int {

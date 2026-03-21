@@ -4110,6 +4110,7 @@
       finished: false
     };
     let solvedHomeworkAssignments = new Set();
+    let portalHomeworksCache = [];
     let currentA2State = {
       topic: "Perfekt",
       questions: [],
@@ -6578,6 +6579,31 @@
       return String((currentOpenedHomeworkContext && currentOpenedHomeworkContext.dtzByModule && currentOpenedHomeworkContext.dtzByModule.hoeren) || "").trim();
     }
 
+    function buildAssignedDtzExcludeMap() {
+      const map = {};
+      const rows = Array.isArray(portalHomeworksCache) ? portalHomeworksCache : [];
+      rows.forEach(row => {
+        if (!row || typeof row !== "object") return;
+        if (isHomeworkRowSolved(row)) return;
+        const category = detectStudentHomeworkCategory(row);
+        if (category !== "hoeren" && category !== "lesen") return;
+        const templateId = String(row.template_id || "").trim().toLowerCase();
+        const match = templateId.match(/^dtz\-(hoeren|lesen)\-teil([1-5])\-fragenpaket$/);
+        if (!match) return;
+        const module = match[1] === "lesen" ? "lesen" : "hoeren";
+        const teil = Number.parseInt(match[2], 10);
+        if (!Number.isFinite(teil) || teil < 1) return;
+        const key = `${module}_${teil}`;
+        if (!map[key]) map[key] = new Set();
+        const ids = Array.isArray(row.dtz_bundle_ids) ? row.dtz_bundle_ids : [];
+        ids.forEach(id => {
+          const qid = String(id || "").trim();
+          if (qid) map[key].add(qid);
+        });
+      });
+      return map;
+    }
+
     function stopModelltestFlowTimer() {
       if (modelltestFlowState.timerId) {
         clearInterval(modelltestFlowState.timerId);
@@ -6878,6 +6904,7 @@
       const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
       const hoerenNewBtn = document.getElementById("dtzHoerenNewBtn");
       const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
+      const isAssignedModelltest = !!currentModelltestAssignmentId();
       const hoerenStats = getModelltestModuleStats("hoeren");
       const lesenStats = getModelltestModuleStats("lesen");
       const hoerenEvaluated = isModelltestModuleEvaluated("hoeren");
@@ -6893,6 +6920,20 @@
       if (lesenOpenBtn) lesenOpenBtn.classList.toggle("hidden", !!modelltestFlowState.active);
       if (hoerenNewBtn) hoerenNewBtn.classList.toggle("hidden", !!modelltestFlowState.active);
       if (lesenNewBtn) lesenNewBtn.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (isAssignedModelltest) {
+        if (hoerenTeilButtons) hoerenTeilButtons.classList.add("hidden");
+        if (lesenTeilButtons) lesenTeilButtons.classList.add("hidden");
+        if (hoerenOpenBtn) hoerenOpenBtn.classList.add("hidden");
+        if (lesenOpenBtn) lesenOpenBtn.classList.add("hidden");
+        if (hoerenNewBtn) {
+          hoerenNewBtn.classList.add("hidden");
+          hoerenNewBtn.disabled = true;
+        }
+        if (lesenNewBtn) {
+          lesenNewBtn.classList.add("hidden");
+          lesenNewBtn.disabled = true;
+        }
+      }
 
       if (modelltestFlowState.stage === "hoeren") {
         if (stageChip) stageChip.textContent = "Phase: Hören (35:00)";
@@ -7145,9 +7186,17 @@
     async function loadModelltestModuleAllTeils(module) {
       const normalizedModule = module === "lesen" ? "lesen" : "hoeren";
       const maxTeil = getDtzMaxTeil(normalizedModule);
+      const isAssignedModelltest = !!currentModelltestAssignmentId();
+      const excludeMap = isAssignedModelltest ? buildAssignedDtzExcludeMap() : {};
       for (let teil = 1; teil <= maxTeil; teil += 1) {
         const state = ensureDtzTeilState(normalizedModule, teil);
         const count = getDtzQuestionCount(normalizedModule, teil);
+        const excludeKey = `${normalizedModule}_${teil}`;
+        const excludeSet = (excludeMap && excludeMap[excludeKey] instanceof Set) ? excludeMap[excludeKey] : new Set();
+        const maxAttempts = excludeSet.size > 0 ? 8 : 1;
+        let loaded = false;
+        let lastErr = null;
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         try {
           const response = await fetch("./api/student_training_set.php", {
             method: "POST",
@@ -7161,8 +7210,17 @@
           const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
           if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
           const set = payload && payload.set ? payload.set : {};
-          const items = Array.isArray(set.items) ? set.items : [];
+          let items = Array.isArray(set.items) ? set.items : [];
           if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
+          if (excludeSet.size) {
+            items = items.filter(item => {
+              const qid = String(item && item.template_id ? item.template_id : "").trim();
+              return qid === "" || !excludeSet.has(qid);
+            });
+          }
+          if (!items.length) {
+            throw new Error("Keine konfliktfreien Aufgaben verfügbar.");
+          }
           state.set = items;
           state.tasks = buildDtzTasks(normalizedModule, teil, items);
           if (!state.answers || typeof state.answers !== "object") {
@@ -7170,12 +7228,18 @@
           }
           state.evaluated = false;
           state.lastLoadedAt = new Date().toISOString();
+          loaded = true;
+          break;
         } catch (_) {
+          lastErr = _;
           state.set = [];
           state.tasks = [];
           state.answers = {};
           state.evaluated = false;
         }
+      }
+      if (!loaded) {
+        throw new Error(lastErr && lastErr.message ? lastErr.message : "Keine konfliktfreien Aufgaben verfügbar.");
       }
       renderDtzTrainingSet(normalizedModule);
     }
@@ -12619,6 +12683,7 @@
     function renderPortalData(payload) {
       const results = Array.isArray(payload.results) ? payload.results : [];
       const homeworks = Array.isArray(payload.homeworks) ? payload.homeworks : [];
+      portalHomeworksCache = homeworks.slice();
       const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
       const readiness = payload.readiness || {};
       const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];
