@@ -3249,9 +3249,17 @@
         font-size: 0.93rem;
       }
     }
+
+    body.single-admin-only #memberPanel,
+    body.single-admin-only #studentAuthCard,
+    body.single-admin-only #navPortalBtn,
+    body.single-admin-only #navNiveauBtn,
+    body.single-admin-only #navLidBtn {
+      display: none !important;
+    }
   </style>
 </head>
-<body>
+<body class="single-admin-only">
   <div class="container">
     <nav id="topNav" class="top-nav">
       <div id="navLogoBtn" class="nav-brand" role="button" tabindex="0" aria-label="Zum Hauptmenü"><span class="brand-main">DTZ-LiD</span><span class="brand-edu">edu</span></div>
@@ -3266,7 +3274,7 @@
           <button id="navPortalBtn" class="nav-link" type="button">Portal</button>
           <button id="navNiveauBtn" class="nav-link" type="button">Sprechen</button>
           <button id="navLidBtn" class="nav-link" type="button">LiD</button>
-          <button id="navAdminBtn" class="nav-link" type="button">Lehrer-Panel</button>
+          <button id="navAdminBtn" class="nav-link" type="button">Admin-Panel</button>
         </div>
       </div>
       <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
@@ -10302,7 +10310,7 @@
       { key: "hoeren", label: "DTZ Hören öffnen", hint: "Hören Training", keywords: "dtz hoeren b1", action: () => navigateToSection("dtz-hoeren") },
       { key: "lesen", label: "DTZ Lesen öffnen", hint: "Lesen Training", keywords: "dtz lesen b1", action: () => navigateToSection("dtz-lesen") },
       { key: "home", label: "Startseite öffnen", hint: "Zum Hauptbereich", keywords: "start home", action: () => navigateToSection("home") },
-      { key: "admin", label: "Lehrer-Panel öffnen", hint: "Dozent-Bereich", keywords: "admin lehrer panel dozent", action: () => { window.location.href = "./docent_admin.html"; } }
+      { key: "admin", label: "Admin-Panel öffnen", hint: "Haupt-Admin", keywords: "admin hauptadmin panel", action: () => { window.location.href = "./admin.html"; } }
     ];
 
     let paletteSelectionIndex = 0;
@@ -14323,7 +14331,7 @@
     if (navLidBtn) navLidBtn.addEventListener("click", () => navigateToSection("lid"));
     const navAdminBtn = document.getElementById("navAdminBtn");
     if (navAdminBtn) navAdminBtn.addEventListener("click", () => {
-      window.location.href = "./docent_admin.html";
+      window.location.href = "./admin.html";
     });
     const levelLidBtn = document.getElementById("levelLidBtn");
     if (levelLidBtn) levelLidBtn.addEventListener("click", () => navigateToSection("lid"));

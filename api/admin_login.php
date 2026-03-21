@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -51,7 +51,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -68,49 +68,17 @@ if ($username === '') {
     $username = $ownerUsername;
 }
 
-$loginRole = '';
-$loginRoleKey = '';
-$loginDisplayName = '';
-
-if (hash_equals($adminPassword, $password)) {
-    $loginRole = 'owner';
-    $loginRoleKey = 'hauptadmin';
-    $username = $ownerUsername;
-    $loginDisplayName = 'Haupt-Admin';
-} else {
-    $teachers = load_teacher_users();
-    $foundTeacher = null;
-    foreach ($teachers as $teacher) {
-        if (!is_array($teacher)) {
-            continue;
-        }
-        $teacherUsername = mb_strtolower(trim((string)($teacher['username'] ?? '')));
-        if ($teacherUsername !== $username) {
-            continue;
-        }
-        if (empty($teacher['active'])) {
-            continue;
-        }
-        $hash = (string)($teacher['password_hash'] ?? '');
-        if ($hash === '' || !password_verify($password, $hash)) {
-            break;
-        }
-        $foundTeacher = $teacher;
-        break;
-    }
-    if (is_array($foundTeacher)) {
-        $loginRole = 'docent';
-        $loginRoleKey = 'docent';
-        $loginDisplayName = trim((string)($foundTeacher['display_name'] ?? ''));
-    }
-}
-
-if ($loginRole === '') {
+if (!hash_equals($adminPassword, $password)) {
     register_rate_limit_failure('admin-login');
     http_response_code(401);
-    echo json_encode(['error' => 'Ungueltige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+$loginRole = 'owner';
+$loginRoleKey = 'hauptadmin';
+$loginDisplayName = 'Haupt-Admin';
+$username = $ownerUsername;
 
 start_secure_session();
 $_SESSION['admin_authenticated'] = true;
