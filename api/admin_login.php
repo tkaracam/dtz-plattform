@@ -80,24 +80,67 @@ if ($username === '') {
     $username = $ownerUsername;
 }
 
-$passwordOk = false;
-foreach ($allowedPasswords as $candidate) {
-    if (hash_equals((string)$candidate, $password)) {
-        $passwordOk = true;
+$requestedMode = auth_lower_text((string)($_SERVER['HTTP_X_ADMIN_MODE'] ?? ''));
+if ($requestedMode === '') {
+    $requestedMode = auth_lower_text((string)($_GET['mode'] ?? ''));
+}
+
+$loginRole = '';
+$loginRoleKey = '';
+$loginDisplayName = '';
+
+$isOwnerAttempt = ($username === $ownerUsername) || $requestedMode === 'owner' || $requestedMode === 'hauptadmin';
+if ($isOwnerAttempt) {
+    $passwordOk = false;
+    foreach ($allowedPasswords as $candidate) {
+        if (hash_equals((string)$candidate, $password)) {
+            $passwordOk = true;
+            break;
+        }
+    }
+    if ($passwordOk) {
+        $loginRole = 'owner';
+        $loginRoleKey = 'hauptadmin';
+        $loginDisplayName = 'Haupt-Admin';
+        $username = $ownerUsername;
+    }
+}
+
+if ($loginRole === '') {
+    $teachers = load_teacher_users();
+    foreach ($teachers as $teacher) {
+        if (!is_array($teacher)) {
+            continue;
+        }
+        $teacherUsername = mb_strtolower(trim((string)($teacher['username'] ?? '')));
+        if ($teacherUsername === '' || $teacherUsername !== $username) {
+            continue;
+        }
+        if (empty($teacher['active'])) {
+            register_rate_limit_failure('admin-login');
+            http_response_code(403);
+            echo json_encode(['error' => 'Dozent-Konto ist deaktiviert.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        $hash = (string)($teacher['password_hash'] ?? '');
+        if ($hash === '' || !password_verify($password, $hash)) {
+            break;
+        }
+        $loginRole = 'docent';
+        $loginRoleKey = 'docent';
+        $display = trim((string)($teacher['display_name'] ?? ''));
+        $loginDisplayName = $display !== '' ? $display : $teacherUsername;
+        $username = $teacherUsername;
         break;
     }
 }
-if (!$passwordOk) {
+
+if ($loginRole === '') {
     register_rate_limit_failure('admin-login');
     http_response_code(401);
     echo json_encode(['error' => 'Ungültige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-$loginRole = 'owner';
-$loginRoleKey = 'hauptadmin';
-$loginDisplayName = 'Haupt-Admin';
-$username = $ownerUsername;
 
 start_secure_session();
 $_SESSION['admin_authenticated'] = true;
