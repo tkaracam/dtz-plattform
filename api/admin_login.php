@@ -18,21 +18,33 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-check_rate_limit_json('admin-login', 8, 900);
+check_rate_limit_json('admin-login', 30, 180);
 
 $configPath = __DIR__ . '/config.php';
 if (file_exists($configPath)) {
     require_once $configPath;
 }
 
-$adminPassword = getenv('ADMIN_PANEL_PASSWORD') ?: '';
+$allowedPasswords = [];
+$envAdminPassword = getenv('ADMIN_PANEL_PASSWORD');
+if (is_string($envAdminPassword) && $envAdminPassword !== '') {
+    $allowedPasswords[] = $envAdminPassword;
+}
 if (defined('ADMIN_PANEL_PASSWORD') && ADMIN_PANEL_PASSWORD !== '') {
-    $adminPassword = ADMIN_PANEL_PASSWORD;
+    $allowedPasswords[] = (string)ADMIN_PANEL_PASSWORD;
 }
-if ($adminPassword === '' && defined('ADMIN_PANEL_KEY') && ADMIN_PANEL_KEY !== '') {
-    $adminPassword = ADMIN_PANEL_KEY;
+if (defined('ADMIN_PANEL_BACKUP_PASSWORD') && ADMIN_PANEL_BACKUP_PASSWORD !== '') {
+    $allowedPasswords[] = (string)ADMIN_PANEL_BACKUP_PASSWORD;
 }
-if ($adminPassword === '') {
+if (defined('ADMIN_PANEL_KEY') && ADMIN_PANEL_KEY !== '') {
+    $allowedPasswords[] = (string)ADMIN_PANEL_KEY;
+}
+$allowedPasswords = array_values(array_unique(array_filter(array_map(
+    static fn($v) => trim((string)$v),
+    $allowedPasswords
+), static fn($v) => $v !== '')));
+
+if (!$allowedPasswords) {
     http_response_code(500);
     echo json_encode(['error' => 'ADMIN_PANEL_PASSWORD ist nicht gesetzt.'], JSON_UNESCAPED_UNICODE);
     exit;
@@ -68,7 +80,14 @@ if ($username === '') {
     $username = $ownerUsername;
 }
 
-if (!hash_equals($adminPassword, $password)) {
+$passwordOk = false;
+foreach ($allowedPasswords as $candidate) {
+    if (hash_equals((string)$candidate, $password)) {
+        $passwordOk = true;
+        break;
+    }
+}
+if (!$passwordOk) {
     register_rate_limit_failure('admin-login');
     http_response_code(401);
     echo json_encode(['error' => 'Ungültige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
