@@ -14075,7 +14075,7 @@
     }
     const analyzeBtn = document.getElementById("analyzeBtn");
     if (analyzeBtn) analyzeBtn.addEventListener("click", analyze);
-    document.getElementById("uploadBtn").addEventListener("click", () => uploadLetter("letterText", "uploadBtn", "statusBox"));
+    document.getElementById("uploadBtn")?.addEventListener("click", () => uploadLetter("letterText", "uploadBtn", "statusBox"));
     const portalUploadBtn = document.getElementById("portalUploadBtn");
     if (portalUploadBtn) {
       portalUploadBtn.addEventListener("click", () => uploadLetter("portalLetterText", "portalUploadBtn", "portalWriteStatus"));
@@ -14127,10 +14127,10 @@
         persistModelltestProgress();
       });
     }
-    document.getElementById("studentLoginBtn").addEventListener("click", loginStudent);
-    document.getElementById("studentLogoutBtn").addEventListener("click", logoutStudent);
-    document.getElementById("newClassicLidExamBtn").addEventListener("click", generateClassicLidExam);
-    document.getElementById("submitClassicLidExamBtn").addEventListener("click", evaluateClassicLidExam);
+    document.getElementById("studentLoginBtn")?.addEventListener("click", loginStudent);
+    document.getElementById("studentLogoutBtn")?.addEventListener("click", logoutStudent);
+    document.getElementById("newClassicLidExamBtn")?.addEventListener("click", generateClassicLidExam);
+    document.getElementById("submitClassicLidExamBtn")?.addEventListener("click", evaluateClassicLidExam);
     const newSpeakingSetBtn = document.getElementById("newSpeakingSetBtn");
     if (newSpeakingSetBtn) newSpeakingSetBtn.addEventListener("click", generateSpeakingSet);
     const buildBskPlanBtn = document.getElementById("buildBskPlanBtn");
@@ -14189,10 +14189,10 @@
     }
     syncPortalPanelToggleBehavior();
     setPortalQuickActive("homework");
-    document.getElementById("startSimulationBtn").addEventListener("click", startSimulation);
-    document.getElementById("finishSimulationBtn").addEventListener("click", () => finishSimulation(false));
-    document.getElementById("joinRoomBtn").addEventListener("click", joinRoom);
-    document.getElementById("submitRoomBtn").addEventListener("click", submitRoomAnswer);
+    document.getElementById("startSimulationBtn")?.addEventListener("click", startSimulation);
+    document.getElementById("finishSimulationBtn")?.addEventListener("click", () => finishSimulation(false));
+    document.getElementById("joinRoomBtn")?.addEventListener("click", joinRoom);
+    document.getElementById("submitRoomBtn")?.addEventListener("click", submitRoomAnswer);
     const writeBackToPortalBtn = document.getElementById("writeBackToPortalBtn");
     if (writeBackToPortalBtn) {
       writeBackToPortalBtn.addEventListener("click", () => {
@@ -14203,18 +14203,18 @@
     if (backToMenuFromPortalBtn) {
       backToMenuFromPortalBtn.addEventListener("click", () => setMainView("portal"));
     }
-    document.getElementById("backToMenuFromSimulationBtn").addEventListener("click", () => setMainView("portal"));
-    document.getElementById("backToMenuFromRoomBtn").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromSimulationBtn")?.addEventListener("click", () => setMainView("portal"));
+    document.getElementById("backToMenuFromRoomBtn")?.addEventListener("click", () => setMainView("portal"));
     const backToMenuFromBskBtn = document.getElementById("backToMenuFromBskBtn");
     if (backToMenuFromBskBtn) backToMenuFromBskBtn.addEventListener("click", () => setMainView("portal"));
     const backToMenuFromClassicLidBtn = document.getElementById("backToMenuFromClassicLidBtn");
     if (backToMenuFromClassicLidBtn) backToMenuFromClassicLidBtn.addEventListener("click", () => setMainView("portal"));
-    document.getElementById("newClassicLidExamBtnBottom").addEventListener("click", generateClassicLidExam);
-    document.getElementById("submitClassicLidExamBtnBottom").addEventListener("click", evaluateClassicLidExam);
-    document.getElementById("backToMenuFromClassicLidBtnBottom").addEventListener("click", () => setMainView("portal"));
+    document.getElementById("newClassicLidExamBtnBottom")?.addEventListener("click", generateClassicLidExam);
+    document.getElementById("submitClassicLidExamBtnBottom")?.addEventListener("click", evaluateClassicLidExam);
+    document.getElementById("backToMenuFromClassicLidBtnBottom")?.addEventListener("click", () => setMainView("portal"));
     const backToMenuFromSpeakingBtn = document.getElementById("backToMenuFromSpeakingBtn");
     if (backToMenuFromSpeakingBtn) backToMenuFromSpeakingBtn.addEventListener("click", () => setMainView("portal"));
-    document.getElementById("navToggleBtn").addEventListener("click", () => {
+    document.getElementById("navToggleBtn")?.addEventListener("click", () => {
       document.getElementById("topNav").classList.toggle("open");
     });
     document.addEventListener("click", event => {
@@ -14312,8 +14312,8 @@
         }
       });
     }
-    document.getElementById("navLogoBtn").addEventListener("click", () => navigateToSection("home"));
-    document.getElementById("navLogoBtn").addEventListener("keydown", event => {
+    document.getElementById("navLogoBtn")?.addEventListener("click", () => navigateToSection("home"));
+    document.getElementById("navLogoBtn")?.addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         navigateToSection("home");
