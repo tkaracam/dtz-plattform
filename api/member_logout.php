@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/auth.php';
-
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -19,12 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+require_once __DIR__ . '/auth.php';
 start_secure_session();
-$_SESSION = [];
-if (ini_get('session.use_cookies')) {
-    $params = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'] ?? '', $params['secure'], $params['httponly']);
-}
-session_destroy();
+$_SESSION['member_authenticated'] = false;
+$_SESSION['member_username'] = '';
+$_SESSION['member_display_name'] = '';
+$_SESSION['member_email'] = '';
+$_SESSION['member_role_key'] = '';
 
 echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);

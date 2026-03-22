@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -24,7 +24,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -71,7 +71,7 @@ if ($action === 'create') {
     $username = mb_strtolower(trim((string)($body['username'] ?? '')));
     if (!preg_match('/^[a-z0-9._-]{3,32}$/', $username)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Ungueltiger Benutzername.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Ungültiger Benutzername.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -111,7 +111,7 @@ if ($action === 'create') {
         array_splice($teachers, $foundIndex, 1);
     } else {
         http_response_code(400);
-        echo json_encode(['error' => 'Ungueltige Aktion.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => 'Ungültige Aktion.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 }

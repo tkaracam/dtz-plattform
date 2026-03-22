@@ -1,0 +1,233 @@
+[
+    {
+        "id": "hw-20260320171326-d12cbf6a",
+        "template_id": "dtz-hoeren-teil1-fragenpaket",
+        "title": "Hören Teil 1 Hausaufgabe",
+        "description": "Bearbeiten Sie Hören Teil 1 vollständig.\n\n--- Automatisch zugewiesenes Fragenpaket ---\nBereich: Hören Teil 1\nHinweis: Diese Fragen wurden für diese Aufgabe neu vergeben (ohne Wiederholung).\n1. [hoeren_structured_t1_58c8f281] Praxisansage: Terminänderung",
+        "attachment": "",
+        "target_type": "users",
+        "target_label": "Ausgewählte Schüler",
+        "course_id": "",
+        "usernames": [
+            "schueler.mila"
+        ],
+        "duration_minutes": 30,
+        "starts_at": "2026-03-20T17:13:26Z",
+        "status": "active",
+        "teacher_username": "dozent.yasin",
+        "created_at": "2026-03-20T17:13:26+00:00",
+        "updated_at": "2026-03-20T17:13:27+00:00",
+        "batch_group_id": "",
+        "batch_group_label": "",
+        "assignees": {
+            "schueler.mila": {
+                "started_at": "2026-03-20T17:13:27+00:00",
+                "deadline_at": "2026-03-20T17:43:27+00:00",
+                "submitted_at": "2026-03-20T17:13:27+00:00",
+                "started_ts": 1774026807,
+                "deadline_ts": 1774028607,
+                "submitted_ts": 0,
+                "submission_count": 1,
+                "last_upload_id": "hwa-20260320171327-c9870aa1",
+                "last_dtz_result": {
+                    "attempt_id": "hwa-20260320171327-c9870aa1",
+                    "module": "hoeren",
+                    "teil": 1,
+                    "correct": 6,
+                    "wrong": 2,
+                    "unanswered": 0,
+                    "total": 8,
+                    "points": 6,
+                    "max_points": 8,
+                    "elapsed_seconds": 0,
+                    "saved_at": "2026-03-20T17:13:27+00:00"
+                }
+            }
+        },
+        "dtz_bundle": {
+            "module": "hoeren",
+            "teil": 1,
+            "items": [
+                {
+                    "set_index": 1,
+                    "template_id": "hoeren_structured_t1_58c8f281",
+                    "dtz_schema": "hoeren_teil1_bundle",
+                    "dtz_part": "H1 Kurze Ansagen",
+                    "title": "Praxisansage: Terminänderung",
+                    "instructions": "Hören Sie den Text und wählen Sie zu jeder Aufgabe die richtige Lösung.",
+                    "audio_script": "",
+                    "speaker_meta": [
+                        "narrator"
+                    ],
+                    "questions": [
+                        {
+                            "id": "q_1",
+                            "question": "Bis wann sind Rückgaben möglich?",
+                            "options": {
+                                "A": "bis 17 Uhr",
+                                "B": "bis 16 Uhr",
+                                "C": "bis 18 Uhr"
+                            },
+                            "correct": "A",
+                            "audio_script": "Stadtbibliothek: Rückgaben sind heute nur bis 17 Uhr möglich. Danach ist der Rückgabeautomat wegen Wartung außer Betrieb. Ab morgen funktioniert der Automat wieder ab 8 Uhr.",
+                            "explanation": ""
+                        },
+                        {
+                            "id": "q_2",
+                            "question": "Auf wann wird der Termin verschoben?",
+                            "options": {
+                                "A": "auf Freitag um 11:30 Uhr",
+                                "B": "auf Freitag um 10:30 Uhr",
+                                "C": "auf Donnerstag um 11:30 Uhr"
+                            },
+                            "correct": "A",
+                            "audio_script": "Mitteilung vom Jobcenter: Ihr Termin morgen um 11 Uhr muss leider verschoben werden. Der neue Termin ist am Freitag um 11:30 Uhr bei Frau Neumann in Zimmer 14. Bitte bringen Sie die letzten drei Gehaltsabrechnungen mit.",
+                            "explanation": ""
+                        },
+                        {
+                            "id": "q_3",
+                            "question": "Welche Kasse ist defekt?",
+                            "options": {
+                                "A": "Kasse 2",
+                                "B": "Kasse 3",
+                                "C": "Kasse 1"
+                            },
+                            "correct": "A",
+                            "audio_script": "Im Supermarkt Nord ist Kasse 2 im Moment defekt und bleibt bis zur Reparatur geschlossen. Bitte nutzen Sie Kasse 1 oder Kasse 3. Kundinnen mit nur wenigen Artikeln können auch zur Expresskasse gehen.",
+                            "explanation": ""
+                        },
+                        {
+                            "id": "q_4",
+                            "question": "Wie lange ist das Wasser abgestellt?",
+                            "options": {
+                                "A": "von 8 bis 11 Uhr",
+                                "B": "von 8 bis 10 Uhr",
+                                "C": "von 9 bis 11 Uhr"
+                            },
+                            "correct": "A",
+                            "audio_script": "Hausverwaltung Lindenhof: Morgen wird das Wasser wegen Reparaturarbeiten zwischen 8 und 11 Uhr abgestellt. Betroffen sind die Häuser 10 bis 18. Bitte füllen Sie heute Abend ausreichend Trinkwasser ab.",
+                            "explanation": ""
+                        }
+                    ]
+                }
+            ],
+            "reused_cycle": false
+        }
+    },
+    {
+        "id": "hw-20260320171326-72becc8a",
+        "template_id": "dtz-mock-pruefung-komplett",
+        "title": "DTZ Modelltest",
+        "description": "Vollständiger Modelltest: Hören, Lesen, optional Schreiben.",
+        "attachment": "",
+        "target_type": "users",
+        "target_label": "Ausgewählte Schüler",
+        "course_id": "",
+        "usernames": [
+            "schueler.mila"
+        ],
+        "duration_minutes": 90,
+        "starts_at": "2026-03-20T17:13:26Z",
+        "status": "active",
+        "teacher_username": "dozent.yasin",
+        "created_at": "2026-03-20T17:13:26+00:00",
+        "updated_at": "2026-03-20T17:13:27+00:00",
+        "batch_group_id": "",
+        "batch_group_label": "",
+        "assignees": {
+            "schueler.mila": {
+                "started_at": "2026-03-20T17:13:27+00:00",
+                "deadline_at": "2026-03-20T18:43:27+00:00",
+                "submitted_at": "2026-03-20T17:13:27+00:00",
+                "started_ts": 1774026807,
+                "deadline_ts": 1774032207,
+                "submitted_ts": 0,
+                "submission_count": 1,
+                "last_upload_id": "mtres-20260320171327-06974383",
+                "last_modelltest_result": {
+                    "result_id": "mtres-20260320171327-06974383",
+                    "saved_at": "2026-03-20T17:13:27+00:00",
+                    "hoeren_correct": 20,
+                    "hoeren_total": 25,
+                    "lesen_correct": 18,
+                    "lesen_total": 25,
+                    "schreiben_score": 18,
+                    "schreiben_max": 20,
+                    "overall_percent": 80,
+                    "level": "B1",
+                    "dtz_percent": 76,
+                    "writing_percent": 90
+                }
+            }
+        },
+        "dtz_bundle": null
+    },
+    {
+        "id": "hw-20260320171326-7c0cf73d",
+        "template_id": "mail-kita-platz",
+        "title": "Mail-Aufgabe: Kita-Platz",
+        "description": "Schreiben Sie eine formelle E-Mail zum Thema Kita-Platz.",
+        "attachment": "",
+        "target_type": "users",
+        "target_label": "Ausgewählte Schüler",
+        "course_id": "",
+        "usernames": [
+            "schueler.mila"
+        ],
+        "duration_minutes": 25,
+        "starts_at": "2026-03-20T17:13:26Z",
+        "status": "active",
+        "teacher_username": "dozent.yasin",
+        "created_at": "2026-03-20T17:13:26+00:00",
+        "updated_at": "2026-03-20T17:13:27+00:00",
+        "batch_group_id": "",
+        "batch_group_label": "",
+        "assignees": {
+            "schueler.mila": {
+                "started_at": "2026-03-20T17:13:27+00:00",
+                "deadline_at": "2026-03-20T17:38:27+00:00",
+                "submitted_at": "2026-03-20T17:13:27+00:00",
+                "submission_count": 1,
+                "last_upload_id": "20260320171327-ff841e52",
+                "checklist_required": false,
+                "checklist_complete": false,
+                "checklist_validated_at": ""
+            }
+        },
+        "dtz_bundle": null
+    },
+    {
+        "id": "hw-20260320171806-6243f0bd",
+        "template_id": "a2-test-generator-perfekt-nebensatz-kasus",
+        "title": "A2-Themen Test: Perfekt + Nebensätze + Kasus",
+        "description": "Bearbeiten Sie den A2-Themen-Test (30 Fragen).\nThemen: Perfekt, Nebensätze, Kasus",
+        "attachment": "http:\/\/127.0.0.1:8091\/a2-themen.html?hw=1&topics=Perfekt,Nebensatz,Kasus&count=30",
+        "target_type": "users",
+        "target_label": "Ausgewählte Schüler",
+        "course_id": "",
+        "usernames": [
+            "schueler.mila"
+        ],
+        "duration_minutes": 35,
+        "starts_at": "2026-03-20T17:18:06Z",
+        "status": "active",
+        "teacher_username": "dozent.yasin",
+        "created_at": "2026-03-20T17:18:06+00:00",
+        "updated_at": "2026-03-20T17:18:07+00:00",
+        "batch_group_id": "",
+        "batch_group_label": "",
+        "assignees": {
+            "schueler.mila": {
+                "started_at": "2026-03-20T17:18:07+00:00",
+                "deadline_at": "2026-03-20T17:53:07+00:00",
+                "submitted_at": "2026-03-20T17:18:07+00:00",
+                "started_ts": 1774027087,
+                "deadline_ts": 1774029187,
+                "submitted_ts": 0,
+                "submission_count": 1,
+                "last_upload_id": ""
+            }
+        },
+        "dtz_bundle": null
+    }
+]

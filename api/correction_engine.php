@@ -302,7 +302,7 @@ function dtz_extract_json_text(string $raw): array
         }
     }
 
-    throw new RuntimeException('Ungueltiges JSON in der OpenAI-Antwort.');
+    throw new RuntimeException('Ungültiges JSON in der OpenAI-Antwort.');
 }
 
 function dtz_sanitize_external_error(string $message): string
@@ -404,11 +404,11 @@ Regeln:
 - Der korrigierte Brief soll DTZ-gerecht, klar und natürlich sein.
 - Der korrigierte Brief soll etwa 70 Wörter haben (Zielbereich 65-75 Wörter).
 - Korrigiere nur den vorhandenen Inhalt. Keine neuen Fakten erfinden.
-- Schreibe nichts ausserhalb des JSON.
+- Schreibe nichts außerhalb des JSON.
 - Orthografie streng nach Standarddeutsch:
-  - Nach Komma wird klein weitergeschrieben, ausser es folgt ein Nomen/Eigenname oder der Beginn eines neuen Satzes.
-  - Satzanfang immer gross.
-  - Achte auf Gross-/Kleinschreibung bei Nomen.
+  - Nach Komma wird klein weitergeschrieben, außer es folgt ein Nomen/Eigenname oder der Beginn eines neuen Satzes.
+  - Satzanfang immer groß.
+  - Achte auf Groß-/Kleinschreibung bei Nomen.
 - Prüfe explizit Anrede, Anlass, Bitte/Wunsch und Schlussformel.
 USR;
 

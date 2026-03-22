@@ -9,7 +9,7 @@ header('Access-Control-Allow-Methods: POST, OPTIONS');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstuetzt.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -20,7 +20,7 @@ $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Ungueltiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -79,7 +79,7 @@ foreach ($grades as $entry) {
 
 if (!$map) {
     http_response_code(400);
-    echo json_encode(['error' => 'Keine gueltigen Bewertungsdaten.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Keine gültigen Bewertungsdaten.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

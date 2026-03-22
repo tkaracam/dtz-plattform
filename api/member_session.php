@@ -18,14 +18,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 require_once __DIR__ . '/auth.php';
 start_secure_session();
-if (!empty($_SESSION['student_authenticated'])) {
+if (!empty($_SESSION['member_authenticated'])) {
     enforce_session_timeout_json();
 }
 
+$authenticated = !empty($_SESSION['member_authenticated']) && !empty($_SESSION['member_username']);
+
 echo json_encode([
-    'authenticated' => !empty($_SESSION['student_authenticated']) && !empty($_SESSION['student_username']),
-    'role' => !empty($_SESSION['student_authenticated']) ? 'student' : '',
-    'role_key' => !empty($_SESSION['student_authenticated']) ? 'schueler' : '',
-    'username' => (string)($_SESSION['student_username'] ?? ''),
-    'display_name' => (string)($_SESSION['student_display_name'] ?? ''),
+    'authenticated' => $authenticated,
+    'role' => $authenticated ? 'member' : '',
+    'role_key' => $authenticated ? 'member' : '',
+    'username' => $authenticated ? (string)($_SESSION['member_username'] ?? '') : '',
+    'display_name' => $authenticated ? (string)($_SESSION['member_display_name'] ?? '') : '',
+    'email' => $authenticated ? (string)($_SESSION['member_email'] ?? '') : '',
 ], JSON_UNESCAPED_UNICODE);
