@@ -3453,42 +3453,47 @@
                 <div id="hwBatchInlineStatus" class="muted" style="margin-top:8px;"></div>
               </div>
               <div id="hwA2GeneratorBox">
-                <select id="hwA2TopicsMulti" class="hw-multi-source-select" multiple size="6">
-                  <option value="perfekt">Perfekt</option>
-                  <option value="nebensatz">Nebensätze</option>
-                  <option value="modalverben">Modalverben</option>
-                  <option value="praepositionen">Präpositionen</option>
-                  <option value="trennbare-verben">Trennbare Verben</option>
-                  <option value="kasus">Kasus</option>
-                </select>
-                <div id="hwA2TopicsMultiChecks" class="hw-multi-checklist"></div>
-                <div class="grid" style="margin-top:8px;">
-                  <div>
-                    <label for="hwA2QuestionCount">Fragenzahl</label>
-                    <input id="hwA2QuestionCount" type="number" min="10" max="50" value="50">
-                  </div>
-                </div>
-                <div class="grid" style="margin-top:8px;">
-                  <div>
-                    <label for="hwA2StartsAt">Startzeit</label>
-                    <input id="hwA2StartsAt" type="datetime-local">
-                  </div>
-                  <div>
-                    <label for="hwA2DurationValue">Dauer</label>
-                    <input id="hwA2DurationValue" type="number" min="5" max="1440" value="60">
-                  </div>
-                  <div>
-                    <label for="hwA2DurationUnit">Einheit</label>
-                    <select id="hwA2DurationUnit">
-                      <option value="minutes" selected>Minuten</option>
-                      <option value="hours">Stunden</option>
+                <details class="fold-section">
+                  <summary>A2-Test Generator</summary>
+                  <div style="padding:12px;">
+                    <select id="hwA2TopicsMulti" class="hw-multi-source-select" multiple size="6">
+                      <option value="perfekt">Perfekt</option>
+                      <option value="nebensatz">Nebensätze</option>
+                      <option value="modalverben">Modalverben</option>
+                      <option value="praepositionen">Präpositionen</option>
+                      <option value="trennbare-verben">Trennbare Verben</option>
+                      <option value="kasus">Kasus</option>
                     </select>
+                    <div id="hwA2TopicsMultiChecks" class="hw-multi-checklist"></div>
+                    <div class="grid" style="margin-top:8px;">
+                      <div>
+                        <label for="hwA2QuestionCount">Fragenzahl</label>
+                        <input id="hwA2QuestionCount" type="number" min="10" max="50" value="50">
+                      </div>
+                    </div>
+                    <div class="grid" style="margin-top:8px;">
+                      <div>
+                        <label for="hwA2StartsAt">Startzeit</label>
+                        <input id="hwA2StartsAt" type="datetime-local">
+                      </div>
+                      <div>
+                        <label for="hwA2DurationValue">Dauer</label>
+                        <input id="hwA2DurationValue" type="number" min="5" max="1440" value="60">
+                      </div>
+                      <div>
+                        <label for="hwA2DurationUnit">Einheit</label>
+                        <select id="hwA2DurationUnit">
+                          <option value="minutes" selected>Minuten</option>
+                          <option value="hours">Stunden</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="actions" style="margin-top:14px;">
+                      <button id="generateA2HomeworkBtn" type="button" class="ghost-btn">A2-Test generieren</button>
+                      <button id="assignA2HomeworkBtn" type="button">A2-Test als Hausaufgabe zuweisen</button>
+                    </div>
                   </div>
-                </div>
-                <div class="actions" style="margin-top:14px;">
-                  <button id="generateA2HomeworkBtn" type="button" class="ghost-btn">A2-Test generieren</button>
-                  <button id="assignA2HomeworkBtn" type="button">A2-Test als Hausaufgabe zuweisen</button>
-                </div>
+                </details>
               </div>
               <div id="hwA1GeneratorBox">
                 <select id="hwA1TopicsMulti" class="hw-multi-source-select" multiple size="10">
