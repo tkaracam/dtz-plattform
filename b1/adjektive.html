@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adjektive (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Adjektive (B1)</h1>
+    <p>Adjektivdeklination nach bestimmtem/unbestimmtem Artikel, Komparativ und Superlativ.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Nach bestimmtem Artikel -->
+  <div class="card">
+    <h2>1. Adjektivdeklination nach bestimmtem Artikel</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>mask.</th><th>fem.</th><th>neutr.</th><th>Plural</th></tr></thead>
+        <tbody>
+          <tr><td>Nominativ</td><td>-e</td><td>-e</td><td>-e</td><td>-en</td></tr>
+          <tr><td>Akkusativ</td><td>-<span class="hl">en</span></td><td>-e</td><td>-e</td><td>-en</td></tr>
+          <tr><td>Dativ</td><td>-en</td><td>-en</td><td>-en</td><td>-en</td></tr>
+          <tr><td>Genitiv</td><td>-en</td><td>-en</td><td>-en</td><td>-en</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">der alt<span class="hl">e</span> Mann (Nom. mask.) → den alt<span class="hl">en</span> Mann (Akk.)<br>die schön<span class="hl">e</span> Frau → der schön<span class="hl">en</span> Frau (Dat.)</div>
+  </div>
+
+  <!-- 2. Nach unbestimmtem Artikel -->
+  <div class="card">
+    <h2>2. Adjektivdeklination nach unbestimmtem Artikel</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>mask.</th><th>fem.</th><th>neutr.</th><th>Plural (kein Art.)</th></tr></thead>
+        <tbody>
+          <tr><td>Nominativ</td><td>-<span class="hl">er</span></td><td>-e</td><td>-<span class="hl">es</span></td><td>-e</td></tr>
+          <tr><td>Akkusativ</td><td>-<span class="hl">en</span></td><td>-e</td><td>-<span class="hl">es</span></td><td>-e</td></tr>
+          <tr><td>Dativ</td><td>-en</td><td>-en</td><td>-en</td><td>-en</td></tr>
+          <tr><td>Genitiv</td><td>-en</td><td>-en</td><td>-en</td><td>-er</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">ein alt<span class="hl">er</span> Mann (Nom. mask.) → einen alt<span class="hl">en</span> Mann (Akk.)<br>ein schön<span class="hl">es</span> Kind (Nom. neutr.) → einem schön<span class="hl">en</span> Kind (Dat.)</div>
+    <div class="tip">Nach bestimmtem Artikel: meist -e oder -en. Nach unbestimmtem Artikel: stark (er/es) bei Nom. mask./neutr.</div>
+  </div>
+
+  <!-- 3. Komparativ und Superlativ -->
+  <div class="card">
+    <h2>3. Komparativ und Superlativ</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Positiv</th><th>Komparativ</th><th>Superlativ (attr.)</th><th>Superlativ (präd.)</th></tr></thead>
+        <tbody>
+          <tr><td>schön</td><td>schön<span class="hl">er</span></td><td>der schönst<span class="hl">e</span></td><td>am schönst<span class="hl">en</span></td></tr>
+          <tr><td>alt</td><td>äl<span class="hl">ter</span></td><td>der ältest<span class="hl">e</span></td><td>am ältest<span class="hl">en</span></td></tr>
+          <tr><td>groß</td><td>grö<span class="hl">ßer</span></td><td>der größt<span class="hl">e</span></td><td>am größt<span class="hl">en</span></td></tr>
+          <tr><td>gut</td><td><span class="hl">besser</span></td><td>der best<span class="hl">e</span></td><td>am best<span class="hl">en</span></td></tr>
+          <tr><td>viel</td><td><span class="hl">mehr</span></td><td>der meist<span class="hl">e</span></td><td>am meist<span class="hl">en</span></td></tr>
+          <tr><td>gern</td><td><span class="hl">lieber</span></td><td>—</td><td>am liebst<span class="hl">en</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Einsilbige Adjektive nehmen oft Umlaut im Komparativ: alt → <em>älter</em>, jung → <em>jünger</em>, warm → <em>wärmer</em>.</div>
+  </div>
+
+  <!-- 4. Vergleiche -->
+  <div class="card">
+    <h2>4. Vergleiche mit <em>als</em> und <em>wie</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Struktur</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>so + Positiv + <span class="hl">wie</span> (Gleichheit)</td><td>Er ist so groß <span class="hl">wie</span> ich.</td></tr>
+          <tr><td>Komparativ + <span class="hl">als</span> (Ungleichheit)</td><td>Sie ist größer <span class="hl">als</span> er.</td></tr>
+          <tr><td>nicht so + Positiv + wie</td><td>Er ist nicht so alt wie sie.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Adjektive – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Adjektivendung oder Komparativform.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const bestArtData=[
+  {q:"der alt___ Mann (Nom. mask.)",a:"-e",w:["-e","-en","-er","-em"]},
+  {q:"den alt___ Mann (Akk. mask.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"dem alt___ Mann (Dat. mask.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"die schön___ Frau (Nom. fem.)",a:"-e",w:["-e","-en","-er","-em"]},
+  {q:"der schön___ Frau (Dat. fem.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"das klein___ Kind (Nom. neutr.)",a:"-e",w:["-e","-en","-es","-em"]},
+  {q:"dem klein___ Kind (Dat. neutr.)",a:"-en",w:["-en","-e","-es","-em"]},
+  {q:"die groß___ Häuser (Nom. Pl.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"den groß___ Häusern (Dat. Pl.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"des alt___ Mannes (Gen. mask.)",a:"-en",w:["-en","-e","-er","-em"]},
+];
+
+const unbestArtData=[
+  {q:"ein alt___ Mann (Nom. mask.)",a:"-er",w:["-er","-e","-en","-em"]},
+  {q:"einen alt___ Mann (Akk. mask.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"eine schön___ Frau (Nom. fem.)",a:"-e",w:["-e","-en","-er","-em"]},
+  {q:"einer schön___ Frau (Dat. fem.)",a:"-en",w:["-en","-e","-er","-em"]},
+  {q:"ein klein___ Kind (Nom. neutr.)",a:"-es",w:["-es","-e","-en","-em"]},
+  {q:"einem klein___ Kind (Dat. neutr.)",a:"-en",w:["-en","-e","-es","-em"]},
+  {q:"kein___ alten Männer (Nom. Pl.)",a:"-e",w:["-e","-en","-er","-em"]},
+  {q:"Ein jung___ Student fragt. (Nom. mask.)",a:"-er",w:["-er","-e","-en","-em"]},
+  {q:"mit einem neu___ Auto (Dat. neutr.)",a:"-en",w:["-en","-e","-es","-em"]},
+  {q:"einer jung___ Frau (Gen. fem.)",a:"-en",w:["-en","-e","-er","-em"]},
+];
+
+const komparativData=[
+  {q:"alt → Komparativ",a:"älter",w:["älter","alter","altern","altest"]},
+  {q:"groß → Komparativ",a:"größer",w:["größer","großer","grösser","großest"]},
+  {q:"gut → Komparativ",a:"besser",w:["besser","guter","günstiger","güter"]},
+  {q:"viel → Komparativ",a:"mehr",w:["mehr","vieler","vielst","vielmehr"]},
+  {q:"gern → Komparativ",a:"lieber",w:["lieber","gerner","gernigstem","gernem"]},
+  {q:"jung → Komparativ",a:"jünger",w:["jünger","junger","jugendlicher","jungen"]},
+  {q:"warm → Komparativ",a:"wärmer",w:["wärmer","warmer","warmest","warmsten"]},
+  {q:"schön → Superlativ (prädikativ)",a:"am schönsten",w:["am schönsten","am schönen","schönsten","am schönste"]},
+  {q:"gut → Superlativ (prädikativ)",a:"am besten",w:["am besten","am gutsten","am gutesten","gütigsten"]},
+  {q:"groß → Superlativ (attributiv, mask. Nom.)",a:"der größte",w:["der größte","den größten","dem größten","der größten"]},
+];
+
+const vergleichData=[
+  {q:"Er ist so groß ___ ich.",a:"wie",w:["wie","als","so als","als wie"]},
+  {q:"Sie ist größer ___ er.",a:"als",w:["als","wie","so wie","so als"]},
+  {q:"Das Buch ist teurer ___ das Heft.",a:"als",w:["als","wie","so wie","so als"]},
+  {q:"Er läuft so schnell ___ ein Profi.",a:"wie",w:["wie","als","so als","als wie"]},
+  {q:"Dieser Film ist besser ___ der andere.",a:"als",w:["als","wie","so wie","so als"]},
+  {q:"Das Wetter ist heute nicht so gut ___ gestern.",a:"wie",w:["wie","als","so als","als wie"]},
+  {q:"Sie ist genauso fleißig ___ ihr Bruder.",a:"wie",w:["wie","als","so als","als wie"]},
+  {q:"Deutsch ist schwieriger ___ Englisch.",a:"als",w:["als","wie","so wie","so als"]},
+  {q:"Er isst genauso viel ___ sie.",a:"wie",w:["wie","als","so als","als wie"]},
+  {q:"Die neue Wohnung ist schöner ___ die alte.",a:"als",w:["als","wie","so wie","so als"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...bestArtData,...unbestArtData,...komparativData,...vergleichData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kasus (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Die vier Kasus (B1)</h1>
+    <p>Nominativ, Akkusativ, Dativ und Genitiv – Artikelformen und Verwendung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Bestimmter Artikel alle Kasus -->
+  <div class="card">
+    <h2>1. Bestimmter Artikel – alle Kasus</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>maskulin (der)</th><th>feminin (die)</th><th>neutral (das)</th><th>Plural (die)</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">Nominativ</span></td><td>der</td><td>die</td><td>das</td><td>die</td></tr>
+          <tr><td><span class="hl">Akkusativ</span></td><td><span class="hl">den</span></td><td>die</td><td>das</td><td>die</td></tr>
+          <tr><td><span class="hl">Dativ</span></td><td><span class="hl">dem</span></td><td><span class="hl">der</span></td><td><span class="hl">dem</span></td><td><span class="hl">den</span></td></tr>
+          <tr><td><span class="hl">Genitiv</span></td><td><span class="hl">des</span></td><td><span class="hl">der</span></td><td><span class="hl">des</span></td><td><span class="hl">der</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. Unbestimmter Artikel alle Kasus -->
+  <div class="card">
+    <h2>2. Unbestimmter Artikel – alle Kasus</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>maskulin (ein)</th><th>feminin (eine)</th><th>neutral (ein)</th><th>Plural (—)</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">Nominativ</span></td><td>ein</td><td>eine</td><td>ein</td><td>—</td></tr>
+          <tr><td><span class="hl">Akkusativ</span></td><td><span class="hl">einen</span></td><td>eine</td><td>ein</td><td>—</td></tr>
+          <tr><td><span class="hl">Dativ</span></td><td><span class="hl">einem</span></td><td><span class="hl">einer</span></td><td><span class="hl">einem</span></td><td><span class="hl">—</span></td></tr>
+          <tr><td><span class="hl">Genitiv</span></td><td><span class="hl">eines</span></td><td><span class="hl">einer</span></td><td><span class="hl">eines</span></td><td><span class="hl">—</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. Wann welcher Kasus -->
+  <div class="card">
+    <h2>3. Wann welcher Kasus?</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>Frage</th><th>Funktion</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">Nominativ</span></td><td>Wer? Was?</td><td>Subjekt</td><td><span class="hl">Der Mann</span> kauft Brot.</td></tr>
+          <tr><td><span class="hl">Akkusativ</span></td><td>Wen? Was?</td><td>Direktes Objekt</td><td>Er kauft <span class="hl">einen Apfel</span>.</td></tr>
+          <tr><td><span class="hl">Dativ</span></td><td>Wem?</td><td>Indirektes Objekt</td><td>Er gibt <span class="hl">dem Kind</span> den Ball.</td></tr>
+          <tr><td><span class="hl">Genitiv</span></td><td>Wessen?</td><td>Zugehörigkeit</td><td>Das ist das Buch <span class="hl">des Lehrers</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Präpositionen + Kasus -->
+  <div class="card">
+    <h2>4. Präpositionen + Kasus</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>Präpositionen</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">Akkusativ</span></td><td>durch, für, gegen, ohne, um, bis, entlang</td></tr>
+          <tr><td><span class="hl">Dativ</span></td><td>aus, bei, mit, nach, seit, von, zu, außer, gegenüber</td></tr>
+          <tr><td><span class="hl">Dativ oder Akkusativ</span></td><td>an, auf, hinter, in, neben, über, unter, vor, zwischen</td></tr>
+          <tr><td><span class="hl">Genitiv</span></td><td>wegen, trotz, während, aufgrund, statt/anstatt</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">Ich gehe <span class="hl">durch den</span> Park. (Akk – Bewegung)<br>Das Buch liegt <span class="hl">auf dem</span> Tisch. (Dat – Ort)<br><span class="hl">Wegen des</span> Regens bleibe ich zu Hause. (Gen)</div>
+  </div>
+
+  <!-- 5. Dativ-n im Plural -->
+  <div class="card">
+    <h2>5. Dativ Plural – Nomen bekommen <em>-n</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Nominativ Plural</th><th>Dativ Plural</th></tr></thead>
+        <tbody>
+          <tr><td>die Kinder</td><td>mit den Kinder<span class="hl">n</span></td></tr>
+          <tr><td>die Männer</td><td>mit den Männer<span class="hl">n</span></td></tr>
+          <tr><td>die Autos</td><td>mit den Autos (kein -n bei -s)</td></tr>
+          <tr><td>die Häuser</td><td>in den Häuser<span class="hl">n</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Im Dativ Plural bekommen alle Nomen ein <em>-n</em> – außer wenn der Plural schon auf <em>-n</em> oder <em>-s</em> endet.</div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Kasus – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Artikelform / den richtigen Kasus.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const nomAkkData=[
+  {q:"___ Mann kauft Brot. (Subjekt)",a:"Der",w:["Der","Den","Dem","Des"]},
+  {q:"Ich sehe ___ Mann. (direktes Objekt, m)",a:"den",w:["den","der","dem","des"]},
+  {q:"Sie kauft ___ Apfel. (direktes Objekt, m)",a:"einen",w:["einen","ein","einem","eines"]},
+  {q:"___ Kind spielt draußen. (Subjekt, n)",a:"Das",w:["Das","Den","Dem","Des"]},
+  {q:"Er liest ___ Buch. (direktes Objekt, n)",a:"das",w:["das","der","dem","des"]},
+  {q:"___ Frau arbeitet hier. (Subjekt, f)",a:"Die",w:["Die","Den","Dem","Des"]},
+  {q:"Ich kenne ___ Frau. (direktes Objekt, f)",a:"die",w:["die","der","dem","des"]},
+  {q:"Er kauft ___ Auto. (direktes Objekt, n)",a:"ein",w:["ein","einen","einem","eines"]},
+  {q:"___ Hund bellt. (Subjekt, m)",a:"Der",w:["Der","Den","Dem","Des"]},
+  {q:"Wir sehen ___ Hund. (dir. Objekt, m)",a:"den",w:["den","der","dem","des"]},
+];
+
+const datData=[
+  {q:"Er hilft ___ Mann. (Dativ, m)",a:"dem",w:["dem","den","der","des"]},
+  {q:"Sie gibt ___ Kind ein Buch. (Dativ, n)",a:"dem",w:["dem","den","die","das"]},
+  {q:"Ich danke ___ Frau. (Dativ, f)",a:"der",w:["der","die","dem","den"]},
+  {q:"Er wohnt bei ___ Familie. (Dativ, f)",a:"einer",w:["einer","einen","eine","eines"]},
+  {q:"Mit ___ Bus fahre ich. (Dativ, m)",a:"dem",w:["dem","den","der","des"]},
+  {q:"Nach ___ Unterricht gehe ich heim. (Dativ, m)",a:"dem",w:["dem","den","der","des"]},
+  {q:"Ich wohne seit ___ Jahr hier. (Dativ, n)",a:"einem",w:["einem","einen","eine","eines"]},
+  {q:"Von ___ Lehrer bekomme ich Hilfe. (Dativ, m)",a:"dem",w:["dem","den","der","des"]},
+  {q:"Ich fahre zu ___ Arzt. (Dativ, m)",a:"dem",w:["dem","den","der","des"]},
+  {q:"Mit ___ Freundin gehe ich ins Kino. (Dativ, f)",a:"einer",w:["einer","einen","eine","eines"]},
+  {q:"Ich spreche mit ___ Kindern. (Dativ Plural)",a:"den",w:["den","die","der","das"]},
+  {q:"Er hilft ___ alten Männern. (Dativ Plural)",a:"den",w:["den","die","der","das"]},
+];
+
+const genData=[
+  {q:"Das ist das Buch ___ Lehrers. (Genitiv, m)",a:"des",w:["des","dem","den","der"]},
+  {q:"Die Tasche ___ Frau ist rot. (Genitiv, f)",a:"der",w:["der","dem","den","des"]},
+  {q:"Das Haus ___ Kindes ist groß. (Genitiv, n)",a:"des",w:["des","dem","den","der"]},
+  {q:"Wegen ___ Wetters bleibe ich drin. (Genitiv, n)",a:"des",w:["des","dem","den","der"]},
+  {q:"Trotz ___ Regens gehe ich raus. (Genitiv, m)",a:"des",w:["des","dem","den","der"]},
+  {q:"Während ___ Nacht schläft er. (Genitiv, f)",a:"der",w:["der","dem","den","des"]},
+];
+
+const praepData=[
+  {q:"Ich fahre ___ den Park. (durch + Akk)",a:"durch",w:["durch","mit","von","wegen"]},
+  {q:"Das Geschenk ist ___ dich. (für + Akk)",a:"für",w:["für","mit","von","bei"]},
+  {q:"Ich warte ___ dem Bahnhof. (an + Dat – Ort)",a:"an",w:["an","durch","für","über"]},
+  {q:"Das Buch liegt ___ dem Tisch. (auf + Dat – Ort)",a:"auf",w:["auf","durch","für","ohne"]},
+  {q:"Ich stelle das Buch ___ den Tisch. (auf + Akk – Richtung)",a:"auf",w:["auf","mit","von","bei"]},
+  {q:"Er kommt ___ der Schweiz. (aus + Dat)",a:"aus",w:["aus","durch","für","gegen"]},
+  {q:"Ich bin ___ meinem Freund. (bei + Dat)",a:"bei",w:["bei","durch","für","ohne"]},
+  {q:"Ich gehe ___ Hause. (nach + Dat)",a:"nach",w:["nach","durch","für","über"]},
+  {q:"Er ist ___ drei Jahren hier. (seit + Dat)",a:"seit",w:["seit","durch","für","ohne"]},
+  {q:"Das kommt ___ ihm. (von + Dat)",a:"von",w:["von","durch","für","gegen"]},
+  {q:"Ich gehe ___ meiner Mutter. (zu + Dat)",a:"zu",w:["zu","durch","für","gegen"]},
+  {q:"___ des Regens blieb ich zu Hause. (wegen + Gen)",a:"Wegen",w:["Wegen","Während","Trotz","Statt"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...nomAkkData,...datData,...genData,...praepData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Satzverbindungen (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Satzverbindungen (B1)</h1>
+    <p>Koordinierende und adverbiale Konnektoren – Verbstellung und Bedeutung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Koordinierende Konjunktionen (Pos. 0) -->
+  <div class="card">
+    <h2>1. Koordinierende Konjunktionen – Position 0 (kein Einfluss auf Stellung)</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Konjunktion</th><th>Bedeutung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">und</span></td><td>Aufzählung</td><td>Er arbeitet <span class="hl">und</span> sie studiert.</td></tr>
+          <tr><td><span class="hl">aber</span></td><td>Gegensatz</td><td>Er will kommen, <span class="hl">aber</span> er hat keine Zeit.</td></tr>
+          <tr><td><span class="hl">oder</span></td><td>Alternative</td><td>Kommst du mit <span class="hl">oder</span> bleibst du?</td></tr>
+          <tr><td><span class="hl">denn</span></td><td>Grund (= weil, aber Hauptsatz!)</td><td>Er kommt nicht, <span class="hl">denn</span> er ist krank.</td></tr>
+          <tr><td><span class="hl">sondern</span></td><td>Korrektur nach Negation</td><td>Nicht er, <span class="hl">sondern</span> sie hat das gemacht.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Nach <em>und, aber, oder, denn, sondern</em> bleibt das Verb auf Position 2 (Hauptsatzstellung).</div>
+  </div>
+
+  <!-- 2. Adverbiale Konjunktionen (Pos. 1) -->
+  <div class="card">
+    <h2>2. Adverbiale Konnektoren – Position 1 (Verb-Subjekt-Inversion)</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Konnektor</th><th>Bedeutung</th><th>Beispiel (Pos. 1)</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">deshalb / deswegen / daher</span></td><td>Folge</td><td>Er ist krank. <span class="hl">Deshalb</span> kommt er nicht.</td></tr>
+          <tr><td><span class="hl">trotzdem</span></td><td>Trotz + Gegenteil</td><td>Es regnet. <span class="hl">Trotzdem</span> geht er raus.</td></tr>
+          <tr><td><span class="hl">außerdem</span></td><td>Ergänzung</td><td>Er ist müde. <span class="hl">Außerdem</span> hat er Hunger.</td></tr>
+          <tr><td><span class="hl">dann</span></td><td>Zeitfolge</td><td>Ich esse. <span class="hl">Dann</span> schlafe ich.</td></tr>
+          <tr><td><span class="hl">danach</span></td><td>Zeitfolge (nach)</td><td>Er arbeitete. <span class="hl">Danach</span> ging er nach Hause.</td></tr>
+          <tr><td><span class="hl">zuerst / zunächst</span></td><td>Erstes Ereignis</td><td><span class="hl">Zuerst</span> frühstücke ich, dann gehe ich.</td></tr>
+          <tr><td><span class="hl">schließlich</span></td><td>Letztes Ereignis / Schlussfolgerung</td><td><span class="hl">Schließlich</span> entschied er sich.</td></tr>
+          <tr><td><span class="hl">allerdings</span></td><td>Einschränkung</td><td>Der Film war gut. <span class="hl">Allerdings</span> war er zu lang.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Adverbiale Konnektoren auf Position 1 → <span class="hl">Konnektor – Verb – Subjekt</span>:<br>
+    <em>Deshalb <span class="hl">kommt</span> er nicht.</em></div>
+  </div>
+
+  <!-- 3. Vergleich denn vs. weil -->
+  <div class="card">
+    <h2>3. <em>denn</em> vs. <em>weil</em> vs. <em>deshalb</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Form</th><th>Typ</th><th>Verbstellung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">denn</span></td><td>koordinierend</td><td>Verb Position 2</td><td>Er kommt nicht, <em>denn er ist krank</em>.</td></tr>
+          <tr><td><span class="hl">weil</span></td><td>subordinierend</td><td>Verb am Ende</td><td>Er kommt nicht, <em>weil er krank ist</em>.</td></tr>
+          <tr><td><span class="hl">deshalb</span></td><td>adverbial</td><td>Inversion (V-S)</td><td>Er ist krank. <em>Deshalb kommt er nicht</em>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Satzverbindungen – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle den richtigen Konnektor.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const koordinData=[
+  {q:"Er will kommen, ___ er hat keine Zeit.",a:"aber",w:["aber","denn","und","sondern"]},
+  {q:"Sie lernt Deutsch ___ er lernt Englisch.",a:"und",w:["und","aber","oder","denn"]},
+  {q:"Er kommt nicht, ___ er ist krank.",a:"denn",w:["denn","aber","und","sondern"]},
+  {q:"Kommst du mit ___ bleibst du hier?",a:"oder",w:["oder","und","aber","denn"]},
+  {q:"Nicht er, ___ sie hat den Fehler gemacht.",a:"sondern",w:["sondern","aber","denn","oder"]},
+  {q:"Das Essen war gut, ___ teuer.",a:"aber",w:["aber","und","oder","denn"]},
+  {q:"Ich mag Kaffee ___ Tee.",a:"und",w:["und","aber","oder","denn"]},
+  {q:"Er lernt nicht, ___ er spielt lieber.",a:"sondern",w:["sondern","aber","und","denn"]},
+  {q:"Nimm einen Regenschirm, ___ es kann regnen.",a:"denn",w:["denn","aber","und","sondern"]},
+  {q:"Sie schläft ___ er liest.",a:"und",w:["und","aber","oder","denn"]},
+];
+
+const adverbData=[
+  {q:"Er ist krank. ___ kommt er nicht.",a:"Deshalb",w:["Deshalb","Trotzdem","Außerdem","Allerdings"]},
+  {q:"Es regnet. ___ geht er raus.",a:"Trotzdem",w:["Trotzdem","Deshalb","Außerdem","Schließlich"]},
+  {q:"Er ist müde. ___ hat er Hunger.",a:"Außerdem",w:["Außerdem","Deshalb","Trotzdem","Danach"]},
+  {q:"Ich esse. ___ schlafe ich.",a:"Dann",w:["Dann","Deshalb","Trotzdem","Außerdem"]},
+  {q:"Er arbeitete. ___ ging er nach Hause.",a:"Danach",w:["Danach","Deshalb","Trotzdem","Außerdem"]},
+  {q:"___ frühstücke ich, dann gehe ich spazieren.",a:"Zuerst",w:["Zuerst","Danach","Schließlich","Allerdings"]},
+  {q:"___ entschied er sich für den Job.",a:"Schließlich",w:["Schließlich","Zuerst","Danach","Außerdem"]},
+  {q:"Der Film war gut. ___ war er sehr lang.",a:"Allerdings",w:["Allerdings","Deshalb","Trotzdem","Außerdem"]},
+  {q:"Er hat keine Arbeit. ___ sucht er eine.",a:"Deshalb",w:["Deshalb","Trotzdem","Allerdings","Dann"]},
+  {q:"Es war kalt. ___ blieb er draußen.",a:"Trotzdem",w:["Trotzdem","Deshalb","Außerdem","Danach"]},
+  {q:"Sie ist krank. ___ hat sie Prüfung.",a:"Außerdem",w:["Außerdem","Deshalb","Trotzdem","Schließlich"]},
+  {q:"Er rief an. ___ fuhr er hin.",a:"Danach",w:["Danach","Deshalb","Trotzdem","Allerdings"]},
+];
+
+const dennWeilData=[
+  {q:"Er kommt nicht, ___ er ist krank. (HS + HS)",a:"denn",w:["denn","weil","deshalb","obwohl"]},
+  {q:"Er kommt nicht, ___ er krank ist. (NS – Verb am Ende)",a:"weil",w:["weil","denn","deshalb","obwohl"]},
+  {q:"Er ist krank. ___ kommt er nicht. (Inversion)",a:"Deshalb",w:["Deshalb","Weil","Denn","Obwohl"]},
+  {q:"Sie bleibt zu Hause, ___ sie schlafen will. (NS)",a:"weil",w:["weil","denn","deshalb","obwohl"]},
+  {q:"Sie bleibt zu Hause, ___ sie will schlafen. (HS)",a:"denn",w:["denn","weil","deshalb","obwohl"]},
+  {q:"Ich kaufe das Buch, ___ ich es brauche. (NS)",a:"weil",w:["weil","denn","deshalb","obwohl"]},
+  {q:"Ich bin müde. ___ gehe ich ins Bett. (Inversion)",a:"Deshalb",w:["Deshalb","Weil","Denn","Trotzdem"]},
+  {q:"Er lernt viel, ___ er will gute Noten. (HS)",a:"denn",w:["denn","weil","deshalb","obwohl"]},
+];
+
+const gemischtData=[
+  {q:"Er arbeitet viel. ___ verdient er gut.",a:"Deshalb",w:["Deshalb","Obwohl","Außerdem","Allerdings"]},
+  {q:"Das Wetter ist schlecht. ___ machen wir einen Spaziergang.",a:"Trotzdem",w:["Trotzdem","Deshalb","Außerdem","Dann"]},
+  {q:"Ich mag Sport ___ lese ich gern.",a:"und",w:["und","aber","oder","denn"]},
+  {q:"Er ist nicht dumm, ___ faul.",a:"sondern",w:["sondern","aber","und","denn"]},
+  {q:"Wir essen. ___ sehen wir einen Film.",a:"Danach",w:["Danach","Deshalb","Trotzdem","Außerdem"]},
+  {q:"Der Plan war gut. ___ hat er nicht funktioniert.",a:"Allerdings",w:["Allerdings","Deshalb","Trotzdem","Außerdem"]},
+  {q:"Isst du Fleisch ___ bist du Vegetarier?",a:"oder",w:["oder","und","aber","denn"]},
+  {q:"___ lerne ich Vokabeln, dann mache ich Grammatik.",a:"Zuerst",w:["Zuerst","Danach","Schließlich","Deshalb"]},
+  {q:"Er wollte nicht helfen. ___ machte er es.",a:"Trotzdem",w:["Trotzdem","Deshalb","Außerdem","Allerdings"]},
+  {q:"Sie hat studiert ___ gearbeitet.",a:"und",w:["und","aber","oder","denn"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...koordinData,...adverbData,...dennWeilData,...gemischtData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

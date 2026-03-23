@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Artikel &amp; Nomen (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Artikel &amp; Nomen (B1)</h1>
+    <p>Genus-Signale, Pluralformen, n-Deklination und Nominalisierung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Genus-Signale -->
+  <div class="card">
+    <h2>1. Genus-Signale – Endungen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>maskulin (der)</th><th>feminin (die)</th><th>neutral (das)</th></tr></thead>
+        <tbody>
+          <tr><td>-er: der Lehrer</td><td>-ung: die Zeitung</td><td>-chen: das Mädchen</td></tr>
+          <tr><td>-ling: der Lehrling</td><td>-heit: die Freiheit</td><td>-lein: das Fräulein</td></tr>
+          <tr><td>-ig: der Honig</td><td>-keit: die Möglichkeit</td><td>-ment: das Instrument</td></tr>
+          <tr><td>-or: der Doktor</td><td>-schaft: die Freundschaft</td><td>-tum: das Eigentum</td></tr>
+          <tr><td>-ismus: der Tourismus</td><td>-ion: die Lektion</td><td>Ge-: das Gebäude</td></tr>
+          <tr><td>-ant: der Praktikant</td><td>-tät: die Qualität</td><td>-um: das Museum</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. Pluralformen -->
+  <div class="card">
+    <h2>2. Pluralformen – Wichtige Muster</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Muster</th><th>Singular → Plural</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>Umlaut + -e</td><td>—→ -¨e</td><td>der Ball → die Bäll<span class="hl">e</span></td></tr>
+          <tr><td>-er (neutral)</td><td>→ -er (oft Umlaut)</td><td>das Kind → die Kinder</td></tr>
+          <tr><td>-en / -n</td><td>→ -en / -n</td><td>die Frau → die Frauen</td></tr>
+          <tr><td>-s (Fremdwörter)</td><td>→ -s</td><td>das Auto → die Autos</td></tr>
+          <tr><td>-e (mask.)</td><td>→ -e</td><td>der Hund → die Hunde</td></tr>
+          <tr><td>-nen (fem. Personen)</td><td>→ -nen</td><td>die Lehrerin → die Lehrerinnen</td></tr>
+          <tr><td>Gleich (mask. auf -er)</td><td>= Plural</td><td>der Lehrer → die Lehrer</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. n-Deklination -->
+  <div class="card">
+    <h2>3. n-Deklination (schwache Maskulina)</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Kasus</th><th>der Mensch</th><th>der Student</th><th>der Name</th></tr></thead>
+        <tbody>
+          <tr><td>Nominativ</td><td>der Mensch</td><td>der Student</td><td>der Name</td></tr>
+          <tr><td>Akkusativ</td><td>den Mensch<span class="hl">en</span></td><td>den Student<span class="hl">en</span></td><td>den Nam<span class="hl">en</span></td></tr>
+          <tr><td>Dativ</td><td>dem Mensch<span class="hl">en</span></td><td>dem Student<span class="hl">en</span></td><td>dem Nam<span class="hl">en</span></td></tr>
+          <tr><td>Genitiv</td><td>des Mensch<span class="hl">en</span></td><td>des Student<span class="hl">en</span></td><td>des Nam<span class="hl">ens</span></td></tr>
+          <tr><td>Plural</td><td>die Mensch<span class="hl">en</span></td><td>die Student<span class="hl">en</span></td><td>die Nam<span class="hl">en</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Typische n-Deklination: Nationalitäten (-e: der Türke), Berufe (-ant/-ent/-ist: der Assistent), Tiere (der Bär, der Affe).</div>
+  </div>
+
+  <!-- 4. Nominalisierung -->
+  <div class="card">
+    <h2>4. Nominalisierung – Verben und Adjektive als Nomen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Wortart</th><th>Nominalisierung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>Verb → Nomen (das)</td><td>Infinitiv → großgeschrieben</td><td>schlafen → <span class="hl">das Schlafen</span></td></tr>
+          <tr><td>Adjektiv (Pers.) → Nomen</td><td>wie Adjektivdeklination</td><td>krank → <span class="hl">der/die Kranke</span></td></tr>
+          <tr><td>Adjektiv → abstraktes Nomen</td><td>+ -heit/-keit/-igkeit</td><td>frei → <span class="hl">die Freiheit</span></td></tr>
+          <tr><td>Verb → Nomen (-ung)</td><td>Verbstamm + -ung (die)</td><td>zahlen → <span class="hl">die Zahlung</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Artikel &amp; Nomen – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Artikelform oder Pluralform.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const genusData=[
+  {q:"___ Zeitung (Endung -ung → Genus?)",a:"die",w:["die","der","das","einen"]},
+  {q:"___ Mädchen (Endung -chen → Genus?)",a:"das",w:["das","die","der","einen"]},
+  {q:"___ Lehrer (Endung -er → Genus?)",a:"der",w:["der","die","das","einen"]},
+  {q:"___ Freiheit (Endung -heit → Genus?)",a:"die",w:["die","der","das","einen"]},
+  {q:"___ Instrument (Endung -ment → Genus?)",a:"das",w:["das","die","der","einen"]},
+  {q:"___ Möglichkeit (Endung -keit → Genus?)",a:"die",w:["die","der","das","einen"]},
+  {q:"___ Tourismus (Endung -ismus → Genus?)",a:"der",w:["der","die","das","einen"]},
+  {q:"___ Museum (Endung -um → Genus?)",a:"das",w:["das","die","der","einen"]},
+  {q:"___ Freundschaft (Endung -schaft → Genus?)",a:"die",w:["die","der","das","einen"]},
+  {q:"___ Doktor (Endung -or → Genus?)",a:"der",w:["der","die","das","einen"]},
+  {q:"___ Qualität (Endung -tät → Genus?)",a:"die",w:["die","der","das","einen"]},
+  {q:"___ Gebäude (Ge- → Genus?)",a:"das",w:["das","die","der","einen"]},
+];
+
+const pluralData=[
+  {q:"das Kind → Plural:",a:"die Kinder",w:["die Kinder","die Kindes","die Kinds","die Kindere"]},
+  {q:"die Frau → Plural:",a:"die Frauen",w:["die Frauen","die Fraues","die Fraus","die Fräuen"]},
+  {q:"das Auto → Plural:",a:"die Autos",w:["die Autos","die Autoen","die Aute","die Autoes"]},
+  {q:"die Lehrerin → Plural:",a:"die Lehrerinnen",w:["die Lehrerinnen","die Lehrerin","die Lehrerinnes","die Lehrerinens"]},
+  {q:"der Hund → Plural:",a:"die Hunde",w:["die Hunde","die Hunden","die Hunds","die Hünd"]},
+  {q:"der Lehrer → Plural:",a:"die Lehrer",w:["die Lehrer","die Lehrers","die Lehreren","die Lehrerinnen"]},
+  {q:"der Ball → Plural:",a:"die Bälle",w:["die Bälle","die Balls","die Balle","die Ballen"]},
+  {q:"das Haus → Plural:",a:"die Häuser",w:["die Häuser","die Hauser","die Haus","die Häuse"]},
+];
+
+const nDeklData=[
+  {q:"Ich kenne den ___ (der Mensch).",a:"Menschen",w:["Menschen","Mensch","Mensches","Menschs"]},
+  {q:"Er hilft dem ___ (der Student).",a:"Studenten",w:["Studenten","Student","Studentes","Students"]},
+  {q:"Wie ist dein ___ (der Name)?",a:"Name",w:["Name","Namen","Names","Namens"]},
+  {q:"Ich kenne den ___ (der Name).",a:"Namen",w:["Namen","Name","Names","Namens"]},
+  {q:"Das ist das Buch des ___ (der Herr).",a:"Herrn",w:["Herrn","Herrens","Herrs","Herres"]},
+  {q:"Er ist ein ___ (der Kollege).",a:"Kollege",w:["Kollege","Kollegen","Kolleges","Kollegens"]},
+  {q:"Ich spreche mit dem ___ (der Praktikant).",a:"Praktikanten",w:["Praktikanten","Praktikant","Praktikants","Praktikantes"]},
+  {q:"Das Auto des ___ (der Junge) ist rot.",a:"Jungen",w:["Jungen","Junge","Junges","Jungens"]},
+  {q:"Er sieht den ___ (der Affe).",a:"Affen",w:["Affen","Affe","Affes","Affens"]},
+  {q:"Wir helfen dem ___ (der Kranke).",a:"Kranken",w:["Kranken","Kranke","Krankes","Krankens"]},
+];
+
+const nominalisierungData=[
+  {q:"schlafen → Nominalisierung (Verb)",a:"das Schlafen",w:["das Schlafen","die Schlafen","der Schlaf","das Geschlafen"]},
+  {q:"krank → Nominalisierung (adj. Person, mask.)",a:"der Kranke",w:["der Kranke","das Kranke","die Kranke","ein Kranker"]},
+  {q:"zahlen → Nominalisierung (-ung)",a:"die Zahlung",w:["die Zahlung","der Zahlung","das Zahlung","die Zahlungen"]},
+  {q:"frei → Nominalisierung (-heit)",a:"die Freiheit",w:["die Freiheit","der Freiheit","das Frei","die Freis"]},
+  {q:"schnell → Nominalisierung (-igkeit)",a:"die Schnelligkeit",w:["die Schnelligkeit","der Schnell","das Schnelle","die Schnells"]},
+  {q:"lernen → Nominalisierung (Verb → Nomen)",a:"das Lernen",w:["das Lernen","die Lernung","der Lernens","das Gelernten"]},
+  {q:"möglich → Nominalisierung (-keit)",a:"die Möglichkeit",w:["die Möglichkeit","der Möglich","das Mögliche","die Möglichs"]},
+  {q:"bekannt → Nominalisierung (adj. Person)",a:"der/die Bekannte",w:["der/die Bekannte","das Bekannte","die Bekanntschaft","der Bekanntens"]},
+  {q:"lösen → Nominalisierung (-ung)",a:"die Lösung",w:["die Lösung","der Lösung","das Lösungen","die Löst"]},
+  {q:"gesund → Nominalisierung (-heit)",a:"die Gesundheit",w:["die Gesundheit","der Gesund","das Gesunde","die Gesundheits"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...genusData,...pluralData,...nDeklData,...nominalisierungData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

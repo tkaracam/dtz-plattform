@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Konjunktiv II (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .sk td{padding:5px 8px;border:1px solid #cdd8eb}
+    .sk td.v{background:#fdebd0;font-weight:700;color:#7a3b0a}
+    .sk td.e{background:#fdebd0;font-weight:700;color:#7a3b0a}
+    .question-list{display:grid;gap:10px;margin-top:10px}
+    .q-card{border:1px solid #d6e2f3;border-radius:12px;padding:12px;background:#fbfdff;display:grid;gap:8px}
+    .q-card.correct{border-color:#b8e3cf;background:#f4fff9}
+    .q-card.wrong{border-color:#f0c8d1;background:#fff7f9}
+    .q-title{margin:0;font-size:1rem;color:#2a466f;font-weight:700}
+    .q-prompt{margin:0;color:#314e77;white-space:pre-line}
+    .opts{display:grid;gap:5px}
+    .opt{border:1px solid #cfdbef;border-radius:10px;background:#fff;padding:8px;display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+    .opt input{margin-top:3px}
+    .opt.correct-answer{border-color:#96cdb5;background:#eefcf4}
+    .solution{margin:0;color:#46658f;font-size:.93rem;display:none}
+    .show-sol .solution{display:block}
+    .actions{margin-top:10px;display:grid;gap:8px}
+    @media(min-width:760px){.actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .result{margin-top:8px;border:1px dashed #c8d7ef;border-radius:10px;padding:10px;color:#314f79;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <h1>Konjunktiv II (B1)</h1>
+    <p style="color:#4a6492">Hätte/wäre/könnte · Höfliche Bitten · sollte · würde gern(e) · Bedingungssätze</p>
+    <div class="back-row"><a class="btn" href="../b1-themen.html">← B1-Themen</a></div>
+  </section>
+
+  <section class="card">
+    <h2>1. Konjunktiv II – Formen</h2>
+    <div class="panel">
+      <table>
+        <tr><th>Person</th><th>haben</th><th>sein</th><th>können</th><th>müssen</th><th>sollen</th><th>würde + Inf.</th></tr>
+        <tr><td>ich</td><td class="hl">hätte</td><td class="hl">wäre</td><td class="hl">könnte</td><td class="hl">müsste</td><td class="hl">sollte</td><td class="hl">würde</td></tr>
+        <tr><td>du</td><td class="hl">hättest</td><td class="hl">wärst</td><td class="hl">könntest</td><td class="hl">müsstest</td><td class="hl">solltest</td><td class="hl">würdest</td></tr>
+        <tr><td>er/sie/es/man</td><td class="hl">hätte</td><td class="hl">wäre</td><td class="hl">könnte</td><td class="hl">müsste</td><td class="hl">sollte</td><td class="hl">würde</td></tr>
+        <tr><td>wir</td><td class="hl">hätten</td><td class="hl">wären</td><td class="hl">könnten</td><td class="hl">müssten</td><td class="hl">sollten</td><td class="hl">würden</td></tr>
+        <tr><td>ihr</td><td class="hl">hättet</td><td class="hl">wärt</td><td class="hl">könntet</td><td class="hl">müsstet</td><td class="hl">solltet</td><td class="hl">würdet</td></tr>
+        <tr><td>sie / Sie</td><td class="hl">hätten</td><td class="hl">wären</td><td class="hl">könnten</td><td class="hl">müssten</td><td class="hl">sollten</td><td class="hl">würden</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Höfliche Bitten</h2>
+    <div class="example"><strong>Könntest</strong> du mir helfen?</div>
+    <div class="example"><strong>Könnten</strong> Sie Frau Abiska einen Schlüssel geben?</div>
+    <div class="example">Entschuldigung, <strong>darf</strong> ich fragen, wie der neue Kollege heißt?</div>
+    <div class="tip">Konjunktiv II von <em>können</em> macht Bitten höflicher: <strong>könnten / könntest</strong></div>
+  </section>
+
+  <section class="card">
+    <h2>3. Ratschläge mit <em>sollte</em></h2>
+    <div class="panel">
+      <table class="sk">
+        <tr><td>Ich</td><td class="v">sollte</td><td>weniger</td><td class="e">rauchen.</td></tr>
+        <tr><td>Du</td><td class="v">solltest</td><td>mehr Sport</td><td class="e">machen.</td></tr>
+        <tr><td>Bei Stress</td><td class="v">sollte</td><td>man sich</td><td class="e">entspannen.</td></tr>
+      </table>
+    </div>
+    <div class="tip"><em>sollte</em> = Konjunktiv II von <em>sollen</em> → Ratschläge und Empfehlungen</div>
+  </section>
+
+  <section class="card">
+    <h2>4. Wunschsätze mit <em>würde gern(e)</em> + Infinitiv</h2>
+    <div class="panel">
+      <table class="sk">
+        <tr><td>Ich</td><td class="v">würde gern(e)</td><td>in Vollzeit</td><td class="e">arbeiten.</td></tr>
+        <tr><td>Sie</td><td class="v">würde gern(e)</td><td>Medizin</td><td class="e">studieren.</td></tr>
+        <tr><td>Wir</td><td class="v">würden gern(e)</td><td>eine Radtour</td><td class="e">machen.</td></tr>
+      </table>
+    </div>
+    <div class="tip">Struktur: <strong>Subjekt + würde(n) gern(e) + … + Infinitiv</strong></div>
+  </section>
+
+  <section class="card">
+    <h2>5. Bedingungssätze mit <em>wenn</em> + Konjunktiv II</h2>
+    <div class="example"><em>Wenn</em> ich morgen frei <strong>hätte</strong>, <strong>würde</strong> ich bis 10 Uhr schlafen.</div>
+    <div class="example">Ich <strong>würde</strong> bis 10 Uhr schlafen, <em>wenn</em> ich morgen frei <strong>hätte</strong>.</div>
+    <div class="tip">Im <em>wenn</em>-Satz: Konjunktiv II → Im Hauptsatz: <strong>würde + Infinitiv</strong></div>
+  </section>
+
+  <section class="card">
+    <h2>Test – 50 Fragen</h2>
+    <div class="actions">
+      <button class="btn primary" onclick="startTest()">Neuen Test starten</button>
+      <button class="btn" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="result" class="result" style="display:none"></div>
+    <div id="qList" class="question-list"></div>
+  </section>
+</main>
+<script>
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+const allQs = [];
+
+// Konjunktiv II forms (20)
+[{p:"ich",v:"haben",a:"hätte",w:["habe","hatte","haben"]},
+ {p:"du",v:"haben",a:"hättest",w:["hast","hattest","hatten"]},
+ {p:"er",v:"haben",a:"hätte",w:["hat","hatte","habe"]},
+ {p:"wir",v:"haben",a:"hätten",w:["haben","hatten","hätte"]},
+ {p:"ihr",v:"haben",a:"hättet",w:["habt","hattet","hätten"]},
+ {p:"ich",v:"sein",a:"wäre",w:["bin","war","sein"]},
+ {p:"du",v:"sein",a:"wärst",w:["bist","warst","wäre"]},
+ {p:"wir",v:"sein",a:"wären",w:["sind","waren","wäre"]},
+ {p:"ich",v:"können",a:"könnte",w:["kann","konnte","können"]},
+ {p:"du",v:"können",a:"könntest",w:["kannst","konntest","könnte"]},
+ {p:"wir",v:"können",a:"könnten",w:["können","konnten","könnte"]},
+ {p:"ich",v:"müssen",a:"müsste",w:["muss","musste","müssen"]},
+ {p:"du",v:"müssen",a:"müsstest",w:["musst","musstest","müsste"]},
+ {p:"wir",v:"müssen",a:"müssten",w:["müssen","mussten","müsste"]},
+ {p:"ich",v:"sollen",a:"sollte",w:["soll","sollte","sollen"]},
+ {p:"du",v:"sollen",a:"solltest",w:["sollst","sollte","sollen"]},
+ {p:"wir",v:"sollen",a:"sollten",w:["sollen","sollte","sollt"]},
+ {p:"ich",v:"würde+Inf.",a:"würde",w:["werde","wurde","werden"]},
+ {p:"wir",v:"würde+Inf.",a:"würden",w:["werden","wurden","würde"]},
+ {p:"ihr",v:"sein",a:"wärt",w:["seid","wart","wären"]},
+].forEach(d=>allQs.push({
+  prompt:`Konjunktiv II: „${d.p} + ${d.v}" → ?`,
+  ans:d.a, opts:shuffle([d.a,...d.w]).slice(0,4), sol:`${d.p} ${d.v} → ${d.a}`
+}));
+
+// sollte-Ratschläge (10)
+[{p:"ich",a:"sollte"},{p:"du",a:"solltest"},{p:"er",a:"sollte"},{p:"wir",a:"sollten"},
+ {p:"ihr",a:"solltet"},{p:"sie",a:"sollten"},{p:"Sie",a:"sollten"},{p:"man",a:"sollte"},
+ {p:"du",a:"solltest"},{p:"ich",a:"sollte"}
+].forEach(d=>allQs.push({
+  prompt:`„${d.p} ___ mehr Sport machen." – Ratschlag?`,
+  ans:d.a, opts:shuffle(["sollte","solltest","sollten","solltet"]),
+  sol:`${d.p} → ${d.a}`
+}));
+
+// würde gern(e) (10)
+[{p:"ich",a:"würde"},{p:"du",a:"würdest"},{p:"er",a:"würde"},{p:"wir",a:"würden"},
+ {p:"ihr",a:"würdet"},{p:"sie (Pl.)",a:"würden"},{p:"Sie",a:"würden"},
+ {p:"ich",a:"würde"},{p:"wir",a:"würden"},{p:"du",a:"würdest"}
+].forEach(d=>allQs.push({
+  prompt:`„${d.p} ___ gern(e) reisen." → ?`,
+  ans:d.a, opts:shuffle(["würde","würdest","würden","würdet"]),
+  sol:`${d.p} → ${d.a} gern(e) + Infinitiv`
+}));
+
+// Bedingungssätze (10)
+[{s:"Wenn ich Zeit ___, würde ich lesen.",a:"hätte",w:["habe","hatte","haben"]},
+ {s:"Wenn sie Geld ___, würde sie reisen.",a:"hätte",w:["hat","hatte","habe"]},
+ {s:"Wenn er frei ___, würde er schlafen.",a:"wäre",w:["ist","war","sein"]},
+ {s:"Wenn wir ein Auto ___, würden wir fahren.",a:"hätten",w:["haben","hatten","hätte"]},
+ {s:"Wenn du krank ___, solltest du schlafen.",a:"wärst",w:["bist","warst","wäre"]},
+ {s:"Wenn ich mehr Geld ___, würde ich reisen.",a:"hätte",w:["habe","hatte","haben"]},
+ {s:"Wenn er früher kommen ___, wäre er pünktlich.",a:"könnte",w:["kann","konnte","können"]},
+ {s:"Wenn wir schneller ___, würden wir gewinnen.",a:"wären",w:["sind","waren","wäre"]},
+ {s:"Wenn sie es wüsste, ___ sie helfen.",a:"könnte",w:["kann","konnte","können"]},
+ {s:"Wenn du fragst, ___ ich antworten.",a:"würde",w:["werde","wird","worden"]},
+].forEach(d=>allQs.push({
+  prompt:d.s,
+  ans:d.a, opts:shuffle([d.a,...d.w]).slice(0,4), sol:`Bedingung → Konjunktiv II: ${d.a}`
+}));
+
+let currentQs=[];
+
+function startTest(){
+  currentQs=shuffle(allQs).slice(0,50);
+  document.getElementById("result").style.display="none";
+  document.getElementById("qList").innerHTML=currentQs.map((q,i)=>{
+    const opts=[...new Set(q.opts.includes(q.ans)?q.opts:[q.ans,...q.opts])].slice(0,4);
+    return `<div class="q-card" id="q${i}">
+      <p class="q-title">Frage ${i+1}</p>
+      <p class="q-prompt">${q.prompt}</p>
+      <div class="opts">${opts.map(o=>`<label class="opt"><input type="radio" name="q${i}" value="${o}"><span>${o}</span></label>`).join("")}</div>
+      <p class="solution">✔ ${q.sol||q.ans}</p>
+    </div>`;
+  }).join("");
+}
+
+function gradeTest(){
+  if(!currentQs.length){alert("Bitte zuerst Test starten.");return;}
+  let c=0,w=0,b=0;
+  currentQs.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`);
+    const sel=card.querySelector(`input[name="q${i}"]:checked`);
+    card.classList.remove("correct","wrong");
+    if(!sel){b++;return;}
+    sel.value===q.ans?c++&&card.classList.add("correct"):(w++,card.classList.add("wrong"));
+  });
+  const r=document.getElementById("result");
+  r.style.display="block";
+  r.textContent=`Ergebnis: ${c} richtig · ${w} falsch · ${b} offen\n${c>=45?"Sehr gut":c>=38?"Gut":c>=28?"Befriedigend":"Weiter üben!"}`;
+}
+
+function showSolutions(){
+  if(!currentQs.length){alert("Bitte zuerst Test starten.");return;}
+  currentQs.forEach((q,i)=>{
+    const card=document.getElementById(`q${i}`);
+    card.classList.add("show-sol");
+    card.querySelectorAll(".opt").forEach(o=>{
+      if(o.querySelector("input").value===q.ans) o.classList.add("correct-answer");
+    });
+  });
+}
+
+startTest();
+</script>
+</body>
+</html>

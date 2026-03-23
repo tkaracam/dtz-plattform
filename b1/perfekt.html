@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perfekt (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Das Perfekt (B1)</h1>
+    <p>Partizip II Bildung, haben/sein Auswahl, unregelmäßige Formen und Satzstellung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Bildung des Partizips II -->
+  <div class="card">
+    <h2>1. Bildung des Partizips II</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Verbtyp</th><th>Muster</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>Regelmäßig</td><td><span class="hl">ge-</span> + Stamm + <span class="hl">-t</span></td><td>machen → <span class="hl">gemacht</span></td></tr>
+          <tr><td>Regelmäßig (-d/-t)</td><td><span class="hl">ge-</span> + Stamm + <span class="hl">-et</span></td><td>arbeiten → <span class="hl">gearbeitet</span></td></tr>
+          <tr><td>Unregelmäßig</td><td><span class="hl">ge-</span> + Stamm (verändert) + <span class="hl">-en</span></td><td>fahren → <span class="hl">gefahren</span></td></tr>
+          <tr><td>Trennbar</td><td>Präfix + <span class="hl">ge-</span> + Stamm + -t/-en</td><td>aufmachen → <span class="hl">aufgemacht</span></td></tr>
+          <tr><td>Untrennbar / -ieren</td><td>Kein <em>ge-</em>!</td><td>verstehen → <span class="hl">verstanden</span>; studieren → <span class="hl">studiert</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. haben oder sein -->
+  <div class="card">
+    <h2>2. <em>haben</em> oder <em>sein</em>?</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>sein</th><th>haben</th></tr></thead>
+        <tbody>
+          <tr><td>Bewegung/Richtungswechsel: <em>gehen, fahren, fliegen, laufen, kommen</em></td><td>Alle anderen Verben mit Akkusativobjekt</td></tr>
+          <tr><td>Zustandsänderung: <em>aufwachen, einschlafen, sterben, werden</em></td><td>Reflexive Verben: <em>sich freuen, sich waschen</em></td></tr>
+          <tr><td>sein, bleiben, werden, passieren</td><td>Modalverben + meiste anderen Verben</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">Ich <span class="hl">bin</span> nach Berlin <span class="hl">gefahren</span>. (Bewegung)<br>Ich <span class="hl">habe</span> ein Buch <span class="hl">gelesen</span>. (mit Objekt)</div>
+  </div>
+
+  <!-- 3. Wichtige unregelmäßige Partizipien -->
+  <div class="card">
+    <h2>3. Wichtige unregelmäßige Partizipien</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Infinitiv</th><th>Partizip II</th><th>Hilfsverb</th></tr></thead>
+        <tbody>
+          <tr><td>gehen</td><td><span class="hl">gegangen</span></td><td>sein</td></tr>
+          <tr><td>kommen</td><td><span class="hl">gekommen</span></td><td>sein</td></tr>
+          <tr><td>fahren</td><td><span class="hl">gefahren</span></td><td>sein</td></tr>
+          <tr><td>fliegen</td><td><span class="hl">geflogen</span></td><td>sein</td></tr>
+          <tr><td>bleiben</td><td><span class="hl">geblieben</span></td><td>sein</td></tr>
+          <tr><td>sehen</td><td><span class="hl">gesehen</span></td><td>haben</td></tr>
+          <tr><td>lesen</td><td><span class="hl">gelesen</span></td><td>haben</td></tr>
+          <tr><td>schreiben</td><td><span class="hl">geschrieben</span></td><td>haben</td></tr>
+          <tr><td>nehmen</td><td><span class="hl">genommen</span></td><td>haben</td></tr>
+          <tr><td>essen</td><td><span class="hl">gegessen</span></td><td>haben</td></tr>
+          <tr><td>trinken</td><td><span class="hl">getrunken</span></td><td>haben</td></tr>
+          <tr><td>sprechen</td><td><span class="hl">gesprochen</span></td><td>haben</td></tr>
+          <tr><td>helfen</td><td><span class="hl">geholfen</span></td><td>haben</td></tr>
+          <tr><td>treffen</td><td><span class="hl">getroffen</span></td><td>haben</td></tr>
+          <tr><td>finden</td><td><span class="hl">gefunden</span></td><td>haben</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Satzstellung -->
+  <div class="card">
+    <h2>4. Satzstellung im Perfekt</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Position 1</th><th>Position 2 (Verb)</th><th>Mitte</th><th>Ende</th></tr></thead>
+        <tbody>
+          <tr><td>Ich</td><td><span class="hl">habe</span></td><td>gestern viel</td><td><span class="hl">gearbeitet</span>.</td></tr>
+          <tr><td>Gestern</td><td><span class="hl">bin</span></td><td>ich früh</td><td><span class="hl">aufgestanden</span>.</td></tr>
+          <tr><td>Wann</td><td><span class="hl">hast</span></td><td>du das Buch</td><td><span class="hl">gelesen</span>?</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Das Hilfsverb (<em>haben/sein</em>) steht auf Position 2, das Partizip II am Satzende.</div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Perfekt – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Form.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const habenSeinData=[
+  {q:"Ich ___ gestern ins Kino gegangen.",a:"bin",w:["bin","habe","war","hatte"]},
+  {q:"Er ___ das Buch gelesen.",a:"hat",w:["hat","ist","hatte","war"]},
+  {q:"Wir ___ nach München gefahren.",a:"sind",w:["sind","haben","waren","hatten"]},
+  {q:"Du ___ viel gearbeitet.",a:"hast",w:["hast","bist","hattest","warst"]},
+  {q:"Sie (Pl.) ___ früh eingeschlafen.",a:"sind",w:["sind","haben","waren","hatten"]},
+  {q:"Ich ___ einen Fehler gemacht.",a:"habe",w:["habe","bin","hatte","war"]},
+  {q:"Er ___ spät nach Hause gekommen.",a:"ist",w:["ist","hat","war","hatte"]},
+  {q:"Wir ___ Pizza gegessen.",a:"haben",w:["haben","sind","hatten","waren"]},
+  {q:"Sie (Sg.) ___ lange geblieben.",a:"ist",w:["ist","hat","war","hatte"]},
+  {q:"Ihr ___ schnell gelaufen.",a:"seid",w:["seid","habt","wart","hattet"]},
+  {q:"Das Kind ___ aufgewacht.",a:"ist",w:["ist","hat","war","hatte"]},
+  {q:"Ich ___ ihn getroffen.",a:"habe",w:["habe","bin","hatte","war"]},
+  {q:"Er ___ eingeschlafen.",a:"ist",w:["ist","hat","war","hatte"]},
+  {q:"Wir ___ den Film gesehen.",a:"haben",w:["haben","sind","hatten","waren"]},
+  {q:"Sie (Pl.) ___ geflogen.",a:"sind",w:["sind","haben","waren","hatten"]},
+];
+
+const partizipData=[
+  {q:"Ich habe gestern viel ___ (essen).",a:"gegessen",w:["gegessen","geessen","geisst","ißt"]},
+  {q:"Er ist nach Berlin ___ (fahren).",a:"gefahren",w:["gefahren","fahrt","gefahrt","fuhr"]},
+  {q:"Wir haben das Buch ___ (lesen).",a:"gelesen",w:["gelesen","gelест","gelest","liest"]},
+  {q:"Du hast einen Brief ___ (schreiben).",a:"geschrieben",w:["geschrieben","geschreiben","schrieb","schreibt"]},
+  {q:"Sie hat Kaffee ___ (trinken).",a:"getrunken",w:["getrunken","getrinkt","tranktes","trinkte"]},
+  {q:"Ich habe mit ihm ___ (sprechen).",a:"gesprochen",w:["gesprochen","gesprechen","sprichst","sprach"]},
+  {q:"Wir sind früh ___ (aufstehen).",a:"aufgestanden",w:["aufgestanden","aufgestehnt","aufstanden","aufsteht"]},
+  {q:"Er hat das Fenster ___ (aufmachen).",a:"aufgemacht",w:["aufgemacht","gemacht auf","aufmacht","aufgemaking"]},
+  {q:"Sie hat Deutsch ___ (studieren).",a:"studiert",w:["studiert","gestudiert","studierte","studirte"]},
+  {q:"Er hat das Buch ___ (verstehen).",a:"verstanden",w:["verstanden","verstehnt","geverstanden","verstand"]},
+  {q:"Wir haben Fußball ___ (spielen).",a:"gespielt",w:["gespielt","gespielen","spielt","spielte"]},
+  {q:"Ich bin nach Hause ___ (gehen).",a:"gegangen",w:["gegangen","gegehnt","ging","geht"]},
+  {q:"Er hat mir ___ (helfen).",a:"geholfen",w:["geholfen","gehelfen","hilft","half"]},
+  {q:"Sie sind in Berlin ___ (bleiben).",a:"geblieben",w:["geblieben","gebleibt","blieb","bleibt"]},
+  {q:"Ich habe ihn ___ (treffen).",a:"getroffen",w:["getroffen","getrefft","traf","trifft"]},
+];
+
+const satzstellungData=[
+  {q:"Was ___ du heute ___ ?  (kaufen)",a:"hast … gekauft",w:["hast … gekauft","bist … gekauft","hast … kaufte","hattest … kaufen"]},
+  {q:"Wann ___ er nach Hause ___ ? (kommen)",a:"ist … gekommen",w:["ist … gekommen","hat … gekommen","ist … kam","war … gekommen"]},
+  {q:"Warum ___ ihr so früh ___ ? (gehen)",a:"seid … gegangen",w:["seid … gegangen","habt … gegangen","seid … gegehnt","wart … gegangen"]},
+  {q:"Ich ___ gestern nicht ___ . (schlafen)",a:"habe … geschlafen",w:["habe … geschlafen","bin … geschlafen","hatte … geschlafen","war … geschlafen"]},
+  {q:"Wie lange ___ du dort ___ ? (bleiben)",a:"bist … geblieben",w:["bist … geblieben","hast … geblieben","warst … geblieben","bist … blieb"]},
+  {q:"Er ___ das Auto ___ . (reparieren)",a:"hat … repariert",w:["hat … repariert","ist … repariert","hatte … repariert","hat … gerepariert"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...habenSeinData,...partizipData,...satzstellungData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

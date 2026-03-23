@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Präteritum (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Das Präteritum (B1)</h1>
+    <p>Regelmäßige und unregelmäßige Verben im Präteritum – Bildung und Gebrauch.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Regelmäßige Verben -->
+  <div class="card">
+    <h2>1. Regelmäßige Verben – Endungen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>Endung</th><th>machen</th><th>arbeiten</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td>-te</td><td>mach<span class="hl">te</span></td><td>arbeit<span class="hl">ete</span></td></tr>
+          <tr><td>du</td><td>-test</td><td>mach<span class="hl">test</span></td><td>arbeit<span class="hl">etest</span></td></tr>
+          <tr><td>er/sie/es</td><td>-te</td><td>mach<span class="hl">te</td><td>arbeit<span class="hl">ete</span></td></tr>
+          <tr><td>wir</td><td>-ten</td><td>mach<span class="hl">ten</span></td><td>arbeit<span class="hl">eten</span></td></tr>
+          <tr><td>ihr</td><td>-tet</td><td>mach<span class="hl">tet</span></td><td>arbeit<span class="hl">etet</span></td></tr>
+          <tr><td>sie/Sie</td><td>-ten</td><td>mach<span class="hl">ten</span></td><td>arbeit<span class="hl">eten</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Bei Verben auf <em>-d, -t, -fn, -gn, -chn, -tm</em> wird ein <em>-e-</em> eingefügt: arbeit → arbeitete.</div>
+  </div>
+
+  <!-- 2. Unregelmäßige Verben -->
+  <div class="card">
+    <h2>2. Unregelmäßige Verben – Stammvokalwechsel</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Infinitiv</th><th>Stamm (Prät.)</th><th>ich</th><th>er/sie/es</th><th>wir/sie/Sie</th></tr></thead>
+        <tbody>
+          <tr><td>gehen</td><td>ging-</td><td>ging</td><td>ging</td><td>gingen</td></tr>
+          <tr><td>kommen</td><td>kam-</td><td>kam</td><td>kam</td><td>kamen</td></tr>
+          <tr><td>fahren</td><td>fuhr-</td><td>fuhr</td><td>fuhr</td><td>fuhren</td></tr>
+          <tr><td>sehen</td><td>sah-</td><td>sah</td><td>sah</td><td>sahen</td></tr>
+          <tr><td>nehmen</td><td>nahm-</td><td>nahm</td><td>nahm</td><td>nahmen</td></tr>
+          <tr><td>schreiben</td><td>schrieb-</td><td>schrieb</td><td>schrieb</td><td>schrieben</td></tr>
+          <tr><td>sprechen</td><td>sprach-</td><td>sprach</td><td>sprach</td><td>sprachen</td></tr>
+          <tr><td>lesen</td><td>las-</td><td>las</td><td>las</td><td>lasen</td></tr>
+          <tr><td>essen</td><td>aß-</td><td>aß</td><td>aß</td><td>aßen</td></tr>
+          <tr><td>trinken</td><td>trank-</td><td>trank</td><td>trank</td><td>tranken</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Ich/er/sie/es haben bei unregelmäßigen Verben keine Endung im Präteritum!</div>
+  </div>
+
+  <!-- 3. sein und haben -->
+  <div class="card">
+    <h2>3. sein und haben im Präteritum</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>sein</th><th>haben</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td><span class="hl">war</span></td><td><span class="hl">hatte</span></td></tr>
+          <tr><td>du</td><td>warst</td><td>hattest</td></tr>
+          <tr><td>er/sie/es</td><td>war</td><td>hatte</td></tr>
+          <tr><td>wir</td><td>waren</td><td>hatten</td></tr>
+          <tr><td>ihr</td><td>wart</td><td>hattet</td></tr>
+          <tr><td>sie/Sie</td><td>waren</td><td>hatten</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Modalverben im Präteritum -->
+  <div class="card">
+    <h2>4. Modalverben im Präteritum</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Infinitiv</th><th>ich/er/sie/es</th><th>wir/sie/Sie</th><th>du</th></tr></thead>
+        <tbody>
+          <tr><td>können</td><td>konn<span class="hl">te</span></td><td>konn<span class="hl">ten</span></td><td>konn<span class="hl">test</span></td></tr>
+          <tr><td>müssen</td><td>muss<span class="hl">te</span></td><td>muss<span class="hl">ten</span></td><td>muss<span class="hl">test</span></td></tr>
+          <tr><td>wollen</td><td>woll<span class="hl">te</span></td><td>woll<span class="hl">ten</span></td><td>woll<span class="hl">test</span></td></tr>
+          <tr><td>dürfen</td><td>durf<span class="hl">te</span></td><td>durf<span class="hl">ten</span></td><td>durf<span class="hl">test</span></td></tr>
+          <tr><td>sollen</td><td>soll<span class="hl">te</span></td><td>soll<span class="hl">ten</span></td><td>soll<span class="hl">test</span></td></tr>
+          <tr><td>mögen</td><td>moch<span class="hl">te</span></td><td>moch<span class="hl">ten</span></td><td>moch<span class="hl">test</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Modalverben verlieren im Präteritum den Umlaut: können → <em>konn</em>te, müssen → <em>muss</em>te.</div>
+    <div class="example">Er <span class="hl">konnte</span> nicht schlafen. / Wir <span class="hl">mussten</span> früh aufstehen.</div>
+  </div>
+
+  <!-- 5. Wann Präteritum? -->
+  <div class="card">
+    <h2>5. Präteritum oder Perfekt?</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Präteritum</th><th>Perfekt</th></tr></thead>
+        <tbody>
+          <tr><td>Schriftsprache, Erzählungen, Berichte</td><td>Mündliche Kommunikation</td></tr>
+          <tr><td>sein, haben, Modalverben → immer Prät.</td><td>Alle anderen Verben → meist Perfekt</td></tr>
+          <tr><td><em>Es war einmal ein König …</em></td><td><em>Ich habe gestern geschlafen.</em></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Präteritum – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Form.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const regelData = [
+  {q:"Gestern ___ (spielen) wir Fußball.",a:"spielten",w:["spielten","spieltest","spielte","spielte"]},
+  {q:"Er ___ (arbeiten) bis 20 Uhr.",a:"arbeitete",w:["arbeitete","arbeitete","arbeiteten","arbeitet"]},
+  {q:"Ich ___ (kaufen) ein neues Buch.",a:"kaufte",w:["kaufte","kauftest","kauften","kaufen"]},
+  {q:"Wir ___ (wohnen) früher in Berlin.",a:"wohnten",w:["wohnten","wohnte","wohntest","wohnen"]},
+  {q:"Sie (Sg.) ___ (kochen) jeden Tag.",a:"kochte",w:["kochte","kochten","kochtest","kocht"]},
+  {q:"Ihr ___ (lernen) fleißig.",a:"lerntet",w:["lerntet","lernten","lernte","lerntest"]},
+  {q:"Du ___ (sagen) nichts.",a:"sagtest",w:["sagtest","sagte","sagten","sagt"]},
+  {q:"Er ___ (warten) eine Stunde.",a:"wartete",w:["wartete","warteten","wartest","warten"]},
+  {q:"Wir ___ (machen) viele Fehler.",a:"machten",w:["machten","machte","machtest","machen"]},
+  {q:"Ich ___ (lieben) diesen Film.",a:"liebte",w:["liebte","liebtest","liebten","liebe"]},
+];
+
+const unregelData = [
+  {q:"Er ___ (gehen) ins Kino.",a:"ging",w:["ging","gegangen","geht","gingen"]},
+  {q:"Wir ___ (kommen) zu spät.",a:"kamen",w:["kamen","kam","kommen","gekommen"]},
+  {q:"Ich ___ (sehen) einen Unfall.",a:"sah",w:["sah","gesehen","sahen","sehe"]},
+  {q:"Sie (Pl.) ___ (fahren) nach München.",a:"fuhren",w:["fuhren","fuhr","fahren","gefahren"]},
+  {q:"Er ___ (lesen) das Buch.",a:"las",w:["las","gelesen","lasen","liest"]},
+  {q:"Du ___ (schreiben) einen Brief.",a:"schriebst",w:["schriebst","schrieb","schrieben","geschrieben"]},
+  {q:"Wir ___ (sprechen) über das Problem.",a:"sprachen",w:["sprachen","sprach","sprechen","gesprochen"]},
+  {q:"Ich ___ (nehmen) den Bus.",a:"nahm",w:["nahm","genommen","nahmen","nehme"]},
+  {q:"Er ___ (essen) zu viel.",a:"aß",w:["aß","gegessen","aßen","isst"]},
+  {q:"Sie (Sg.) ___ (trinken) Kaffee.",a:"trank",w:["trank","tranken","getrunken","trinkt"]},
+  {q:"Ich ___ (gehen) zur Arbeit.",a:"ging",w:["ging","gingen","gegangen","gehe"]},
+  {q:"Er ___ (kommen) spät nach Hause.",a:"kam",w:["kam","kamen","gekommen","kommt"]},
+  {q:"Wir ___ (sehen) den Film.",a:"sahen",w:["sahen","sah","sehen","gesehen"]},
+  {q:"Du ___ (fahren) zu schnell.",a:"fuhrst",w:["fuhrst","fuhr","fuhren","gefahren"]},
+  {q:"Er ___ (nehmen) die Treppe.",a:"nahm",w:["nahm","nahmen","genommen","nimmt"]},
+];
+
+const seinHabenData = [
+  {q:"Ich ___ gestern krank.",a:"war",w:["war","hatte","bin","habe"]},
+  {q:"Wir ___ Hunger.",a:"hatten",w:["hatten","waren","haben","sind"]},
+  {q:"Er ___ müde.",a:"war",w:["war","hatte","ist","hat"]},
+  {q:"Sie (Pl.) ___ keine Zeit.",a:"hatten",w:["hatten","waren","haben","sind"]},
+  {q:"Du ___ in der Schule.",a:"warst",w:["warst","hattest","bist","hast"]},
+  {q:"Ihr ___ recht.",a:"hattet",w:["hattet","wart","habt","seid"]},
+  {q:"Ich ___ kein Geld.",a:"hatte",w:["hatte","war","habe","bin"]},
+  {q:"Es ___ sehr kalt.",a:"war",w:["war","hatte","ist","hat"]},
+];
+
+const modalData = [
+  {q:"Er ___ nicht kommen.",a:"konnte",w:["konnte","musste","wollte","durfte"]},
+  {q:"Wir ___ früh aufstehen.",a:"mussten",w:["mussten","konnten","wollten","sollten"]},
+  {q:"Ich ___ nicht lügen.",a:"durfte",w:["durfte","konnte","musste","wollte"]},
+  {q:"Sie (Sg.) ___ helfen.",a:"wollte",w:["wollte","konnte","musste","durfte"]},
+  {q:"Du ___ leiser sein.",a:"solltest",w:["solltest","konntest","musstest","wolltest"]},
+  {q:"Wir ___ früher kochen.",a:"wollten",w:["wollten","konnten","mussten","durften"]},
+  {q:"Er ___ das nicht wissen.",a:"mochte",w:["mochte","konnte","musste","wollte"]},
+];
+
+let allQ = [];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...regelData,...unregelData,...seinHabenData,...modalData];
+  allQ = shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>
