@@ -3568,6 +3568,18 @@
                   <div id="portalLesenHomeworkWrap" class="portal-list">Keine Lesen-Aufgaben vorhanden.</div>
                 </div>
               </details>
+              <details id="portalA1HomeworkAccordion" class="card-accordion" style="margin-top:12px;">
+                <summary class="card-accordion-summary">
+                  <div class="title-wrap">
+                    <h3 style="margin:0;">A1-Themen <span id="portalA1TaskNotifyBadge" class="task-notify-badge hidden">0</span></h3>
+                    <p class="section-subtitle">Zugewiesenen A1-Test öffnen und direkt lösen.</p>
+                  </div>
+                  <span class="card-accordion-icon">▾</span>
+                </summary>
+                <div class="card-accordion-body">
+                  <div id="portalA1HomeworkWrap" class="portal-list">Keine A1-Aufgaben vorhanden.</div>
+                </div>
+              </details>
               <details id="portalA2HomeworkAccordion" class="card-accordion" style="margin-top:12px;">
                 <summary class="card-accordion-summary">
                   <div class="title-wrap">
@@ -3879,6 +3891,41 @@
             <button id="a2SubmitBtn" type="button" class="dtz-submit-btn" disabled>ABGEBEN</button>
           </div>
         </div>
+      </section>
+
+      <section id="a1EmbedCard" class="card hidden">
+        <h2 class="section-title">A1-Themen</h2>
+        <div class="a2-toolbar">
+          <div class="a2-controls">
+            <div>
+              <label for="a1TopicSelect">Thema</label>
+              <select id="a1TopicSelect">
+                <option value="praesens">Verben im Präsens</option>
+                <option value="sein-haben">sein und haben</option>
+                <option value="pronomen">Personalpronomen</option>
+                <option value="artikel">Artikel (der, die, das)</option>
+                <option value="unbestimmte-artikel">Unbestimmte Artikel</option>
+                <option value="negation">Negation (nicht/kein)</option>
+                <option value="w-fragen">W-Fragen</option>
+                <option value="ja-nein-fragen">Ja/Nein-Fragen</option>
+                <option value="possessivartikel">Possessivartikel</option>
+                <option value="modalverben">Modalverben</option>
+                <option value="akkusativ">Akkusativ</option>
+                <option value="adjektive">Adjektive</option>
+                <option value="trennbare-verben">Trennbare Verben</option>
+                <option value="imperativ">Imperativ</option>
+                <option value="uhrzeit-datum">Uhrzeit und Datum</option>
+                <option value="praepositionen">Präpositionen</option>
+                <option value="satzstellung">Satzstellung</option>
+              </select>
+            </div>
+          </div>
+          <div class="btn-wrap">
+            <button id="a1StartBtn" type="button">Thema öffnen</button>
+          </div>
+        </div>
+        <div id="a1Status" class="hidden"></div>
+        <p class="section-subtitle" style="margin-top:12px;">Das Thema wird in einem neuen Tab geöffnet. Bearbeiten Sie den Test und kommen Sie danach hierher zurück.</p>
       </section>
 
       <section id="dtzHubCard" class="card hidden">
@@ -6061,7 +6108,7 @@
       return arr;
     }
 
-    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "a2EmbedCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
+    const MAIN_CARDS = ["workCard", "portalCard", "roomCard", "simulationCard", "speakingCard", "niveauCard", "a1EmbedCard", "a2EmbedCard", "dtzHubCard", "dtzTrainingCard", "lidClassicCard"];
 
     function hideMainCards() {
       MAIN_CARDS.forEach(id => {
@@ -6113,6 +6160,7 @@
         simulation: "simulationCard",
         lid: "lidClassicCard",
         niveau: "niveauCard",
+        a1: "a1EmbedCard",
         a2: "a2EmbedCard",
         dtz: "dtzHubCard",
         speaking: "speakingCard"
@@ -10278,6 +10326,7 @@
       teacherNotes: "portalTeacherNotesAccordion",
       hoerenHomework: "portalHoerenHomeworkAccordion",
       lesenHomework: "portalLesenHomeworkAccordion",
+      a1Homework: "portalA1HomeworkAccordion",
       a2Homework: "portalA2HomeworkAccordion",
       modelltestHomework: "portalModelltestHomeworkAccordion",
       write: "portalWriteAccordion",
@@ -10289,7 +10338,7 @@
     }
 
     function setPortalQuickActive(panel) {
-      const quickPanel = ["hoerenHomework", "lesenHomework", "a2Homework", "modelltestHomework"].includes(panel) ? "homework" : panel;
+      const quickPanel = ["hoerenHomework", "lesenHomework", "a1Homework", "a2Homework", "modelltestHomework"].includes(panel) ? "homework" : panel;
       const mapping = {
         homework: "portalQuickHomeworkBtn",
         write: "portalQuickWriteBtn",
@@ -10562,7 +10611,7 @@
         requested = "";
       }
       if (!requested) return;
-      const allowed = new Set(["portal", "niveau", "dtz", "lid", "speaking", "a2", "write", "dtz-hoeren", "dtz-lesen"]);
+      const allowed = new Set(["portal", "niveau", "dtz", "lid", "speaking", "a1", "a2", "write", "dtz-hoeren", "dtz-lesen"]);
       if (!allowed.has(requested)) return;
       navigateToSection(requested);
     }
@@ -12304,6 +12353,7 @@
         mail: { pending: 0, urgent: 0 },
         hoeren: { pending: 0, urgent: 0 },
         lesen: { pending: 0, urgent: 0 },
+        a1: { pending: 0, urgent: 0 },
         a2: { pending: 0, urgent: 0 },
         modelltest: { pending: 0, urgent: 0 }
       };
@@ -12314,7 +12364,7 @@
         if (category === "unknown") return;
         const key = category === "hoeren"
           ? "hoeren"
-          : (category === "lesen" ? "lesen" : (category === "a2" ? "a2" : (category === "modelltest" ? "modelltest" : "mail")));
+          : (category === "lesen" ? "lesen" : (category === "a1" ? "a1" : (category === "a2" ? "a2" : (category === "modelltest" ? "modelltest" : "mail"))));
         counts[key].pending += 1;
         const level = String((row && row.reminder_level) || "").toLowerCase();
         if (level === "warn2" || level === "expired") {
@@ -12327,6 +12377,7 @@
         { id: "portalTaskNotifyBadge", key: "mail", label: "Mail-Aufgabe" },
         { id: "portalHoerenTaskNotifyBadge", key: "hoeren", label: "Hören" },
         { id: "portalLesenTaskNotifyBadge", key: "lesen", label: "Lesen" },
+        { id: "portalA1TaskNotifyBadge", key: "a1", label: "A1-Themen" },
         { id: "portalA2TaskNotifyBadge", key: "a2", label: "A2-Themen" },
         { id: "portalModelltestTaskNotifyBadge", key: "modelltest", label: "Modelltest" }
       ];
@@ -12389,6 +12440,7 @@
         || templateId.includes("mock-pruefung")
         || templateId.includes("mock-prüfung")
       ) return "modelltest";
+      if (templateId.startsWith("a1-test-")) return "a1";
       if (templateId.startsWith("a2-thema-") || templateId.startsWith("a2-test-") || templateId.startsWith("a2-test-generator-")) return "a2";
       const title = String(row && row.title ? row.title : "");
       const description = String(row && row.description ? row.description : "");
@@ -12400,8 +12452,10 @@
       if (/^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/.test(titleLower)) return "modelltest";
       if (/^h[öo]ren\b/.test(titleLower) || /h[öo]ren\s*teil\s*[1-4]/.test(titleLower)) return "hoeren";
       if (/^lesen\b/.test(titleLower) || /lesen\s*teil\s*[1-5]/.test(titleLower)) return "lesen";
+      if (/^a1\b|^a1-/.test(titleLower) || titleLower.includes("a1-grammatik") || titleLower.includes("a1-test")) return "a1";
       if (/^a2\b|^a2-/.test(titleLower) || titleLower.includes("a2-grammatik")) return "a2";
 
+      if (bag.includes("a1-test")) return "a1";
       if (bag.includes("a2")) return "a2";
       if (bag.includes("modelltest") || bag.includes("mock-prüfung") || bag.includes("mock-pruefung")) return "modelltest";
       if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
@@ -12572,6 +12626,26 @@
       openA2ThemesInApp(parsed.url);
     }
 
+    function openHomeworkA1Task(assignment) {
+      const row = assignment && typeof assignment === "object" ? assignment : {};
+      const blockedReason = getHomeworkOpenBlockReason(row);
+      if (blockedReason) {
+        setStatus("error", blockedReason, "portalStatus");
+        return;
+      }
+      const assignmentId = String(row.id || "").trim();
+      if (assignmentId && isClientSolvedAssignment(assignmentId)) {
+        setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
+        return;
+      }
+      const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
+      if (!attachment) {
+        setStatus("error", "Für diese Aufgabe ist kein A1-Test-Link hinterlegt.", "portalStatus");
+        return;
+      }
+      window.open(attachment, "_blank", "noopener");
+    }
+
     function inferA2TopicsFromAssignment(row) {
       const parsed = parseA2HomeworkTemplate(row);
       if (parsed && parsed.url) {
@@ -12637,6 +12711,7 @@
     function renderPortalHomeworksGrouped(homeworks) {
       const hoerenWrap = document.getElementById("portalHoerenHomeworkWrap");
       const lesenWrap = document.getElementById("portalLesenHomeworkWrap");
+      const a1Wrap = document.getElementById("portalA1HomeworkWrap");
       const a2Wrap = document.getElementById("portalA2HomeworkWrap");
       const mailWrap = document.getElementById("portalMailHomeworkWrap");
       const modelltestWrap = document.getElementById("portalModelltestHomeworkWrap");
@@ -12644,6 +12719,7 @@
       if (!rows.length) {
         if (hoerenWrap) hoerenWrap.textContent = "Keine Hören-Aufgaben vorhanden.";
         if (lesenWrap) lesenWrap.textContent = "Keine Lesen-Aufgaben vorhanden.";
+        if (a1Wrap) a1Wrap.textContent = "Keine A1-Aufgaben vorhanden.";
         if (a2Wrap) a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
         if (mailWrap) mailWrap.textContent = "Keine Mail-Aufgaben vorhanden.";
         if (modelltestWrap) modelltestWrap.textContent = "Keine Modelltest-Aufgaben vorhanden.";
@@ -12653,6 +12729,7 @@
       const grouped = {
         hoeren: [],
         lesen: [],
+        a1: [],
         a2: [],
         mail: [],
         modelltest: [],
@@ -12690,6 +12767,9 @@
         const dtzOpenAction = parsedTemplate
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-dtz-teil="${escapeHtml(String(row.template_id || ""))}" data-open-hw-assignment="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : `${parsedTemplate.module === "lesen" ? "Lesen" : "Hören"} Teil ${parsedTemplate.teil} öffnen`}</button></div>`
           : "";
+        const a1OpenAction = !parsedTemplate && category === "a1"
+          ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a1-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "A1-Test öffnen"}</button></div>`
+          : "";
         const a2OpenAction = !parsedTemplate && category === "a2"
           ? `<div class="row-end" style="margin-top:8px;"><button type="button" class="${isDone ? "task-solved-btn" : "portal-open-btn"}" ${isDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-homework="${escapeHtml(String(row.id || ""))}">${isDone ? "Gelöst" : "A2-Test öffnen"}</button></div>`
           : "";
@@ -12711,6 +12791,7 @@
             <div>Dauer: ${escapeHtml(formatDurationMinutes(row.duration_minutes))} | Fällig: ${escapeHtml(formatDisplayDate(String(row.due_date || "")) || "-")} | Status: ${escapeHtml(row.status_label || row.status || "offen")}</div>
             <span class="portal-reminder">Start: ${escapeHtml(startsAtLabel)}<br>Ende: ${escapeHtml(endsAtLabel)}</span>
             ${dtzOpenAction}
+            ${a1OpenAction}
             ${a2OpenAction}
             ${mailOpenAction}
             ${schreibenOpenAction}
@@ -12739,6 +12820,20 @@
             openHomeworkDtzTeil(templateId, assignmentId, homeworkRowById.get(assignmentId) || null);
           });
         });
+      }
+      if (a1Wrap) {
+        if (!grouped.a1.length) {
+          a1Wrap.textContent = "Keine A1-Aufgaben vorhanden.";
+        } else {
+          a1Wrap.innerHTML = grouped.a1.map(itemHtml).join("");
+          a1Wrap.querySelectorAll("[data-open-a1-homework]").forEach(btn => {
+            btn.addEventListener("click", () => {
+              if (btn.hasAttribute("disabled")) return;
+              const assignmentId = String(btn.getAttribute("data-open-a1-homework") || "").trim();
+              openHomeworkA1Task(homeworkRowById.get(assignmentId) || null);
+            });
+          });
+        }
       }
       if (a2Wrap) {
         if (!grouped.a2.length) {
@@ -12838,6 +12933,8 @@
         openPortalPanel("hoerenHomework", false);
       } else if (assigned && assigned.module === "lesen") {
         openPortalPanel("lesenHomework", false);
+      } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a1" && !isHomeworkRowSolved(row))) {
+        openPortalPanel("a1Homework", false);
       } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "a2" && !isHomeworkRowSolved(row))) {
         openPortalPanel("a2Homework", false);
       } else if (homeworks.some(row => detectStudentHomeworkCategory(row) === "mail" && !isHomeworkRowSolved(row))) {
@@ -14492,7 +14589,14 @@
     }
     const niveauA1Btn = document.getElementById("niveauA1Btn");
     if (niveauA1Btn) niveauA1Btn.addEventListener("click", () => {
-      window.location.href = "./a1-themen.html";
+      navigateToSection("a1");
+      setHomeDashboardSection("niveau");
+    });
+    const a1StartBtn = document.getElementById("a1StartBtn");
+    if (a1StartBtn) a1StartBtn.addEventListener("click", () => {
+      const select = document.getElementById("a1TopicSelect");
+      const topic = String(select?.value || "praesens");
+      window.open(`/a1/${topic}.html`, "_blank", "noopener");
     });
     const niveauA2Btn = document.getElementById("niveauA2Btn");
     if (niveauA2Btn) niveauA2Btn.addEventListener("click", () => {
