@@ -6406,7 +6406,7 @@
         const solutionMode = !!q.solutionMode;
         const inputsLocked = !!currentA2State.submitted;
         const optionsHtml = q.options.map((opt, optIndex) => {
-          const checked = Number(q.selected) === optIndex ? "checked" : "";
+          const checked = q.selected !== null && Number(q.selected) === optIndex ? "checked" : "";
           const disabledAttr = inputsLocked ? "disabled" : "";
           const letter = String.fromCharCode(65 + optIndex);
           const isSolutionCorrect = solutionMode && String(opt) === String(q.answer);
