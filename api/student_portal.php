@@ -90,12 +90,18 @@ function detect_student_homework_category(array $assignment): string
     ) {
         return 'modelltest';
     }
+    if (strpos($templateId, 'a1-test-') === 0) {
+        return 'a1';
+    }
     if (
         strpos($templateId, 'a2-thema-') === 0
         || strpos($templateId, 'a2-test-') === 0
         || strpos($templateId, 'a2-test-generator-') === 0
     ) {
         return 'a2';
+    }
+    if (strpos($templateId, 'b1-test-') === 0) {
+        return 'b1';
     }
 
     $title = mb_strtolower(trim((string)($assignment['title'] ?? '')));
