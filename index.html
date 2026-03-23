@@ -12476,7 +12476,7 @@
 
     function detectStudentHomeworkCategory(row) {
       const serverCategory = String(row && row.category ? row.category : "").toLowerCase();
-      if (["hoeren", "lesen", "a2", "mail", "modelltest", "schreiben", "unknown"].includes(serverCategory)) {
+      if (["hoeren", "lesen", "a1", "a2", "b1", "mail", "modelltest", "schreiben", "unknown"].includes(serverCategory)) {
         return serverCategory;
       }
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
