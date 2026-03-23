@@ -115,6 +115,32 @@ if (!write_homework_assignments($items)) {
     exit;
 }
 
+// Skor verisi varsa homework_attempts.jsonl dosyasına yaz
+$correct = isset($body['correct']) ? max(0, (int)$body['correct']) : null;
+$wrong = isset($body['wrong']) ? max(0, (int)$body['wrong']) : null;
+$total = isset($body['total']) ? max(0, (int)$body['total']) : null;
+$unanswered = isset($body['unanswered']) ? max(0, (int)$body['unanswered']) : null;
+$elapsedSeconds = isset($body['elapsed_seconds']) ? max(0, (int)$body['elapsed_seconds']) : null;
+
+if ($total !== null && $total > 0) {
+    $attemptRecord = [
+        'assignment_id' => $assignmentId,
+        'student_username' => $username,
+        'attempted_at' => $submittedAt,
+        'correct' => $correct ?? 0,
+        'wrong' => $wrong ?? 0,
+        'total' => $total,
+        'unanswered' => $unanswered ?? 0,
+        'elapsed_seconds' => $elapsedSeconds ?? 0,
+    ];
+    $attemptsFile = __DIR__ . '/storage/homework_attempts.jsonl';
+    $dir = dirname($attemptsFile);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0775, true);
+    }
+    file_put_contents($attemptsFile, json_encode($attemptRecord, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND | LOCK_EX);
+}
+
 append_audit_log('homework_complete', [
     'assignment_id' => $assignmentId,
     'username' => $username,
