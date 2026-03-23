@@ -14528,6 +14528,23 @@
       ensureUsableMainView();
       window.setTimeout(ensureUsableMainView, 500);
     });
+
+    // Scroll-to-top button
+    (function() {
+      const btn = document.createElement("button");
+      btn.id = "scrollToTopBtn";
+      btn.innerHTML = "&#8679;";
+      btn.title = "Nach oben";
+      btn.style.cssText = "position:fixed;bottom:1.2rem;left:1.2rem;z-index:9999;width:2.8rem;height:2.8rem;border-radius:50%;border:none;background:#4f8ef7;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);opacity:0;transition:opacity .25s;display:flex;align-items:center;justify-content:center;";
+      document.body.appendChild(btn);
+      window.addEventListener("scroll", function() {
+        btn.style.opacity = window.scrollY > 200 ? "1" : "0";
+        btn.style.pointerEvents = window.scrollY > 200 ? "auto" : "none";
+      }, { passive: true });
+      btn.addEventListener("click", function() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    })();
   </script>
 </body>
 </html>
