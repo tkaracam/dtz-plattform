@@ -81,21 +81,26 @@
     }
 
     .top-nav {
-      position: sticky;
+      position: fixed;
       top: 10px;
-      z-index: 40;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1180px, calc(100% - 1rem));
+      z-index: 100;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
       padding: 10px 12px;
       border-radius: 14px;
       border: 1px solid #e7d6de;
       background: rgba(255, 255, 255, 0.92);
       box-shadow: 0 10px 24px rgba(59, 52, 66, 0.1);
       backdrop-filter: blur(8px);
-      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .container {
+      padding-top: 72px;
     }
 
     .nav-brand {
@@ -3215,6 +3220,8 @@
 
       .top-nav {
         padding: 8px 9px;
+        top: 6px;
+        width: calc(100% - 0.75rem);
       }
 
       .nav-brand img {
