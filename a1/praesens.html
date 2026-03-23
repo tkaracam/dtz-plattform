@@ -1,103 +1,278 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verben im Präsens - A1</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verben im Präsens – A1 | DTZ-LiD</title>
   <style>
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype"); font-weight: 300; font-style: normal; font-display: swap; }
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
-    :root { --panel:#ffffff; --line:#d9e1ef; --text:#1f2f46; --muted:#5f6f88; }
+    :root { --bg:#f5f7fb; --card:#fff; --line:#d5deed; --text:#273650; --muted:#61779a; --ok:#117a53; --bad:#b7485e; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:"Comfortaa","Trebuchet MS",sans-serif; background: linear-gradient(180deg,#f8fbff 0%,#f1f5fb 100%); color:var(--text); line-height:1.45; }
-    .container { width:min(1180px, calc(100% - 1rem)); max-width:100%; margin:22px auto 30px; }
-    .top-nav { position:sticky; top:10px; z-index:40; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; padding:10px 12px; border-radius:14px; border:1px solid #e7d6de; background: rgba(255,255,255,0.92); box-shadow:0 10px 24px rgba(59,52,66,0.1); backdrop-filter: blur(8px); max-width:100%; }
-    .nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; color:#4a4454; letter-spacing:0.02em; white-space:nowrap; min-width:0; text-decoration:none; }
-    .nav-brand img { width:auto; height:27px; max-width:46vw; display:block; }
-    .nav-right { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; position:relative; }
-    .nav-links { display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:45; align-items:stretch; gap:8px; flex-direction:column; min-width:210px; padding:8px; border-radius:12px; border:1px solid #e7d6de; background: rgba(255,255,255,0.98); box-shadow:0 12px 24px rgba(59,52,66,0.14); order:1; }
-    .top-nav.open .nav-links { display:flex; }
-    .nav-link { width:100%; min-width:0; border-radius:999px; padding:8px 12px; border:1px solid #e6cfda; background:#fff7fa; color:#6f4f5f; text-transform:none; letter-spacing:0; font-size:0.9rem; box-shadow:none; text-decoration:none; text-align:center; font-weight:700; }
-    .nav-link:hover { color:#f2849e; border-color:#f2b7c9; }
-    .nav-toggle { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:40px; height:36px; border-radius:12px; border:1px solid #e6cfda; background:#fff7fa; font-size:1.1rem; color:#6f4f5f; cursor:pointer; }
-    .wrap { max-width:1080px; margin:0 auto; padding:18px; }
-    .hero { border-radius:20px; border:1px solid #b9c8df; background: radial-gradient(circle at top right,#8c7999 0%,#4a496e 45%,#2d395a 100%); color:#fff; padding:22px; margin-bottom:14px; }
-    .hero h1 { margin:0 0 8px; font-size: clamp(1.35rem, 3vw, 1.95rem); }
-    .hero p { margin:0; color:#e7edf8; font-size:.95rem; }
-    .grid { display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:12px; }
-    .card { grid-column: span 12; background: var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; }
-    .card h2 { margin:0 0 10px; font-size:1.12rem; color:#253b5a; }
-    .pill-link { display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; border:1px solid #dbe6f6; background:#f7fbff; color:#2b466f; font-weight:700; text-decoration:none; font-size:.92rem; }
-    .bullet-list { margin:0; padding-left:18px; }
-    .example-box { border:1px dashed #c9d7f0; border-radius:12px; padding:10px; background:#f9fbff; margin-bottom:8px; }
-    footer { text-align:center; padding:24px 0 30px; color:#72809b; font-size:.9rem; }
+    body { margin:0; font-family:"Comfortaa","Segoe UI",sans-serif; color:var(--text); background:var(--bg); line-height:1.5; }
+    .wrap { max-width:1080px; margin:0 auto; padding:14px; display:grid; gap:12px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; }
+    h1 { margin:0; font-size:clamp(1.3rem,2.8vw,1.9rem); color:#223a60; }
+    h2 { margin:0 0 10px; font-size:1.08rem; color:#2b466f; }
+    h3 { margin:0 0 6px; font-size:.98rem; color:#2b466f; }
+    p { margin:0 0 6px; color:#35507a; }
+    .hero { background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%); border:1px solid #d9e4f5; border-radius:16px; padding:16px; display:grid; gap:8px; }
+    .back-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .btn { border:1px solid #cad8ef; border-radius:10px; padding:9px 13px; font:inherit; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; color:#29476f; background:#eef4ff; }
+    .btn.primary { color:#fff; border-color:#d9afc5; background:linear-gradient(90deg,#e78fb0,#6e83e8); }
+    .grid2 { display:grid; gap:10px; }
+    @media(min-width:760px){ .grid2 { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    .grid3 { display:grid; gap:10px; }
+    @media(min-width:760px){ .grid3 { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    .panel { border:1px solid #d8e3f4; border-radius:10px; background:#f8fbff; padding:12px; display:grid; gap:6px; }
+    table { width:100%; border-collapse:collapse; font-size:.95rem; }
+    th { background:#e6eef8; color:#223a60; padding:7px 10px; text-align:left; font-weight:700; }
+    td { padding:6px 10px; border-bottom:1px solid #e4ecf5; color:#2d4a73; }
+    tr:last-child td { border-bottom:none; }
+    .hl { color:#c0392b; font-weight:700; }
+    .tip { border:1px solid #efd6de; background:#fff7fa; border-radius:10px; padding:10px; color:#7c4d63; font-size:.95rem; margin-top:6px; }
+    .example { border:1px dashed #bcd0ee; border-radius:10px; padding:9px 12px; background:#f4f8ff; color:#2d4870; margin:4px 0; }
+    .badge-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .badge { border:1px solid #bfd0ea; border-radius:999px; padding:4px 10px; background:#f4f8ff; color:#2e4b74; font-size:.93rem; font-weight:700; }
+    .question-list { display:grid; gap:10px; margin-top:10px; }
+    .q-card { border:1px solid #d6e2f3; border-radius:12px; padding:12px; background:#fbfdff; display:grid; gap:8px; }
+    .q-card.correct { border-color:#b8e3cf; background:#f4fff9; }
+    .q-card.wrong { border-color:#f0c8d1; background:#fff7f9; }
+    .q-title { margin:0; font-size:1rem; color:#2a466f; font-weight:700; }
+    .q-prompt { margin:0; color:#314e77; white-space:pre-line; }
+    .opts { display:grid; gap:5px; }
+    .opt { border:1px solid #cfdbef; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:flex-start; cursor:pointer; }
+    .opt input { margin-top:3px; }
+    .opt.correct-answer { border-color:#96cdb5; background:#eefcf4; }
+    .solution { margin:0; color:#46658f; font-size:.93rem; display:none; }
+    .show-sol .solution { display:block; }
+    .actions { margin-top:10px; display:grid; gap:8px; }
+    @media(min-width:760px){ .actions { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    .result { margin-top:8px; border:1px dashed #c8d7ef; border-radius:10px; padding:10px; color:#314f79; white-space:pre-wrap; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <nav id="topNav" class="top-nav">
-      <a id="navLogoBtn" class="nav-brand" href="./index.html" aria-label="Zur Startseite">
-        <img src="./assets/dtzlib-logo-v3.png" alt="DTZ-LID">
-      </a>
-      <div class="nav-right">
-        <div class="nav-links">
-          <a class="nav-link" href="./index.html">Start</a>
-          <a class="nav-link" href="./index.html">Portal</a>
-          <a class="nav-link" href="./a1-themen.html">A1-Themen</a>
-          <a class="nav-link" href="./a2-themen.html">A2-Themen</a>
-          <a class="nav-link" href="./admin.html">Lehrer-Panel</a>
-          <a class="nav-link" href="./agb.html">AGB</a>
-        </div>
-        <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
+<main class="wrap">
+  <section class="hero">
+    <h1>Verben im Präsens (A1)</h1>
+    <p style="color:#4a6492">Regelmäßige Verben · Vokalwechsel · Unregelmäßige Verben</p>
+    <div class="back-row">
+      <a class="btn" href="../a1-themen.html">← A1-Themen</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>1. Regelmäßige Verben – Endungen</h2>
+    <div class="grid2">
+      <div class="panel">
+        <table>
+          <tr><th>Person</th><th>kommen</th><th>Endung</th></tr>
+          <tr><td>ich</td><td>komm<span class="hl">e</span></td><td class="hl">-e</td></tr>
+          <tr><td>du</td><td>komm<span class="hl">st</span></td><td class="hl">-st</td></tr>
+          <tr><td>er/sie/es/man</td><td>komm<span class="hl">t</span></td><td class="hl">-t</td></tr>
+          <tr><td>wir</td><td>komm<span class="hl">en</span></td><td class="hl">-en</td></tr>
+          <tr><td>ihr</td><td>komm<span class="hl">t</span></td><td class="hl">-t</td></tr>
+          <tr><td>sie / Sie</td><td>komm<span class="hl">en</span></td><td class="hl">-en</td></tr>
+        </table>
       </div>
-    </nav>
-
-    <div class="wrap">
-      <section class="hero">
-        <h1>Verben im Präsens</h1>
-        <p>Regelmäßige und wichtige unregelmäßige Verben im Alltag.</p>
-      </section>
-
-      <div class="grid">
-        <div class="card">
-          <h2>Überblick</h2>
-          <ul class="bullet-list">
-            <li>Endungen: ich -e, du -st, er/sie/es -t, wir -en, ihr -t, Sie -en.</li>
-            <li>Häufige Verben: machen, gehen, lernen, wohnen.</li>
-            <li>Unregelmäßig: sein, haben, werden.</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Beispiele</h2>
-          <div class="example-box">Ich <strong>lerne</strong> Deutsch.</div>
-          <div class="example-box">Du <strong>arbeitest</strong> heute.</div>
-          <div class="example-box">Wir <strong>gehen</strong> nach Hause.</div>
-        </div>
-        <div class="card">
-          <h2>Merksatz</h2>
-          <p>Verb steht im Hauptsatz auf Position 2.</p>
-          <a class="pill-link" href="./a1-themen.html">Zurück zu A1-Themen</a>
-        </div>
+      <div class="panel">
+        <h3>Besondere Formen</h3>
+        <p><strong>heißen:</strong> du hei<span class="hl">ßt</span>, er/sie hei<span class="hl">ßt</span></p>
+        <p><strong>arbeiten:</strong> du arbeit<span class="hl">est</span>, er arbeit<span class="hl">et</span>, ihr arbeit<span class="hl">et</span></p>
+        <p>Genauso: antworten, kosten, heizen</p>
+        <div class="tip">Wenn der Stamm auf <strong>-d, -t, -chn, -ffn</strong> endet → Einschub <strong>-e-</strong> vor der Endung.</div>
       </div>
     </div>
-  </div>
-  <footer>© dtz-lid.com</footer>
-  <script>
-    const navToggleBtn = document.getElementById("navToggleBtn");
-    if (navToggleBtn) {
-      navToggleBtn.addEventListener("click", event => {
-        event.stopPropagation();
-        const nav = document.getElementById("topNav");
-        if (!nav) return;
-        nav.classList.toggle("open");
-      });
-    }
-    document.addEventListener("click", event => {
-      const nav = document.getElementById("topNav");
-      if (!nav || !nav.classList.contains("open")) return;
-      if (!nav.contains(event.target)) nav.classList.remove("open");
+  </section>
+
+  <section class="card">
+    <h2>2. Verben mit Vokalwechsel</h2>
+    <div class="panel">
+      <table>
+        <tr><th></th><th>e → i (sprechen)</th><th>e → ie (lesen)</th><th>a → ä (schlafen)</th></tr>
+        <tr><td>ich</td><td>spreche</td><td>lese</td><td>schlafe</td></tr>
+        <tr><td>du</td><td>spri<span class="hl">ch</span>st</td><td>li<span class="hl">e</span>st</td><td>schl<span class="hl">ä</span>fst</td></tr>
+        <tr><td>er/sie/es</td><td>spri<span class="hl">ch</span>t</td><td>li<span class="hl">e</span>st</td><td>schl<span class="hl">ä</span>ft</td></tr>
+        <tr><td>wir/Sie</td><td>sprechen</td><td>lesen</td><td>schlafen</td></tr>
+        <tr><td>ihr</td><td>sprecht</td><td>lest</td><td>schlaft</td></tr>
+      </table>
+    </div>
+    <div class="tip" style="margin-top:10px">
+      Nur <strong>du</strong> und <strong>er/sie/es</strong> haben den Vokalwechsel!
+      <br>Genauso: treffen (trifft) · essen (isst) · nehmen (nimmt) · helfen (hilft) · sehen (sieht) · anfangen (fängt an)
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Unregelmäßige Verben: sein / haben / mögen</h2>
+    <div class="panel">
+      <table>
+        <tr><th>Person</th><th>sein</th><th>haben</th><th>mögen</th><th>möchten</th></tr>
+        <tr><td>ich</td><td>bin</td><td>habe</td><td>mag</td><td>möchte</td></tr>
+        <tr><td>du</td><td>bist</td><td>hast</td><td>magst</td><td>möchtest</td></tr>
+        <tr><td>er/sie/es</td><td>ist</td><td>hat</td><td>mag</td><td>möchte</td></tr>
+        <tr><td>wir</td><td>sind</td><td>haben</td><td>mögen</td><td>möchten</td></tr>
+        <tr><td>ihr</td><td>seid</td><td>habt</td><td>mögt</td><td>möchtet</td></tr>
+        <tr><td>sie / Sie</td><td>sind</td><td>haben</td><td>mögen</td><td>möchten</td></tr>
+      </table>
+    </div>
+    <div class="example">Woher <strong>kommen</strong> Sie? – Ich <strong>komme</strong> aus Deutschland.</div>
+    <div class="example">Sie <strong>spricht</strong> sehr gut Deutsch.</div>
+  </section>
+
+  <section class="card">
+    <div class="badge-row">
+      <span class="badge">Verben im Präsens</span>
+      <span class="badge">50 Fragen</span>
+      <span class="badge">A/B/C-Aufgaben</span>
+      <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+    </div>
+    <h2>Test: Verben im Präsens</h2>
+    <div id="questionList" class="question-list"></div>
+    <div class="actions">
+      <button class="btn primary" id="checkBtn">Prüfen</button>
+      <button class="btn" id="solutionBtn">Lösungen zeigen</button>
+      <button class="btn" id="newBtn">Neuer Test</button>
+    </div>
+    <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+  </section>
+</main>
+
+<script>
+const progressBadge = document.getElementById('progressBadge');
+const resultBox = document.getElementById('resultBox');
+const questionList = document.getElementById('questionList');
+
+const regular = [
+  { inf:'machen', stem:'mach' }, { inf:'lernen', stem:'lern' }, { inf:'wohnen', stem:'wohn' },
+  { inf:'spielen', stem:'spiel' }, { inf:'kaufen', stem:'kauf' }, { inf:'fragen', stem:'frag' },
+  { inf:'hören', stem:'hör' }, { inf:'kochen', stem:'koch' }, { inf:'trinken', stem:'trink' },
+  { inf:'kommen', stem:'komm' }, { inf:'gehen', stem:'geh' }, { inf:'schreiben', stem:'schreib' },
+];
+const vokalwechsel = [
+  { inf:'sprechen', du:'sprichst', er:'spricht' },
+  { inf:'lesen', du:'liest', er:'liest' },
+  { inf:'schlafen', du:'schläfst', er:'schläft' },
+  { inf:'treffen', du:'triffst', er:'trifft' },
+  { inf:'essen', du:'isst', er:'isst' },
+  { inf:'nehmen', du:'nimmst', er:'nimmt' },
+  { inf:'sehen', du:'siehst', er:'sieht' },
+  { inf:'helfen', du:'hilfst', er:'hilft' },
+  { inf:'fahren', du:'fährst', er:'fährt' },
+  { inf:'tragen', du:'trägst', er:'trägt' },
+];
+const pronouns = ['ich','du','er','sie','wir','ihr','Sie'];
+const endMap = { ich:'e', du:'st', er:'t', sie:'t', wir:'en', ihr:'t', Sie:'en' };
+
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ const b=a.slice(); for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]; } return b; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function qRegular(){
+  const v=pick(regular); const pr=pick(pronouns);
+  const correct = v.stem + endMap[pr];
+  const wrong1 = v.stem + (endMap[pr]==='e'?'st':'e');
+  const wrong2 = v.stem + (endMap[pr]==='en'?'t':'en');
+  const opts = shuffle([correct, wrong1, wrong2]);
+  return { prompt:`Ergänzen Sie:\n${cap(pr)} ___ gerade. (${v.inf})`, opts, correct:opts.indexOf(correct), solution:`${cap(pr)} ${correct} gerade.`, hint:`Endung für "${pr}": -${endMap[pr]}` };
+}
+
+function qVokalwechsel(){
+  const v=pick(vokalwechsel);
+  const pr=pick(['du','er']);
+  const correct = pr==='du'?v.du:v.er;
+  const wrong1 = v.inf.replace('en','st').replace('en','t');
+  const wrong2 = v.inf.slice(0,-1)+'t';
+  const opts = shuffle([correct, v.inf.slice(0,-2)+'st', v.inf.slice(0,-2)+'t'].filter((x,i,a)=>a.indexOf(x)===i).slice(0,3));
+  if(opts.indexOf(correct)===-1) opts[0]=correct;
+  return { prompt:`Vokalwechsel – wie heißt die ${pr==='du'?'du':'er/sie/es'}-Form?\n"${v.inf}"`, opts:shuffle([correct, pr==='du'?v.er:v.du, v.inf.slice(0,-2)+(pr==='du'?'st':'t')]), correct:0, solution:`${pr} ${correct}`, hint:`${v.inf}: Vokalwechsel bei du/er/sie/es.` };
+}
+
+function qSein(){
+  const pairs = [
+    {pr:'ich',f:'bin'},{pr:'du',f:'bist'},{pr:'er',f:'ist'},{pr:'wir',f:'sind'},{pr:'ihr',f:'seid'},{pr:'Sie',f:'sind'}
+  ];
+  const p=pick(pairs);
+  const wrong1=pick(pairs.filter(x=>x.f!==p.f)).f;
+  const wrong2=pick(pairs.filter(x=>x.f!==p.f&&x.f!==wrong1)).f;
+  const opts=shuffle([p.f,wrong1,wrong2]);
+  return { prompt:`"sein" – wie lautet die Form?\n${cap(p.pr)} ___ aus Deutschland.`, opts, correct:opts.indexOf(p.f), solution:`${cap(p.pr)} ${p.f} aus Deutschland.`, hint:'sein: bin/bist/ist/sind/seid/sind' };
+}
+
+function qHaben(){
+  const pairs = [
+    {pr:'ich',f:'habe'},{pr:'du',f:'hast'},{pr:'er',f:'hat'},{pr:'wir',f:'haben'},{pr:'ihr',f:'habt'},{pr:'Sie',f:'haben'}
+  ];
+  const p=pick(pairs);
+  const wrong1=pick(pairs.filter(x=>x.f!==p.f)).f;
+  const wrong2=pick(pairs.filter(x=>x.f!==p.f&&x.f!==wrong1)).f;
+  const opts=shuffle([p.f,wrong1,wrong2]);
+  return { prompt:`"haben" – wie lautet die Form?\n${cap(p.pr)} ___ eine Frage.`, opts, correct:opts.indexOf(p.f), solution:`${cap(p.pr)} ${p.f} eine Frage.`, hint:'haben: habe/hast/hat/haben/habt/haben' };
+}
+
+function qSentence(){
+  const v=pick(regular); const pr=pick(pronouns);
+  const correct=`${cap(pr)} ${v.stem+endMap[pr]} heute.`;
+  const bad1=`${cap(pr)} ${v.inf} heute.`;
+  const bad2=`${cap(pr)} ${v.stem+(endMap[pr]==='en'?'st':'en')} heute.`;
+  const opts=shuffle([correct,bad1,bad2]);
+  return { prompt:`Welche Form ist korrekt? (${v.inf})`, opts, correct:opts.indexOf(correct), solution:correct, hint:'Verb auf Position 2, richtige Endung.' };
+}
+
+const makers = [qRegular, qVokalwechsel, qSein, qHaben, qSentence];
+let questions = [];
+
+function generate50(){
+  const out=[];
+  for(let i=0;i<50;i++) out.push(makers[i%makers.length]());
+  return shuffle(out);
+}
+
+function renderQuestions(){
+  questionList.innerHTML='';
+  questions.forEach((q,idx)=>{
+    const card=document.createElement('article');
+    card.className='q-card'; card.dataset.index=idx;
+    const title=document.createElement('p'); title.className='q-title'; title.textContent=`Frage ${idx+1}/50`;
+    const prompt=document.createElement('p'); prompt.className='q-prompt'; prompt.textContent=q.prompt;
+    const opts=document.createElement('div'); opts.className='opts';
+    q.opts.forEach((opt,i)=>{
+      const lab=document.createElement('label'); lab.className='opt';
+      const radio=document.createElement('input'); radio.type='radio'; radio.name=`q_${idx}`; radio.value=i;
+      radio.addEventListener('change',updateProgress);
+      const txt=document.createElement('span'); txt.innerHTML=`<strong>${String.fromCharCode(65+i)})</strong> ${opt}`;
+      lab.append(radio,txt); opts.appendChild(lab);
     });
-  </script>
+    const sol=document.createElement('p'); sol.className='solution'; sol.textContent=`Lösung: ${q.solution} | ${q.hint}`;
+    card.append(title,prompt,opts,sol); questionList.appendChild(card);
+  });
+  updateProgress(); resultBox.textContent='Noch nicht ausgewertet.';
+}
+
+function updateProgress(){
+  const n=questionList.querySelectorAll('input:checked').length;
+  progressBadge.textContent=`Gelöst: ${n}/50`;
+}
+
+function grade(){
+  let correct=0;
+  questionList.querySelectorAll('.q-card').forEach((card,idx)=>{
+    card.classList.remove('correct','wrong');
+    card.querySelectorAll('.opt').forEach(o=>o.classList.remove('correct-answer'));
+    const q=questions[idx];
+    const chosen=card.querySelector('input:checked');
+    const sel=chosen?Number(chosen.value):-1;
+    const labels=card.querySelectorAll('.opt');
+    if(labels[q.correct]) labels[q.correct].classList.add('correct-answer');
+    if(sel===q.correct){ correct++; card.classList.add('correct'); } else card.classList.add('wrong');
+  });
+  const pts=correct*2;
+  resultBox.textContent=`Richtig: ${correct}/50\nPunkte: ${pts}/100\nErgebnis: ${Math.round(pts)}%`;
+}
+
+document.getElementById('checkBtn').addEventListener('click',grade);
+document.getElementById('solutionBtn').addEventListener('click',()=>questionList.classList.add('show-sol'));
+document.getElementById('newBtn').addEventListener('click',()=>{ questions=generate50(); questionList.classList.remove('show-sol'); renderQuestions(); window.scrollTo({top:0,behavior:'smooth'}); });
+
+questions=generate50(); renderQuestions();
+</script>
 </body>
 </html>
