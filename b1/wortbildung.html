@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wortbildung (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Wortbildung (B1)</h1>
+    <p>Komposita, Ableitungen mit Suffixen und Präfixen, Verb- und Adjektivbildung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Komposita -->
+  <div class="card">
+    <h2>1. Komposita (Zusammengesetzte Nomen)</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Bildung</th><th>Genus</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>Nomen + Nomen</td><td>= letztes Wort</td><td>der Zug + das Ticket = <span class="hl">das Zugticket</span></td></tr>
+          <tr><td>Adjektiv + Nomen</td><td>= letztes Wort</td><td>groß + die Stadt = <span class="hl">die Großstadt</span></td></tr>
+          <tr><td>Verb + Nomen</td><td>= letztes Wort</td><td>schlafen + das Zimmer = <span class="hl">das Schlafzimmer</span></td></tr>
+          <tr><td>Nomen + -s- + Nomen (Fugen-s)</td><td>= letztes Wort</td><td>der Arbeit + s + das Zimmer = <span class="hl">das Arbeitszimmer</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Das Genus des Kompositums = Genus des <em>letzten</em> Bestandteils.</div>
+  </div>
+
+  <!-- 2. Nomen-Suffixe -->
+  <div class="card">
+    <h2>2. Nomen-Bildung mit Suffixen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Suffix</th><th>Genus</th><th>Basis → Nomen</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">-ung</span></td><td>die</td><td>wohnen → <span class="hl">die Wohnung</span></td></tr>
+          <tr><td><span class="hl">-heit</span></td><td>die</td><td>krank → <span class="hl">die Krankheit</span></td></tr>
+          <tr><td><span class="hl">-keit</span></td><td>die</td><td>möglich → <span class="hl">die Möglichkeit</span></td></tr>
+          <tr><td><span class="hl">-schaft</span></td><td>die</td><td>Freund → <span class="hl">die Freundschaft</span></td></tr>
+          <tr><td><span class="hl">-nis</span></td><td>das/die</td><td>ergebnis → <span class="hl">das Ergebnis</span></td></tr>
+          <tr><td><span class="hl">-er</span></td><td>der</td><td>lehren → <span class="hl">der Lehrer</span></td></tr>
+          <tr><td><span class="hl">-in</span></td><td>die</td><td>der Lehrer → <span class="hl">die Lehrerin</span></td></tr>
+          <tr><td><span class="hl">-ling</span></td><td>der</td><td>lernen → <span class="hl">der Lehrling</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. Adjektiv-Suffixe -->
+  <div class="card">
+    <h2>3. Adjektiv-Bildung mit Suffixen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Suffix</th><th>Basis → Adjektiv</th><th>Bedeutung</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">-lich</span></td><td>freund → <span class="hl">freundlich</span></td><td>Eigenschaft</td></tr>
+          <tr><td><span class="hl">-ig</span></td><td>Hunger → <span class="hl">hungrig</span></td><td>Zustand/Eigenschaft</td></tr>
+          <tr><td><span class="hl">-isch</span></td><td>Kind → <span class="hl">kindisch</span></td><td>wie … / typisch für</td></tr>
+          <tr><td><span class="hl">-los</span></td><td>Arbeit → <span class="hl">arbeitslos</span></td><td>ohne</td></tr>
+          <tr><td><span class="hl">-voll</span></td><td>Sinn → <span class="hl">sinnvoll</span></td><td>mit viel</td></tr>
+          <tr><td><span class="hl">-bar</span></td><td>machen → <span class="hl">machbar</span></td><td>kann gemacht werden</td></tr>
+          <tr><td><span class="hl">-sam</span></td><td>aufmerksam → <span class="hl">aufmerksam</span></td><td>Eigenschaft</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Verbpräfixe -->
+  <div class="card">
+    <h2>4. Verbpräfixe – trennbar und untrennbar</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Präfix</th><th>Typ</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">an-, auf-, ab-, ein-, aus-, mit-, vor-, zu-</span></td><td>trennbar</td><td><span class="hl">an</span>rufen: Ich rufe an.</td></tr>
+          <tr><td><span class="hl">be-, ge-, er-, ver-, zer-, ent-, emp-, miss-</span></td><td>untrennbar</td><td><span class="hl">be</span>zahlen: Ich bezahle.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example"><strong>Trennbar:</strong> aufmachen → Ich <span class="hl">mache</span> die Tür <span class="hl">auf</span>.<br>
+    <strong>Untrennbar:</strong> verstehen → Ich <span class="hl">verstehe</span> das. (kein ge- im Partizip)</div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Wortbildung – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle das richtig gebildete Wort.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const kompositaData=[
+  {q:"der Zug + das Ticket = ?",a:"das Zugticket",w:["das Zugticket","der Zugticket","die Zugticket","das Ticket-Zug"]},
+  {q:"das Schlaf + das Zimmer = ?",a:"das Schlafzimmer",w:["das Schlafzimmer","der Schlafzimmer","die Schlafzimmer","das Zimmerschlaf"]},
+  {q:"groß + die Stadt = ?",a:"die Großstadt",w:["die Großstadt","der Großstadt","das Großstadt","die Stadtgroß"]},
+  {q:"der Arbeit + s + das Zimmer = ?",a:"das Arbeitszimmer",w:["das Arbeitszimmer","der Arbeitszimmer","die Arbeitszimmer","das Arbeitszimmers"]},
+  {q:"Genus von: das Zugticket?",a:"das",w:["das","der","die","ein"]},
+  {q:"Genus von: die Haustür (die Haus + die Tür)?",a:"die",w:["die","der","das","ein"]},
+  {q:"Genus von: der Stadtpark (die Stadt + der Park)?",a:"der",w:["der","die","das","ein"]},
+  {q:"das Buch + der Regal = ?",a:"das Bücherregal",w:["das Bücherregal","der Buchregal","die Buchregale","das Buch-Regal"]},
+];
+
+const suffixNomenData=[
+  {q:"wohnen → Nomen (-ung)",a:"die Wohnung",w:["die Wohnung","der Wohnung","das Wohnung","die Wohnheit"]},
+  {q:"krank → Nomen (-heit)",a:"die Krankheit",w:["die Krankheit","der Krankeit","das Krankheit","die Krankung"]},
+  {q:"möglich → Nomen (-keit)",a:"die Möglichkeit",w:["die Möglichkeit","der Möglichkeit","das Möglichkeit","die Möglichung"]},
+  {q:"Freund → Nomen (-schaft)",a:"die Freundschaft",w:["die Freundschaft","der Freundschaft","das Freundschaft","die Freundung"]},
+  {q:"lehren → Person (-er)",a:"der Lehrer",w:["der Lehrer","die Lehrer","das Lehrer","der Lehrung"]},
+  {q:"der Lehrer → weiblich (-in)",a:"die Lehrerin",w:["die Lehrerin","die Lehrern","das Lehrerin","die Lehrerschaft"]},
+  {q:"zahlen → Nomen (-ung)",a:"die Zahlung",w:["die Zahlung","der Zahlung","das Zahlung","die Zahlheit"]},
+  {q:"frei → Nomen (-heit)",a:"die Freiheit",w:["die Freiheit","der Freiheit","das Freiheit","die Freiung"]},
+  {q:"lernen → Lehrling (-ling)?",a:"der Lehrling",w:["der Lehrling","die Lehrling","das Lehrling","der Lernschaft"]},
+  {q:"lösen → Nomen (-ung)",a:"die Lösung",w:["die Lösung","der Lösung","das Lösung","die Lösheit"]},
+];
+
+const suffixAdjData=[
+  {q:"Freund → Adjektiv (-lich)",a:"freundlich",w:["freundlich","freundisch","freundbar","freundig"]},
+  {q:"Hunger → Adjektiv (-ig)",a:"hungrig",w:["hungrig","hungerlich","hungerisch","hungerbar"]},
+  {q:"Kind → Adjektiv (-isch)",a:"kindisch",w:["kindisch","kindlich","kindig","kindbar"]},
+  {q:"Arbeit → Adjektiv ohne (arbeits-los)",a:"arbeitslos",w:["arbeitslos","arbeitslich","arbeitsig","arbeitsbar"]},
+  {q:"Sinn → Adjektiv (-voll)",a:"sinnvoll",w:["sinnvoll","sinnlich","sinnig","sinnbar"]},
+  {q:"machen → Adjektiv (-bar)",a:"machbar",w:["machbar","machlich","machig","machvoll"]},
+  {q:"Kraft → Adjektiv (-ig)",a:"kräftig",w:["kräftig","kräftlich","kräftbar","kräftisch"]},
+  {q:"helfen → Adjektiv (-reich/hilfreich)?",a:"hilfreich",w:["hilfreich","hilflich","hilfig","hilfbar"]},
+];
+
+const praeFixData=[
+  {q:"Ich ___ die Tür auf. (aufmachen – trennbar)",a:"mache … auf",w:["mache … auf","aufmache","mache auf","aufgemache"]},
+  {q:"Er ___ die Rechnung. (bezahlen – untrennbar)",a:"bezahlt",w:["bezahlt","zahlt be","zahlt … be","be-zahlt"]},
+  {q:"Ich ___ früh ___. (aufstehen – trennbar)",a:"stehe … auf",w:["stehe … auf","aufstehe","stehe auf","aufgestehe"]},
+  {q:"Sie ___ Deutsch. (verstehen – untrennbar)",a:"versteht",w:["versteht","steht ver","steht … ver","ver-steht"]},
+  {q:"Er ___ mich ___. (anrufen – trennbar)",a:"ruft … an",w:["ruft … an","anruft","ruft an","angeruft"]},
+  {q:"Partizip II von aufmachen (trennbar):",a:"aufgemacht",w:["aufgemacht","gemacht auf","aufmacht","geaufmacht"]},
+  {q:"Partizip II von verstehen (untrennbar):",a:"verstanden",w:["verstanden","geverstandten","vergestanden","verstandengt"]},
+  {q:"Partizip II von anrufen (trennbar):",a:"angerufen",w:["angerufen","gerufen an","angeruft","rufenan"]},
+  {q:"Partizip II von bezahlen (untrennbar):",a:"bezahlt",w:["bezahlt","gebezahlt","bezahlte","begezhalt"]},
+  {q:"Partizip II von einladen (trennbar):",a:"eingeladen",w:["eingeladen","geladen ein","eingeladt","eingeladet"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...kompositaData,...suffixNomenData,...suffixAdjData,...praeFixData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

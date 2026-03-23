@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Futur I &amp; II (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Futur I &amp; Futur II (B1)</h1>
+    <p>Zukunftspläne, Vermutungen und vollendete Zukunft – werden + Infinitiv/Partizip II.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Futur I – Bildung -->
+  <div class="card">
+    <h2>1. Futur I – <em>werden + Infinitiv</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>werden (Präsens)</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td><span class="hl">werde</span></td><td>Ich <span class="hl">werde</span> morgen lernen.</td></tr>
+          <tr><td>du</td><td><span class="hl">wirst</span></td><td>Du <span class="hl">wirst</span> es schaffen.</td></tr>
+          <tr><td>er/sie/es</td><td><span class="hl">wird</span></td><td>Er <span class="hl">wird</span> kommen.</td></tr>
+          <tr><td>wir</td><td><span class="hl">werden</span></td><td>Wir <span class="hl">werden</span> reisen.</td></tr>
+          <tr><td>ihr</td><td><span class="hl">werdet</span></td><td>Ihr <span class="hl">werdet</span> gewinnen.</td></tr>
+          <tr><td>sie/Sie</td><td><span class="hl">werden</span></td><td>Sie <span class="hl">werden</span> anrufen.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Satzstellung: <em>werden</em> auf Position 2, Infinitiv am Satzende.<br>
+    Ich <span class="hl">werde</span> morgen früh <span class="hl">aufstehen</span>.</div>
+  </div>
+
+  <!-- 2. Futur I – Verwendung -->
+  <div class="card">
+    <h2>2. Futur I – Wann benutzen?</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Verwendung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>Zukunftspläne / Vorhaben</td><td>Ich <span class="hl">werde</span> nächstes Jahr heiraten.</td></tr>
+          <tr><td>Versprechen</td><td>Ich <span class="hl">werde</span> immer für dich da sein.</td></tr>
+          <tr><td>Vermutung über die Gegenwart</td><td>Er <span class="hl">wird</span> jetzt schlafen. (= wahrscheinlich)</td></tr>
+          <tr><td>Prognose / Vorhersage</td><td>Es <span class="hl">wird</span> morgen regnen.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Im Alltag wird die Zukunft oft mit Präsens + Zeitangabe ausgedrückt:<br>
+    <em>Ich fahre morgen nach Hamburg.</em> (= Futur I)</div>
+  </div>
+
+  <!-- 3. Futur II -->
+  <div class="card">
+    <h2>3. Futur II – <em>werden + Partizip II + haben/sein</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>Struktur</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td>werde + P.II + haben/sein</td><td>Ich werde es <span class="hl">gemacht haben</span>.</td></tr>
+          <tr><td>er/sie/es</td><td>wird + P.II + haben/sein</td><td>Er wird angekommen <span class="hl">sein</span>.</td></tr>
+          <tr><td>wir</td><td>werden + P.II + haben/sein</td><td>Wir werden es <span class="hl">vergessen haben</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example"><strong>Vollendete Zukunft:</strong> Bis Montag werde ich die Arbeit <span class="hl">fertiggestellt haben</span>.<br>
+    <strong>Vermutung über Vergangenheit:</strong> Er wird den Zug <span class="hl">verpasst haben</span>.</div>
+  </div>
+
+  <!-- 4. Futur I vs. Präsens -->
+  <div class="card">
+    <h2>4. Futur I vs. Präsens für Zukunft</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Futur I</th><th>Präsens + Zeitangabe</th></tr></thead>
+        <tbody>
+          <tr><td>Ich <em>werde</em> morgen lernen.</td><td>Ich lerne morgen.</td></tr>
+          <tr><td>Sie <em>werden</em> nächste Woche kommen.</td><td>Sie kommen nächste Woche.</td></tr>
+          <tr><td>Betonung auf Entschlossenheit/Versprechen</td><td>Alltagssprache, feste Pläne</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Futur I &amp; II – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Form.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const futur1Data=[
+  {q:"Ich ___ morgen früh aufstehen.",a:"werde",w:["werde","wirst","wird","werden"]},
+  {q:"Er ___ nächste Woche kommen.",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Wir ___ nach Italien fahren.",a:"werden",w:["werden","wird","werde","werdet"]},
+  {q:"Du ___ es schaffen!",a:"wirst",w:["wirst","werde","wird","werden"]},
+  {q:"Ihr ___ die Prüfung bestehen.",a:"werdet",w:["werdet","werden","werde","wirst"]},
+  {q:"Sie (Sg.) ___ eine Stelle finden.",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Ich ___ nie wieder lügen.",a:"werde",w:["werde","wirst","wird","werden"]},
+  {q:"Es ___ morgen regnen.",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Wir ___ bald umziehen.",a:"werden",w:["werden","wird","werde","werdet"]},
+  {q:"Du ___ das verstehen.",a:"wirst",w:["wirst","werde","wird","werden"]},
+  {q:"Er ___ wahrscheinlich zu Hause sein.",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Sie (Pl.) ___ pünktlich ankommen.",a:"werden",w:["werden","wird","werde","werdet"]},
+  {q:"Ich ___ dir helfen.",a:"werde",w:["werde","wirst","wird","werden"]},
+  {q:"Er ___ das Buch lesen.",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Wir ___ uns treffen.",a:"werden",w:["werden","wird","werde","werdet"]},
+  {q:"Du ___ es nicht glauben!",a:"wirst",w:["wirst","werde","wird","werden"]},
+  {q:"Sie (Sg.) ___ morgen anrufen.",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Ihr ___ viel Spaß haben.",a:"werdet",w:["werdet","werden","werde","wirst"]},
+  {q:"Ich ___ das Formular ausfüllen.",a:"werde",w:["werde","wirst","wird","werden"]},
+  {q:"Er ___ den Job bekommen.",a:"wird",w:["wird","werde","werden","werdet"]},
+];
+
+const futur1SatzData=[
+  {q:"Bis nächsten Sommer ___ ich Deutsch gelernt ___.",a:"werde … haben",w:["werde … haben","werde … sein","wird … haben","werde … hatte"]},
+  {q:"Er ___ den Zug verpasst ___.",a:"wird … haben",w:["wird … haben","wird … sein","werde … haben","wird … hatte"]},
+  {q:"Wir ___ pünktlich angekommen ___.",a:"werden … sein",w:["werden … sein","werden … haben","wird … sein","werden … waren"]},
+  {q:"Du ___ es vergessen ___.",a:"wirst … haben",w:["wirst … haben","wirst … sein","werde … haben","wirst … hatte"]},
+  {q:"Sie ___ das Buch gelesen ___.",a:"wird … haben",w:["wird … haben","wird … sein","werde … haben","wird … hatte"]},
+];
+
+const vermutungData=[
+  {q:"Er ___ jetzt schlafen. (Vermutung Gegenwart)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Das ___ teuer sein. (Vermutung)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Sie ___ krank sein. (Vermutung)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Das ___ nicht stimmen. (Vermutung)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Er ___ den Schlüssel verloren haben. (Vermutung Vergangenheit)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Sie ___ es gewusst haben. (Vermutung)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Das Kind ___ müde sein. (Vermutung)",a:"wird",w:["wird","werde","werden","werdet"]},
+  {q:"Er ___ den Bus genommen haben. (Vermutung)",a:"wird",w:["wird","werde","werden","werdet"]},
+];
+
+const strukturData=[
+  {q:"Ich werde morgen früh ___. (aufstehen)",a:"aufstehen",w:["aufstehen","aufgestanden","stehe auf","stehen"]},
+  {q:"Er wird bald ___. (kommen)",a:"kommen",w:["kommen","gekommen","kommt","kam"]},
+  {q:"Wir werden Deutsch ___. (lernen)",a:"lernen",w:["lernen","gelernt","lernten","lernt"]},
+  {q:"Du wirst es ___. (schaffen)",a:"schaffen",w:["schaffen","geschafft","schaffst","schaffte"]},
+  {q:"Sie wird das Formular ___. (ausfüllen)",a:"ausfüllen",w:["ausfüllen","ausgefüllt","füllt aus","füllte aus"]},
+  {q:"Ich werde den Brief ___. (schreiben)",a:"schreiben",w:["schreiben","geschrieben","schrieb","schreibt"]},
+  {q:"Er wird uns ___. (anrufen)",a:"anrufen",w:["anrufen","angerufen","ruft an","rief an"]},
+  {q:"Wir werden früher ___. (einschlafen)",a:"einschlafen",w:["einschlafen","eingeschlafen","schliefin","schlafen ein"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...futur1Data,...futur1SatzData,...vermutungData,...strukturData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nebensätze (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero card">
+    <h1>Nebensätze (B1)</h1>
+    <p>weil/da, obwohl, wenn/als, damit, ob, dass – Konjunktionen und Verbstellung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Grundregel Verbstellung -->
+  <div class="card">
+    <h2>1. Verbstellung im Nebensatz</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Hauptsatz</th><th>Konjunktion</th><th>Nebensatz (Verb am Ende)</th></tr></thead>
+        <tbody>
+          <tr><td>Ich lerne Deutsch,</td><td><span class="hl">weil</span></td><td>ich in Deutschland <span class="hl">arbeiten will</span>.</td></tr>
+          <tr><td>Er kommt nicht,</td><td><span class="hl">obwohl</span></td><td>er Zeit <span class="hl">hat</span>.</td></tr>
+          <tr><td>Ich weiß,</td><td><span class="hl">dass</span></td><td>du recht <span class="hl">hast</span>.</td></tr>
+          <tr><td>Ich frage mich,</td><td><span class="hl">ob</span></td><td>er <span class="hl">kommt</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Im Nebensatz steht das konjugierte Verb <em>immer</em> am Ende. Bei Modalverb + Infinitiv: Infinitiv zuletzt, dann Modalverb.<br>
+    <em>…weil er nicht schlafen <span class="hl">konnte</span>.</em></div>
+  </div>
+
+  <!-- 2. Kausal: weil / da -->
+  <div class="card">
+    <h2>2. Kausalsätze – <em>weil</em> / <em>da</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Konjunktion</th><th>Verwendung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">weil</span></td><td>Unbekannte/neue Information</td><td>Ich komme nicht, <span class="hl">weil</span> ich krank bin.</td></tr>
+          <tr><td><span class="hl">da</span></td><td>Bekannte/offensichtliche Information</td><td><span class="hl">Da</span> es regnet, bleibe ich drin.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. Konzessiv: obwohl -->
+  <div class="card">
+    <h2>3. Konzessivsätze – <em>obwohl</em></h2>
+    <div class="panel">
+      <p style="color:#2b466f;font-weight:700">Bedeutung: Widerspruch zwischen Hauptsatz und Nebensatz</p>
+      <table>
+        <thead><tr><th>Struktur</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>HS, <span class="hl">obwohl</span> + NS</td><td>Er geht joggen, <span class="hl">obwohl</span> er krank ist.</td></tr>
+          <tr><td><span class="hl">obwohl</span> + NS, HS</td><td><span class="hl">Obwohl</span> es regnet, macht er einen Spaziergang.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Temporal: wenn / als / während -->
+  <div class="card">
+    <h2>4. Temporalsätze – <em>wenn</em> / <em>als</em> / <em>während</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Konjunktion</th><th>Verwendung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">wenn</span></td><td>Gegenwart/Zukunft; Wiederholung</td><td><span class="hl">Wenn</span> ich Zeit habe, lese ich.</td></tr>
+          <tr><td><span class="hl">als</span></td><td>Einmaliges Ereignis in der Vergangenheit</td><td><span class="hl">Als</span> ich jung war, wohnte ich in Köln.</td></tr>
+          <tr><td><span class="hl">während</span></td><td>Gleichzeitigkeit</td><td><span class="hl">Während</span> er kochte, hörte sie Musik.</td></tr>
+          <tr><td><span class="hl">nachdem</span></td><td>Reihenfolge (erst NS, dann HS)</td><td><span class="hl">Nachdem</span> er gegessen hatte, schlief er.</td></tr>
+          <tr><td><span class="hl">bevor</span></td><td>Reihenfolge (erst HS, dann NS)</td><td>Sie rief an, <span class="hl">bevor</span> sie kam.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5. Weitere Konjunktionen -->
+  <div class="card">
+    <h2>5. Weitere wichtige Konjunktionen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Konjunktion</th><th>Bedeutung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">dass</span></td><td>Inhalt / Tatsache</td><td>Ich weiß, <span class="hl">dass</span> er kommt.</td></tr>
+          <tr><td><span class="hl">ob</span></td><td>indirekte Ja/Nein-Frage</td><td>Ich frage, <span class="hl">ob</span> er kommt.</td></tr>
+          <tr><td><span class="hl">damit</span></td><td>Zweck (verschiedene Subjekte)</td><td>Ich erkläre es, <span class="hl">damit</span> du es verstehst.</td></tr>
+          <tr><td><span class="hl">sodass</span></td><td>Folge</td><td>Er lernte viel, <span class="hl">sodass</span> er bestand.</td></tr>
+          <tr><td><span class="hl">falls</span></td><td>Bedingung</td><td><span class="hl">Falls</span> du Zeit hast, ruf mich an.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Nebensätze – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Konjunktion oder Verbform.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+const weilData=[
+  {q:"Ich komme nicht, ___ ich krank bin.",a:"weil",w:["weil","obwohl","als","damit"]},
+  {q:"Er lernt Deutsch, ___ er in Deutschland arbeiten will.",a:"weil",w:["weil","obwohl","während","ob"]},
+  {q:"Sie bleibt zu Hause, ___ es schneit.",a:"weil",w:["weil","obwohl","wenn","als"]},
+  {q:"Er ist müde, ___ er wenig geschlafen hat.",a:"weil",w:["weil","obwohl","während","dass"]},
+  {q:"Ich esse wenig, ___ ich abnehmen will.",a:"weil",w:["weil","obwohl","als","damit"]},
+  {q:"Wir kommen zu spät, ___ der Zug Verspätung hat.",a:"weil",w:["weil","obwohl","wenn","ob"]},
+];
+
+const obwohlData=[
+  {q:"Er geht raus, ___ es regnet.",a:"obwohl",w:["obwohl","weil","als","damit"]},
+  {q:"Sie ist glücklich, ___ sie viele Probleme hat.",a:"obwohl",w:["obwohl","weil","wenn","ob"]},
+  {q:"Er kommt, ___ er keine Zeit hat.",a:"obwohl",w:["obwohl","weil","als","während"]},
+  {q:"Er kauft das Auto, ___ es teuer ist.",a:"obwohl",w:["obwohl","weil","wenn","dass"]},
+  {q:"Sie schläft gut, ___ es laut ist.",a:"obwohl",w:["obwohl","weil","als","damit"]},
+];
+
+const temporalData=[
+  {q:"___ ich jung war, wohnte ich in Hamburg. (einmalig, Vergangenheit)",a:"Als",w:["Als","Wenn","Während","Nachdem"]},
+  {q:"___ ich Zeit habe, lese ich. (Gegenwart/Wiederholung)",a:"Wenn",w:["Wenn","Als","Während","Bevor"]},
+  {q:"___ er kochte, hörte sie Musik. (Gleichzeitigkeit)",a:"Während",w:["Während","Als","Wenn","Nachdem"]},
+  {q:"Sie rief an, ___ sie ankam. (Reihenfolge: danach)",a:"bevor",w:["bevor","nachdem","während","als"]},
+  {q:"___ er gegessen hatte, schlief er. (erst NS, dann HS)",a:"Nachdem",w:["Nachdem","Bevor","Als","Wenn"]},
+  {q:"___ es klingelt, öffne ich die Tür. (Reaktion – Zukunft)",a:"Wenn",w:["Wenn","Als","Während","Bevor"]},
+  {q:"___ ich ein Kind war, liebte ich Eis. (einmalige Zeit)",a:"Als",w:["Als","Wenn","Während","Nachdem"]},
+  {q:"___ wir ankamen, war die Party schon vorbei.",a:"Als",w:["Als","Wenn","Während","Bevor"]},
+];
+
+const dassobData=[
+  {q:"Ich weiß, ___ er recht hat.",a:"dass",w:["dass","ob","weil","obwohl"]},
+  {q:"Ich frage, ___ er kommt. (Ja/Nein)",a:"ob",w:["ob","dass","weil","obwohl"]},
+  {q:"Er sagt, ___ er krank ist.",a:"dass",w:["dass","ob","weil","wenn"]},
+  {q:"Sie weiß nicht, ___ der Zug pünktlich ist.",a:"ob",w:["ob","dass","weil","obwohl"]},
+  {q:"Ich denke, ___ du recht hast.",a:"dass",w:["dass","ob","weil","wenn"]},
+  {q:"Er fragt sie, ___ sie mitkommen will.",a:"ob",w:["ob","dass","weil","obwohl"]},
+  {q:"Es ist schade, ___ du nicht kommst.",a:"dass",w:["dass","ob","weil","wenn"]},
+  {q:"Ich bin froh, ___ du da bist.",a:"dass",w:["dass","ob","weil","obwohl"]},
+];
+
+const wortstellungData=[
+  {q:"Ich lerne, weil ich … (die Prüfung / bestehen / will)",a:"die Prüfung bestehen will",w:["die Prüfung bestehen will","will die Prüfung bestehen","bestehen die Prüfung will","will bestehen die Prüfung"]},
+  {q:"Er kommt nicht, obwohl er … (Zeit / hat)",a:"Zeit hat",w:["Zeit hat","hat Zeit","er Zeit hat","Zeit er hat"]},
+  {q:"Als ich jung war, … (ich / in Berlin / wohnte)",a:"wohnte ich in Berlin",w:["wohnte ich in Berlin","ich in Berlin wohnte","in Berlin ich wohnte","ich wohnte in Berlin"]},
+  {q:"Ich weiß, dass er … (krank / ist)",a:"krank ist",w:["krank ist","ist krank","er krank ist","ist er krank"]},
+  {q:"Sie fragt, ob er … (morgen / kommt)",a:"morgen kommt",w:["morgen kommt","kommt morgen","morgen er kommt","er morgen kommt"]},
+  {q:"Ich erkläre es, damit du … (es / verstehst)",a:"es verstehst",w:["es verstehst","verstehst es","du es verstehst","es du verstehst"]},
+  {q:"Während er kochte, … (sie / Musik / hörte)",a:"hörte sie Musik",w:["hörte sie Musik","sie hörte Musik","sie Musik hörte","hörte Musik sie"]},
+];
+
+let allQ=[];
+function shuffle(a){return a.slice().sort(()=>Math.random()-0.5)}
+function buildQ(){
+  const pool=[...weilData,...obwohlData,...temporalData,...dassobData,...wortstellungData];
+  allQ=shuffle(pool).slice(0,50);
+}
+function startTest(){
+  buildQ();
+  const body=document.getElementById("testBody");
+  body.innerHTML=""; body.style.display="grid";
+  allQ.forEach((q,i)=>{
+    const opts=shuffle([q.a,...shuffle(q.w.filter(x=>x!==q.a)).slice(0,3)]);
+    const d=document.createElement("div");
+    d.className="q-block";
+    d.innerHTML=`<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")}</div>`;
+    body.appendChild(d);
+  });
+  document.getElementById("testControls").style.display="flex";
+  document.getElementById("resultBar").style.display="none";
+  document.getElementById("startBtn").textContent="Neu starten";
+}
+function gradeTest(){
+  let c=0;
+  allQ.forEach((q,i)=>{
+    const chosen=document.querySelector(`input[name="q${i}"]:checked`);
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>l.classList.remove("correct","wrong"));
+    if(chosen){if(chosen.value===q.a){c++;chosen.closest("label").classList.add("correct");}else chosen.closest("label").classList.add("wrong");}
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent=`Ergebnis: ${c} / 50 richtig (${Math.round(c/50*100)} %)`;
+}
+function showSolutions(){
+  allQ.forEach((q,i)=>{
+    document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`).forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim()===q.a) l.classList.add("correct");
+    });
+  });
+  const bar=document.getElementById("resultBar");
+  bar.style.display="block"; bar.textContent="Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>

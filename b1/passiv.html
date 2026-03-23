@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Passiv (B1) | DTZ-LiD</title>
+  <style>
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Light.ttf") format("truetype");font-weight:300}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Regular.ttf") format("truetype");font-weight:400}
+    @font-face{font-family:"Comfortaa";src:url("../assets/fonts/Comfortaa-Bold.ttf") format("truetype");font-weight:700}
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;--muted:#61779a}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f}
+    p{margin:0 0 6px;color:#35507a}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px}
+    .back-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8)}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73}
+    tr:last-child td{border-bottom:none}
+    .hl{color:#c0392b;font-weight:700}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0}
+    /* Test styles */
+    .test-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+    .q-block{border:1px solid #dde8f6;border-radius:10px;padding:12px;background:#fafcff}
+    .q-label{font-weight:700;color:#2b466f;margin-bottom:8px;font-size:.97rem}
+    .choices{display:grid;gap:6px;margin-top:6px}
+    label.choice{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:8px;border:1px solid #dce8f5;background:#f4f8ff;font-size:.94rem;color:#2d4a73}
+    label.choice:hover{background:#e8f0fc}
+    label.choice.correct{background:#e6f9ee;border-color:#79d0a0;color:#1c5c36}
+    label.choice.wrong{background:#fdeaea;border-color:#e4a0a0;color:#7c1e1e}
+    .test-controls{display:flex;gap:10px;flex-wrap:wrap}
+    .result-bar{font-weight:700;font-size:1.05rem;color:#2b466f;padding:10px 14px;background:#eef4ff;border-radius:10px;border:1px solid #c8d9f0}
+    #startBtn{align-self:flex-start}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero card">
+    <h1>Das Passiv (B1)</h1>
+    <p>Passiv Präsens, Passiv Präteritum und Passiv Perfekt – Bildung und Verwendung.</p>
+    <div class="back-row">
+      <a href="../b1-themen.html" class="btn">← B1-Themen</a>
+    </div>
+  </div>
+
+  <!-- 1. Passiv Präsens -->
+  <div class="card">
+    <h2>1. Passiv Präsens – <em>wird + Partizip II</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>Bildung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td>werde + P.II</td><td>Ich werde <span class="hl">gefragt</span>.</td></tr>
+          <tr><td>du</td><td>wirst + P.II</td><td>Du wirst <span class="hl">eingeladen</span>.</td></tr>
+          <tr><td>er/sie/es</td><td>wird + P.II</td><td>Der Motor wird <span class="hl">geprüft</span>.</td></tr>
+          <tr><td>wir</td><td>werden + P.II</td><td>Wir werden <span class="hl">informiert</span>.</td></tr>
+          <tr><td>ihr</td><td>werdet + P.II</td><td>Ihr werdet <span class="hl">benachrichtigt</span>.</td></tr>
+          <tr><td>sie/Sie</td><td>werden + P.II</td><td>Die Pakete werden <span class="hl">geliefert</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Im Passiv steht das Objekt des Aktivsatzes als Subjekt. Der Handelnde wird oft nicht genannt.</div>
+    <div class="example"><strong>Aktiv:</strong> Der Arzt untersucht den Patienten.<br><strong>Passiv:</strong> Der Patient wird <span class="hl">untersucht</span>.</div>
+  </div>
+
+  <!-- 2. Passiv Präteritum -->
+  <div class="card">
+    <h2>2. Passiv Präteritum – <em>wurde + Partizip II</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>Bildung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td>wurde + P.II</td><td>Ich wurde <span class="hl">informiert</span>.</td></tr>
+          <tr><td>du</td><td>wurdest + P.II</td><td>Du wurdest <span class="hl">gefragt</span>.</td></tr>
+          <tr><td>er/sie/es</td><td>wurde + P.II</td><td>Der Motor wurde <span class="hl">geprüft</span>.</td></tr>
+          <tr><td>wir</td><td>wurden + P.II</td><td>Wir wurden <span class="hl">eingeladen</span>.</td></tr>
+          <tr><td>ihr</td><td>wurdet + P.II</td><td>Ihr wurdet <span class="hl">benachrichtigt</span>.</td></tr>
+          <tr><td>sie/Sie</td><td>wurden + P.II</td><td>Die Briefe wurden <span class="hl">geschrieben</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example"><strong>Aktiv:</strong> Man hat das Haus gebaut.<br><strong>Passiv Präteritum:</strong> Das Haus wurde <span class="hl">gebaut</span>.</div>
+  </div>
+
+  <!-- 3. Passiv Perfekt -->
+  <div class="card">
+    <h2>3. Passiv Perfekt – <em>ist/sind + Partizip II + worden</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Person</th><th>Bildung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td>ich</td><td>bin + P.II + worden</td><td>Ich bin <span class="hl">gefragt worden</span>.</td></tr>
+          <tr><td>du</td><td>bist + P.II + worden</td><td>Du bist <span class="hl">eingeladen worden</span>.</td></tr>
+          <tr><td>er/sie/es</td><td>ist + P.II + worden</td><td>Der Motor ist <span class="hl">geprüft worden</span>.</td></tr>
+          <tr><td>wir</td><td>sind + P.II + worden</td><td>Wir sind <span class="hl">informiert worden</span>.</td></tr>
+          <tr><td>ihr</td><td>seid + P.II + worden</td><td>Ihr seid <span class="hl">benachrichtigt worden</span>.</td></tr>
+          <tr><td>sie/Sie</td><td>sind + P.II + worden</td><td>Die Pakete sind <span class="hl">geliefert worden</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip">Im Passiv Perfekt steht <em>worden</em> (nicht <em>geworden</em>!).</div>
+    <div class="example"><strong>Aktiv:</strong> Der Chef hat den Mitarbeiter entlassen.<br><strong>Passiv Perfekt:</strong> Der Mitarbeiter ist <span class="hl">entlassen worden</span>.</div>
+  </div>
+
+  <!-- 4. Passiv mit von/durch -->
+  <div class="card">
+    <h2>4. Handelnde Person: <em>von + Dativ</em> / <em>durch + Akkusativ</em></h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Präposition</th><th>Verwendung</th><th>Beispiel</th></tr></thead>
+        <tbody>
+          <tr><td><span class="hl">von</span> + Dativ</td><td>Person oder konkreter Verursacher</td><td>Das Fenster wurde <span class="hl">von dem Sturm</span> zerstört.</td></tr>
+          <tr><td><span class="hl">durch</span> + Akkusativ</td><td>Mittel, Ursache, Instrument</td><td>Die Stadt wurde <span class="hl">durch ein Erdbeben</span> zerstört.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="example">Der Brief wurde <span class="hl">von der Sekretärin</span> geschrieben.<br>Die Brücke wurde <span class="hl">durch den Fluss</span> beschädigt.</div>
+  </div>
+
+  <!-- 5. Übersicht -->
+  <div class="card">
+    <h2>5. Vergleichsübersicht aller Passiv-Formen</h2>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Tempus</th><th>Hilfsverb</th><th>Struktur</th><th>Beispiel (er/sie/es)</th></tr></thead>
+        <tbody>
+          <tr><td>Präsens</td><td>werden</td><td>wird + Partizip II</td><td>Das Auto <span class="hl">wird repariert</span>.</td></tr>
+          <tr><td>Präteritum</td><td>werden</td><td>wurde + Partizip II</td><td>Das Auto <span class="hl">wurde repariert</span>.</td></tr>
+          <tr><td>Perfekt</td><td>sein</td><td>ist + Partizip II + worden</td><td>Das Auto <span class="hl">ist repariert worden</span>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Test -->
+  <div class="test-box" id="testSection">
+    <h2 style="margin:0;color:#223a60">Passiv – Übungstest (50 Fragen)</h2>
+    <p style="color:var(--muted);margin:0">Wähle die richtige Passivform.</p>
+    <button class="btn primary" id="startBtn" onclick="startTest()">Test starten</button>
+    <div id="testBody" style="display:none;display:grid;gap:14px"></div>
+    <div class="test-controls" id="testControls" style="display:none">
+      <button class="btn primary" onclick="gradeTest()">Auswerten</button>
+      <button class="btn" onclick="showSolutions()">Lösungen zeigen</button>
+    </div>
+    <div id="resultBar" style="display:none" class="result-bar"></div>
+  </div>
+
+</div>
+<script>
+// ── Question data ──────────────────────────────────────────────
+// Passiv Präsens (20)
+const praesData = [
+  {q:"Der Brief ___ von der Sekretärin geschrieben.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Die Fenster ___ jeden Morgen geputzt.",a:"werden",w:["wird","wurden","sind … worden"]},
+  {q:"Das Auto ___ gerade repariert.",a:"wird",w:["wurde","ist … worden","sind"]},
+  {q:"Ich ___ jeden Tag um 7 Uhr geweckt.",a:"werde",w:["wurde","bin … worden","wird"]},
+  {q:"Du ___ morgen operiert.",a:"wirst",w:["wurdest","bist … worden","wird"]},
+  {q:"Das Paket ___ heute geliefert.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Wir ___ über die Ergebnisse informiert.",a:"werden",w:["wurden","sind … worden","wird"]},
+  {q:"Die Kinder ___ täglich untersucht.",a:"werden",w:["wurden","sind … worden","wird"]},
+  {q:"Der Patient ___ sofort behandelt.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Ihr ___ zur Party eingeladen.",a:"werdet",w:["wurdet","seid … worden","werden"]},
+  {q:"Das Essen ___ um 12 Uhr serviert.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Die Hausaufgaben ___ jeden Tag korrigiert.",a:"werden",w:["wurden","sind … worden","wird"]},
+  {q:"Der Dieb ___ von der Polizei gefasst.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Die E-Mail ___ gerade gesendet.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Das neue Gesetz ___ diskutiert.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Die Türen ___ um 22 Uhr geschlossen.",a:"werden",w:["wurden","sind … worden","wird"]},
+  {q:"Der Film ___ in Berlin gedreht.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Sie (Pl.) ___ telefonisch benachrichtigt.",a:"werden",w:["wurden","sind … worden","wird"]},
+  {q:"Das Formular ___ online ausgefüllt.",a:"wird",w:["wurde","ist … worden","werden"]},
+  {q:"Die Brücke ___ zurzeit gebaut.",a:"wird",w:["wurde","ist … worden","werden"]},
+];
+
+// Passiv Präteritum (15)
+const praetData = [
+  {q:"Der Motor ___ gestern geprüft.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Die Stadt ___ 1900 gegründet.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Wir ___ nicht eingeladen.",a:"wurden",w:["werden","sind … worden","wird"]},
+  {q:"Du ___ von allen beobachtet.",a:"wurdest",w:["wirst","bist … worden","wird"]},
+  {q:"Das Haus ___ 1990 gebaut.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Die Briefe ___ gestern verschickt.",a:"wurden",w:["werden","sind … worden","wird"]},
+  {q:"Ich ___ vom Arzt untersucht.",a:"wurde",w:["werde","bin … worden","wird"]},
+  {q:"Der Vertrag ___ unterschrieben.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Die Kinder ___ nach Hause geschickt.",a:"wurden",w:["werden","sind … worden","wird"]},
+  {q:"Ihr ___ zum Treffen eingeladen.",a:"wurdet",w:["werdet","seid … worden","wird"]},
+  {q:"Das Gebäude ___ durch Feuer zerstört.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Der Täter ___ festgenommen.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Die Prüfungen ___ abgesagt.",a:"wurden",w:["werden","sind … worden","wird"]},
+  {q:"Das Buch ___ letztes Jahr veröffentlicht.",a:"wurde",w:["wird","ist … worden","werden"]},
+  {q:"Sie (Sg.) ___ zur Leiterin ernannt.",a:"wurde",w:["wird","ist … worden","werden"]},
+];
+
+// Passiv Perfekt (15)
+const perfData = [
+  {q:"Der Motor ___ geprüft ___.",a:"ist … worden",w:["wird","wurde","werden … worden"]},
+  {q:"Die Briefe ___ abgeschickt ___.",a:"sind … worden",w:["werden","wurden","ist … worden"]},
+  {q:"Das Haus ___ verkauft ___.",a:"ist … worden",w:["wird","wurde","werden … worden"]},
+  {q:"Ich ___ eingeladen ___.",a:"bin … worden",w:["werde","wurde","bin … geworden"]},
+  {q:"Du ___ darüber informiert ___.",a:"bist … worden",w:["wirst","wurdest","bist … geworden"]},
+  {q:"Wir ___ benachrichtigt ___.",a:"sind … worden",w:["werden","wurden","sind … geworden"]},
+  {q:"Das Formular ___ ausgefüllt ___.",a:"ist … worden",w:["wird","wurde","ist … geworden"]},
+  {q:"Die Regeln ___ geändert ___.",a:"sind … worden",w:["werden","wurden","sind … geworden"]},
+  {q:"Ihr ___ pünktlich abgeholt ___.",a:"seid … worden",w:["werdet","wurdet","seid … geworden"]},
+  {q:"Der Zeuge ___ befragt ___.",a:"ist … worden",w:["wird","wurde","ist … geworden"]},
+  {q:"Die Türen ___ geschlossen ___.",a:"sind … worden",w:["werden","wurden","sind … geworden"]},
+  {q:"Das Projekt ___ erfolgreich abgeschlossen ___.",a:"ist … worden",w:["wird","wurde","ist … geworden"]},
+  {q:"Die Verträge ___ unterschrieben ___.",a:"sind … worden",w:["werden","wurden","sind … geworden"]},
+  {q:"Er ___ entlassen ___.",a:"ist … worden",w:["wird","wurde","ist … geworden"]},
+  {q:"Die Wohnung ___ renoviert ___.",a:"ist … worden",w:["wird","wurde","ist … geworden"]},
+];
+
+// ── Build test ─────────────────────────────────────────────────
+let allQuestions = [];
+function shuffle(arr){return arr.slice().sort(()=>Math.random()-0.5)}
+
+function buildQuestions(){
+  const pool = [
+    ...praesData.slice(0,20),
+    ...praetData.slice(0,15),
+    ...perfData.slice(0,15),
+  ];
+  allQuestions = shuffle(pool).slice(0,50);
+}
+
+function startTest(){
+  buildQuestions();
+  const body = document.getElementById("testBody");
+  body.innerHTML = "";
+  body.style.display = "grid";
+  allQuestions.forEach((q,i)=>{
+    const opts = shuffle([q.a, ...q.w.slice(0,3)]);
+    const div = document.createElement("div");
+    div.className = "q-block";
+    div.innerHTML = `<div class="q-label">${i+1}. ${q.q}</div><div class="choices">${
+      opts.map(o=>`<label class="choice"><input type="radio" name="q${i}" value="${o}"> ${o}</label>`).join("")
+    }</div>`;
+    body.appendChild(div);
+  });
+  document.getElementById("testControls").style.display = "flex";
+  document.getElementById("resultBar").style.display = "none";
+  document.getElementById("startBtn").textContent = "Neu starten";
+}
+
+function gradeTest(){
+  let correct = 0;
+  allQuestions.forEach((q,i)=>{
+    const chosen = document.querySelector(`input[name="q${i}"]:checked`);
+    const labels = document.querySelectorAll(`.q-block:nth-child(${i+1}) label.choice`);
+    labels.forEach(l=>{l.classList.remove("correct","wrong");});
+    if(chosen){
+      const val = chosen.value;
+      if(val === q.a){ correct++; chosen.closest("label").classList.add("correct"); }
+      else{ chosen.closest("label").classList.add("wrong"); }
+    }
+  });
+  const bar = document.getElementById("resultBar");
+  bar.style.display = "block";
+  bar.textContent = `Ergebnis: ${correct} / 50 richtig (${Math.round(correct/50*100)} %)`;
+}
+
+function showSolutions(){
+  allQuestions.forEach((q,i)=>{
+    const labels = document.querySelectorAll(`#testBody .q-block:nth-child(${i+1}) label.choice`);
+    labels.forEach(l=>{
+      l.classList.remove("correct","wrong");
+      if(l.textContent.trim() === q.a) l.classList.add("correct");
+    });
+  });
+  const bar = document.getElementById("resultBar");
+  bar.style.display = "block";
+  bar.textContent = "Lösungen werden angezeigt.";
+}
+</script>
+</body>
+</html>
