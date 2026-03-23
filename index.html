@@ -6501,6 +6501,13 @@
       // Direktabgabe: Bewertung wird beim Abgeben einmal berechnet.
       evaluateA2IntegratedTest(false);
 
+      const questions = currentA2State.questions;
+      const total = questions.length;
+      const correct = questions.filter(q => q.isCorrect === true).length;
+      const wrong = questions.filter(q => q.isCorrect === false).length;
+      const unanswered = questions.filter(q => !Number.isFinite(q.selected)).length;
+      const scoreData = { correct, wrong, total, unanswered, elapsed_seconds: 0 };
+
       const solvedAssignmentId = String(currentOpenedHomeworkContext.a2AssignmentId || "").trim();
       const solvedAssignmentIds = Array.isArray(currentOpenedHomeworkContext.a2AssignmentIds)
         ? currentOpenedHomeworkContext.a2AssignmentIds.map(v => String(v || "").trim()).filter(Boolean)
@@ -6516,21 +6523,24 @@
 
       const settled = await Promise.all(targets.map(async id => ({
         id,
-        ok: await submitHomeworkCompleteById(id)
+        ok: await submitHomeworkCompleteById(id, scoreData)
       })));
       settled.forEach(row => {
         if (row.ok) markAssignmentSolvedClient(row.id);
       });
 
-      if (settled.some(row => !row.ok)) {
-        setStatus("error", "Mindestens eine A2-Hausaufgabe konnte nicht abgeschlossen werden.", "portalStatus");
+      const hasError = settled.some(row => !row.ok);
+      if (hasError) {
+        const errMsg = "A2-Aufgabe konnte nicht abgegeben werden. Bitte versuche es erneut.";
+        setStatus("error", errMsg, "a2Status");
+        setStatus("error", errMsg, "portalStatus");
       } else {
         setStatus("ok", "A2-Aufgabe wurde abgegeben.", "portalStatus");
         currentA2State.submitted = true;
       }
       updateA2ActionStates();
       await refreshPortalData();
-      if (!settled.some(row => !row.ok)) {
+      if (!hasError) {
         navigateToSection("portal");
       }
     }
@@ -12158,14 +12168,22 @@
       }
     }
 
-    async function submitHomeworkCompleteById(assignmentId) {
+    async function submitHomeworkCompleteById(assignmentId, scoreData = null) {
       const id = String(assignmentId || "").trim();
       if (!id) return false;
       try {
+        const body = { assignment_id: id };
+        if (scoreData && typeof scoreData === "object") {
+          if (Number.isFinite(scoreData.correct)) body.correct = scoreData.correct;
+          if (Number.isFinite(scoreData.wrong)) body.wrong = scoreData.wrong;
+          if (Number.isFinite(scoreData.total)) body.total = scoreData.total;
+          if (Number.isFinite(scoreData.unanswered)) body.unanswered = scoreData.unanswered;
+          if (Number.isFinite(scoreData.elapsed_seconds)) body.elapsed_seconds = scoreData.elapsed_seconds;
+        }
         const response = await fetch("./api/student_homework_complete.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ assignment_id: id })
+          body: JSON.stringify(body)
         });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
