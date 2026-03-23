@@ -1,101 +1,172 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Akkusativ - A1</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Akkusativ – A1 | DTZ-LiD</title>
   <style>
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype"); font-weight: 300; font-style: normal; font-display: swap; }
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
-    :root { --panel:#ffffff; --line:#d9e1ef; --text:#1f2f46; --muted:#5f6f88; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:"Comfortaa","Trebuchet MS",sans-serif; background: linear-gradient(180deg,#f8fbff 0%,#f1f5fb 100%); color:var(--text); line-height:1.45; }
-    .container { width:min(1180px, calc(100% - 1rem)); max-width:100%; margin:22px auto 30px; }
-    .top-nav { position:sticky; top:10px; z-index:40; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; padding:10px 12px; border-radius:14px; border:1px solid #e7d6de; background: rgba(255,255,255,0.92); box-shadow:0 10px 24px rgba(59,52,66,0.1); backdrop-filter: blur(8px); max-width:100%; }
-    .nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; color:#4a4454; letter-spacing:0.02em; white-space:nowrap; min-width:0; text-decoration:none; }
-    .nav-brand img { width:auto; height:27px; max-width:46vw; display:block; }
-    .nav-right { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; position:relative; }
-    .nav-links { display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:45; align-items:stretch; gap:8px; flex-direction:column; min-width:210px; padding:8px; border-radius:12px; border:1px solid #e7d6de; background: rgba(255,255,255,0.98); box-shadow:0 12px 24px rgba(59,52,66,0.14); order:1; }
-    .top-nav.open .nav-links { display:flex; }
-    .nav-link { width:100%; min-width:0; border-radius:999px; padding:8px 12px; border:1px solid #e6cfda; background:#fff7fa; color:#6f4f5f; text-transform:none; letter-spacing:0; font-size:0.9rem; box-shadow:none; text-decoration:none; text-align:center; font-weight:700; }
-    .nav-link:hover { color:#f2849e; border-color:#f2b7c9; }
-    .nav-toggle { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:40px; height:36px; border-radius:12px; border:1px solid #e6cfda; background:#fff7fa; font-size:1.1rem; color:#6f4f5f; cursor:pointer; }
-    .wrap { max-width:1080px; margin:0 auto; padding:18px; }
-    .hero { border-radius:20px; border:1px solid #b9c8df; background: radial-gradient(circle at top right,#8c7999 0%,#4a496e 45%,#2d395a 100%); color:#fff; padding:22px; margin-bottom:14px; }
-    .hero h1 { margin:0 0 8px; font-size: clamp(1.35rem, 3vw, 1.95rem); }
-    .hero p { margin:0; color:#e7edf8; font-size:.95rem; }
-    .grid { display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:12px; }
-    .card { grid-column: span 12; background: var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; }
-    .card h2 { margin:0 0 10px; font-size:1.12rem; color:#253b5a; }
-    .pill-link { display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; border:1px solid #dbe6f6; background:#f7fbff; color:#2b466f; font-weight:700; text-decoration:none; font-size:.92rem; }
-    .bullet-list { margin:0; padding-left:18px; }
-    .example-box { border:1px dashed #c9d7f0; border-radius:12px; padding:10px; background:#f9fbff; margin-bottom:8px; }
-    footer { text-align:center; padding:24px 0 30px; color:#72809b; font-size:.9rem; }
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;}
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5;}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px;}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60;}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f;}
+    p{margin:0 0 6px;color:#35507a;}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px;}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff;}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8);}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px;}
+    table{width:100%;border-collapse:collapse;font-size:.95rem;}
+    th{background:#e6eef8;color:#223a60;padding:7px 10px;text-align:left;font-weight:700;}
+    td{padding:6px 10px;border-bottom:1px solid #e4ecf5;color:#2d4a73;}
+    tr:last-child td{border-bottom:none;}
+    .hl{color:#1a6b9a;font-weight:700;}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px;}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0;}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+    .badge{border:1px solid #bfd0ea;border-radius:999px;padding:4px 10px;background:#f4f8ff;color:#2e4b74;font-size:.93rem;font-weight:700;}
+    .question-list{display:grid;gap:10px;margin-top:10px;}
+    .q-card{border:1px solid #d6e2f3;border-radius:12px;padding:12px;background:#fbfdff;display:grid;gap:8px;}
+    .q-card.correct{border-color:#b8e3cf;background:#f4fff9;}
+    .q-card.wrong{border-color:#f0c8d1;background:#fff7f9;}
+    .q-title{margin:0;font-size:1rem;color:#2a466f;font-weight:700;}
+    .q-prompt{margin:0;color:#314e77;white-space:pre-line;}
+    .opts{display:grid;gap:5px;}
+    .opt{border:1px solid #cfdbef;border-radius:10px;background:#fff;padding:8px;display:flex;gap:8px;align-items:flex-start;cursor:pointer;}
+    .opt input{margin-top:3px;}
+    .opt.correct-answer{border-color:#96cdb5;background:#eefcf4;}
+    .solution{margin:0;color:#46658f;font-size:.93rem;display:none;}
+    .show-sol .solution{display:block;}
+    .actions{margin-top:10px;display:grid;gap:8px;}
+    @media(min-width:760px){.actions{grid-template-columns:repeat(3,minmax(0,1fr));}}
+    .result{margin-top:8px;border:1px dashed #c8d7ef;border-radius:10px;padding:10px;color:#314f79;white-space:pre-wrap;}
   </style>
 </head>
 <body>
-  <div class="container">
-    <nav id="topNav" class="top-nav">
-      <a id="navLogoBtn" class="nav-brand" href="./index.html" aria-label="Zur Startseite">
-        <img src="./assets/dtzlib-logo-v3.png" alt="DTZ-LID">
-      </a>
-      <div class="nav-right">
-        <div class="nav-links">
-          <a class="nav-link" href="./index.html">Start</a>
-          <a class="nav-link" href="./index.html">Portal</a>
-          <a class="nav-link" href="./a1-themen.html">A1-Themen</a>
-          <a class="nav-link" href="./a2-themen.html">A2-Themen</a>
-          <a class="nav-link" href="./admin.html">Lehrer-Panel</a>
-          <a class="nav-link" href="./agb.html">AGB</a>
-        </div>
-        <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
-      </div>
-    </nav>
+<main class="wrap">
+  <section class="hero">
+    <h1>Akkusativ (A1)</h1>
+    <p style="color:#4a6492">Wen? Was? – Direktes Objekt im Satz</p>
+    <div><a class="btn" href="../a1-themen.html">← A1-Themen</a></div>
+  </section>
 
-    <div class="wrap">
-      <section class="hero">
-        <h1>Akkusativ</h1>
-        <p>Wen/was? Direktes Objekt.</p>
-      </section>
-
-      <div class="grid">
-        <div class="card">
-          <h2>Überblick</h2>
-          <ul class="bullet-list">
-            <li>Wen oder was sehe ich?</li>
-            <li>Maskulin: den; Feminin: die; Neutrum: das.</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Beispiele</h2>
-          <div class="example-box">Ich sehe <strong>den</strong> Mann.</div>
-          <div class="example-box">Wir kaufen <strong>das</strong> Brot.</div>
-        </div>
-        <div class="card">
-          <h2>Merksatz</h2>
-          <p>Akkusativ = wen/was.</p>
-          <a class="pill-link" href="./a1-themen.html">Zurück zu A1-Themen</a>
-        </div>
-      </div>
+  <section class="card">
+    <h2>Frage: Wen? / Was?</h2>
+    <div class="panel">
+      <p>Der Akkusativ antwortet auf die Fragen <strong>Wen?</strong> (Personen) und <strong>Was?</strong> (Sachen).</p>
+      <table style="margin-top:8px">
+        <tr><th></th><th>maskulin</th><th>neutrum</th><th>feminin</th><th>Plural</th></tr>
+        <tr><td>Nominativ</td><td>der/ein/kein</td><td>das/ein/kein</td><td>die/eine/keine</td><td>die/–/keine</td></tr>
+        <tr><td><strong>Akkusativ</strong></td><td><span class="hl">den/einen/keinen</span></td><td>das/ein/kein</td><td>die/eine/keine</td><td>die/–/keine</td></tr>
+      </table>
     </div>
-  </div>
-  <footer>© dtz-lid.com</footer>
-  <script>
-    const navToggleBtn = document.getElementById("navToggleBtn");
-    if (navToggleBtn) {
-      navToggleBtn.addEventListener("click", event => {
-        event.stopPropagation();
-        const nav = document.getElementById("topNav");
-        if (!nav) return;
-        nav.classList.toggle("open");
-      });
-    }
-    document.addEventListener("click", event => {
-      const nav = document.getElementById("topNav");
-      if (!nav || !nav.classList.contains("open")) return;
-      if (!nav.contains(event.target)) nav.classList.remove("open");
+    <div class="tip" style="margin-top:8px">Nur das <strong>Maskulinum</strong> ändert sich im Akkusativ: der → <span class="hl">den</span>, ein → <span class="hl">einen</span>, kein → <span class="hl">keinen</span>!</div>
+  </section>
+
+  <section class="card">
+    <h2>Beispiele</h2>
+    <div class="example">Ich kaufe <span class="hl">einen</span> Kaffee. (der Kaffee → einen Kaffee)</div>
+    <div class="example">Er liest <span class="hl">den</span> Brief. (der Brief → den Brief)</div>
+    <div class="example">Wir haben <span class="hl">keinen</span> Hund. (der Hund → keinen Hund)</div>
+    <div class="example">Sie kauft eine Tasche. (die Tasche → keine Änderung)</div>
+    <div class="example">Ich kenne <span class="hl">den</span> Mann nicht.</div>
+    <div class="example">Verben mit Akkusativ: kaufen, sehen, nehmen, brauchen, kennen, haben, mögen, trinken, essen...</div>
+  </section>
+
+  <section class="card">
+    <div class="badge-row">
+      <span class="badge">Akkusativ</span>
+      <span class="badge">50 Fragen</span>
+      <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+    </div>
+    <h2>Test</h2>
+    <div id="questionList" class="question-list"></div>
+    <div class="actions">
+      <button class="btn primary" id="checkBtn">Prüfen</button>
+      <button class="btn" id="solutionBtn">Lösungen zeigen</button>
+      <button class="btn" id="newBtn">Neuer Test</button>
+    </div>
+    <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+  </section>
+</main>
+<script>
+const pb=document.getElementById('progressBadge'),rb=document.getElementById('resultBox'),ql=document.getElementById('questionList');
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+const nouns=[
+  {w:'Mann',g:'m',def:'den Mann',indef:'einen Mann',neg:'keinen Mann'},
+  {w:'Kaffee',g:'m',def:'den Kaffee',indef:'einen Kaffee',neg:'keinen Kaffee'},
+  {w:'Brief',g:'m',def:'den Brief',indef:'einen Brief',neg:'keinen Brief'},
+  {w:'Hund',g:'m',def:'den Hund',indef:'einen Hund',neg:'keinen Hund'},
+  {w:'Tisch',g:'m',def:'den Tisch',indef:'einen Tisch',neg:'keinen Tisch'},
+  {w:'Film',g:'m',def:'den Film',indef:'einen Film',neg:'keinen Film'},
+  {w:'Buch',g:'n',def:'das Buch',indef:'ein Buch',neg:'kein Buch'},
+  {w:'Kind',g:'n',def:'das Kind',indef:'ein Kind',neg:'kein Kind'},
+  {w:'Auto',g:'n',def:'das Auto',indef:'ein Auto',neg:'kein Auto'},
+  {w:'Frau',g:'f',def:'die Frau',indef:'eine Frau',neg:'keine Frau'},
+  {w:'Tasche',g:'f',def:'die Tasche',indef:'eine Tasche',neg:'keine Tasche'},
+  {w:'Zeitung',g:'f',def:'die Zeitung',indef:'eine Zeitung',neg:'keine Zeitung'},
+];
+const verbs=['kauft','sieht','liest','braucht','kennt','hat','trinkt','isst','nimmt','sucht'];
+function qDef(){
+  const n=pick(nouns);const v=pick(verbs);
+  const correct=n.def;
+  const others=nouns.filter(x=>x.w!==n.w&&x.g===n.g).map(x=>x.def);
+  const wrong1=n.g==='m'?n.def.replace('den','der'):n.def;
+  const opts=shuffle([correct,wrong1,nouns.filter(x=>x.w!==n.w)[0].def]);
+  return{prompt:`Bestimmter Artikel im Akkusativ:\nEr ${v} ___ ${n.w}.`,opts:shuffle([correct,n.g==='m'?`der ${n.w}`:`${n.def.split(' ')[0]} ${n.w}`,n.neg]),correct:0,solution:`Er ${v} ${correct}.`,hint:`Maskulin im Akk: der→den. ${n.g!=='m'?'Kein Wechsel bei n/f!':''}`};
+}
+function qIndef(){
+  const n=pick(nouns);const v=pick(verbs);
+  const correct=n.indef;
+  const wrong1=n.g==='m'?n.indef.replace('einen','ein'):n.indef;
+  const opts=shuffle([correct,wrong1,n.neg]);
+  return{prompt:`Unbestimmter Artikel im Akkusativ:\nSie ${v} ___ ${n.w}.`,opts,correct:opts.indexOf(correct),solution:`Sie ${v} ${correct}.`,hint:`Mask.Akk: ein→einen. n/f: kein Wechsel.`};
+}
+function qNeg(){
+  const n=pick(nouns);
+  const correct=n.neg;
+  const wrong1=n.g==='m'?n.neg.replace('keinen','kein'):n.neg;
+  const opts=shuffle([correct,wrong1,n.indef]);
+  return{prompt:`Negativartikel im Akkusativ:\nIch habe ___ ${n.w}.`,opts,correct:opts.indexOf(correct),solution:`Ich habe ${correct}.`,hint:`Mask.Akk: kein→keinen. n/f: kein Wechsel.`};
+}
+const makers=[qDef,qIndef,qNeg];
+let questions=[];
+function gen50(){const o=[];for(let i=0;i<50;i++)o.push(makers[i%3]());return shuffle(o);}
+function render(){
+  ql.innerHTML='';
+  questions.forEach((q,i)=>{
+    const c=document.createElement('article');c.className='q-card';
+    const t=document.createElement('p');t.className='q-title';t.textContent=`Frage ${i+1}/50`;
+    const pr=document.createElement('p');pr.className='q-prompt';pr.textContent=q.prompt;
+    const od=document.createElement('div');od.className='opts';
+    q.opts.forEach((o,j)=>{
+      const l=document.createElement('label');l.className='opt';
+      const r=document.createElement('input');r.type='radio';r.name=`q_${i}`;r.value=j;
+      r.addEventListener('change',()=>pb.textContent=`Gelöst: ${ql.querySelectorAll('input:checked').length}/50`);
+      const tx=document.createElement('span');tx.innerHTML=`<strong>${String.fromCharCode(65+j)})</strong> ${o}`;
+      l.append(r,tx);od.appendChild(l);
     });
-  </script>
+    const s=document.createElement('p');s.className='solution';s.textContent=`Lösung: ${q.solution} | ${q.hint}`;
+    c.append(t,pr,od,s);ql.appendChild(c);
+  });
+  pb.textContent='Gelöst: 0/50';rb.textContent='Noch nicht ausgewertet.';
+}
+function grade(){
+  let n=0;
+  ql.querySelectorAll('.q-card').forEach((c,i)=>{
+    c.classList.remove('correct','wrong');c.querySelectorAll('.opt').forEach(o=>o.classList.remove('correct-answer'));
+    const q=questions[i];const ch=c.querySelector('input:checked');const s=ch?Number(ch.value):-1;
+    const ls=c.querySelectorAll('.opt');if(ls[q.correct])ls[q.correct].classList.add('correct-answer');
+    if(s===q.correct){n++;c.classList.add('correct');}else c.classList.add('wrong');
+  });
+  rb.textContent=`Richtig: ${n}/50\nPunkte: ${n*2}/100\nErgebnis: ${n*2}%`;
+}
+document.getElementById('checkBtn').addEventListener('click',grade);
+document.getElementById('solutionBtn').addEventListener('click',()=>ql.classList.add('show-sol'));
+document.getElementById('newBtn').addEventListener('click',()=>{questions=gen50();ql.classList.remove('show-sol');render();window.scrollTo({top:0,behavior:'smooth'});});
+questions=gen50();render();
+</script>
 </body>
 </html>

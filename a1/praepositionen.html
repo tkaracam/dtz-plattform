@@ -1,103 +1,243 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Präpositionen (in, auf, bei, mit) - A1</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Präpositionen – A1 | DTZ-LiD</title>
   <style>
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Light.ttf") format("truetype"); font-weight: 300; font-style: normal; font-display: swap; }
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
-    @font-face { font-family: "Comfortaa"; src: url("./assets/fonts/Comfortaa-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
-    :root { --panel:#ffffff; --line:#d9e1ef; --text:#1f2f46; --muted:#5f6f88; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:"Comfortaa","Trebuchet MS",sans-serif; background: linear-gradient(180deg,#f8fbff 0%,#f1f5fb 100%); color:var(--text); line-height:1.45; }
-    .container { width:min(1180px, calc(100% - 1rem)); max-width:100%; margin:22px auto 30px; }
-    .top-nav { position:sticky; top:10px; z-index:40; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; padding:10px 12px; border-radius:14px; border:1px solid #e7d6de; background: rgba(255,255,255,0.92); box-shadow:0 10px 24px rgba(59,52,66,0.1); backdrop-filter: blur(8px); max-width:100%; }
-    .nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; color:#4a4454; letter-spacing:0.02em; white-space:nowrap; min-width:0; text-decoration:none; }
-    .nav-brand img { width:auto; height:27px; max-width:46vw; display:block; }
-    .nav-right { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; position:relative; }
-    .nav-links { display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:45; align-items:stretch; gap:8px; flex-direction:column; min-width:210px; padding:8px; border-radius:12px; border:1px solid #e7d6de; background: rgba(255,255,255,0.98); box-shadow:0 12px 24px rgba(59,52,66,0.14); order:1; }
-    .top-nav.open .nav-links { display:flex; }
-    .nav-link { width:100%; min-width:0; border-radius:999px; padding:8px 12px; border:1px solid #e6cfda; background:#fff7fa; color:#6f4f5f; text-transform:none; letter-spacing:0; font-size:0.9rem; box-shadow:none; text-decoration:none; text-align:center; font-weight:700; }
-    .nav-link:hover { color:#f2849e; border-color:#f2b7c9; }
-    .nav-toggle { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:40px; height:36px; border-radius:12px; border:1px solid #e6cfda; background:#fff7fa; font-size:1.1rem; color:#6f4f5f; cursor:pointer; }
-    .wrap { max-width:1080px; margin:0 auto; padding:18px; }
-    .hero { border-radius:20px; border:1px solid #b9c8df; background: radial-gradient(circle at top right,#8c7999 0%,#4a496e 45%,#2d395a 100%); color:#fff; padding:22px; margin-bottom:14px; }
-    .hero h1 { margin:0 0 8px; font-size: clamp(1.35rem, 3vw, 1.95rem); }
-    .hero p { margin:0; color:#e7edf8; font-size:.95rem; }
-    .grid { display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:12px; }
-    .card { grid-column: span 12; background: var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; }
-    .card h2 { margin:0 0 10px; font-size:1.12rem; color:#253b5a; }
-    .pill-link { display:inline-flex; align-items:center; justify-content:center; padding:8px 14px; border-radius:999px; border:1px solid #dbe6f6; background:#f7fbff; color:#2b466f; font-weight:700; text-decoration:none; font-size:.92rem; }
-    .bullet-list { margin:0; padding-left:18px; }
-    .example-box { border:1px dashed #c9d7f0; border-radius:12px; padding:10px; background:#f9fbff; margin-bottom:8px; }
-    footer { text-align:center; padding:24px 0 30px; color:#72809b; font-size:.9rem; }
+    :root{--bg:#f5f7fb;--card:#fff;--line:#d5deed;--text:#273650;}
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:"Comfortaa","Segoe UI",sans-serif;color:var(--text);background:var(--bg);line-height:1.5;}
+    .wrap{max-width:1080px;margin:0 auto;padding:14px;display:grid;gap:12px;}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;}
+    h1{margin:0;font-size:clamp(1.3rem,2.8vw,1.9rem);color:#223a60;}
+    h2{margin:0 0 10px;font-size:1.08rem;color:#2b466f;}
+    h3{margin:0 0 6px;font-size:.98rem;color:#2b466f;}
+    p{margin:0 0 6px;color:#35507a;}
+    .hero{background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%);border:1px solid #d9e4f5;border-radius:16px;padding:16px;display:grid;gap:8px;}
+    .btn{border:1px solid #cad8ef;border-radius:10px;padding:9px 13px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;color:#29476f;background:#eef4ff;}
+    .btn.primary{color:#fff;border-color:#d9afc5;background:linear-gradient(90deg,#e78fb0,#6e83e8);}
+    .grid2{display:grid;gap:10px;}
+    @media(min-width:760px){.grid2{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    .panel{border:1px solid #d8e3f4;border-radius:10px;background:#f8fbff;padding:12px;display:grid;gap:6px;}
+    table{width:100%;border-collapse:collapse;font-size:.93rem;}
+    th{background:#e6eef8;color:#223a60;padding:7px 9px;text-align:left;font-weight:700;}
+    td{padding:6px 9px;border-bottom:1px solid #e4ecf5;color:#2d4a73;}
+    tr:last-child td{border-bottom:none;}
+    .prep{font-weight:700;color:#1565c0;}
+    .tip{border:1px solid #efd6de;background:#fff7fa;border-radius:10px;padding:10px;color:#7c4d63;font-size:.95rem;margin-top:6px;}
+    .example{border:1px dashed #bcd0ee;border-radius:10px;padding:9px 12px;background:#f4f8ff;color:#2d4870;margin:4px 0;font-size:.95rem;}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+    .badge{border:1px solid #bfd0ea;border-radius:999px;padding:4px 10px;background:#f4f8ff;color:#2e4b74;font-size:.93rem;font-weight:700;}
+    .question-list{display:grid;gap:10px;margin-top:10px;}
+    .q-card{border:1px solid #d6e2f3;border-radius:12px;padding:12px;background:#fbfdff;display:grid;gap:8px;}
+    .q-card.correct{border-color:#b8e3cf;background:#f4fff9;}
+    .q-card.wrong{border-color:#f0c8d1;background:#fff7f9;}
+    .q-title{margin:0;font-size:1rem;color:#2a466f;font-weight:700;}
+    .q-prompt{margin:0;color:#314e77;white-space:pre-line;}
+    .opts{display:grid;gap:5px;}
+    .opt{border:1px solid #cfdbef;border-radius:10px;background:#fff;padding:8px;display:flex;gap:8px;align-items:flex-start;cursor:pointer;}
+    .opt input{margin-top:3px;}
+    .opt.correct-answer{border-color:#96cdb5;background:#eefcf4;}
+    .solution{margin:0;color:#46658f;font-size:.93rem;display:none;}
+    .show-sol .solution{display:block;}
+    .actions{margin-top:10px;display:grid;gap:8px;}
+    @media(min-width:760px){.actions{grid-template-columns:repeat(3,minmax(0,1fr));}}
+    .result{margin-top:8px;border:1px dashed #c8d7ef;border-radius:10px;padding:10px;color:#314f79;white-space:pre-wrap;}
   </style>
 </head>
 <body>
-  <div class="container">
-    <nav id="topNav" class="top-nav">
-      <a id="navLogoBtn" class="nav-brand" href="./index.html" aria-label="Zur Startseite">
-        <img src="./assets/dtzlib-logo-v3.png" alt="DTZ-LID">
-      </a>
-      <div class="nav-right">
-        <div class="nav-links">
-          <a class="nav-link" href="./index.html">Start</a>
-          <a class="nav-link" href="./index.html">Portal</a>
-          <a class="nav-link" href="./a1-themen.html">A1-Themen</a>
-          <a class="nav-link" href="./a2-themen.html">A2-Themen</a>
-          <a class="nav-link" href="./admin.html">Lehrer-Panel</a>
-          <a class="nav-link" href="./agb.html">AGB</a>
-        </div>
-        <button id="navToggleBtn" class="nav-toggle" type="button" aria-label="Navigation öffnen">☰</button>
-      </div>
-    </nav>
+<main class="wrap">
+  <section class="hero">
+    <h1>Präpositionen (A1)</h1>
+    <p style="color:#4a6492">Temporal · Lokal · Dativ · Akkusativ · Wechselpräpositionen</p>
+    <div><a class="btn" href="../a1-themen.html">← A1-Themen</a></div>
+  </section>
 
-    <div class="wrap">
-      <section class="hero">
-        <h1>Präpositionen (in, auf, bei, mit)</h1>
-        <p>Häufige Präpositionen für Ort und Begleitung.</p>
-      </section>
-
-      <div class="grid">
-        <div class="card">
-          <h2>Überblick</h2>
-          <ul class="bullet-list">
-            <li>in: in der Schule.</li>
-            <li>auf: auf dem Tisch.</li>
-            <li>bei: bei der Arbeit.</li>
-            <li>mit: mit Freunden.</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h2>Beispiele</h2>
-          <div class="example-box">Ich bin <strong>in</strong> der Stadt.</div>
-          <div class="example-box">Ich komme <strong>mit</strong> dem Bus.</div>
-        </div>
-        <div class="card">
-          <h2>Merksatz</h2>
-          <p>Präposition + Artikel.</p>
-          <a class="pill-link" href="./a1-themen.html">Zurück zu A1-Themen</a>
-        </div>
-      </div>
+  <section class="card">
+    <h2>1. Temporale Präpositionen (Zeit)</h2>
+    <div class="panel">
+      <table>
+        <tr><th>Präposition</th><th>Verwendung</th><th>Beispiel</th></tr>
+        <tr><td><span class="prep">am</span></td><td>Wochentag/Tagesabschnitt</td><td>am Montag, am Vormittag (⚠ in der Nacht)</td></tr>
+        <tr><td><span class="prep">um</span></td><td>Uhrzeit</td><td>um 8 Uhr, um halb 10, um 13 Uhr 30</td></tr>
+        <tr><td><span class="prep">vor</span></td><td>davor (zeitlich)</td><td>Es ist Viertel vor acht. Vor der Arbeit.</td></tr>
+        <tr><td><span class="prep">nach</span></td><td>danach (zeitlich)</td><td>Es ist zehn nach acht. Nach der Arbeit.</td></tr>
+        <tr><td><span class="prep">seit</span></td><td>von ... bis jetzt</td><td>seit fünf Jahren in Frankfurt</td></tr>
+        <tr><td><span class="prep">bis</span></td><td>Endpunkt</td><td>Der Film geht bis 22 Uhr.</td></tr>
+        <tr><td><span class="prep">von ... bis</span></td><td>Zeitraum</td><td>von 20 Uhr bis 22 Uhr</td></tr>
+      </table>
     </div>
-  </div>
-  <footer>© dtz-lid.com</footer>
-  <script>
-    const navToggleBtn = document.getElementById("navToggleBtn");
-    if (navToggleBtn) {
-      navToggleBtn.addEventListener("click", event => {
-        event.stopPropagation();
-        const nav = document.getElementById("topNav");
-        if (!nav) return;
-        nav.classList.toggle("open");
-      });
-    }
-    document.addEventListener("click", event => {
-      const nav = document.getElementById("topNav");
-      if (!nav || !nav.classList.contains("open")) return;
-      if (!nav.contains(event.target)) nav.classList.remove("open");
+  </section>
+
+  <section class="card">
+    <h2>2. Lokale Präpositionen (Ort)</h2>
+    <div class="panel">
+      <table>
+        <tr><th>Präposition</th><th>Frage</th><th>Beispiel</th></tr>
+        <tr><td><span class="prep">in</span></td><td>Wo?</td><td>In Berlin gibt es viele Sehenswürdigkeiten.</td></tr>
+        <tr><td><span class="prep">bei</span></td><td>Wo?</td><td>Ich bin beim Friseur.</td></tr>
+        <tr><td><span class="prep">nach</span></td><td>Wohin?</td><td>Ich fahre gern nach Berlin.</td></tr>
+        <tr><td><span class="prep">zu</span></td><td>Wohin?</td><td>Ich gehe zum Bahnhof.</td></tr>
+        <tr><td><span class="prep">aus</span></td><td>Woher?</td><td>Er kommt aus Italien.</td></tr>
+        <tr><td><span class="prep">von</span></td><td>Woher?</td><td>Sie kommt heute spät von der Arbeit.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Präpositionen mit Dativ</h2>
+    <p style="font-size:.9rem;color:#5a7a9a">aus · bei · mit · nach · seit · von · zu · vor (temporal)</p>
+    <div class="panel">
+      <table>
+        <tr><td><span class="prep">aus</span></td><td>Ich gehe jeden Morgen um 8 Uhr aus dem Haus.</td></tr>
+        <tr><td><span class="prep">bei</span></td><td>Ich wohne bei meinen Eltern.</td></tr>
+        <tr><td><span class="prep">mit</span></td><td>Ich fahre mit dem Bus.</td></tr>
+        <tr><td><span class="prep">nach</span></td><td>Nach dem Deutschkurs möchte ich eine Arbeit suchen.</td></tr>
+        <tr><td><span class="prep">seit</span></td><td>Ich bin schon seit einem Jahr in Deutschland.</td></tr>
+        <tr><td><span class="prep">von</span></td><td>Von der Haltestelle muss ich noch 5 Minuten zu Fuß gehen.</td></tr>
+        <tr><td><span class="prep">zu</span></td><td>Ich fahre zur Sprachschule.</td></tr>
+      </table>
+    </div>
+    <div class="tip" style="margin-top:8px">
+      bei dem = <strong>beim</strong> · zu dem = <strong>zum</strong> · von dem = <strong>vom</strong> · zu der = <strong>zur</strong>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>4. Präpositionen mit Akkusativ</h2>
+    <p style="font-size:.9rem;color:#5a7a9a">für · um · durch · ohne</p>
+    <div class="panel">
+      <table>
+        <tr><td><span class="prep">für</span></td><td>Sie brauchen für den Antrag einen Pass und ein Foto.</td></tr>
+        <tr><td><span class="prep">um</span></td><td>Man kann sehr gut um den Schuchsee wandern.</td></tr>
+        <tr><td><span class="prep">durch</span></td><td>Der Zug fährt durch den Tunnel.</td></tr>
+        <tr><td><span class="prep">ohne</span></td><td>Sie trinkt den Kaffee ohne Zucker. (ohne meist ohne Artikel)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>5. Wechselpräpositionen mit Dativ (Wo?)</h2>
+    <p style="font-size:.9rem;color:#5a7a9a">in · an · auf · unter · über · vor · hinter · neben · zwischen</p>
+    <div class="panel">
+      <table>
+        <tr><td><span class="prep">in</span></td><td>In der Bäckerei sind viele Leute.</td></tr>
+        <tr><td><span class="prep">an</span></td><td>Der Bus steht an der Ampel.</td></tr>
+        <tr><td><span class="prep">auf</span></td><td>Auf dem Platz ist ein Brunnen.</td></tr>
+        <tr><td><span class="prep">unter</span></td><td>Die Bank steht unter dem Baum.</td></tr>
+        <tr><td><span class="prep">über</span></td><td>Die Sprachschule ist im ersten Stock über der Post.</td></tr>
+        <tr><td><span class="prep">vor</span></td><td>Vor dem Supermarkt ist ein Parkplatz.</td></tr>
+        <tr><td><span class="prep">hinter</span></td><td>Hinter dem Café ist ein Spielplatz.</td></tr>
+        <tr><td><span class="prep">neben</span></td><td>Neben dem Kino ist eine Drogerie.</td></tr>
+        <tr><td><span class="prep">zwischen</span></td><td>Zwischen den Bäumen stehen Bänke.</td></tr>
+      </table>
+    </div>
+    <div class="tip" style="margin-top:8px">in dem → <strong>im</strong> · an dem → <strong>am</strong></div>
+  </section>
+
+  <section class="card">
+    <div class="badge-row">
+      <span class="badge">Präpositionen</span>
+      <span class="badge">50 Fragen</span>
+      <span class="badge" id="progressBadge">Gelöst: 0/50</span>
+    </div>
+    <h2>Test</h2>
+    <div id="questionList" class="question-list"></div>
+    <div class="actions">
+      <button class="btn primary" id="checkBtn">Prüfen</button>
+      <button class="btn" id="solutionBtn">Lösungen zeigen</button>
+      <button class="btn" id="newBtn">Neuer Test</button>
+    </div>
+    <div class="result" id="resultBox">Noch nicht ausgewertet.</div>
+  </section>
+</main>
+<script>
+const pb=document.getElementById('progressBadge'),rb=document.getElementById('resultBox'),ql=document.getElementById('questionList');
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+const temporal=[
+  {prep:'am',ex:'___ Montag gehe ich zum Kurs.',ans:'Am',hint:'Wochentag → am'},
+  {prep:'um',ex:'Der Film beginnt ___ 20 Uhr.',ans:'um',hint:'Uhrzeit → um'},
+  {prep:'seit',ex:'Ich lebe ___ einem Jahr in Berlin.',ans:'seit',hint:'Zeitraum bis jetzt → seit'},
+  {prep:'bis',ex:'Der Kurs geht ___ 12 Uhr.',ans:'bis',hint:'Endpunkt → bis'},
+  {prep:'nach',ex:'___ dem Kurs gehe ich nach Hause.',ans:'Nach',hint:'danach (zeitlich) → nach'},
+  {prep:'vor',ex:'___ der Arbeit kaufe ich Brot.',ans:'Vor',hint:'davor (zeitlich) → vor'},
+];
+const lokal=[
+  {prep:'in',q:'Wo? (Stadt/Raum)',ex:'Ich wohne ___ Berlin.',ans:'in',hint:'Wo? (Stadt) → in'},
+  {prep:'nach',q:'Wohin? (Stadt)',ex:'Ich fahre ___ München.',ans:'nach',hint:'Wohin? (Stadt) → nach'},
+  {prep:'aus',q:'Woher? (Herkunft)',ex:'Er kommt ___ der Türkei.',ans:'aus',hint:'Woher? → aus'},
+  {prep:'bei',q:'Wo? (Person/Ort)',ex:'Ich warte ___ der Haltestelle.',ans:'bei',hint:'Wo? (bei Person/Ort) → bei'},
+  {prep:'zu',q:'Wohin? (Person/Ort)',ex:'Ich fahre ___ m Arzt.',ans:'zum',hint:'Wohin? (Person/Ort) → zu (zum/zur)'},
+  {prep:'von',q:'Woher? (Bewegung)',ex:'Sie kommt gerade ___ der Arbeit.',ans:'von',hint:'Woher? (Bewegung) → von'},
+];
+const dativPreps=[
+  {prep:'mit',ex:'Ich fahre ___ dem Bus.',ans:'mit dem',hint:'Transportmittel → mit + Dativ'},
+  {prep:'aus',ex:'Ich gehe ___ dem Haus.',ans:'aus dem',hint:'Heraus → aus + Dativ'},
+  {prep:'bei',ex:'Er wohnt ___ seinen Eltern.',ans:'bei seinen',hint:'bei + Dativ'},
+  {prep:'nach',ex:'___ dem Essen gehe ich spazieren.',ans:'Nach dem',hint:'nach (temporal) + Dativ'},
+  {prep:'seit',ex:'Ich bin ___ einem Monat hier.',ans:'seit einem',hint:'seit + Dativ'},
+  {prep:'von',ex:'Das ist weit ___ der Schule.',ans:'von der',hint:'von + Dativ'},
+];
+const wechsel=[
+  {prep:'in',ex:'Das Buch liegt ___ dem Rucksack.',ans:'in dem / im',hint:'Wo? → in + Dativ'},
+  {prep:'auf',ex:'Die Tasche ist ___ dem Tisch.',ans:'auf dem',hint:'Wo? → auf + Dativ'},
+  {prep:'an',ex:'Das Bild hängt ___ der Wand.',ans:'an der',hint:'Wo? → an + Dativ'},
+  {prep:'neben',ex:'Die Post ist ___ dem Supermarkt.',ans:'neben dem',hint:'Wo? → neben + Dativ'},
+  {prep:'vor',ex:'Mein Auto steht ___ dem Haus.',ans:'vor dem',hint:'Wo? → vor + Dativ'},
+];
+function makeQ(data,allPreps){
+  const q=pick(data);
+  const correct=q.ans;
+  const others=allPreps.filter(x=>x!==q.ans&&x!==q.prep);
+  const opts=shuffle([correct,...shuffle(others).slice(0,2)]);
+  return{prompt:q.ex,opts,correct:opts.indexOf(correct),solution:q.ex.replace('___',correct),hint:q.hint};
+}
+const tempPreps=['am','um','seit','bis','nach','vor'];
+const loPreps=['in','nach','aus','bei','zum','von'];
+const datP=['mit dem','aus dem','bei seinen','Nach dem','seit einem','von der'];
+const wechP=['in dem / im','auf dem','an der','neben dem','vor dem'];
+function qTemp(){return makeQ(temporal,tempPreps);}
+function qLokal(){return makeQ(lokal,loPreps);}
+function qDat(){return makeQ(dativPreps,datP);}
+function qWech(){return makeQ(wechsel,wechP);}
+const makers=[qTemp,qLokal,qDat,qWech];
+let questions=[];
+function gen50(){const o=[];for(let i=0;i<50;i++)o.push(makers[i%4]());return shuffle(o);}
+function render(){
+  ql.innerHTML='';
+  questions.forEach((q,i)=>{
+    const c=document.createElement('article');c.className='q-card';
+    const t=document.createElement('p');t.className='q-title';t.textContent=`Frage ${i+1}/50`;
+    const pr=document.createElement('p');pr.className='q-prompt';pr.textContent=q.prompt;
+    const od=document.createElement('div');od.className='opts';
+    q.opts.forEach((o,j)=>{
+      const l=document.createElement('label');l.className='opt';
+      const r=document.createElement('input');r.type='radio';r.name=`q_${i}`;r.value=j;
+      r.addEventListener('change',()=>pb.textContent=`Gelöst: ${ql.querySelectorAll('input:checked').length}/50`);
+      const tx=document.createElement('span');tx.innerHTML=`<strong>${String.fromCharCode(65+j)})</strong> ${o}`;
+      l.append(r,tx);od.appendChild(l);
     });
-  </script>
+    const s=document.createElement('p');s.className='solution';s.textContent=`Lösung: ${q.solution} | ${q.hint}`;
+    c.append(t,pr,od,s);ql.appendChild(c);
+  });
+  pb.textContent='Gelöst: 0/50';rb.textContent='Noch nicht ausgewertet.';
+}
+function grade(){
+  let n=0;
+  ql.querySelectorAll('.q-card').forEach((c,i)=>{
+    c.classList.remove('correct','wrong');c.querySelectorAll('.opt').forEach(o=>o.classList.remove('correct-answer'));
+    const q=questions[i];const ch=c.querySelector('input:checked');const s=ch?Number(ch.value):-1;
+    const ls=c.querySelectorAll('.opt');if(ls[q.correct])ls[q.correct].classList.add('correct-answer');
+    if(s===q.correct){n++;c.classList.add('correct');}else c.classList.add('wrong');
+  });
+  rb.textContent=`Richtig: ${n}/50\nPunkte: ${n*2}/100\nErgebnis: ${n*2}%`;
+}
+document.getElementById('checkBtn').addEventListener('click',grade);
+document.getElementById('solutionBtn').addEventListener('click',()=>ql.classList.add('show-sol'));
+document.getElementById('newBtn').addEventListener('click',()=>{questions=gen50();ql.classList.remove('show-sol');render();window.scrollTo({top:0,behavior:'smooth'});});
+questions=gen50();render();
+</script>
 </body>
 </html>
