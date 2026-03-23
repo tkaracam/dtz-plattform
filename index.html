@@ -3483,28 +3483,39 @@
         </div>
         <div id="portalStatus" class="hidden"></div>
 
-        <div id="portalTestResultCard" class="hidden" style="background:var(--card-bg,#fff);border:2px solid var(--accent,#1a73e8);border-radius:12px;padding:20px 24px;margin:16px 0;">
-          <h3 style="margin:0 0 12px;font-size:1.15rem;">📋 Testergebnis</h3>
-          <div id="portalTestResultBody" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
-            <div style="text-align:center;">
-              <div id="portalTestResultRichtig" style="font-size:2rem;font-weight:700;color:#28a745;">–</div>
-              <div style="font-size:0.85rem;color:var(--text-muted,#666);">Richtig</div>
+        <details id="portalTestResultCard" class="card-accordion hidden" style="margin:16px 0;" open>
+          <summary class="card-accordion-summary">
+            <div class="title-wrap">
+              <h3 style="margin:0;">📋 Testergebnis</h3>
             </div>
-            <div style="text-align:center;">
-              <div id="portalTestResultFalsch" style="font-size:2rem;font-weight:700;color:#dc3545;">–</div>
-              <div style="font-size:0.85rem;color:var(--text-muted,#666);">Falsch</div>
+            <div style="display:flex;gap:16px;align-items:center;margin-right:8px;">
+              <span style="font-size:0.8rem;color:var(--text-muted,#666);">Prüfungen: <strong id="portalTestResultExamCount">–</strong></span>
+              <span id="portalTestResultProzentBadge" style="font-size:0.85rem;font-weight:700;color:var(--accent,#1a73e8);">–</span>
             </div>
-            <div style="text-align:center;">
-              <div id="portalTestResultGesamt" style="font-size:2rem;font-weight:700;">–</div>
-              <div style="font-size:0.85rem;color:var(--text-muted,#666);">Gesamt</div>
+            <span class="card-accordion-icon">▾</span>
+          </summary>
+          <div class="card-accordion-body">
+            <div id="portalTestResultBody" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;padding:4px 0;">
+              <div style="text-align:center;">
+                <div id="portalTestResultRichtig" style="font-size:1.25rem;font-weight:700;color:#28a745;">–</div>
+                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Richtig</div>
+              </div>
+              <div style="text-align:center;">
+                <div id="portalTestResultFalsch" style="font-size:1.25rem;font-weight:700;color:#dc3545;">–</div>
+                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Falsch</div>
+              </div>
+              <div style="text-align:center;">
+                <div id="portalTestResultGesamt" style="font-size:1.25rem;font-weight:700;">–</div>
+                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Gesamt</div>
+              </div>
+              <div style="text-align:center;">
+                <div id="portalTestResultProzent" style="font-size:1.25rem;font-weight:700;color:var(--accent,#1a73e8);">–</div>
+                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Ergebnis</div>
+              </div>
             </div>
-            <div style="text-align:center;">
-              <div id="portalTestResultProzent" style="font-size:2rem;font-weight:700;color:var(--accent,#1a73e8);">–</div>
-              <div style="font-size:0.85rem;color:var(--text-muted,#666);">Ergebnis</div>
-            </div>
+            <p id="portalTestResultMsg" style="margin:10px 0 0;font-size:0.85rem;color:var(--text-muted,#555);"></p>
           </div>
-          <p id="portalTestResultMsg" style="margin:12px 0 0;font-size:0.9rem;color:var(--text-muted,#555);"></p>
-        </div>
+        </details>
 
         <section class="portal-section">
           <div class="portal-grid" style="margin-top:10px;">
@@ -6159,10 +6170,15 @@
 
     let lastA2TestResult = null;
 
-    function showA2TestResultInPortal(correct, wrong, total) {
+    function showA2TestResultInPortal(correct, wrong, total, isNew) {
       const card = document.getElementById("portalTestResultCard");
       if (!card) return;
       const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+      // Track exam count in localStorage
+      let examCount = parseInt(localStorage.getItem("dtz_exam_count") || "0", 10);
+      if (isNew) { examCount += 1; localStorage.setItem("dtz_exam_count", examCount); }
+      document.getElementById("portalTestResultExamCount").textContent = examCount;
+      document.getElementById("portalTestResultProzentBadge").textContent = pct + " %";
       document.getElementById("portalTestResultRichtig").textContent = correct;
       document.getElementById("portalTestResultFalsch").textContent = wrong;
       document.getElementById("portalTestResultGesamt").textContent = total;
@@ -6189,7 +6205,7 @@
       refreshPortalData();
       if (lastA2TestResult) {
         const r = lastA2TestResult;
-        setTimeout(() => showA2TestResultInPortal(r.correct, r.wrong, r.total), 200);
+        setTimeout(() => { showA2TestResultInPortal(r.correct, r.wrong, r.total, r.isNew); if (r.isNew) r.isNew = false; }, 200);
       }
     }
 
@@ -6568,7 +6584,7 @@
         : [];
       const targets = solvedAssignmentIds.length ? solvedAssignmentIds : (solvedAssignmentId ? [solvedAssignmentId] : []);
 
-      lastA2TestResult = { correct, wrong, total };
+      lastA2TestResult = { correct, wrong, total, isNew: true };
 
       if (!targets.length) {
         currentA2State.submitted = true;
