@@ -1013,7 +1013,8 @@
     }
 
     #hwA2GeneratorBox .actions,
-    #hwA1GeneratorBox .actions {
+    #hwA1GeneratorBox .actions,
+    #hwB1GeneratorBox .actions {
       margin-top: 14px;
     }
 
@@ -3315,6 +3316,7 @@
                   <option value="lesen">Lesen</option>
                   <option value="a1">A1-Themen</option>
                   <option value="a2">A2-Themen</option>
+                  <option value="b1">B1-Themen</option>
                   <option value="mail">Mail-Aufgabe</option>
                 </select>
               </div>
@@ -3528,6 +3530,46 @@
                 </div>
                 <div class="actions" style="margin-top:14px;">
                   <button id="assignA1HomeworkBtn" type="button">A1-Test als Hausaufgabe zuweisen</button>
+                </div>
+              </div>
+              <div id="hwB1GeneratorBox">
+                <select id="hwB1TopicsMulti" class="hw-multi-source-select" multiple size="10">
+                  <option value="konjunktiv2">Konjunktiv II</option>
+                  <option value="passiv">Passiv</option>
+                  <option value="praeteritum">Präteritum</option>
+                  <option value="perfekt">Perfekt</option>
+                  <option value="futur">Futur I &amp; II</option>
+                  <option value="reflexivverben">Reflexivverben</option>
+                  <option value="zu-infinitiv">Infinitiv mit zu</option>
+                  <option value="kasus">Kasus</option>
+                  <option value="artikel-nomen">Artikel &amp; Nomen</option>
+                  <option value="pronomen">Pronomen</option>
+                  <option value="adjektive">Adjektive</option>
+                  <option value="praepositionen">Präpositionen</option>
+                  <option value="nebensaetze">Nebensätze</option>
+                  <option value="satzverbindungen">Satzverbindungen</option>
+                  <option value="wortbildung">Wortbildung</option>
+                </select>
+                <div id="hwB1TopicsMultiChecks" class="hw-multi-checklist"></div>
+                <div class="grid" style="margin-top:8px;">
+                  <div>
+                    <label for="hwB1StartsAt">Startzeit</label>
+                    <input id="hwB1StartsAt" type="datetime-local">
+                  </div>
+                  <div>
+                    <label for="hwB1DurationValue">Dauer</label>
+                    <input id="hwB1DurationValue" type="number" min="5" max="1440" value="60">
+                  </div>
+                  <div>
+                    <label for="hwB1DurationUnit">Einheit</label>
+                    <select id="hwB1DurationUnit">
+                      <option value="minutes" selected>Minuten</option>
+                      <option value="hours">Stunden</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="actions" style="margin-top:14px;">
+                  <button id="assignB1HomeworkBtn" type="button">B1-Test als Hausaufgabe zuweisen</button>
                 </div>
               </div>
               <div id="homeworkStatus" class="hidden"></div>
@@ -4588,6 +4630,24 @@
       { key: "uhrzeit-datum", label: "Uhrzeit und Datum" },
       { key: "praepositionen", label: "Präpositionen" },
       { key: "satzstellung", label: "Satzstellung" }
+    ];
+
+    const B1_HOMEWORK_TOPIC_MAP = [
+      { key: "konjunktiv2", label: "Konjunktiv II" },
+      { key: "passiv", label: "Passiv" },
+      { key: "praeteritum", label: "Präteritum" },
+      { key: "perfekt", label: "Perfekt" },
+      { key: "futur", label: "Futur I & II" },
+      { key: "reflexivverben", label: "Reflexivverben" },
+      { key: "zu-infinitiv", label: "Infinitiv mit zu" },
+      { key: "kasus", label: "Kasus" },
+      { key: "artikel-nomen", label: "Artikel & Nomen" },
+      { key: "pronomen", label: "Pronomen" },
+      { key: "adjektive", label: "Adjektive" },
+      { key: "praepositionen", label: "Präpositionen" },
+      { key: "nebensaetze", label: "Nebensätze" },
+      { key: "satzverbindungen", label: "Satzverbindungen" },
+      { key: "wortbildung", label: "Wortbildung" }
     ];
 
     const roomTemplates = {
@@ -7984,6 +8044,107 @@
       }
     }
 
+    function getSelectedB1HomeworkTopics() {
+      const select = document.getElementById("hwB1TopicsMulti");
+      return Array.from(select?.selectedOptions || [])
+        .map(option => String(option.value || "").trim().toLowerCase())
+        .filter(Boolean)
+        .filter((value, index, arr) => arr.indexOf(value) === index)
+        .map(key => B1_HOMEWORK_TOPIC_MAP.find(item => item.key === key))
+        .filter(Boolean);
+    }
+
+    function buildB1HomeworkPayloads() {
+      const selectedTopics = getSelectedB1HomeworkTopics();
+      if (!selectedTopics.length) {
+        throw new Error("Bitte mindestens ein B1-Thema auswählen.");
+      }
+      return selectedTopics.map(item => {
+        const attachment = `${window.location.origin}/b1/${item.key}.html`;
+        const templateId = `b1-test-${item.key}`;
+        const lines = [
+          `Bearbeiten Sie den B1-Grammatik-Test: ${item.label}.`,
+          "",
+          "- Öffnen Sie den Link \"Material: Öffnen\" oder die B1-Taste im Portal.",
+          "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
+          "- Notieren Sie 8 neue Wörter aus dem Thema.",
+          "- Schreiben Sie zu 4 Wörtern je einen eigenen Beispielsatz."
+        ];
+        return {
+          templateId,
+          title: `B1-Test: ${item.label}`,
+          description: lines.join("\n"),
+          attachment,
+          label: item.label
+        };
+      });
+    }
+
+    async function assignGeneratedB1Homework() {
+      clearBox("homeworkStatus");
+      let payloads;
+      try {
+        payloads = buildB1HomeworkPayloads();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", message);
+        return;
+      }
+
+      const courseId = String(document.getElementById("hwCourseId")?.value || "").trim();
+      const effectiveCourseId = courseId || String(selectedCourseId || "").trim();
+      const durationValue = Number(document.getElementById("hwB1DurationValue")?.value || 0);
+      const durationUnit = String(document.getElementById("hwB1DurationUnit")?.value || "minutes");
+      const startsAtRaw = String(document.getElementById("hwB1StartsAt")?.value || "").trim();
+
+      let durationMinutes = Number.isFinite(durationValue) ? Math.floor(durationValue) : 0;
+      if (durationUnit === "hours") durationMinutes *= 60;
+      durationMinutes = Math.max(5, Math.min(24 * 60, durationMinutes));
+
+      if (!startsAtRaw) {
+        setBox("homeworkStatus", "error", "Bitte eine Startzeit festlegen.");
+        return;
+      }
+      const ts = Date.parse(startsAtRaw);
+      if (!Number.isFinite(ts)) {
+        setBox("homeworkStatus", "error", "Ungültige Startzeit.");
+        return;
+      }
+      const startsAt = new Date(ts).toISOString();
+
+      if (!effectiveCourseId) {
+        setBox("homeworkStatus", "error", "Bitte einen Kurs auswählen.");
+        return;
+      }
+
+      try {
+        let totalAssigned = 0;
+        for (const generated of payloads) {
+          const payload = await callHomeworkAssignApi({
+            action: "create",
+            template_id: generated.templateId,
+            title: generated.title,
+            description: generated.description,
+            attachment: generated.attachment,
+            target_type: "course",
+            course_id: effectiveCourseId,
+            usernames: [],
+            duration_minutes: durationMinutes,
+            starts_at: startsAt
+          });
+          totalAssigned = payload.target_count || totalAssigned;
+        }
+        persistHomeworkQuickDefaults();
+        const topicNames = payloads.map(p => p.label).join(", ");
+        setBox("homeworkStatus", "ok", `B1-Test gespeichert: ${topicNames}. Zugewiesen: ${totalAssigned}`);
+        resetHomeworkAssignmentSelections();
+        await refreshAllHomeworkLists();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", `B1-Test konnte nicht gespeichert werden: ${message}`);
+      }
+    }
+
     function homeworkTemplateSelectIdByCategory(category) {
       const key = String(category || "").toLowerCase();
       if (key === "lesen") return "hwTaskTemplateLesen";
@@ -8132,6 +8293,11 @@
         : containerId === "hwA1TopicsMultiChecks"
         ? [{
             label: "A1-TEST GENERATOR · THEMEN (MEHRFACHAUSWAHL)",
+            options: groups.flatMap(group => Array.isArray(group.options) ? group.options : [])
+          }]
+        : containerId === "hwB1TopicsMultiChecks"
+        ? [{
+            label: "B1-TEST GENERATOR · THEMEN (MEHRFACHAUSWAHL)",
             options: groups.flatMap(group => Array.isArray(group.options) ? group.options : [])
           }]
         : groups;
@@ -8323,6 +8489,7 @@
       renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
       renderMultiSelectCheckboxMirror("hwA2TopicsMulti", "hwA2TopicsMultiChecks");
       renderMultiSelectCheckboxMirror("hwA1TopicsMulti", "hwA1TopicsMultiChecks");
+      renderMultiSelectCheckboxMirror("hwB1TopicsMulti", "hwB1TopicsMultiChecks");
       const mirrorChecks = document.querySelectorAll("#hwTaskTemplatesMultiChecks input[type='checkbox'][data-mirror-value]");
       mirrorChecks.forEach(node => {
         if (node instanceof HTMLInputElement) node.checked = false;
@@ -13309,6 +13476,8 @@
     if (assignA2HomeworkBtn) assignA2HomeworkBtn.addEventListener("click", assignGeneratedA2Homework);
     const assignA1HomeworkBtn = document.getElementById("assignA1HomeworkBtn");
     if (assignA1HomeworkBtn) assignA1HomeworkBtn.addEventListener("click", assignGeneratedA1Homework);
+    const assignB1HomeworkBtn = document.getElementById("assignB1HomeworkBtn");
+    if (assignB1HomeworkBtn) assignB1HomeworkBtn.addEventListener("click", assignGeneratedB1Homework);
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationValue").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationUnit").addEventListener("change", persistHomeworkQuickDefaults);
@@ -13657,6 +13826,8 @@
     restoreHomeworkQuickDefaults();
     renderMultiSelectCheckboxMirror("hwTaskTemplatesMulti", "hwTaskTemplatesMultiChecks");
     renderMultiSelectCheckboxMirror("hwA2TopicsMulti", "hwA2TopicsMultiChecks");
+    renderMultiSelectCheckboxMirror("hwA1TopicsMulti", "hwA1TopicsMultiChecks");
+    renderMultiSelectCheckboxMirror("hwB1TopicsMulti", "hwB1TopicsMultiChecks");
     syncHomeworkTargetVisibility();
     renderHomeworkUserPicker();
     checkSession();
