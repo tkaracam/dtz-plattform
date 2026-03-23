@@ -4324,6 +4324,7 @@
       const candidates = [
         { key: "dtz-lesen", label: "DTZ Lesen Teil 1", route: "dtz-lesen" },
         { key: "dtz-hoeren", label: "DTZ Hören Teil 1", route: "dtz-hoeren" },
+        { key: "a2", label: "A2 Grammatik Test", route: "a2" },
         { key: "lid", label: "LiD Übungstest", route: "lid" },
         { key: "schreiben", label: "Schreiben Aufgabe", route: "write" }
       ];
@@ -6507,6 +6508,7 @@
       const wrong = questions.filter(q => q.isCorrect === false).length;
       const unanswered = questions.filter(q => !Number.isFinite(q.selected)).length;
       const scoreData = { correct, wrong, total, unanswered, elapsed_seconds: 0 };
+      registerHomePractice("a2", correct, total);
 
       const solvedAssignmentId = String(currentOpenedHomeworkContext.a2AssignmentId || "").trim();
       const solvedAssignmentIds = Array.isArray(currentOpenedHomeworkContext.a2AssignmentIds)
