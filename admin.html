@@ -7982,42 +7982,49 @@
         .filter(Boolean);
     }
 
-    function buildA1HomeworkPayloads() {
+    function buildA1HomeworkPreviewPayload() {
       const selectedTopics = getSelectedA1HomeworkTopics();
       if (!selectedTopics.length) {
         throw new Error("Bitte mindestens ein A1-Thema auswählen.");
       }
       const countInput = Number(document.getElementById("hwA1QuestionCount")?.value || 50);
       const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
-      return selectedTopics.map(item => {
-        const attachment = `${window.location.origin}/a1/${item.key}.html`;
-        const templateId = `a1-test-${item.key}`;
-        const lines = [
-          `Bearbeiten Sie den A1-Grammatik-Test: ${item.label} (${questionCount} Fragen).`,
-          "",
-          "- Öffnen Sie den Link \"Material: Öffnen\" oder die A1-Taste im Portal.",
-          "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
-          "- Notieren Sie 8 neue Wörter aus dem Thema.",
-          "- Schreiben Sie zu 4 Wörtern je einen eigenen Beispielsatz."
-        ];
-        return {
-          templateId,
-          title: `A1-Test: ${item.label}`,
-          description: lines.join("\n"),
-          attachment,
-          label: item.label
-        };
-      });
+      const topicLabels = selectedTopics.map(item => item.label);
+      const topicKeys = selectedTopics.map(item => item.key);
+      const shortTitle = topicLabels.length <= 3
+        ? topicLabels.join(" + ")
+        : `${topicLabels.slice(0, 3).join(" + ")} +${topicLabels.length - 3}`;
+      const title = `A1-Themen Test: ${shortTitle}`;
+      const params = new URLSearchParams();
+      params.set("hw", "1");
+      params.set("topics", topicKeys.join(","));
+      params.set("count", String(questionCount));
+      const attachment = `${window.location.origin}/a1-mix.html?${params.toString()}`;
+      const templateId = `a1-test-generator-${topicKeys.join("-")}`.slice(0, 120);
+      const lines = [
+        `Bearbeiten Sie den A1-Themen-Test (${questionCount} Fragen).`,
+        `Themen: ${topicLabels.join(", ")}`,
+        "",
+        "- Öffnen Sie den Link \"Material: Öffnen\" oder die A1-Taste im Portal.",
+        "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
+        "- Notieren Sie 8 neue Wörter aus den ausgewählten Themen.",
+        "- Schreiben Sie zu 4 Wörtern je einen eigenen Beispielsatz."
+      ];
+      return {
+        templateId,
+        title,
+        description: lines.join("\n"),
+        attachment,
+        selectedTopics,
+        questionCount
+      };
     }
 
     function generateA1HomeworkPreview() {
       clearBox("homeworkStatus");
       try {
-        const payloads = buildA1HomeworkPayloads();
-        const countInput = Number(document.getElementById("hwA1QuestionCount")?.value || 50);
-        const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
-        const topicNames = payloads.map(p => p.label).join(", ");
-        setBox("homeworkStatus", "ok", `A1-Test generiert: ${topicNames} · ${questionCount} Fragen.`);
+        const payload = buildA1HomeworkPreviewPayload();
+        setBox("homeworkStatus", "ok", `A1-Test generiert: ${payload.selectedTopics.length} Thema/Themen · ${payload.questionCount} Fragen.`);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setBox("homeworkStatus", "error", message);
@@ -8026,9 +8033,9 @@
 
     async function assignGeneratedA1Homework() {
       clearBox("homeworkStatus");
-      let payloads;
+      let generated;
       try {
-        payloads = buildA1HomeworkPayloads();
+        generated = buildA1HomeworkPreviewPayload();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setBox("homeworkStatus", "error", message);
@@ -8062,25 +8069,20 @@
       }
 
       try {
-        let totalAssigned = 0;
-        for (const generated of payloads) {
-          const payload = await callHomeworkAssignApi({
-            action: "create",
-            template_id: generated.templateId,
-            title: generated.title,
-            description: generated.description,
-            attachment: generated.attachment,
-            target_type: "course",
-            course_id: effectiveCourseId,
-            usernames: [],
-            duration_minutes: durationMinutes,
-            starts_at: startsAt
-          });
-          totalAssigned = payload.target_count || totalAssigned;
-        }
+        const payload = await callHomeworkAssignApi({
+          action: "create",
+          template_id: generated.templateId,
+          title: generated.title,
+          description: generated.description,
+          attachment: generated.attachment,
+          target_type: "course",
+          course_id: effectiveCourseId,
+          usernames: [],
+          duration_minutes: durationMinutes,
+          starts_at: startsAt
+        });
         persistHomeworkQuickDefaults();
-        const topicNames = payloads.map(p => p.label).join(", ");
-        setBox("homeworkStatus", "ok", `A1-Test gespeichert: ${topicNames}. Zugewiesen: ${totalAssigned}`);
+        setBox("homeworkStatus", "ok", `A1-Test gespeichert. Zugewiesen: ${payload.target_count || 0}`);
         resetHomeworkAssignmentSelections();
         await refreshAllHomeworkLists();
       } catch (err) {
@@ -8099,42 +8101,49 @@
         .filter(Boolean);
     }
 
-    function buildB1HomeworkPayloads() {
+    function buildB1HomeworkPreviewPayload() {
       const selectedTopics = getSelectedB1HomeworkTopics();
       if (!selectedTopics.length) {
         throw new Error("Bitte mindestens ein B1-Thema auswählen.");
       }
       const countInput = Number(document.getElementById("hwB1QuestionCount")?.value || 50);
       const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
-      return selectedTopics.map(item => {
-        const attachment = `${window.location.origin}/b1/${item.key}.html`;
-        const templateId = `b1-test-${item.key}`;
-        const lines = [
-          `Bearbeiten Sie den B1-Grammatik-Test: ${item.label} (${questionCount} Fragen).`,
-          "",
-          "- Öffnen Sie den Link \"Material: Öffnen\" oder die B1-Taste im Portal.",
-          "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
-          "- Notieren Sie 8 neue Wörter aus dem Thema.",
-          "- Schreiben Sie zu 4 Wörtern je einen eigenen Beispielsatz."
-        ];
-        return {
-          templateId,
-          title: `B1-Test: ${item.label}`,
-          description: lines.join("\n"),
-          attachment,
-          label: item.label
-        };
-      });
+      const topicLabels = selectedTopics.map(item => item.label);
+      const topicKeys = selectedTopics.map(item => item.key);
+      const shortTitle = topicLabels.length <= 3
+        ? topicLabels.join(" + ")
+        : `${topicLabels.slice(0, 3).join(" + ")} +${topicLabels.length - 3}`;
+      const title = `B1-Themen Test: ${shortTitle}`;
+      const params = new URLSearchParams();
+      params.set("hw", "1");
+      params.set("topics", topicKeys.join(","));
+      params.set("count", String(questionCount));
+      const attachment = `${window.location.origin}/b1-mix.html?${params.toString()}`;
+      const templateId = `b1-test-generator-${topicKeys.join("-")}`.slice(0, 120);
+      const lines = [
+        `Bearbeiten Sie den B1-Themen-Test (${questionCount} Fragen).`,
+        `Themen: ${topicLabels.join(", ")}`,
+        "",
+        "- Öffnen Sie den Link \"Material: Öffnen\" oder die B1-Taste im Portal.",
+        "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
+        "- Notieren Sie 8 neue Wörter aus den ausgewählten Themen.",
+        "- Schreiben Sie zu 4 Wörtern je einen eigenen Beispielsatz."
+      ];
+      return {
+        templateId,
+        title,
+        description: lines.join("\n"),
+        attachment,
+        selectedTopics,
+        questionCount
+      };
     }
 
     function generateB1HomeworkPreview() {
       clearBox("homeworkStatus");
       try {
-        const payloads = buildB1HomeworkPayloads();
-        const countInput = Number(document.getElementById("hwB1QuestionCount")?.value || 50);
-        const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
-        const topicNames = payloads.map(p => p.label).join(", ");
-        setBox("homeworkStatus", "ok", `B1-Test generiert: ${topicNames} · ${questionCount} Fragen.`);
+        const payload = buildB1HomeworkPreviewPayload();
+        setBox("homeworkStatus", "ok", `B1-Test generiert: ${payload.selectedTopics.length} Thema/Themen · ${payload.questionCount} Fragen.`);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setBox("homeworkStatus", "error", message);
@@ -8143,9 +8152,9 @@
 
     async function assignGeneratedB1Homework() {
       clearBox("homeworkStatus");
-      let payloads;
+      let generated;
       try {
-        payloads = buildB1HomeworkPayloads();
+        generated = buildB1HomeworkPreviewPayload();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setBox("homeworkStatus", "error", message);
@@ -8179,25 +8188,20 @@
       }
 
       try {
-        let totalAssigned = 0;
-        for (const generated of payloads) {
-          const payload = await callHomeworkAssignApi({
-            action: "create",
-            template_id: generated.templateId,
-            title: generated.title,
-            description: generated.description,
-            attachment: generated.attachment,
-            target_type: "course",
-            course_id: effectiveCourseId,
-            usernames: [],
-            duration_minutes: durationMinutes,
-            starts_at: startsAt
-          });
-          totalAssigned = payload.target_count || totalAssigned;
-        }
+        const payload = await callHomeworkAssignApi({
+          action: "create",
+          template_id: generated.templateId,
+          title: generated.title,
+          description: generated.description,
+          attachment: generated.attachment,
+          target_type: "course",
+          course_id: effectiveCourseId,
+          usernames: [],
+          duration_minutes: durationMinutes,
+          starts_at: startsAt
+        });
         persistHomeworkQuickDefaults();
-        const topicNames = payloads.map(p => p.label).join(", ");
-        setBox("homeworkStatus", "ok", `B1-Test gespeichert: ${topicNames}. Zugewiesen: ${totalAssigned}`);
+        setBox("homeworkStatus", "ok", `B1-Test gespeichert. Zugewiesen: ${payload.target_count || 0}`);
         resetHomeworkAssignmentSelections();
         await refreshAllHomeworkLists();
       } catch (err) {
