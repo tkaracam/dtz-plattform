@@ -3452,6 +3452,60 @@
                 </div>
                 <div id="hwBatchInlineStatus" class="muted" style="margin-top:8px;"></div>
               </div>
+              <div id="hwA1GeneratorBox">
+                <details class="fold-section">
+                  <summary>A1-Test Generator</summary>
+                  <div style="padding:12px;">
+                    <select id="hwA1TopicsMulti" class="hw-multi-source-select" multiple size="10">
+                      <option value="praesens">Verben im Präsens</option>
+                      <option value="sein-haben">sein und haben</option>
+                      <option value="pronomen">Personalpronomen</option>
+                      <option value="artikel">Artikel (der, die, das)</option>
+                      <option value="unbestimmte-artikel">Unbestimmte Artikel</option>
+                      <option value="negation">Negation (nicht/kein)</option>
+                      <option value="w-fragen">W-Fragen</option>
+                      <option value="ja-nein-fragen">Ja/Nein-Fragen</option>
+                      <option value="possessivartikel">Possessivartikel</option>
+                      <option value="modalverben">Modalverben</option>
+                      <option value="akkusativ">Akkusativ</option>
+                      <option value="adjektive">Adjektive</option>
+                      <option value="trennbare-verben">Trennbare Verben</option>
+                      <option value="imperativ">Imperativ</option>
+                      <option value="uhrzeit-datum">Uhrzeit und Datum</option>
+                      <option value="praepositionen">Präpositionen</option>
+                      <option value="satzstellung">Satzstellung</option>
+                    </select>
+                    <div id="hwA1TopicsMultiChecks" class="hw-multi-checklist"></div>
+                    <div class="grid" style="margin-top:8px;">
+                      <div>
+                        <label for="hwA1QuestionCount">Fragenzahl</label>
+                        <input id="hwA1QuestionCount" type="number" min="10" max="50" value="50">
+                      </div>
+                    </div>
+                    <div class="grid" style="margin-top:8px;">
+                      <div>
+                        <label for="hwA1StartsAt">Startzeit</label>
+                        <input id="hwA1StartsAt" type="datetime-local">
+                      </div>
+                      <div>
+                        <label for="hwA1DurationValue">Dauer</label>
+                        <input id="hwA1DurationValue" type="number" min="5" max="1440" value="60">
+                      </div>
+                      <div>
+                        <label for="hwA1DurationUnit">Einheit</label>
+                        <select id="hwA1DurationUnit">
+                          <option value="minutes" selected>Minuten</option>
+                          <option value="hours">Stunden</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="actions" style="margin-top:14px;">
+                      <button id="generateA1HomeworkBtn" type="button" class="ghost-btn">A1-Test generieren</button>
+                      <button id="assignA1HomeworkBtn" type="button">A1-Test als Hausaufgabe zuweisen</button>
+                    </div>
+                  </div>
+                </details>
+              </div>
               <div id="hwA2GeneratorBox">
                 <details class="fold-section">
                   <summary>A2-Test Generator</summary>
@@ -3495,87 +3549,57 @@
                   </div>
                 </details>
               </div>
-              <div id="hwA1GeneratorBox">
-                <select id="hwA1TopicsMulti" class="hw-multi-source-select" multiple size="10">
-                  <option value="praesens">Verben im Präsens</option>
-                  <option value="sein-haben">sein und haben</option>
-                  <option value="pronomen">Personalpronomen</option>
-                  <option value="artikel">Artikel (der, die, das)</option>
-                  <option value="unbestimmte-artikel">Unbestimmte Artikel</option>
-                  <option value="negation">Negation (nicht/kein)</option>
-                  <option value="w-fragen">W-Fragen</option>
-                  <option value="ja-nein-fragen">Ja/Nein-Fragen</option>
-                  <option value="possessivartikel">Possessivartikel</option>
-                  <option value="modalverben">Modalverben</option>
-                  <option value="akkusativ">Akkusativ</option>
-                  <option value="adjektive">Adjektive</option>
-                  <option value="trennbare-verben">Trennbare Verben</option>
-                  <option value="imperativ">Imperativ</option>
-                  <option value="uhrzeit-datum">Uhrzeit und Datum</option>
-                  <option value="praepositionen">Präpositionen</option>
-                  <option value="satzstellung">Satzstellung</option>
-                </select>
-                <div id="hwA1TopicsMultiChecks" class="hw-multi-checklist"></div>
-                <div class="grid" style="margin-top:8px;">
-                  <div>
-                    <label for="hwA1StartsAt">Startzeit</label>
-                    <input id="hwA1StartsAt" type="datetime-local">
-                  </div>
-                  <div>
-                    <label for="hwA1DurationValue">Dauer</label>
-                    <input id="hwA1DurationValue" type="number" min="5" max="1440" value="60">
-                  </div>
-                  <div>
-                    <label for="hwA1DurationUnit">Einheit</label>
-                    <select id="hwA1DurationUnit">
-                      <option value="minutes" selected>Minuten</option>
-                      <option value="hours">Stunden</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="actions" style="margin-top:14px;">
-                  <button id="assignA1HomeworkBtn" type="button">A1-Test als Hausaufgabe zuweisen</button>
-                </div>
-              </div>
               <div id="hwB1GeneratorBox">
-                <select id="hwB1TopicsMulti" class="hw-multi-source-select" multiple size="10">
-                  <option value="konjunktiv2">Konjunktiv II</option>
-                  <option value="passiv">Passiv</option>
-                  <option value="praeteritum">Präteritum</option>
-                  <option value="perfekt">Perfekt</option>
-                  <option value="futur">Futur I &amp; II</option>
-                  <option value="reflexivverben">Reflexivverben</option>
-                  <option value="zu-infinitiv">Infinitiv mit zu</option>
-                  <option value="kasus">Kasus</option>
-                  <option value="artikel-nomen">Artikel &amp; Nomen</option>
-                  <option value="pronomen">Pronomen</option>
-                  <option value="adjektive">Adjektive</option>
-                  <option value="praepositionen">Präpositionen</option>
-                  <option value="nebensaetze">Nebensätze</option>
-                  <option value="satzverbindungen">Satzverbindungen</option>
-                  <option value="wortbildung">Wortbildung</option>
-                </select>
-                <div id="hwB1TopicsMultiChecks" class="hw-multi-checklist"></div>
-                <div class="grid" style="margin-top:8px;">
-                  <div>
-                    <label for="hwB1StartsAt">Startzeit</label>
-                    <input id="hwB1StartsAt" type="datetime-local">
-                  </div>
-                  <div>
-                    <label for="hwB1DurationValue">Dauer</label>
-                    <input id="hwB1DurationValue" type="number" min="5" max="1440" value="60">
-                  </div>
-                  <div>
-                    <label for="hwB1DurationUnit">Einheit</label>
-                    <select id="hwB1DurationUnit">
-                      <option value="minutes" selected>Minuten</option>
-                      <option value="hours">Stunden</option>
+                <details class="fold-section">
+                  <summary>B1-Test Generator</summary>
+                  <div style="padding:12px;">
+                    <select id="hwB1TopicsMulti" class="hw-multi-source-select" multiple size="10">
+                      <option value="konjunktiv2">Konjunktiv II</option>
+                      <option value="passiv">Passiv</option>
+                      <option value="praeteritum">Präteritum</option>
+                      <option value="perfekt">Perfekt</option>
+                      <option value="futur">Futur I &amp; II</option>
+                      <option value="reflexivverben">Reflexivverben</option>
+                      <option value="zu-infinitiv">Infinitiv mit zu</option>
+                      <option value="kasus">Kasus</option>
+                      <option value="artikel-nomen">Artikel &amp; Nomen</option>
+                      <option value="pronomen">Pronomen</option>
+                      <option value="adjektive">Adjektive</option>
+                      <option value="praepositionen">Präpositionen</option>
+                      <option value="nebensaetze">Nebensätze</option>
+                      <option value="satzverbindungen">Satzverbindungen</option>
+                      <option value="wortbildung">Wortbildung</option>
                     </select>
+                    <div id="hwB1TopicsMultiChecks" class="hw-multi-checklist"></div>
+                    <div class="grid" style="margin-top:8px;">
+                      <div>
+                        <label for="hwB1QuestionCount">Fragenzahl</label>
+                        <input id="hwB1QuestionCount" type="number" min="10" max="50" value="50">
+                      </div>
+                    </div>
+                    <div class="grid" style="margin-top:8px;">
+                      <div>
+                        <label for="hwB1StartsAt">Startzeit</label>
+                        <input id="hwB1StartsAt" type="datetime-local">
+                      </div>
+                      <div>
+                        <label for="hwB1DurationValue">Dauer</label>
+                        <input id="hwB1DurationValue" type="number" min="5" max="1440" value="60">
+                      </div>
+                      <div>
+                        <label for="hwB1DurationUnit">Einheit</label>
+                        <select id="hwB1DurationUnit">
+                          <option value="minutes" selected>Minuten</option>
+                          <option value="hours">Stunden</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="actions" style="margin-top:14px;">
+                      <button id="generateB1HomeworkBtn" type="button" class="ghost-btn">B1-Test generieren</button>
+                      <button id="assignB1HomeworkBtn" type="button">B1-Test als Hausaufgabe zuweisen</button>
+                    </div>
                   </div>
-                </div>
-                <div class="actions" style="margin-top:14px;">
-                  <button id="assignB1HomeworkBtn" type="button">B1-Test als Hausaufgabe zuweisen</button>
-                </div>
+                </details>
               </div>
               <div id="homeworkStatus" class="hidden"></div>
             </div>
@@ -7963,11 +7987,13 @@
       if (!selectedTopics.length) {
         throw new Error("Bitte mindestens ein A1-Thema auswählen.");
       }
+      const countInput = Number(document.getElementById("hwA1QuestionCount")?.value || 50);
+      const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
       return selectedTopics.map(item => {
         const attachment = `${window.location.origin}/a1/${item.key}.html`;
         const templateId = `a1-test-${item.key}`;
         const lines = [
-          `Bearbeiten Sie den A1-Grammatik-Test: ${item.label}.`,
+          `Bearbeiten Sie den A1-Grammatik-Test: ${item.label} (${questionCount} Fragen).`,
           "",
           "- Öffnen Sie den Link \"Material: Öffnen\" oder die A1-Taste im Portal.",
           "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
@@ -7982,6 +8008,20 @@
           label: item.label
         };
       });
+    }
+
+    function generateA1HomeworkPreview() {
+      clearBox("homeworkStatus");
+      try {
+        const payloads = buildA1HomeworkPayloads();
+        const countInput = Number(document.getElementById("hwA1QuestionCount")?.value || 50);
+        const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+        const topicNames = payloads.map(p => p.label).join(", ");
+        setBox("homeworkStatus", "ok", `A1-Test generiert: ${topicNames} · ${questionCount} Fragen.`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", message);
+      }
     }
 
     async function assignGeneratedA1Homework() {
@@ -8064,11 +8104,13 @@
       if (!selectedTopics.length) {
         throw new Error("Bitte mindestens ein B1-Thema auswählen.");
       }
+      const countInput = Number(document.getElementById("hwB1QuestionCount")?.value || 50);
+      const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
       return selectedTopics.map(item => {
         const attachment = `${window.location.origin}/b1/${item.key}.html`;
         const templateId = `b1-test-${item.key}`;
         const lines = [
-          `Bearbeiten Sie den B1-Grammatik-Test: ${item.label}.`,
+          `Bearbeiten Sie den B1-Grammatik-Test: ${item.label} (${questionCount} Fragen).`,
           "",
           "- Öffnen Sie den Link \"Material: Öffnen\" oder die B1-Taste im Portal.",
           "- Lösen Sie alle Fragen und prüfen Sie Ihre Antworten.",
@@ -8083,6 +8125,20 @@
           label: item.label
         };
       });
+    }
+
+    function generateB1HomeworkPreview() {
+      clearBox("homeworkStatus");
+      try {
+        const payloads = buildB1HomeworkPayloads();
+        const countInput = Number(document.getElementById("hwB1QuestionCount")?.value || 50);
+        const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+        const topicNames = payloads.map(p => p.label).join(", ");
+        setBox("homeworkStatus", "ok", `B1-Test generiert: ${topicNames} · ${questionCount} Fragen.`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setBox("homeworkStatus", "error", message);
+      }
     }
 
     async function assignGeneratedB1Homework() {
@@ -13475,14 +13531,22 @@
     if (hwA2DurationValue) hwA2DurationValue.addEventListener("change", persistHomeworkQuickDefaults);
     const hwA2DurationUnit = document.getElementById("hwA2DurationUnit");
     if (hwA2DurationUnit) hwA2DurationUnit.addEventListener("change", persistHomeworkQuickDefaults);
+    const generateA1HomeworkBtn = document.getElementById("generateA1HomeworkBtn");
+    if (generateA1HomeworkBtn) generateA1HomeworkBtn.addEventListener("click", generateA1HomeworkPreview);
+    const assignA1HomeworkBtn = document.getElementById("assignA1HomeworkBtn");
+    if (assignA1HomeworkBtn) assignA1HomeworkBtn.addEventListener("click", assignGeneratedA1Homework);
+    const hwA1QuestionCount = document.getElementById("hwA1QuestionCount");
+    if (hwA1QuestionCount) hwA1QuestionCount.addEventListener("change", generateA1HomeworkPreview);
     const generateA2HomeworkBtn = document.getElementById("generateA2HomeworkBtn");
     if (generateA2HomeworkBtn) generateA2HomeworkBtn.addEventListener("click", generateA2HomeworkPreview);
     const assignA2HomeworkBtn = document.getElementById("assignA2HomeworkBtn");
     if (assignA2HomeworkBtn) assignA2HomeworkBtn.addEventListener("click", assignGeneratedA2Homework);
-    const assignA1HomeworkBtn = document.getElementById("assignA1HomeworkBtn");
-    if (assignA1HomeworkBtn) assignA1HomeworkBtn.addEventListener("click", assignGeneratedA1Homework);
+    const generateB1HomeworkBtn = document.getElementById("generateB1HomeworkBtn");
+    if (generateB1HomeworkBtn) generateB1HomeworkBtn.addEventListener("click", generateB1HomeworkPreview);
     const assignB1HomeworkBtn = document.getElementById("assignB1HomeworkBtn");
     if (assignB1HomeworkBtn) assignB1HomeworkBtn.addEventListener("click", assignGeneratedB1Homework);
+    const hwB1QuestionCount = document.getElementById("hwB1QuestionCount");
+    if (hwB1QuestionCount) hwB1QuestionCount.addEventListener("change", generateB1HomeworkPreview);
     document.getElementById("hwCourseId").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationValue").addEventListener("change", persistHomeworkQuickDefaults);
     document.getElementById("hwDurationUnit").addEventListener("change", persistHomeworkQuickDefaults);
