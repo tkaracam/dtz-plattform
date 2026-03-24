@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A1 - Gemischter Test | DTZ-LiD</title>
+  <style>
+    :root { --bg:#f5f7fb; --card:#fff; --line:#d5deed; --text:#273650; --muted:#61779a; --ok:#117a53; --bad:#b7485e; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Comfortaa","Segoe UI",sans-serif; color:var(--text); background:var(--bg); line-height:1.5; }
+    .wrap { max-width:1080px; margin:0 auto; padding:14px; display:grid; gap:12px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; }
+    h1 { margin:0; font-size:clamp(1.3rem,2.8vw,1.9rem); color:#223a60; }
+    h2 { margin:0 0 10px; font-size:1.08rem; color:#2b466f; }
+    p { margin:0 0 6px; color:#35507a; }
+    .hero { background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%); border:1px solid #d9e4f5; border-radius:16px; padding:16px; display:grid; gap:8px; }
+    .back-row { display:flex; gap:8px; flex-wrap:wrap; }
+    .btn { border:1px solid #cad8ef; border-radius:10px; padding:9px 13px; font:inherit; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; color:#29476f; background:#eef4ff; }
+    .btn.primary { color:#fff; border-color:#d9afc5; background:linear-gradient(90deg,#e78fb0,#6e83e8); }
+    .btn:hover { opacity:0.9; }
+    .btn.small { padding:6px 10px; font-size:.9rem; }
+    .checkbox-grid { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin:12px 0; }
+    .checkbox-item { display:flex; gap:8px; align-items:center; }
+    .checkbox-item input { cursor:pointer; }
+    .checkbox-item label { cursor:pointer; }
+    .question-list { display:grid; gap:10px; margin-top:10px; }
+    .q-card { border:1px solid #d6e2f3; border-radius:12px; padding:12px; background:#fbfdff; display:grid; gap:8px; }
+    .q-card.correct { border-color:#b8e3cf; background:#f4fff9; }
+    .q-card.wrong { border-color:#f0c8d1; background:#fff7f9; }
+    .q-title { margin:0; font-size:1rem; color:#2a466f; font-weight:700; }
+    .q-prompt { margin:0; color:#314e77; white-space:pre-line; }
+    .opts { display:grid; gap:5px; }
+    .opt { border:1px solid #cfdbef; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:flex-start; cursor:pointer; }
+    .opt input { margin-top:3px; }
+    .opt.correct-answer { border-color:#96cdb5; background:#eefcf4; }
+    .solution { margin:0; color:#46658f; font-size:.93rem; display:none; }
+    .show-sol .solution { display:block; }
+    .actions { margin-top:10px; display:grid; gap:8px; grid-template-columns:repeat(3,1fr); }
+    .progress-badge { display:inline-block; padding:6px 12px; background:#eef4ff; border:1px solid #cad8ef; border-radius:999px; color:#2a466f; font-weight:700; font-size:.95rem; }
+    .result { margin-top:8px; border:1px dashed #c8d7ef; border-radius:10px; padding:10px; color:#314f79; white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <h1>Gemischter A1-Test</h1>
+    <p style="color:#4a6492">Fragen aus allen A1-Themen vermischt</p>
+    <div class="back-row">
+      <a class="btn" href="./a1-themen.html">← Zurück zu A1-Themen</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Themen auswählen</h2>
+    <p>Wähle die Themen aus, die du üben möchtest:</p>
+    <div class="back-row">
+      <button class="btn small" id="selectAllBtn">Alle auswählen</button>
+      <button class="btn small" id="deselectAllBtn">Keine</button>
+    </div>
+    <div class="checkbox-grid" id="topicCheckboxes"></div>
+    <div class="back-row" style="margin-top:12px;">
+      <button class="btn primary" id="generateBtn">Test generieren (50 Fragen)</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2>Test</h2>
+      <span class="progress-badge" id="progressBadge">Gelöst: 0/50</span>
+    </div>
+    <div class="question-list" id="questionList"></div>
+    <div class="actions" id="actions" style="display:none;">
+      <button class="btn" id="checkBtn">✓ Auswerten</button>
+      <button class="btn" id="solutionBtn">Lösungen zeigen</button>
+      <button class="btn primary" id="newBtn">Neu</button>
+    </div>
+    <div class="result" id="resultBox" style="display:none;"></div>
+  </section>
+</main>
+
+<script>
+const pb = document.getElementById('progressBadge');
+const rb = document.getElementById('resultBox');
+const ql = document.getElementById('questionList');
+const actions = document.getElementById('actions');
+const topicCheckboxes = document.getElementById('topicCheckboxes');
+const generateBtn = document.getElementById('generateBtn');
+const selectAllBtn = document.getElementById('selectAllBtn');
+const deselectAllBtn = document.getElementById('deselectAllBtn');
+
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
+// === TOPICS ===
+const TOPICS = {
+  praesens: {
+    label: 'Präsens',
+    makeQ: (()=>{
+      const regular=[{inf:'machen',stem:'mach'},{inf:'lernen',stem:'lern'},{inf:'wohnen',stem:'wohn'},{inf:'spielen',stem:'spiel'},{inf:'kaufen',stem:'kauf'},{inf:'fragen',stem:'frag'},{inf:'hören',stem:'hör'},{inf:'kochen',stem:'koch'},{inf:'trinken',stem:'trink'},{inf:'kommen',stem:'komm'},{inf:'gehen',stem:'geh'},{inf:'schreiben',stem:'schreib'}];
+      const vokalwechsel=[{inf:'sprechen',du:'sprichst',er:'spricht'},{inf:'lesen',du:'liest',er:'liest'},{inf:'schlafen',du:'schläfst',er:'schläft'},{inf:'treffen',du:'triffst',er:'trifft'},{inf:'essen',du:'isst',er:'isst'},{inf:'nehmen',du:'nimmst',er:'nimmt'},{inf:'sehen',du:'siehst',er:'sieht'},{inf:'helfen',du:'hilfst',er:'hilft'},{inf:'fahren',du:'fährst',er:'fährt'},{inf:'tragen',du:'trägst',er:'trägt'}];
+      const pronouns=['ich','du','er','sie','wir','ihr','Sie'];
+      const endMap={ich:'e',du:'st',er:'t',sie:'t',wir:'en',ihr:'t',Sie:'en'};
+      return function(){
+        const t=Math.random();
+        if(t<0.4){
+          const v=pick(regular),pr=pick(pronouns);
+          const correct=v.stem+endMap[pr];
+          const wrong1=v.stem+(endMap[pr]==='e'?'st':'e');
+          const wrong2=v.stem+(endMap[pr]==='en'?'t':'en');
+          const opts=shuffle([correct,wrong1,wrong2]);
+          return{prompt:`Ergänzen Sie:\n${cap(pr)} ___ gerade. (${v.inf})`,opts,correct:opts.indexOf(correct),solution:`${cap(pr)} ${correct} gerade.`,hint:`Endung für "${pr}": -${endMap[pr]}`};
+        }else if(t<0.8){
+          const v=pick(vokalwechsel),pr=pick(['du','er']);
+          const correct=pr==='du'?v.du:v.er;
+          return{prompt:`Vokalwechsel – ${pr}-Form von "${v.inf}":`,opts:shuffle([correct,pr==='du'?v.er:v.du,v.inf.slice(0,-2)+(pr==='du'?'st':'t')]),correct:0,solution:`${pr} ${correct}`,hint:`${v.inf}: Vokalwechsel bei du/er`};
+        }else{
+          const pairs=[{p:'ich',f:'bin'},{p:'du',f:'bist'},{p:'er',f:'ist'},{p:'wir',f:'sind'},{p:'ihr',f:'seid'},{p:'Sie',f:'sind'}];
+          const p=pick(pairs);
+          const wrong1=pick(pairs.filter(x=>x.f!==p.f)).f;
+          const opts=shuffle([p.f,wrong1,pick(pairs.filter(x=>x.f!==p.f&&x.f!==wrong1)).f]);
+          return{prompt:`"sein" – richtige Form?\n${cap(p.p)} ___ aus Deutschland.`,opts,correct:opts.indexOf(p.f),solution:`${cap(p.p)} ${p.f} aus Deutschland.`,hint:'bin/bist/ist/sind/seid/sind'};
+        }
+      };
+    })()
+  },
+  'sein-haben': {
+    label: 'sein & haben',
+    makeQ: (()=>{
+      const SF=[{p:'ich',f:'bin'},{p:'du',f:'bist'},{p:'er',f:'ist'},{p:'wir',f:'sind'},{p:'ihr',f:'seid'},{p:'Sie',f:'sind'}];
+      const HF=[{p:'ich',f:'habe'},{p:'du',f:'hast'},{p:'er',f:'hat'},{p:'wir',f:'haben'},{p:'ihr',f:'habt'},{p:'Sie',f:'haben'}];
+      return function(){
+        const t=Math.random();
+        if(t<0.5){
+          const p=pick(SF);
+          const opts=shuffle([p.f,...SF.filter(x=>x.f!==p.f).map(x=>x.f).slice(0,2)]);
+          return{prompt:`"sein" – Form für ${p.p}:\n${cap(p.p)} ___ Student.`,opts,correct:opts.indexOf(p.f),solution:`${cap(p.p)} ${p.f} Student.`,hint:'bin/bist/ist/sind/seid/sind'};
+        }else{
+          const p=pick(HF);
+          const opts=shuffle([p.f,...HF.filter(x=>x.f!==p.f).map(x=>x.f).slice(0,2)]);
+          return{prompt:`"haben" – Form für ${p.p}:\n${cap(p.p)} ___ keine Zeit.`,opts,correct:opts.indexOf(p.f),solution:`${cap(p.p)} ${p.f} keine Zeit.`,hint:'habe/hast/hat/haben/habt/haben'};
+        }
+      };
+    })()
+  },
+  pronomen: {
+    label: 'Pronomen',
+    makeQ: (()=>{
+      const akkForms={ich:'mich',du:'dich',er:'ihn',es:'es',sie:'sie',wir:'uns',ihr:'euch',Sie:'Sie'};
+      return function(){
+        const p=pick(['ich','du','er','sie','wir','ihr','Sie']);
+        const correct=akkForms[p];
+        const opts=shuffle([correct,...Object.values(akkForms).filter(x=>x!==correct).slice(0,2)]);
+        return{prompt:`Akkusativpronomen von "${p}":\nSie kennt ___ gut.`,opts,correct:opts.indexOf(correct),solution:`Sie kennt ${correct} gut.`,hint:`${p} → Akk: ${correct}`};
+      };
+    })()
+  },
+  artikel: {
+    label: 'Artikel',
+    makeQ: (()=>{
+      const artDef={m:{nom:'der',akk:'den',dat:'dem'},n:{nom:'das',akk:'das',dat:'dem'},f:{nom:'die',akk:'die',dat:'der'}};
+      const nouns=[{word:'Mann',gen:'m',pl:'Männer'},{word:'Tisch',gen:'m',pl:'Tische'},{word:'Kind',gen:'n',pl:'Kinder'},{word:'Auto',gen:'n',pl:'Autos'},{word:'Frau',gen:'f',pl:'Frauen'},{word:'Tasche',gen:'f',pl:'Taschen'}];
+      const cases=['nom','akk','dat'];
+      const caseNames={nom:'Nominativ',akk:'Akkusativ',dat:'Dativ'};
+      return function(){
+        const n=pick(nouns),c=pick(cases);
+        const correct=artDef[n.gen][c];
+        const opts=shuffle([correct,...Object.keys(artDef).map(g=>artDef[g][c]).filter(x=>x!==correct).slice(0,2)]);
+        return{prompt:`Artikel (${caseNames[c]}):\n___ ${n.word}`,opts,correct:opts.indexOf(correct),solution:`${correct} ${n.word}`,hint:`${caseNames[c]}`};
+      };
+    })()
+  },
+  'unbestimmte-artikel': {
+    label: 'Unbestimmte Artikel',
+    makeQ: (()=>{
+      const nouns=[{w:'Mann',g:'m'},{w:'Kind',g:'n'},{w:'Frau',g:'f'},{w:'Buch',g:'n'},{w:'Auto',g:'n'},{w:'Tasche',g:'f'}];
+      function getArt(g,t){return t==='indef'?(g==='m'?'ein':g==='n'?'ein':'eine'):(g==='m'?'kein':g==='n'?'kein':'keine');}
+      return function(){
+        const n=pick(nouns),t=pick(['indef','neg']);
+        const correct=getArt(n.g,t);
+        const opts=shuffle([correct,...(['indef','neg'].filter(x=>x!==t).map(x=>getArt(n.g,x)))]);
+        return{prompt:`${t==='indef'?'Unbestimmt':'Negation'}:\nIch habe ___ ${n.w}.`,opts,correct:opts.indexOf(correct),solution:`Ich habe ${correct} ${n.w}.`,hint:`${t==='indef'?'ein/eine':'kein/keine/kein'}`};
+      };
+    })()
+  },
+  negation: {
+    label: 'Negation',
+    makeQ: (()=>{
+      const keinEx=[{pos:'Ich habe einen Computer.',neg:'Ich habe keinen Computer.',wrong:'Ich habe nicht Computer.'},{pos:'Er hat ein Auto.',neg:'Er hat kein Auto.',wrong:'Er hat nicht Auto.'},{pos:'Wir haben eine Wohnung.',neg:'Wir haben keine Wohnung.',wrong:'Wir haben nicht Wohnung.'},{pos:'Ich trinke Kaffee.',neg:'Ich trinke keinen Kaffee.',wrong:'Ich trinke nicht Kaffee.'}];
+      const nichtEx=[{pos:'Er kommt heute.',neg:'Er kommt heute nicht.',wrong:'Er kommt heute kein.'},{pos:'Ich arbeite gern.',neg:'Ich arbeite nicht gern.',wrong:'Ich arbeite kein gern.'},{pos:'Sie schläft gut.',neg:'Sie schläft nicht gut.',wrong:'Sie schläft kein gut.'}];
+      return function(){
+        const t=Math.random();
+        const e=pick(t<0.5?keinEx:nichtEx);
+        const opts=shuffle([e.neg,e.wrong,e.pos]);
+        return{prompt:`Verneinen Sie:\n"${e.pos}"`,opts,correct:opts.indexOf(e.neg),solution:e.neg,hint:t<0.5?'ein → kein':'Verb → nicht'};
+      };
+    })()
+  },
+  'w-fragen': {
+    label: 'W-Fragen',
+    makeQ: (()=>{
+      const pairs=[{q:'___ ist das?',a:'Wer',hint:'Person'},{q:'___ machst du?',a:'Was',hint:'Sache'},{q:'___ wohnst du?',a:'Wo',hint:'Ort'},{q:'___ kommen Sie?',a:'Woher',hint:'Herkunft'},{q:'___ fährt er?',a:'Wohin',hint:'Ziel'},{q:'___ beginnt es?',a:'Wann',hint:'Zeit'},{q:'___ heißen Sie?',a:'Wie',hint:'Name'},{q:'___ lernst du?',a:'Warum',hint:'Grund'},{q:'___ kostet das?',a:'Wie viel',hint:'Preis'},{q:'___ kennst du hier?',a:'Wen',hint:'Person (Akk.)'},{q:'___ gibt er das?',a:'Wem',hint:'Person (Dat.)'}];
+      return function(){
+        const p=pick(pairs);
+        const correct=p.a;
+        const others=['Wer','Was','Wo','Woher','Wohin','Wann','Wie','Warum'].filter(x=>x!==correct);
+        const opts=shuffle([correct,...others.slice(0,2)]);
+        return{prompt:`Welches W-Wort passt?\n"${p.q}"`,opts,correct:opts.indexOf(correct),solution:p.q.replace('___',correct),hint:p.hint};
+      };
+    })()
+  },
+  'ja-nein-fragen': {
+    label: 'Ja/Nein-Fragen',
+    makeQ: (()=>{
+      const ex=[{stmt:'Er wohnt in Berlin.',q:'Wohnt er in Berlin?',bad:'Er wohnt in Berlin?'},{stmt:'Sie hat einen Bruder.',q:'Hat sie einen Bruder?',bad:'Sie hat einen Bruder?'},{stmt:'Du kommst morgen.',q:'Kommst du morgen?',bad:'Du kommst morgen?'},{stmt:'Ihr kennt Berlin.',q:'Kennt ihr Berlin?',bad:'Ihr kennt Berlin?'}];
+      return function(){
+        const e=pick(ex);
+        const opts=shuffle([e.q,e.bad,e.stmt.replace('.','.?')]);
+        return{prompt:`Ja/Nein-Frage – welche ist korrekt?\n"${e.stmt}"`,opts,correct:opts.indexOf(e.q),solution:e.q,hint:'Verb an Position 1'};
+      };
+    })()
+  },
+  possessivartikel: {
+    label: 'Possessivartikel',
+    makeQ: (()=>{
+      const stems={ich:'mein',du:'dein',er:'sein',sie_sg:'ihr',wir:'unser',ihr:'euer'};
+      const nouns=[{w:'Bruder',g:'m'},{w:'Haus',g:'n'},{w:'Mutter',g:'f'},{w:'Vater',g:'m'},{w:'Auto',g:'n'},{w:'Schwester',g:'f'}];
+      function getForm(s,g){return g==='f'?s+'e':s;}
+      return function(){
+        const p=pick(['ich','du','er','wir','ihr']),n=pick(nouns);
+        const s=stems[p],correct=getForm(s,n.g);
+        const opts=shuffle([correct,...Object.keys(stems).filter(k=>k!==p).map(k=>getForm(stems[k],n.g)).slice(0,2)]);
+        return{prompt:`Possessivartikel (${p}) – Nominativ:\nDas ist ___ ${n.w}.`,opts,correct:opts.indexOf(correct),solution:`Das ist ${correct} ${n.w}.`,hint:`${p}: ${s}`};
+      };
+    })()
+  },
+  modalverben: {
+    label: 'Modalverben',
+    makeQ: (()=>{
+      const modals={können:{ich:'kann',du:'kannst',er:'kann',wir:'können',ihr:'könnt',Sie:'können'},wollen:{ich:'will',du:'willst',er:'will',wir:'wollen',ihr:'wollt',Sie:'wollen'},müssen:{ich:'muss',du:'musst',er:'muss',wir:'müssen',ihr:'müsst',Sie:'müssen'},sollen:{ich:'soll',du:'sollst',er:'soll',wir:'sollen',ihr:'sollt',Sie:'sollen'},dürfen:{ich:'darf',du:'darfst',er:'darf',wir:'dürfen',ihr:'dürft',Sie:'dürfen'}};
+      const mNames=Object.keys(modals);
+      const pronouns=['ich','du','er','wir','ihr','Sie'];
+      return function(){
+        const m=pick(mNames),p=pick(pronouns);
+        const correct=modals[m][p];
+        const wrong=mNames.filter(x=>x!==m).map(x=>modals[x][p]);
+        const opts=shuffle([correct,...wrong.slice(0,2)]);
+        return{prompt:`"${m}" – Form für "${p}":\n${cap(p)} ___ das machen.`,opts,correct:opts.indexOf(correct),solution:`${cap(p)} ${correct} das machen.`,hint:`${m}`};
+      };
+    })()
+  },
+  akkusativ: {
+    label: 'Akkusativ',
+    makeQ: (()=>{
+      const nouns=[{w:'Mann',g:'m',def:'den Mann',indef:'einen Mann'},{w:'Kaffee',g:'m',def:'den Kaffee',indef:'einen Kaffee'},{w:'Buch',g:'n',def:'das Buch',indef:'ein Buch'},{w:'Kind',g:'n',def:'das Kind',indef:'ein Kind'},{w:'Frau',g:'f',def:'die Frau',indef:'eine Frau'},{w:'Tasche',g:'f',def:'die Tasche',indef:'eine Tasche'}];
+      const verbs=['kauft','sieht','liest','braucht','kennt','trinkt'];
+      return function(){
+        const n=pick(nouns),v=pick(verbs);
+        const t=Math.random();
+        if(t<0.5){
+          const opts=shuffle([n.def,n.g==='m'?'der '+n.w:n.def.replace('den','der').replace('die','der').replace('das','das'),n.g==='m'?'das '+n.w:'die '+n.w]);
+          return{prompt:`Bestimmter Artikel (Akk, ${n.g==='m'?'m':n.g==='n'?'n':'f'}):\nEr ${v} ___ ${n.w}.`,opts,correct:opts.indexOf(n.def),solution:`Er ${v} ${n.def}.`,hint:'Mask.Akk: der→den'};
+        }else{
+          const opts=shuffle([n.indef,n.g==='m'?n.indef.replace('einen','ein'):n.indef,'kein '+n.w]);
+          return{prompt:`Unbestimmter Artikel (Akk):\nSie ${v} ___ ${n.w}.`,opts,correct:opts.indexOf(n.indef),solution:`Sie ${v} ${n.indef}.`,hint:'Mask.Akk: ein→einen'};
+        }
+      };
+    })()
+  },
+  adjektive: {
+    label: 'Adjektive',
+    makeQ: (()=>{
+      const adjPairs=[{pos:'schön',komp:'schöner'},{pos:'groß',komp:'größer'},{pos:'klein',komp:'kleiner'},{pos:'alt',komp:'älter'},{pos:'jung',komp:'jünger'},{pos:'lang',komp:'länger'},{pos:'kurz',komp:'kürzer'},{pos:'gut',komp:'besser'},{pos:'billig',komp:'billiger'},{pos:'teuer',komp:'teurer'}];
+      const nouns=[{w:'Anzug',g:'m'},{w:'Rock',g:'m'},{w:'Hemd',g:'n'},{w:'Kleid',g:'n'},{w:'Bluse',g:'f'},{w:'Jacke',g:'f'}];
+      return function(){
+        const a=pick(adjPairs),n=pick(nouns);
+        const good=`${n.g==='m'?'Der':'Das'} ${n.w} ist ${a.pos}.`;
+        const bad1=`${n.g==='m'?'Der':'Das'} ${n.w} ist ${a.pos}e.`;
+        const bad2=`${n.g==='m'?'Der':'Das'} ${n.w} ist ${a.pos}en.`;
+        const opts=shuffle([good,bad1,bad2]);
+        return{prompt:`Prädikatives Adjektiv – welche Form ist korrekt?\n(${a.pos} · ${n.w})`,opts,correct:opts.indexOf(good),solution:good,hint:'Prädikativ (nach sein): keine Endung!'};
+      };
+    })()
+  },
+  'trennbare-verben': {
+    label: 'Trennbare Verben',
+    makeQ: (()=>{
+      const verbs=[{inf:'abholen',pre:'ab',stem:'hol'},{inf:'anfangen',pre:'an',stem:'fang'},{inf:'anrufen',pre:'an',stem:'ruf'},{inf:'aufstehen',pre:'auf',stem:'steh'},{inf:'einkaufen',pre:'ein',stem:'kauf'},{inf:'mitkommen',pre:'mit',stem:'komm'},{inf:'aufhören',pre:'auf',stem:'hör'}];
+      return function(){
+        const v=pick(verbs);
+        const good=`Ich ${v.stem}e morgen ${v.pre}.`;
+        const bad1=`Ich ${v.inf} morgen.`;
+        const bad2=`Ich ${v.pre} morgen ${v.stem}e.`;
+        const opts=shuffle([good,bad1,bad2]);
+        return{prompt:`Trennbares Verb – welcher Satz ist korrekt?\n(${v.inf})`,opts,correct:opts.indexOf(good),solution:good,hint:`Präfix "${v.pre}" ans Ende`};
+      };
+    })()
+  },
+  imperativ: {
+    label: 'Imperativ',
+    makeQ: (()=>{
+      const verbs=[{inf:'machen',Sie:'Machen Sie',du:'Mach',ihr:'Macht'},{inf:'schreiben',Sie:'Schreiben Sie',du:'Schreib',ihr:'Schreibt'},{inf:'lesen',Sie:'Lesen Sie',du:'Lies',ihr:'Lest'},{inf:'sprechen',Sie:'Sprechen Sie',du:'Sprich',ihr:'Sprecht'},{inf:'kommen',Sie:'Kommen Sie',du:'Komm',ihr:'Kommt'},{inf:'gehen',Sie:'Gehen Sie',du:'Geh',ihr:'Geht'}];
+      return function(){
+        const v=pick(verbs),f=pick(['Sie','du','ihr']);
+        const correct=v[f]+' bitte!';
+        const others=verbs.filter(x=>x!==v).map(x=>x[f]+' bitte!');
+        const opts=shuffle([correct,...others.slice(0,2)]);
+        return{prompt:`Imperativ (${f}-Form) von "${v.inf}":`,opts,correct:opts.indexOf(correct),solution:correct,hint:`${v.inf} → ${f}: ${v[f]}`};
+      };
+    })()
+  },
+  'uhrzeit-datum': {
+    label: 'Uhrzeit & Datum',
+    makeQ: (()=>{
+      const times=[{t:'8:00',off:'acht Uhr',wrong:'neun Uhr'},{t:'8:15',off:'acht Uhr fünfzehn',wrong:'Viertel vor acht'},{t:'8:30',off:'acht Uhr dreißig',wrong:'halb acht'},{t:'8:45',off:'acht Uhr fünfundvierzig',wrong:'Viertel nach acht'},{t:'12:00',off:'zwölf Uhr',wrong:'null Uhr'}];
+      const ordinals=[{n:1,f:'ersten'},{n:2,f:'zweiten'},{n:3,f:'dritten'},{n:7,f:'siebten'},{n:20,f:'zwanzigsten'},{n:31,f:'einunddreißigsten'}];
+      return function(){
+        const t=Math.random();
+        if(t<0.5){
+          const u=pick(times);
+          const opts=shuffle([u.off,u.wrong,u.wrong.replace('acht','neun')]);
+          return{prompt:`Wie heißt die Uhrzeit ${u.t}?`,opts,correct:opts.indexOf(u.off),solution:u.off,hint:`${u.t}: ${u.off}`};
+        }else{
+          const o=pick(ordinals);
+          const opts=shuffle([o.f,o.f.replace(o.f.slice(-1),'n'),o.f.slice(0,-1)]);
+          return{prompt:`Datum – ${o.n}. Januar:\nAm ___ Januar.`,opts,correct:opts.indexOf(o.f),solution:`am ${o.f} Januar`,hint:`${o.n}. → ${o.f}`};
+        }
+      };
+    })()
+  },
+  praepositionen: {
+    label: 'Präpositionen',
+    makeQ: (()=>{
+      const temporal=[{prep:'am',ex:'___ Montag gehe ich zum Kurs.',ans:'Am'},{prep:'um',ex:'Der Film beginnt ___ 20 Uhr.',ans:'um'},{prep:'seit',ex:'Ich lebe ___ einem Jahr hier.',ans:'seit'},{prep:'nach',ex:'___ dem Kurs gehe ich heim.',ans:'Nach'}];
+      const lokal=[{prep:'in',ex:'Ich wohne ___ Berlin.',ans:'in'},{prep:'nach',ex:'Ich fahre ___ München.',ans:'nach'},{prep:'aus',ex:'Er kommt ___ der Schweiz.',ans:'aus'},{prep:'bei',ex:'Ich warte ___ der Haltestelle.',ans:'bei'}];
+      return function(){
+        const t=Math.random();
+        const e=pick(t<0.5?temporal:lokal);
+        const preps=['am','um','seit','nach','in','aus','bei','von','zu','mit'];
+        const opts=shuffle([e.ans,...preps.filter(x=>x!==e.ans).slice(0,2)]);
+        return{prompt:`Welche Präposition passt?\n"${e.ex}"`,opts,correct:opts.indexOf(e.ans),solution:e.ex.replace('___',e.ans),hint:e.prep};
+      };
+    })()
+  },
+  satzstellung: {
+    label: 'Satzstellung',
+    makeQ: (()=>{
+      const pos2=[{p1:'Am Montag',verb:'gehe',rest:'ich zur Schule.',wrong:'ich gehe zur Schule.'},{p1:'Heute',verb:'lerne',rest:'ich viel.',wrong:'ich lerne viel.'},{p1:'Morgen',verb:'fahren',rest:'wir weg.',wrong:'wir fahren weg.'}];
+      return function(){
+        const s=pick(pos2);
+        const good=`${s.p1} ${s.verb} ${s.rest}`;
+        const bad1=`${s.p1} ${s.wrong}`;
+        const bad2=`Ich ${s.verb} ${s.p1.toLowerCase()} ${s.rest}`;
+        const opts=shuffle([good,bad1,bad2]);
+        return{prompt:`Verb auf Position 2 – welcher Satz ist korrekt?`,opts,correct:opts.indexOf(good),solution:good,hint:'Verb immer auf Pos.2'};
+      };
+    })()
+  }
+};
+
+let questions = [];
+let activeTopics = {};
+
+// Initialize topic checkboxes
+function initTopics() {
+  topicCheckboxes.innerHTML = '';
+  Object.entries(TOPICS).forEach(([key, topic]) => {
+    const label = document.createElement('label');
+    label.className = 'checkbox-item';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = key;
+    input.checked = true;
+    activeTopics[key] = true;
+    input.addEventListener('change', () => {
+      activeTopics[key] = input.checked;
+    });
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(topic.label));
+    topicCheckboxes.appendChild(label);
+  });
+}
+
+selectAllBtn.addEventListener('click', () => {
+  Object.keys(TOPICS).forEach(key => {
+    activeTopics[key] = true;
+    topicCheckboxes.querySelector(`input[value="${key}"]`).checked = true;
+  });
+});
+
+deselectAllBtn.addEventListener('click', () => {
+  Object.keys(TOPICS).forEach(key => {
+    activeTopics[key] = false;
+    topicCheckboxes.querySelector(`input[value="${key}"]`).checked = false;
+  });
+});
+
+function gen50() {
+  const makers = Object.entries(TOPICS).filter(([k]) => activeTopics[k]).map(([, t]) => t.makeQ);
+  if(!makers.length) return [];
+  const out = [];
+  for(let i = 0; i < 50; i++) out.push(makers[i % makers.length]());
+  return shuffle(out);
+}
+
+function render() {
+  ql.innerHTML = '';
+  questions.forEach((q, i) => {
+    const c = document.createElement('article');
+    c.className = 'q-card';
+    const t = document.createElement('p');
+    t.className = 'q-title';
+    t.textContent = `Frage ${i+1}/50`;
+    const pr = document.createElement('p');
+    pr.className = 'q-prompt';
+    pr.textContent = q.prompt;
+    const od = document.createElement('div');
+    od.className = 'opts';
+    q.opts.forEach((o, j) => {
+      const l = document.createElement('label');
+      l.className = 'opt';
+      const r = document.createElement('input');
+      r.type = 'radio';
+      r.name = `q_${i}`;
+      r.value = j;
+      r.addEventListener('change', () => pb.textContent = `Gelöst: ${ql.querySelectorAll('input:checked').length}/50`);
+      const tx = document.createElement('span');
+      tx.innerHTML = `<strong>${String.fromCharCode(65+j)})</strong> ${o}`;
+      l.append(r, tx);
+      od.appendChild(l);
+    });
+    const s = document.createElement('p');
+    s.className = 'solution';
+    s.textContent = `Lösung: ${q.solution} | ${q.hint}`;
+    c.append(t, pr, od, s);
+    ql.appendChild(c);
+  });
+  pb.textContent = 'Gelöst: 0/50';
+  rb.style.display = 'none';
+  actions.style.display = 'grid';
+}
+
+function grade() {
+  let n = 0;
+  ql.querySelectorAll('.q-card').forEach((c, i) => {
+    c.classList.remove('correct', 'wrong');
+    c.querySelectorAll('.opt').forEach(o => o.classList.remove('correct-answer'));
+    const q = questions[i];
+    const ch = c.querySelector('input:checked');
+    const s = ch ? Number(ch.value) : -1;
+    const ls = c.querySelectorAll('.opt');
+    if(ls[q.correct]) ls[q.correct].classList.add('correct-answer');
+    if(s === q.correct) { n++; c.classList.add('correct'); } else c.classList.add('wrong');
+  });
+  rb.style.display = 'block';
+  rb.textContent = `Richtig: ${n}/50\nPunkte: ${n*2}/100\nErgebnis: ${n*2}%`;
+}
+
+document.getElementById('checkBtn').addEventListener('click', grade);
+document.getElementById('solutionBtn').addEventListener('click', () => ql.classList.add('show-sol'));
+document.getElementById('newBtn').addEventListener('click', () => {
+  questions = gen50();
+  ql.classList.remove('show-sol');
+  render();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+generateBtn.addEventListener('click', () => {
+  questions = gen50();
+  render();
+  window.scrollTo({top: ql.offsetTop - 50, behavior: 'smooth'});
+});
+
+initTopics();
+</script>
+</body>
+</html>
