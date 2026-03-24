@@ -237,31 +237,44 @@ if ($bytes === false) {
     exit;
 }
 
-foreach ($homeworks as $i => $item) {
-    if (!is_array($item) || (string)($item['id'] ?? '') !== $assignmentId) {
-        continue;
+$letterMeta = [
+    'created_at' => $createdAt,
+    'upload_id' => $uploadId,
+    'checklist_required' => $isHoerenTeilChecklistRequired,
+];
+$hwRowUpdated = false;
+$hwUpdateOk = homework_assignments_mutate(function (array $homeworks) use ($assignmentId, $studentUsername, $letterMeta, &$hwRowUpdated): array|false {
+    foreach ($homeworks as $i => $item) {
+        if (!is_array($item) || (string)($item['id'] ?? '') !== $assignmentId) {
+            continue;
+        }
+        $createdAtInner = (string)($letterMeta['created_at'] ?? '');
+        $uploadIdInner = (string)($letterMeta['upload_id'] ?? '');
+        $isHoerenTeil = !empty($letterMeta['checklist_required']);
+        $assignees = is_array($item['assignees'] ?? null) ? $item['assignees'] : [];
+        $state = is_array($assignees[$studentUsername] ?? null) ? $assignees[$studentUsername] : [];
+        $state['submitted_at'] = $createdAtInner;
+        $state['last_upload_id'] = $uploadIdInner;
+        $state['submission_count'] = (int)($state['submission_count'] ?? 0) + 1;
+        $state['checklist_required'] = $isHoerenTeil;
+        $state['checklist_complete'] = $isHoerenTeil ? true : false;
+        $state['checklist_validated_at'] = $isHoerenTeil ? $createdAtInner : '';
+        if (trim((string)($state['started_at'] ?? '')) === '') {
+            $state['started_at'] = $createdAtInner;
+        }
+        if (trim((string)($state['deadline_at'] ?? '')) === '') {
+            $baseTs = strtotime((string)$state['started_at']);
+            $state['deadline_at'] = gmdate('c', (($baseTs === false) ? time() : (int)$baseTs) + assignment_duration_minutes($item) * 60);
+        }
+        $assignees[$studentUsername] = $state;
+        $homeworks[$i]['assignees'] = $assignees;
+        $homeworks[$i]['updated_at'] = $createdAtInner;
+        $hwRowUpdated = true;
+        return $homeworks;
     }
-    $assignees = is_array($item['assignees'] ?? null) ? $item['assignees'] : [];
-    $state = is_array($assignees[$studentUsername] ?? null) ? $assignees[$studentUsername] : [];
-    $state['submitted_at'] = $createdAt;
-    $state['last_upload_id'] = $uploadId;
-    $state['submission_count'] = (int)($state['submission_count'] ?? 0) + 1;
-    $state['checklist_required'] = $isHoerenTeilChecklistRequired;
-    $state['checklist_complete'] = $isHoerenTeilChecklistRequired ? true : false;
-    $state['checklist_validated_at'] = $isHoerenTeilChecklistRequired ? $createdAt : '';
-    if (trim((string)($state['started_at'] ?? '')) === '') {
-        $state['started_at'] = $createdAt;
-    }
-    if (trim((string)($state['deadline_at'] ?? '')) === '') {
-        $baseTs = strtotime((string)$state['started_at']);
-        $state['deadline_at'] = gmdate('c', (($baseTs === false) ? time() : (int)$baseTs) + assignment_duration_minutes($item) * 60);
-    }
-    $assignees[$studentUsername] = $state;
-    $homeworks[$i]['assignees'] = $assignees;
-    $homeworks[$i]['updated_at'] = $createdAt;
-    break;
-}
-if (!write_homework_assignments($homeworks)) {
+    return false;
+});
+if (!$hwUpdateOk || !$hwRowUpdated) {
     $assignmentUpdateWarning = 'Aufgabenstatus konnte nach dem Upload nicht aktualisiert werden.';
 } else {
     append_audit_log('homework_submit', [

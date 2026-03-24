@@ -98,26 +98,33 @@ function cleanup_course_related_data(string $courseId, array $deletedUsernames, 
         'reminder_logs_removed' => 0,
     ];
 
-    $items = load_homework_assignments();
-    $nextItems = [];
     $removedAssignmentIds = [];
-    foreach ($items as $row) {
-        if (!is_array($row)) {
-            continue;
-        }
-        if (trim((string)($row['course_id'] ?? '')) === $courseId) {
-            $assignmentId = trim((string)($row['id'] ?? ''));
-            if ($assignmentId !== '') {
-                $removedAssignmentIds[$assignmentId] = true;
+    $removedCount = 0;
+    $hwPruneOk = homework_assignments_mutate(function (array $items) use ($courseId, &$removedAssignmentIds, &$removedCount): array|false {
+        $next = [];
+        foreach ($items as $row) {
+            if (!is_array($row)) {
+                continue;
             }
-            $stats['homework_removed']++;
-            continue;
+            if (trim((string)($row['course_id'] ?? '')) === $courseId) {
+                $assignmentId = trim((string)($row['id'] ?? ''));
+                if ($assignmentId !== '') {
+                    $removedAssignmentIds[$assignmentId] = true;
+                }
+                $removedCount++;
+                continue;
+            }
+            $next[] = $row;
         }
-        $nextItems[] = $row;
-    }
-    if ($stats['homework_removed'] > 0 && !write_homework_assignments($nextItems)) {
+        if ($removedCount === 0) {
+            return false;
+        }
+        return $next;
+    });
+    if (!$hwPruneOk) {
         return false;
     }
+    $stats['homework_removed'] = $removedCount;
 
     $storageDir = __DIR__ . '/storage';
     $attemptsFile = $storageDir . '/homework_attempts.jsonl';

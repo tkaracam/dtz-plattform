@@ -35,6 +35,70 @@ function write_homework_assignments(array $assignments): bool
     return file_put_contents(homework_file_path(), $json . PHP_EOL, LOCK_EX) !== false;
 }
 
+/**
+ * Read-modify-write homework_assignments.json under an exclusive lock so concurrent
+ * requests cannot overwrite each other's changes.
+ *
+ * @param callable(array): array|false $mutator Receives current list; return false to skip writing, or the full array to persist.
+ * @return bool False if lock/read/write failed; true if mutator returned false (no write) or persistence succeeded.
+ */
+function homework_assignments_mutate(callable $mutator): bool
+{
+    $path = homework_file_path();
+    $dir = dirname($path);
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+
+    $fp = fopen($path, 'c+');
+    if ($fp === false) {
+        return false;
+    }
+
+    if (!flock($fp, LOCK_EX)) {
+        fclose($fp);
+        return false;
+    }
+
+    try {
+        rewind($fp);
+        $raw = stream_get_contents($fp);
+        $items = [];
+        if (is_string($raw) && trim($raw) !== '') {
+            $data = json_decode($raw, true);
+            $items = is_array($data) ? $data : [];
+        }
+
+        $next = $mutator($items);
+        if ($next === false) {
+            return true;
+        }
+        if (!is_array($next)) {
+            return false;
+        }
+
+        $json = json_encode(array_values($next), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        if (!is_string($json)) {
+            return false;
+        }
+
+        rewind($fp);
+        if (!ftruncate($fp, 0)) {
+            return false;
+        }
+        if (fwrite($fp, $json . PHP_EOL) === false) {
+            return false;
+        }
+        if (!fflush($fp)) {
+            return false;
+        }
+        return true;
+    } finally {
+        flock($fp, LOCK_UN);
+        fclose($fp);
+    }
+}
+
 function find_course_by_id(string $courseId): ?array
 {
     $needle = trim($courseId);

@@ -37,83 +37,109 @@ if ($assignmentId === '') {
     exit;
 }
 
-$items = load_homework_assignments();
-$idx = -1;
-$assignment = null;
-foreach ($items as $i => $row) {
-    if (!is_array($row)) {
-        continue;
+$txn = [
+    'http' => 200,
+    'err' => '',
+    'already_submitted' => false,
+    'submitted_at' => '',
+    'server_ts' => time(),
+];
+
+$mutateOk = homework_assignments_mutate(function (array $items) use ($assignmentId, $username, &$txn): array|false {
+    $now = time();
+    $txn['server_ts'] = $now;
+    $idx = -1;
+    $assignment = null;
+    foreach ($items as $i => $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        if ((string)($row['id'] ?? '') !== $assignmentId) {
+            continue;
+        }
+        $idx = $i;
+        $assignment = $row;
+        break;
     }
-    if ((string)($row['id'] ?? '') !== $assignmentId) {
-        continue;
+
+    if (!is_array($assignment) || $idx < 0) {
+        $txn['http'] = 404;
+        $txn['err'] = 'Aufgabe nicht gefunden.';
+        return false;
     }
-    $idx = $i;
-    $assignment = $row;
-    break;
-}
+    if (!assignment_targets_student($assignment, $username)) {
+        $txn['http'] = 403;
+        $txn['err'] = 'Diese Aufgabe ist Ihnen nicht zugewiesen.';
+        return false;
+    }
+    if (!assignment_is_active_now($assignment, $now)) {
+        $txn['http'] = 400;
+        $txn['err'] = 'Die Aufgabe ist derzeit nicht aktiv.';
+        return false;
+    }
 
-if (!is_array($assignment) || $idx < 0) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+    $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
+    $state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
+    $state = assignment_state_from_raw($assignment, $state);
+    $prevSubmitted = trim((string)($state['submitted_at'] ?? ''));
+    if ($prevSubmitted !== '') {
+        $txn['already_submitted'] = true;
+        $txn['submitted_at'] = $prevSubmitted;
+        return false;
+    }
 
-$now = time();
-if (!assignment_targets_student($assignment, $username)) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Diese Aufgabe ist Ihnen nicht zugewiesen.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if (!assignment_is_active_now($assignment, $now)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Die Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+    $startedAt = trim((string)($state['started_at'] ?? ''));
+    $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+    $deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
+    if ($deadlineTs !== false && $now > (int)$deadlineTs) {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Frist ist abgelaufen.';
+        return false;
+    }
+    if ($startedAt === '') {
+        $startedAt = gmdate('c', $now);
+        $deadlineAt = gmdate('c', $now + assignment_duration_minutes($assignment) * 60);
+    }
 
-$assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
-$state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
-$state = assignment_state_from_raw($assignment, $state);
-$submittedAt = trim((string)($state['submitted_at'] ?? ''));
-if ($submittedAt !== '') {
-    echo json_encode([
-        'ok' => true,
-        'already_submitted' => true,
-        'assignment_id' => $assignmentId,
-        'submitted_at' => $submittedAt,
-        'server_ts' => $now,
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+    $submittedAt = gmdate('c', $now);
+    $state['started_at'] = $startedAt;
+    $state['deadline_at'] = $deadlineAt;
+    $state['submitted_at'] = $submittedAt;
+    $state['last_upload_id'] = (string)($state['last_upload_id'] ?? '');
+    $state['submission_count'] = max(1, (int)($state['submission_count'] ?? 0));
 
-$startedAt = trim((string)($state['started_at'] ?? ''));
-$deadlineAt = trim((string)($state['deadline_at'] ?? ''));
-$deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
-if ($deadlineTs !== false && $now > (int)$deadlineTs) {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Frist ist abgelaufen.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ($startedAt === '') {
-    $startedAt = gmdate('c', $now);
-    $deadlineAt = gmdate('c', $now + assignment_duration_minutes($assignment) * 60);
-}
+    $assignees[$username] = $state;
+    $items[$idx]['assignees'] = $assignees;
+    $items[$idx]['updated_at'] = gmdate('c', $now);
 
-$submittedAt = gmdate('c', $now);
-$state['started_at'] = $startedAt;
-$state['deadline_at'] = $deadlineAt;
-$state['submitted_at'] = $submittedAt;
-$state['last_upload_id'] = (string)($state['last_upload_id'] ?? '');
-$state['submission_count'] = max(1, (int)($state['submission_count'] ?? 0));
+    $txn['submitted_at'] = $submittedAt;
+    return $items;
+});
 
-$assignees[$username] = $state;
-$items[$idx]['assignees'] = $assignees;
-$items[$idx]['updated_at'] = gmdate('c', $now);
-
-if (!write_homework_assignments($items)) {
+if (!$mutateOk) {
     http_response_code(500);
     echo json_encode(['error' => 'Aufgabenstatus konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+if ($txn['http'] !== 200) {
+    http_response_code($txn['http']);
+    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($txn['already_submitted']) {
+    echo json_encode([
+        'ok' => true,
+        'already_submitted' => true,
+        'assignment_id' => $assignmentId,
+        'submitted_at' => (string)$txn['submitted_at'],
+        'server_ts' => (int)$txn['server_ts'],
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$submittedAt = (string)$txn['submitted_at'];
+$now = (int)$txn['server_ts'];
 
 // Skor verisi varsa homework_attempts.jsonl dosyasına yaz
 $correct = isset($body['correct']) ? max(0, (int)$body['correct']) : null;

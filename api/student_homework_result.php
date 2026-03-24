@@ -110,80 +110,6 @@ if ($maxPoints <= 0 && $points > 0) {
     exit;
 }
 
-$items = load_homework_assignments();
-$idx = -1;
-$assignment = null;
-foreach ($items as $i => $row) {
-    if (!is_array($row)) {
-        continue;
-    }
-    if ((string)($row['id'] ?? '') !== $assignmentId) {
-        continue;
-    }
-    $idx = $i;
-    $assignment = $row;
-    break;
-}
-
-if (!is_array($assignment) || $idx < 0) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if (!assignment_targets_student($assignment, $username)) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Diese Aufgabe ist Ihnen nicht zugewiesen.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$template = parse_assignment_dtz_template((string)($assignment['template_id'] ?? ''));
-if (!is_array($template)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Diese Aufgabe ist keine DTZ-Teil-Aufgabe.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ((string)$template['module'] !== $module || (int)$template['teil'] !== $teil) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Das Ergebnis passt nicht zur zugewiesenen Aufgabe.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$now = time();
-if (!assignment_is_active_now($assignment, $now)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Die Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-$assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
-$state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
-$state = assignment_state_from_raw($assignment, $state);
-$startedAt = trim((string)($state['started_at'] ?? ''));
-$submittedAt = trim((string)($state['submitted_at'] ?? ''));
-$deadlineAt = trim((string)($state['deadline_at'] ?? ''));
-
-if ($submittedAt !== '') {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Aufgabe wurde bereits abgegeben.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ($startedAt === '') {
-    $startedAt = gmdate('c', $now);
-    $deadlineAt = gmdate('c', $now + assignment_duration_minutes($assignment) * 60);
-    $state['started_at'] = $startedAt;
-    $state['deadline_at'] = $deadlineAt;
-}
-
-$startedTs = strtotime($startedAt);
-$deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
-$isLate = ($deadlineTs !== false && $now > (int)$deadlineTs);
-if ($isLate) {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Frist ist abgelaufen.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-$elapsed = $startedTs === false ? 0 : max(0, $now - (int)$startedTs);
-$withinDeadline = ($deadlineTs === false) ? true : ($now <= (int)$deadlineTs);
-
 try {
     $attemptSuffix = bin2hex(random_bytes(4));
 } catch (Throwable $e) {
@@ -191,12 +117,163 @@ try {
 }
 $attemptId = 'hwa-' . gmdate('YmdHis') . '-' . $attemptSuffix;
 
+$txn = [
+    'http' => 200,
+    'err' => '',
+    'now' => time(),
+    'elapsed' => 0,
+    'within_deadline' => true,
+    'submitted_now' => false,
+    'attempt_id' => $attemptId,
+    'teacher_username' => '',
+    'course_id' => '',
+];
+
+$mutateOk = homework_assignments_mutate(function (array $items) use (
+    $assignmentId,
+    $username,
+    $module,
+    $teil,
+    $correct,
+    $wrong,
+    $unanswered,
+    $total,
+    $points,
+    $maxPoints,
+    &$txn,
+    $attemptId
+): array|false {
+    $now = time();
+    $txn['now'] = $now;
+    $idx = -1;
+    $assignment = null;
+    foreach ($items as $i => $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        if ((string)($row['id'] ?? '') !== $assignmentId) {
+            continue;
+        }
+        $idx = $i;
+        $assignment = $row;
+        break;
+    }
+
+    if (!is_array($assignment) || $idx < 0) {
+        $txn['http'] = 404;
+        $txn['err'] = 'Aufgabe nicht gefunden.';
+        return false;
+    }
+    $txn['teacher_username'] = (string)($assignment['teacher_username'] ?? '');
+    $txn['course_id'] = (string)($assignment['course_id'] ?? '');
+    if (!assignment_targets_student($assignment, $username)) {
+        $txn['http'] = 403;
+        $txn['err'] = 'Diese Aufgabe ist Ihnen nicht zugewiesen.';
+        return false;
+    }
+
+    $template = parse_assignment_dtz_template((string)($assignment['template_id'] ?? ''));
+    if (!is_array($template)) {
+        $txn['http'] = 400;
+        $txn['err'] = 'Diese Aufgabe ist keine DTZ-Teil-Aufgabe.';
+        return false;
+    }
+    if ((string)$template['module'] !== $module || (int)$template['teil'] !== $teil) {
+        $txn['http'] = 400;
+        $txn['err'] = 'Das Ergebnis passt nicht zur zugewiesenen Aufgabe.';
+        return false;
+    }
+
+    if (!assignment_is_active_now($assignment, $now)) {
+        $txn['http'] = 400;
+        $txn['err'] = 'Die Aufgabe ist derzeit nicht aktiv.';
+        return false;
+    }
+    $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
+    $state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
+    $state = assignment_state_from_raw($assignment, $state);
+    $startedAt = trim((string)($state['started_at'] ?? ''));
+    $submittedAt = trim((string)($state['submitted_at'] ?? ''));
+    $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+
+    if ($submittedAt !== '') {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Aufgabe wurde bereits abgegeben.';
+        return false;
+    }
+    if ($startedAt === '') {
+        $startedAt = gmdate('c', $now);
+        $deadlineAt = gmdate('c', $now + assignment_duration_minutes($assignment) * 60);
+        $state['started_at'] = $startedAt;
+        $state['deadline_at'] = $deadlineAt;
+    }
+
+    $startedTs = strtotime($startedAt);
+    $deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
+    $isLate = ($deadlineTs !== false && $now > (int)$deadlineTs);
+    if ($isLate) {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Frist ist abgelaufen.';
+        return false;
+    }
+    $elapsed = $startedTs === false ? 0 : max(0, $now - (int)$startedTs);
+    $withinDeadline = ($deadlineTs === false) ? true : ($now <= (int)$deadlineTs);
+    $txn['elapsed'] = $elapsed;
+    $txn['within_deadline'] = $withinDeadline;
+
+    $submittedNow = $unanswered <= 0;
+    $txn['submitted_now'] = $submittedNow;
+    $state['submission_count'] = (int)($state['submission_count'] ?? 0);
+    $state['last_upload_id'] = (string)($state['last_upload_id'] ?? '');
+
+    if ($submittedNow) {
+        $state['submitted_at'] = gmdate('c', $now);
+        $state['submission_count'] = $state['submission_count'] + 1;
+        $state['last_upload_id'] = $attemptId;
+    }
+
+    $state['last_dtz_result'] = [
+        'attempt_id' => $attemptId,
+        'module' => $module,
+        'teil' => $teil,
+        'correct' => $correct,
+        'wrong' => $wrong,
+        'unanswered' => $unanswered,
+        'total' => $total,
+        'points' => $points,
+        'max_points' => $maxPoints,
+        'elapsed_seconds' => $elapsed,
+        'saved_at' => gmdate('c', $now),
+    ];
+
+    $assignees[$username] = $state;
+    $items[$idx]['assignees'] = $assignees;
+    $items[$idx]['updated_at'] = gmdate('c', $now);
+
+    return $items;
+});
+
+if (!$mutateOk) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Aufgabenstatus konnte nicht aktualisiert werden.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($txn['http'] !== 200) {
+    http_response_code($txn['http']);
+    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+$now = (int)$txn['now'];
+$elapsed = (int)$txn['elapsed'];
+$withinDeadline = (bool)$txn['within_deadline'];
+$submittedNow = (bool)$txn['submitted_now'];
+
 $attemptRow = [
     'attempt_id' => $attemptId,
     'attempted_at' => gmdate('c', $now),
     'assignment_id' => $assignmentId,
-    'teacher_username' => (string)($assignment['teacher_username'] ?? ''),
-    'course_id' => (string)($assignment['course_id'] ?? ''),
+    'teacher_username' => (string)($txn['teacher_username'] ?? ''),
+    'course_id' => (string)($txn['course_id'] ?? ''),
     'student_username' => $username,
     'module' => $module,
     'teil' => $teil,
@@ -213,40 +290,6 @@ $attemptRow = [
 if (!append_homework_attempt_row($attemptRow)) {
     http_response_code(500);
     echo json_encode(['error' => 'Ergebnis konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$submittedNow = $unanswered <= 0;
-$state['submission_count'] = (int)($state['submission_count'] ?? 0);
-$state['last_upload_id'] = (string)($state['last_upload_id'] ?? '');
-
-if ($submittedNow) {
-    $state['submitted_at'] = gmdate('c', $now);
-    $state['submission_count'] = $state['submission_count'] + 1;
-    $state['last_upload_id'] = $attemptId;
-}
-
-$state['last_dtz_result'] = [
-    'attempt_id' => $attemptId,
-    'module' => $module,
-    'teil' => $teil,
-    'correct' => $correct,
-    'wrong' => $wrong,
-    'unanswered' => $unanswered,
-    'total' => $total,
-    'points' => $points,
-    'max_points' => $maxPoints,
-    'elapsed_seconds' => $elapsed,
-    'saved_at' => gmdate('c', $now),
-];
-
-$assignees[$username] = $state;
-$items[$idx]['assignees'] = $assignees;
-$items[$idx]['updated_at'] = gmdate('c', $now);
-
-if (!write_homework_assignments($items)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Aufgabenstatus konnte nicht aktualisiert werden.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

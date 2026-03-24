@@ -414,14 +414,22 @@ if ($action === 'create_batch') {
         $newIds[] = $id;
     }
 
-    $nextItems = array_merge($items, $newItems);
-    if (!write_homework_assignments($nextItems)) {
+    $savedBatch = homework_assignments_mutate(static function (array $current) use ($newItems): array {
+        return array_merge($current, $newItems);
+    });
+    if (!$savedBatch) {
         http_response_code(500);
         echo json_encode(['error' => 'Aufgaben konnten nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     if ($usedDtzChanged && !save_used_dtz_question_ids($usedDtz)) {
-        $rolledBack = write_homework_assignments($items);
+        $newIdSet = array_flip($newIds);
+        $rolledBack = homework_assignments_mutate(static function (array $current) use ($newIdSet): array {
+            return array_values(array_filter($current, static function ($row) use ($newIdSet): bool {
+                $id = trim((string)($row['id'] ?? ''));
+                return $id === '' || !isset($newIdSet[$id]);
+            }));
+        });
         http_response_code(500);
         echo json_encode([
             'error' => $rolledBack
@@ -598,9 +606,10 @@ if ($action === 'create') {
         'dtz_bundle' => $dtzBundle,
     ];
 
-    $items[] = $item;
-
-    if (!write_homework_assignments($items)) {
+    if (!homework_assignments_mutate(static function (array $current) use ($item): array {
+        $current[] = $item;
+        return $current;
+    })) {
         http_response_code(500);
         echo json_encode(['error' => 'Aufgabe konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
         exit;
@@ -629,34 +638,38 @@ if ($action === 'set_active') {
         exit;
     }
 
-    $found = false;
-    foreach ($items as $i => $item) {
-        if (!is_array($item)) {
-            continue;
+    $setState = ['found' => false, 'forbidden' => false];
+    if (!homework_assignments_mutate(function (array $items) use ($assignmentId, $active, $admin, &$setState): array|false {
+        foreach ($items as $i => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            if ((string)($item['id'] ?? '') !== $assignmentId) {
+                continue;
+            }
+            if (!assignment_visibility_for_admin($item, $admin)) {
+                $setState['forbidden'] = true;
+                return false;
+            }
+            $items[$i]['status'] = $active ? 'active' : 'archived';
+            $items[$i]['updated_at'] = gmdate('c');
+            $setState['found'] = true;
+            return $items;
         }
-        if ((string)($item['id'] ?? '') !== $assignmentId) {
-            continue;
-        }
-        if (!assignment_visibility_for_admin($item, $admin)) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Keine Berechtigung für diese Aufgabe.'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        $items[$i]['status'] = $active ? 'active' : 'archived';
-        $items[$i]['updated_at'] = gmdate('c');
-        $found = true;
-        break;
-    }
-
-    if (!$found) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    if (!write_homework_assignments($items)) {
+        return false;
+    })) {
         http_response_code(500);
         echo json_encode(['error' => 'Aufgabenstatus konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($setState['forbidden']) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Keine Berechtigung für diese Aufgabe.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!$setState['found']) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -677,34 +690,37 @@ if ($action === 'delete') {
         exit;
     }
 
-    $found = false;
-    foreach ($items as $i => $item) {
-        if (!is_array($item)) {
-            continue;
+    $delState = ['found' => false, 'forbidden' => false];
+    if (!homework_assignments_mutate(function (array $items) use ($assignmentId, $admin, &$delState): array|false {
+        foreach ($items as $i => $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            if ((string)($item['id'] ?? '') !== $assignmentId) {
+                continue;
+            }
+            if (!assignment_visibility_for_admin($item, $admin)) {
+                $delState['forbidden'] = true;
+                return false;
+            }
+            unset($items[$i]);
+            $delState['found'] = true;
+            return array_values($items);
         }
-        if ((string)($item['id'] ?? '') !== $assignmentId) {
-            continue;
-        }
-        if (!assignment_visibility_for_admin($item, $admin)) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Keine Berechtigung für diese Aufgabe.'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        unset($items[$i]);
-        $found = true;
-        break;
-    }
-
-    if (!$found) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    $items = array_values($items);
-    if (!write_homework_assignments($items)) {
+        return false;
+    })) {
         http_response_code(500);
         echo json_encode(['error' => 'Aufgabe konnte nicht gelöscht werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($delState['forbidden']) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Keine Berechtigung für diese Aufgabe.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!$delState['found']) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -724,35 +740,42 @@ if ($action === 'delete_group') {
         exit;
     }
 
-    $next = [];
-    $removed = 0;
-    foreach ($items as $item) {
-        if (!is_array($item)) {
-            continue;
+    $grpState = ['removed' => 0];
+    if (!homework_assignments_mutate(function (array $items) use ($groupId, $admin, &$grpState): array|false {
+        $next = [];
+        $removed = 0;
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $itemGroupId = trim((string)($item['batch_group_id'] ?? ''));
+            if ($itemGroupId !== $groupId) {
+                $next[] = $item;
+                continue;
+            }
+            if (!assignment_visibility_for_admin($item, $admin)) {
+                $next[] = $item;
+                continue;
+            }
+            $removed++;
         }
-        $itemGroupId = trim((string)($item['batch_group_id'] ?? ''));
-        if ($itemGroupId !== $groupId) {
-            $next[] = $item;
-            continue;
+        if ($removed <= 0) {
+            return false;
         }
-        if (!assignment_visibility_for_admin($item, $admin)) {
-            $next[] = $item;
-            continue;
-        }
-        $removed++;
-    }
-
-    if ($removed <= 0) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Gruppe nicht gefunden oder keine Berechtigung.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-
-    if (!write_homework_assignments($next)) {
+        $grpState['removed'] = $removed;
+        return $next;
+    })) {
         http_response_code(500);
         echo json_encode(['error' => 'Aufgabengruppe konnte nicht gelöscht werden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    if ($grpState['removed'] <= 0) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Gruppe nicht gefunden oder keine Berechtigung.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $removed = $grpState['removed'];
 
     append_audit_log('homework_assign_delete_group', [
         'batch_group_id' => $groupId,

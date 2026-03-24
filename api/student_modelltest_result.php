@@ -81,114 +81,155 @@ if ($schreibenMax <= 0 && $schreibenScore > 0) {
     exit;
 }
 
-$items = load_homework_assignments();
-$idx = -1;
-$assignment = null;
-foreach ($items as $i => $row) {
-    if (!is_array($row)) {
-        continue;
-    }
-    if ((string)($row['id'] ?? '') !== $assignmentId) {
-        continue;
-    }
-    $idx = $i;
-    $assignment = $row;
-    break;
-}
-
-if (!is_array($assignment) || $idx < 0) {
-    http_response_code(404);
-    echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if (!assignment_targets_student($assignment, $username)) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Diese Aufgabe ist Ihnen nicht zugewiesen.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$templateId = mb_strtolower(trim((string)($assignment['template_id'] ?? '')));
-if ($templateId !== 'dtz-mock-pruefung-komplett') {
-    http_response_code(400);
-    echo json_encode(['error' => 'Diese Aufgabe ist keine Modelltest-Aufgabe.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$nowTs = time();
-if (!assignment_is_active_now($assignment, $nowTs)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Die Aufgabe ist derzeit nicht aktiv.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
-$state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
-$state = assignment_state_from_raw($assignment, $state);
-
-$startedAt = trim((string)($state['started_at'] ?? ''));
-$submittedAt = trim((string)($state['submitted_at'] ?? ''));
-$deadlineAt = trim((string)($state['deadline_at'] ?? ''));
-if ($submittedAt !== '') {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Aufgabe wurde bereits abgegeben.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ($startedAt === '') {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Aufgabe wurde noch nicht gestartet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-$deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
-if ($deadlineTs !== false && $nowTs > (int)$deadlineTs) {
-    http_response_code(409);
-    echo json_encode(['error' => 'Die Frist ist abgelaufen.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$correctTotal = $hoerenCorrect + $lesenCorrect;
-$questionTotal = $hoerenTotal + $lesenTotal;
-$dtzPercent = $questionTotal > 0 ? (int)round(($correctTotal / $questionTotal) * 100) : 0;
-$writingPercent = $schreibenMax > 0 ? (int)round(($schreibenScore / $schreibenMax) * 100) : 0;
-$overallPercent = $schreibenMax > 0
-    ? (int)round(($dtzPercent * 0.7) + ($writingPercent * 0.3))
-    : $dtzPercent;
-$level = modelltest_level_from_percent_local($overallPercent);
-
-$nowIso = gmdate('c', $nowTs);
 try {
     $resultSuffix = bin2hex(random_bytes(4));
 } catch (Throwable $e) {
     $resultSuffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 8);
 }
-$resultId = 'mtres-' . gmdate('YmdHis', $nowTs) . '-' . $resultSuffix;
 
-$state['last_modelltest_result'] = [
-    'result_id' => $resultId,
-    'saved_at' => $nowIso,
-    'hoeren_correct' => $hoerenCorrect,
-    'hoeren_total' => $hoerenTotal,
-    'lesen_correct' => $lesenCorrect,
-    'lesen_total' => $lesenTotal,
-    'schreiben_score' => $schreibenScore,
-    'schreiben_max' => $schreibenMax,
-    'overall_percent' => $overallPercent,
-    'level' => $level,
-    'dtz_percent' => $dtzPercent,
-    'writing_percent' => $writingPercent,
+$txn = [
+    'http' => 200,
+    'err' => '',
+    'now_ts' => time(),
+    'overall_percent' => 0,
+    'level' => '',
+    'result_id' => '',
+    'now_iso' => '',
 ];
-$state['submitted_at'] = $nowIso;
-$state['last_upload_id'] = $resultId;
-$state['submission_count'] = max(1, (int)($state['submission_count'] ?? 0) + 1);
 
-$assignees[$username] = $state;
-$items[$idx]['assignees'] = $assignees;
-$items[$idx]['updated_at'] = $nowIso;
+$mutateOk = homework_assignments_mutate(function (array $items) use (
+    $assignmentId,
+    $username,
+    $hoerenCorrect,
+    $hoerenTotal,
+    $lesenCorrect,
+    $lesenTotal,
+    $schreibenScore,
+    $schreibenMax,
+    &$txn,
+    $resultSuffix
+): array|false {
+    $nowTs = time();
+    $txn['now_ts'] = $nowTs;
+    $idx = -1;
+    $assignment = null;
+    foreach ($items as $i => $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        if ((string)($row['id'] ?? '') !== $assignmentId) {
+            continue;
+        }
+        $idx = $i;
+        $assignment = $row;
+        break;
+    }
 
-if (!write_homework_assignments($items)) {
+    if (!is_array($assignment) || $idx < 0) {
+        $txn['http'] = 404;
+        $txn['err'] = 'Aufgabe nicht gefunden.';
+        return false;
+    }
+    if (!assignment_targets_student($assignment, $username)) {
+        $txn['http'] = 403;
+        $txn['err'] = 'Diese Aufgabe ist Ihnen nicht zugewiesen.';
+        return false;
+    }
+
+    $templateId = mb_strtolower(trim((string)($assignment['template_id'] ?? '')));
+    if ($templateId !== 'dtz-mock-pruefung-komplett') {
+        $txn['http'] = 400;
+        $txn['err'] = 'Diese Aufgabe ist keine Modelltest-Aufgabe.';
+        return false;
+    }
+
+    if (!assignment_is_active_now($assignment, $nowTs)) {
+        $txn['http'] = 400;
+        $txn['err'] = 'Die Aufgabe ist derzeit nicht aktiv.';
+        return false;
+    }
+
+    $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
+    $state = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
+    $state = assignment_state_from_raw($assignment, $state);
+
+    $startedAt = trim((string)($state['started_at'] ?? ''));
+    $submittedAt = trim((string)($state['submitted_at'] ?? ''));
+    $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+    if ($submittedAt !== '') {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Aufgabe wurde bereits abgegeben.';
+        return false;
+    }
+    if ($startedAt === '') {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Aufgabe wurde noch nicht gestartet.';
+        return false;
+    }
+    $deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
+    if ($deadlineTs !== false && $nowTs > (int)$deadlineTs) {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Frist ist abgelaufen.';
+        return false;
+    }
+
+    $correctTotal = $hoerenCorrect + $lesenCorrect;
+    $questionTotal = $hoerenTotal + $lesenTotal;
+    $dtzPercent = $questionTotal > 0 ? (int)round(($correctTotal / $questionTotal) * 100) : 0;
+    $writingPercent = $schreibenMax > 0 ? (int)round(($schreibenScore / $schreibenMax) * 100) : 0;
+    $overallPercent = $schreibenMax > 0
+        ? (int)round(($dtzPercent * 0.7) + ($writingPercent * 0.3))
+        : $dtzPercent;
+    $level = modelltest_level_from_percent_local($overallPercent);
+
+    $nowIso = gmdate('c', $nowTs);
+    $resultId = 'mtres-' . gmdate('YmdHis', $nowTs) . '-' . $resultSuffix;
+
+    $txn['overall_percent'] = $overallPercent;
+    $txn['level'] = $level;
+    $txn['result_id'] = $resultId;
+    $txn['now_iso'] = $nowIso;
+
+    $state['last_modelltest_result'] = [
+        'result_id' => $resultId,
+        'saved_at' => $nowIso,
+        'hoeren_correct' => $hoerenCorrect,
+        'hoeren_total' => $hoerenTotal,
+        'lesen_correct' => $lesenCorrect,
+        'lesen_total' => $lesenTotal,
+        'schreiben_score' => $schreibenScore,
+        'schreiben_max' => $schreibenMax,
+        'overall_percent' => $overallPercent,
+        'level' => $level,
+        'dtz_percent' => $dtzPercent,
+        'writing_percent' => $writingPercent,
+    ];
+    $state['submitted_at'] = $nowIso;
+    $state['last_upload_id'] = $resultId;
+    $state['submission_count'] = max(1, (int)($state['submission_count'] ?? 0) + 1);
+
+    $assignees[$username] = $state;
+    $items[$idx]['assignees'] = $assignees;
+    $items[$idx]['updated_at'] = $nowIso;
+
+    return $items;
+});
+
+if (!$mutateOk) {
     http_response_code(500);
     echo json_encode(['error' => 'Modelltest-Ergebnis konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+if ($txn['http'] !== 200) {
+    http_response_code($txn['http']);
+    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$overallPercent = (int)$txn['overall_percent'];
+$level = (string)$txn['level'];
+$resultId = (string)$txn['result_id'];
+$nowIso = (string)$txn['now_iso'];
 
 append_audit_log('student_modelltest_result_saved', [
     'assignment_id' => $assignmentId,
