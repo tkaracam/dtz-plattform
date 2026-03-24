@@ -11748,22 +11748,26 @@
     }
 
     function getActiveAssignedDtzRequirement() {
+      // Portal button click takes priority: check explicitly set context requirement first.
+      const contextReq = currentOpenedHomeworkContext && currentOpenedHomeworkContext.dtzRequirement;
+      if (contextReq && typeof contextReq === "object") {
+        const module = contextReq.module === "lesen" ? "lesen" : (contextReq.module === "hoeren" ? "hoeren" : "");
+        const teil = Number.parseInt(String(contextReq.teil || "0"), 10);
+        if (module && Number.isFinite(teil) && teil >= 1) {
+          if (!(module === "hoeren" && teil > 4) && !(module === "lesen" && teil > 5)) {
+            const assignmentId = String(contextReq.assignmentId || "").trim();
+            if (!assignmentId || !isClientSolvedAssignment(assignmentId)) {
+              return { module, teil };
+            }
+          }
+        }
+      }
       if (currentAssignedHomework && currentAssignedHomeworkState) {
         if (currentAssignedHomeworkState.submitted_at) return null;
         const assigned = resolveAssignedDtzRequirement();
         if (assigned) return assigned;
       }
-      const fallback = currentOpenedHomeworkContext && currentOpenedHomeworkContext.dtzRequirement;
-      if (!fallback || typeof fallback !== "object") return null;
-      const module = fallback.module === "lesen" ? "lesen" : (fallback.module === "hoeren" ? "hoeren" : "");
-      const teil = Number.parseInt(String(fallback.teil || "0"), 10);
-      if (!module) return null;
-      if (!Number.isFinite(teil) || teil < 1) return null;
-      if (module === "hoeren" && teil > 4) return null;
-      if (module === "lesen" && teil > 5) return null;
-      const assignmentId = String(fallback.assignmentId || "").trim();
-      if (!assignmentId || isClientSolvedAssignment(assignmentId)) return null;
-      return { module, teil };
+      return null;
     }
 
     async function submitAssignedDtzResult(module, teil, stats) {
