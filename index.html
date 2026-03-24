@@ -12916,30 +12916,12 @@
         if (!grouped.a2.length) {
           a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
         } else {
-          const pendingA2 = grouped.a2.filter(row => !isHomeworkRowSolved(row));
-          const source = pendingA2.length ? pendingA2 : grouped.a2;
-          const topics = [];
-          source.forEach(row => {
-            inferA2TopicsFromAssignment(row).forEach(topic => {
-              if (!topics.includes(topic)) topics.push(topic);
-            });
-          });
-          const totalDuration = source.reduce((sum, row) => sum + Math.max(0, Number(row && row.duration_minutes ? row.duration_minutes : 0)), 0);
-          const allDone = source.every(row => isHomeworkRowSolved(row));
-          const dueLabel = formatDisplayDate(String((source[0] && source[0].due_date) || "")) || "-";
-          a2Wrap.innerHTML = `
-            <div class="portal-item ${allDone ? "homework-done" : "homework-pending"}">
-              <strong>A2 Sammeltest (${source.length} Aufgabe${source.length === 1 ? "" : "n"})</strong>
-              <div>Themen: ${escapeHtml(topics.length ? topics.join(" + ") : "Gemischt")} </div>
-              <div>Dauer: ${escapeHtml(totalDuration > 0 ? formatDurationMinutes(totalDuration) : "-")} | Fällig: ${escapeHtml(dueLabel)} | Status: ${escapeHtml(allDone ? "abgegeben" : "offen")}</div>
-              <div class="row-end" style="margin-top:8px;">
-                <button type="button" class="${allDone ? "task-solved-btn" : "portal-open-btn"}" ${allDone ? "disabled aria-disabled=\"true\"" : ""} data-open-a2-combined="1">${allDone ? "Gelöst" : "A2-Test öffnen"}</button>
-              </div>
-            </div>
-          `;
-          a2Wrap.querySelectorAll("[data-open-a2-combined]").forEach(btn => {
+          a2Wrap.innerHTML = grouped.a2.map(itemHtml).join("");
+          a2Wrap.querySelectorAll("[data-open-a2-homework]").forEach(btn => {
             btn.addEventListener("click", () => {
-              openCombinedA2Homework(source);
+              if (btn.hasAttribute("disabled")) return;
+              const assignmentId = String(btn.getAttribute("data-open-a2-homework") || "").trim();
+              openHomeworkA2Task(homeworkRowById.get(assignmentId) || null);
             });
           });
         }
