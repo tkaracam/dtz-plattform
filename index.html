@@ -7544,17 +7544,16 @@
     }
 
     function openDtzModuleView(module) {
-      const requested = module === "lesen" ? "lesen" : "hoeren";
+      const normalized = module === "lesen" ? "lesen" : "hoeren";
       const requirement = getActiveAssignedDtzRequirement();
-      const normalized = requirement ? requirement.module : requested;
       const targetAccordion = normalized === "lesen" ? "dtzLesenAccordion" : "dtzHoerenAccordion";
 
       openDtzTrainingOnlyView();
       setHomeDashboardSection(normalized === "lesen" ? "dtz-lesen" : "dtz-hoeren");
       setAccordionOpen(targetAccordion, true);
       setDtzModuleButtonActive(normalized);
-      if (requirement) {
-        const ui = getDtzUi(requirement.module);
+      if (requirement && requirement.module === normalized) {
+        const ui = getDtzUi(normalized);
         if (ui.teilSelect) ui.teilSelect.value = String(requirement.teil);
       }
       applyAssignedDtzLock();
