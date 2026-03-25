@@ -72,6 +72,63 @@ function read_jsonl_records(string $pattern): array
     return $out;
 }
 
+function read_latest_homework_attempts_for_student(string $storageDir, string $username): array
+{
+    $file = rtrim($storageDir, '/') . '/homework_attempts.jsonl';
+    if (!is_file($file)) {
+        return [];
+    }
+    $handle = @fopen($file, 'rb');
+    if (!$handle) {
+        return [];
+    }
+    $out = [];
+    while (($line = fgets($handle)) !== false) {
+        $line = trim($line);
+        if ($line === '') {
+            continue;
+        }
+        $row = json_decode($line, true);
+        if (!is_array($row)) {
+            continue;
+        }
+        $u = mb_strtolower(trim((string)($row['student_username'] ?? '')));
+        if ($u !== $username) {
+            continue;
+        }
+        $assignmentId = trim((string)($row['assignment_id'] ?? ''));
+        if ($assignmentId === '') {
+            continue;
+        }
+        $attemptedAt = trim((string)($row['attempted_at'] ?? ''));
+        $currTs = $attemptedAt !== '' ? strtotime($attemptedAt) : false;
+        $currTsSafe = ($currTs === false) ? 0 : (int)$currTs;
+        $prev = $out[$assignmentId] ?? null;
+        $prevAt = is_array($prev) ? trim((string)($prev['attempted_at'] ?? '')) : '';
+        $prevTs = $prevAt !== '' ? strtotime($prevAt) : false;
+        $prevTsSafe = ($prevTs === false) ? 0 : (int)$prevTs;
+        if (is_array($prev) && $currTsSafe < $prevTsSafe) {
+            continue;
+        }
+        $correct = max(0, (int)($row['correct'] ?? 0));
+        $wrong = max(0, (int)($row['wrong'] ?? 0));
+        $total = max(0, (int)($row['total'] ?? 0));
+        $unanswered = max(0, (int)($row['unanswered'] ?? 0));
+        if ($total > 0 && ($correct + $wrong + $unanswered) !== $total) {
+            continue;
+        }
+        $out[$assignmentId] = [
+            'attempted_at' => $attemptedAt,
+            'correct' => $correct,
+            'wrong' => $wrong,
+            'unanswered' => $unanswered,
+            'total' => $total,
+        ];
+    }
+    fclose($handle);
+    return $out;
+}
+
 function detect_student_homework_category(array $assignment): string
 {
     $templateId = mb_strtolower(trim((string)($assignment['template_id'] ?? '')));
@@ -212,6 +269,7 @@ usort($approvedLetterCorrections, static function (array $a, array $b): int {
 });
 
 $homeworks = [];
+$latestHomeworkAttempts = read_latest_homework_attempts_for_student($storageDir, $username);
 $nowTs = time();
 $autoArchiveAfterSeconds = 2 * 24 * 3600;
 foreach (load_homework_assignments() as $assignment) {
@@ -314,6 +372,9 @@ foreach (load_homework_assignments() as $assignment) {
             is_array(($assignment['dtz_bundle']['items'] ?? null)) ? $assignment['dtz_bundle']['items'] : []
         ))),
         'last_dtz_result' => $lastDtzResult,
+        'last_attempt' => is_array($latestHomeworkAttempts[(string)($assignment['id'] ?? '')] ?? null)
+            ? $latestHomeworkAttempts[(string)($assignment['id'] ?? '')]
+            : null,
     ];
 }
 usort($homeworks, static function (array $a, array $b): int {

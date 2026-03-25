@@ -3541,19 +3541,19 @@
             <div id="portalTestResultBody" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;padding:4px 0;">
               <div style="text-align:center;">
                 <div id="portalTestResultRichtig" style="font-size:1.25rem;font-weight:700;color:#28a745;">–</div>
-                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Richtig</div>
+                <div id="portalTestResultLabel1" style="font-size:0.8rem;color:var(--text-muted,#666);">Richtig</div>
               </div>
               <div style="text-align:center;">
                 <div id="portalTestResultFalsch" style="font-size:1.25rem;font-weight:700;color:#dc3545;">–</div>
-                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Falsch</div>
+                <div id="portalTestResultLabel2" style="font-size:0.8rem;color:var(--text-muted,#666);">Falsch</div>
               </div>
               <div style="text-align:center;">
                 <div id="portalTestResultGesamt" style="font-size:1.25rem;font-weight:700;">–</div>
-                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Gesamt</div>
+                <div id="portalTestResultLabel3" style="font-size:0.8rem;color:var(--text-muted,#666);">Gesamt</div>
               </div>
               <div style="text-align:center;">
                 <div id="portalTestResultProzent" style="font-size:1.25rem;font-weight:700;color:var(--accent,#1a73e8);">–</div>
-                <div style="font-size:0.8rem;color:var(--text-muted,#666);">Ergebnis</div>
+                <div id="portalTestResultLabel4" style="font-size:0.8rem;color:var(--text-muted,#666);">Ergebnis</div>
               </div>
             </div>
             <p id="portalTestResultMsg" style="margin:10px 0 0;font-size:0.85rem;color:var(--text-muted,#555);"></p>
@@ -4078,6 +4078,9 @@
               <div class="btn-wrap">
                 <button id="dtzHoerenNewBtn" type="button">NEUE AUFGABEN</button>
               </div>
+              <div class="btn-wrap">
+                <button id="dtzHoerenBackPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
+              </div>
             </div>
           </div>
         </details>
@@ -4122,6 +4125,9 @@
               </div>
               <div class="btn-wrap">
                 <button id="dtzLesenNewBtn" type="button">NEUE AUFGABEN</button>
+              </div>
+              <div class="btn-wrap">
+                <button id="dtzLesenBackPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
               </div>
             </div>
           </div>
@@ -4623,6 +4629,7 @@
         tasks: [],
         answers: {},
         evaluated: false,
+        lockedAfterSubmit: false,
         lastLoadedAt: ""
       };
     }
@@ -6312,15 +6319,6 @@
       const card = document.getElementById("portalTestResultCard");
       if (!card) return;
       const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
-      // Track exam count in localStorage
-      let examCount = parseInt(localStorage.getItem("dtz_exam_count") || "0", 10);
-      if (isNew) { examCount += 1; localStorage.setItem("dtz_exam_count", examCount); }
-      document.getElementById("portalTestResultExamCount").textContent = examCount;
-      document.getElementById("portalTestResultProzentBadge").textContent = pct + " %";
-      document.getElementById("portalTestResultRichtig").textContent = correct;
-      document.getElementById("portalTestResultFalsch").textContent = wrong;
-      document.getElementById("portalTestResultGesamt").textContent = total;
-      document.getElementById("portalTestResultProzent").textContent = pct + " %";
       let msg = "";
       if (pct >= 80) msg = "Sehr gut! Ihr Ergebnis wurde an Ihre Lehrkraft übermittelt.";
       else if (pct >= 60) msg = "Gut gemacht! Ihr Ergebnis wurde an Ihre Lehrkraft übermittelt.";
@@ -7637,6 +7635,7 @@
         list: document.getElementById(`${prefix}List`),
         evaluateBtn: document.getElementById(`${prefix}EvaluateBtn`),
         newBtn: document.getElementById(`${prefix}NewBtn`),
+        backPortalBtn: document.getElementById(`${prefix}BackPortalBtn`),
         accordion: document.getElementById(`${prefix}Accordion`)
       };
     }
@@ -7817,6 +7816,10 @@
     }
 
     function EvaluateButton(module) {
+      const requirement = getActiveAssignedDtzRequirement();
+      if (requirement && requirement.module === module) {
+        return "";
+      }
       return `
         <div class="row-end dtz-inline-action-row">
           <div class="btn-wrap">
@@ -9713,6 +9716,10 @@
           if (!(target instanceof HTMLInputElement)) return;
           const resolved = resolveAnswerTarget(target.getAttribute("data-dtz-key"));
           if (!resolved || !resolved.key) return;
+          if (resolved.teilState && resolved.teilState.lockedAfterSubmit) {
+            target.checked = false;
+            return;
+          }
           resolved.teilState.answers[resolved.key] = String(target.value || "");
           persistModelltestProgress();
           if (modelltestFlowState.active) {
@@ -9730,6 +9737,9 @@
           if (!(target instanceof HTMLSelectElement)) return;
           const resolved = resolveAnswerTarget(target.getAttribute("data-dtz-key"));
           if (!resolved || !resolved.key) return;
+          if (resolved.teilState && resolved.teilState.lockedAfterSubmit) {
+            return;
+          }
           const value = String(target.value || "");
           resolved.teilState.answers[resolved.key] = value;
           enforceMatchingNoReuse(resolved.teilState, resolved.key, value);
@@ -10103,6 +10113,7 @@
       if (modelltestFlowState.active) {
         ui.list.innerHTML = renderModelltestCombinedModule(module);
         attachDtzAnswerListeners(module);
+        applyDtzReadOnlyState(module);
         return;
       }
 
@@ -10119,6 +10130,7 @@
       ui.list.innerHTML = renderer(module, state);
 
       attachDtzAnswerListeners(module);
+      applyDtzReadOnlyState(module);
     }
 
     function evaluateDtzTrainingSet(module, showStatus = true) {
@@ -10178,10 +10190,6 @@
         if (markAssignmentSolvedClient(solvedAssignmentId)) {
           void refreshPortalData();
         }
-        if (isAssignedSubmit) {
-          openPortalView();
-          openPortalPanel(module === "lesen" ? "lesenHomework" : "hoerenHomework", false);
-        }
       }
 
       if (ui.summary) {
@@ -10196,7 +10204,7 @@
         if (isPartial) {
           setDtzModuleStatus(module, "error", "Teilweise Auswertung: Bitte beantworten Sie alle offenen Fragen für eine vollständige Bewertung.");
         } else {
-          setDtzModuleStatus(module, "ok", "Auswertung abgeschlossen.");
+          setDtzModuleStatus(module, "ok", isAssignedSubmit ? "Abgabe abgeschlossen. Vergleichen Sie jetzt die Lösungen." : "Auswertung abgeschlossen.");
         }
       }
 
@@ -10239,6 +10247,36 @@
         return Array.isArray(firstTask.blocks) ? firstTask.blocks.length * 2 : 0;
       }
       return state.tasks.length;
+    }
+
+    function setDtzBackPortalVisible(module, visible) {
+      const ui = getDtzUi(module);
+      if (!ui.backPortalBtn) return;
+      ui.backPortalBtn.classList.toggle("hidden", !visible);
+      ui.backPortalBtn.disabled = !visible;
+    }
+
+    function applyDtzReadOnlyState(module) {
+      const ui = getDtzUi(module);
+      const state = getDtzState(module);
+      if (!ui || !ui.list || !state) return;
+      const locked = !!state.lockedAfterSubmit;
+      ui.list.querySelectorAll("input, select, textarea").forEach(el => {
+        if ("disabled" in el) el.disabled = locked;
+      });
+      ui.list.querySelectorAll(".dtz-inline-action-row").forEach(el => {
+        if (!(el instanceof HTMLElement)) return;
+        el.style.display = locked ? "none" : "";
+      });
+      if (ui.evaluateBtn && locked) {
+        ui.evaluateBtn.textContent = "ABGEGEBEN";
+        ui.evaluateBtn.disabled = true;
+      }
+      if (ui.newBtn && locked) {
+        ui.newBtn.disabled = true;
+        ui.newBtn.classList.add("hidden");
+      }
+      setDtzBackPortalVisible(module, locked);
     }
 
     async function loadDtzTrainingSet(module) {
@@ -10290,6 +10328,7 @@
         state.tasks = buildDtzTasks(normalizedModule, teil, items);
         state.answers = {};
         state.evaluated = false;
+        state.lockedAfterSubmit = false;
         state.lastLoadedAt = new Date().toISOString();
 
         resetDtzModuleResultUi(normalizedModule, true);
@@ -10301,6 +10340,7 @@
         state.tasks = [];
         state.answers = {};
         state.evaluated = false;
+        state.lockedAfterSubmit = false;
         state.lastLoadedAt = "";
         resetDtzModuleResultUi(normalizedModule, false);
         setDtzModuleStatus(normalizedModule, "error", err.message || "DTZ-Aufgaben konnten nicht geladen werden.");
@@ -10380,6 +10420,13 @@
 
       ui.evaluateBtn.addEventListener("click", () => evaluateDtzTrainingSet(module, true));
       ui.newBtn.addEventListener("click", () => loadDtzTrainingSet(module));
+      if (ui.backPortalBtn) {
+        ui.backPortalBtn.addEventListener("click", () => {
+          openPortalView();
+          openPortalPanel(module === "lesen" ? "lesenHomework" : "hoerenHomework", false);
+        });
+      }
+      setDtzBackPortalVisible(module, false);
       applyAssignedDtzLock();
     }
 
@@ -11851,12 +11898,15 @@
         });
         const result = await parseJsonOrThrow(response, "DTZ-Ergebnis konnte nicht gespeichert werden");
         if (result && result.submitted) {
-          await loadCurrentAssignedHomework();
+          const activeState = getDtzState(module);
+          if (activeState) {
+            activeState.evaluated = true;
+            activeState.lockedAfterSubmit = true;
+          }
+          renderDtzTrainingSet(module);
+          applyAssignedDtzLock();
           await loadStudentPortal();
-          setDtzModuleStatus(module, "ok", "Aufgabe gespeichert und abgegeben.");
-          // Nach erfolgreicher Abgabe automatisch zurück ins Schüler-Portal.
-          openPortalView();
-          openPortalPanel(module === "lesen" ? "lesenHomework" : "hoerenHomework", false);
+          setDtzModuleStatus(module, "ok", "Aufgabe gespeichert und abgegeben. Vergleichen Sie die Lösungen und kehren Sie dann zum Portal zurück.");
         } else {
           setDtzModuleStatus(module, "ok", "Zwischenstand gespeichert.");
         }
@@ -11943,6 +11993,8 @@
 
       ["hoeren", "lesen"].forEach(module => {
         const ui = getDtzUi(module);
+        const state = getDtzState(module);
+        const lockedAfterSubmit = !!(state && state.lockedAfterSubmit);
         const forcedForModule = !!(requirement && requirement.module === module);
         if (ui.teilSelect) {
           if (forcedForModule) {
@@ -11952,15 +12004,16 @@
         }
         if (ui.evaluateBtn) {
           const isAssignedModule = !!(requirement && requirement.module === module);
-          ui.evaluateBtn.textContent = isAssignedModule ? "ABGEBEN" : "AUSWERTEN";
+          ui.evaluateBtn.textContent = lockedAfterSubmit ? "ABGEGEBEN" : (isAssignedModule ? "ABGEBEN" : "AUSWERTEN");
           ui.evaluateBtn.classList.toggle("dtz-submit-btn", isAssignedModule);
-          ui.evaluateBtn.disabled = !!(requirement && requirement.module !== module);
+          ui.evaluateBtn.disabled = lockedAfterSubmit || !!(requirement && requirement.module !== module);
         }
         if (ui.newBtn) {
           // Assigned DTZ homework stays bound to the assigned set.
-          ui.newBtn.disabled = !!requirement;
-          ui.newBtn.classList.toggle("hidden", !!requirement);
+          ui.newBtn.disabled = lockedAfterSubmit || !!requirement;
+          ui.newBtn.classList.toggle("hidden", lockedAfterSubmit || !!requirement);
         }
+        setDtzBackPortalVisible(module, lockedAfterSubmit);
         const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
         teilButtons.forEach(btn => {
           const btnTeil = Number(btn.getAttribute("data-dtz-teil") || "0");
@@ -12683,6 +12736,11 @@
       }
       const moduleState = getDtzModuleState(parsed.module);
       moduleState.selectedTeil = parsed.teil;
+      Object.values(moduleState.teils || {}).forEach(teilState => {
+        if (!teilState || typeof teilState !== "object") return;
+        teilState.lockedAfterSubmit = false;
+      });
+      setDtzBackPortalVisible(parsed.module, false);
       if (window.history && typeof window.history.pushState === "function") {
         try {
           window.history.pushState({ dtz_hw_open: true }, "", window.location.href);
@@ -12897,6 +12955,61 @@
           </section>
         </div>
       `;
+    }
+
+    function renderPortalLevelResultStats(homeworks) {
+      const rows = Array.isArray(homeworks) ? homeworks : [];
+      const slots = {
+        a1: { label: "A1", correct: 0, wrong: 0, total: 0, count: 0 },
+        a2: { label: "A2", correct: 0, wrong: 0, total: 0, count: 0 },
+        b1: { label: "B1", correct: 0, wrong: 0, total: 0, count: 0 }
+      };
+      rows.forEach(row => {
+        if (!row || typeof row !== "object") return;
+        const category = detectStudentHomeworkCategory(row);
+        if (!slots[category]) return;
+        const attempt = row.last_attempt && typeof row.last_attempt === "object" ? row.last_attempt : null;
+        if (!attempt) return;
+        const total = Math.max(0, Number.parseInt(String(attempt.total || 0), 10) || 0);
+        const correct = Math.max(0, Number.parseInt(String(attempt.correct || 0), 10) || 0);
+        const wrong = Math.max(0, Number.parseInt(String(attempt.wrong || 0), 10) || 0);
+        if (total <= 0) return;
+        slots[category].correct += correct;
+        slots[category].wrong += wrong;
+        slots[category].total += total;
+        slots[category].count += 1;
+      });
+
+      const toText = slot => {
+        if (!slot || slot.total <= 0) return "-";
+        const pct = Math.round((slot.correct / slot.total) * 100);
+        return `${slot.correct}/${slot.total} · ${pct}%`;
+      };
+      const toPercent = slot => (slot && slot.total > 0) ? Math.round((slot.correct / slot.total) * 100) : null;
+      const allCounts = Object.values(slots).reduce((sum, s) => sum + Number(s.count || 0), 0);
+      const allCorrect = Object.values(slots).reduce((sum, s) => sum + Number(s.correct || 0), 0);
+      const allTotal = Object.values(slots).reduce((sum, s) => sum + Number(s.total || 0), 0);
+      const allPct = allTotal > 0 ? Math.round((allCorrect / allTotal) * 100) : null;
+
+      const setText = (id, value) => {
+        const node = document.getElementById(id);
+        if (node) node.textContent = value;
+      };
+      setText("portalTestResultLabel1", "A1");
+      setText("portalTestResultLabel2", "A2");
+      setText("portalTestResultLabel3", "B1");
+      setText("portalTestResultLabel4", "Ø");
+
+      setText("portalTestResultRichtig", toText(slots.a1));
+      setText("portalTestResultFalsch", toText(slots.a2));
+      setText("portalTestResultGesamt", toText(slots.b1));
+      setText("portalTestResultProzent", allPct === null ? "-" : `${allPct}%`);
+      setText("portalTestResultProzentBadge", allPct === null ? "-" : `${allPct}%`);
+      setText("portalTestResultExamCount", String(allCounts));
+      setText(
+        "portalTestResultMsg",
+        "Statistik nach Niveau: A1, A2 und B1 (Richtig/Gesamt und Prozent)."
+      );
     }
 
     function renderPortalHomeworksGrouped(homeworks) {
@@ -13114,6 +13227,7 @@
       if (testResultCard) {
         testResultCard.classList.remove("hidden");
       }
+      renderPortalLevelResultStats(homeworks);
       renderPortalDtzTeilStats(homeworks);
       const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
       const readiness = payload.readiness || {};
