@@ -43,14 +43,14 @@
 <body>
 <main class="wrap">
   <section class="hero">
-    <h1>Gemischter A1-Test</h1>
-    <p style="color:#4a6492">Fragen aus allen A1-Themen vermischt</p>
-    <div class="back-row">
+    <h1 id="heroTitle">Gemischter A1-Test</h1>
+    <p id="heroSubtitle" style="color:#4a6492">Fragen aus allen A1-Themen vermischt</p>
+    <div class="back-row" id="heroBackRow">
       <a class="btn" href="./a1-themen.html">← Zurück zu A1-Themen</a>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="topicConfigCard">
     <h2>Themen auswählen</h2>
     <p>Wähle die Themen aus, die du üben möchtest:</p>
     <div class="back-row">
@@ -85,6 +85,11 @@ const ql = document.getElementById('questionList');
 const actions = document.getElementById('actions');
 const topicCheckboxes = document.getElementById('topicCheckboxes');
 const generateBtn = document.getElementById('generateBtn');
+const newBtn = document.getElementById('newBtn');
+const topicConfigCard = document.getElementById('topicConfigCard');
+const heroTitle = document.getElementById('heroTitle');
+const heroSubtitle = document.getElementById('heroSubtitle');
+const heroBackRow = document.getElementById('heroBackRow');
 const selectAllBtn = document.getElementById('selectAllBtn');
 const deselectAllBtn = document.getElementById('deselectAllBtn');
 
@@ -360,6 +365,52 @@ const TOPICS = {
 
 let questions = [];
 let activeTopics = {};
+let questionCount = 50;
+
+function normalizeTopicKey(value) {
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[ä]/g, 'ae')
+    .replace(/[ö]/g, 'oe')
+    .replace(/[ü]/g, 'ue')
+    .replace(/[ß]/g, 'ss')
+    .replace(/\s+/g, '-');
+  const aliases = {
+    'sein-und-haben': 'sein-haben',
+    'w-fragen': 'w-fragen',
+    'ja-nein-fragen': 'ja-nein-fragen',
+    'trennbare-verben': 'trennbare-verben',
+    'uhrzeit-und-datum': 'uhrzeit-datum',
+    'praepositionen': 'praepositionen'
+  };
+  return aliases[raw] || raw;
+}
+
+function parsePresetTopics() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = String(params.get('topics') || '').trim();
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map(item => normalizeTopicKey(item))
+    .filter(Boolean)
+    .filter((item, index, arr) => arr.indexOf(item) === index)
+    .filter(item => Object.prototype.hasOwnProperty.call(TOPICS, item));
+}
+
+function parseQuestionCount() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = Number.parseInt(String(params.get('count') || '50'), 10);
+  if (!Number.isFinite(raw)) return 50;
+  return Math.max(10, Math.min(50, raw));
+}
+
+function isHomeworkMode() {
+  const params = new URLSearchParams(window.location.search);
+  const value = String(params.get('hw') || '').trim().toLowerCase();
+  return value === '1' || value === 'true';
+}
 
 // Initialize topic checkboxes
 function initTopics() {
@@ -395,11 +446,20 @@ deselectAllBtn.addEventListener('click', () => {
   });
 });
 
-function gen50() {
+function applyPresetTopics(topics) {
+  if (!Array.isArray(topics) || !topics.length) return;
+  Object.keys(TOPICS).forEach(key => {
+    activeTopics[key] = topics.includes(key);
+    const input = topicCheckboxes.querySelector(`input[value="${key}"]`);
+    if (input) input.checked = activeTopics[key];
+  });
+}
+
+function generateQuestions(total = questionCount) {
   const makers = Object.entries(TOPICS).filter(([k]) => activeTopics[k]).map(([, t]) => t.makeQ);
   if(!makers.length) return [];
   const out = [];
-  for(let i = 0; i < 50; i++) out.push(makers[i % makers.length]());
+  for(let i = 0; i < total; i++) out.push(makers[i % makers.length]());
   return shuffle(out);
 }
 
@@ -410,7 +470,7 @@ function render() {
     c.className = 'q-card';
     const t = document.createElement('p');
     t.className = 'q-title';
-    t.textContent = `Frage ${i+1}/50`;
+    t.textContent = `Frage ${i+1}/${questionCount}`;
     const pr = document.createElement('p');
     pr.className = 'q-prompt';
     pr.textContent = q.prompt;
@@ -423,7 +483,7 @@ function render() {
       r.type = 'radio';
       r.name = `q_${i}`;
       r.value = j;
-      r.addEventListener('change', () => pb.textContent = `Gelöst: ${ql.querySelectorAll('input:checked').length}/50`);
+      r.addEventListener('change', () => pb.textContent = `Gelöst: ${ql.querySelectorAll('input:checked').length}/${questionCount}`);
       const tx = document.createElement('span');
       tx.innerHTML = `<strong>${String.fromCharCode(65+j)})</strong> ${o}`;
       l.append(r, tx);
@@ -435,7 +495,7 @@ function render() {
     c.append(t, pr, od, s);
     ql.appendChild(c);
   });
-  pb.textContent = 'Gelöst: 0/50';
+  pb.textContent = `Gelöst: 0/${questionCount}`;
   rb.style.display = 'none';
   actions.style.display = 'grid';
 }
@@ -453,25 +513,42 @@ function grade() {
     if(s === q.correct) { n++; c.classList.add('correct'); } else c.classList.add('wrong');
   });
   rb.style.display = 'block';
-  rb.textContent = `Richtig: ${n}/50\nPunkte: ${n*2}/100\nErgebnis: ${n*2}%`;
+  const pct = questionCount ? Math.round((n / questionCount) * 100) : 0;
+  rb.textContent = `Richtig: ${n}/${questionCount}\nPunkte: ${n*2}/${questionCount * 2}\nErgebnis: ${pct}%`;
 }
 
 document.getElementById('checkBtn').addEventListener('click', grade);
 document.getElementById('solutionBtn').addEventListener('click', () => ql.classList.add('show-sol'));
-document.getElementById('newBtn').addEventListener('click', () => {
-  questions = gen50();
+newBtn.addEventListener('click', () => {
+  questions = generateQuestions();
   ql.classList.remove('show-sol');
   render();
   window.scrollTo({top: 0, behavior: 'smooth'});
 });
 
 generateBtn.addEventListener('click', () => {
-  questions = gen50();
+  questions = generateQuestions();
   render();
   window.scrollTo({top: ql.offsetTop - 50, behavior: 'smooth'});
 });
 
 initTopics();
+questionCount = parseQuestionCount();
+generateBtn.textContent = `Test generieren (${questionCount} Fragen)`;
+const presetTopics = parsePresetTopics();
+if (presetTopics.length) {
+  applyPresetTopics(presetTopics);
+}
+if (isHomeworkMode()) {
+  if (topicConfigCard) topicConfigCard.style.display = 'none';
+  if (heroBackRow) heroBackRow.style.display = 'none';
+  if (heroTitle) heroTitle.textContent = 'A1-Test (Hausaufgabe)';
+  if (heroSubtitle) heroSubtitle.textContent = `Automatisch zugewiesen: ${questionCount} Fragen`;
+  if (newBtn) newBtn.style.display = 'none';
+  if (actions) actions.style.gridTemplateColumns = 'repeat(2,1fr)';
+  questions = generateQuestions();
+  render();
+}
 </script>
 </body>
 </html>
