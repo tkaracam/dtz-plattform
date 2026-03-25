@@ -1028,6 +1028,32 @@
       box-shadow: none;
     }
 
+    #portalTabHomeworkBtn {
+      border-color: #f4b8b8;
+      background: #fff0f0;
+      color: #8b2f2f;
+    }
+
+    #portalTabHomeworkBtn.active {
+      color: #ffffff;
+      border-color: #d86b6b;
+      background: linear-gradient(120deg, #cf4a4a, #e87557);
+      box-shadow: 0 10px 20px rgba(207, 74, 74, 0.24);
+    }
+
+    #portalTabTestergebnisseBtn {
+      border-color: #b6ddc4;
+      background: #eefaf2;
+      color: #226b3f;
+    }
+
+    #portalTabTestergebnisseBtn.active {
+      color: #ffffff;
+      border-color: #57a77a;
+      background: linear-gradient(120deg, #2f9d63, #57b87f);
+      box-shadow: 0 10px 20px rgba(47, 157, 99, 0.24);
+    }
+
     .portal-main-tab-btn.active {
       color: #ffffff;
       border-color: #ffc2b0;
@@ -1057,6 +1083,13 @@
       background: #fff1e7;
       color: #8e4a31;
       font-weight: 700;
+    }
+
+    .dtz-back-portal-btn {
+      background: linear-gradient(120deg, #c74646, #df6a55) !important;
+      border-color: #b53b3b !important;
+      color: #fff !important;
+      box-shadow: 0 10px 20px rgba(181, 59, 59, 0.2);
     }
 
     .speaking-top-actions {
@@ -4079,7 +4112,7 @@
                 <button id="dtzHoerenNewBtn" type="button">NEUE AUFGABEN</button>
               </div>
               <div class="btn-wrap">
-                <button id="dtzHoerenBackPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
+                <button id="dtzHoerenBackPortalBtn" type="button" class="portal-open-btn dtz-back-portal-btn hidden">Zum Portal</button>
               </div>
             </div>
           </div>
@@ -4127,7 +4160,7 @@
                 <button id="dtzLesenNewBtn" type="button">NEUE AUFGABEN</button>
               </div>
               <div class="btn-wrap">
-                <button id="dtzLesenBackPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
+                <button id="dtzLesenBackPortalBtn" type="button" class="portal-open-btn dtz-back-portal-btn hidden">Zum Portal</button>
               </div>
             </div>
           </div>
@@ -4242,6 +4275,7 @@
     let currentDtzServerAudioEl = null;
     let currentDtzAudioBackendMode = "";
     let currentDtzAudioDurationMsByKey = {};
+    let currentDtzAudioPlayCountByKey = {};
     let currentStudentLabel = "";
     let currentStudentUsername = "";
     let currentAssignedHomework = null;
@@ -7671,7 +7705,7 @@
       const audioLocked = isModelltestAudioLocked(key, isPlaying);
       return `
         <div class="dtz-audio-actions">
-          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""} ${audioLocked ? "is-played" : ""}" ${audioLocked ? "disabled aria-disabled=\"true\"" : ""} data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
+          <button type="button" class="dtz-audio-btn ${isPlaying ? "is-playing" : ""} ${audioLocked ? "is-played" : ""}" ${(audioLocked || isPlaying) ? "disabled aria-disabled=\"true\"" : ""} data-dtz-audio-key="${escapeHtml(String(audioKey || ""))}" data-dtz-module="${module}" data-dtz-audio-script="${scriptAttr}">
             ${isPlaying
               ? `Stoppen${durationLabel ? ` · ${durationLabel}` : ""}`
               : (audioLocked
@@ -7711,9 +7745,25 @@
       persistModelltestProgress();
     }
 
+    function markDtzAudioPlayed(audioKey) {
+      const key = getSafeModelltestAudioKey(audioKey);
+      if (!key) return;
+      if (modelltestFlowState.active) {
+        markModelltestAudioPlayed(key);
+        return;
+      }
+      const currentCount = Number.parseInt(String(currentDtzAudioPlayCountByKey[key] || 0), 10) || 0;
+      currentDtzAudioPlayCountByKey[key] = Math.max(0, currentCount) + 1;
+    }
+
     function isModelltestAudioLocked(audioKey, isPlaying = false) {
-      if (!modelltestFlowState.active) return false;
       if (isPlaying) return false;
+      const key = getSafeModelltestAudioKey(audioKey);
+      if (!key) return false;
+      if (!modelltestFlowState.active) {
+        const count = Number.parseInt(String(currentDtzAudioPlayCountByKey[key] || 0), 10) || 0;
+        return count >= 2;
+      }
       return hasModelltestAudioPlayed(audioKey);
     }
 
@@ -8974,7 +9024,7 @@
           }
         }
         if (serverSegments.length) {
-          markModelltestAudioPlayed(key);
+          markDtzAudioPlayed(key);
           const durationMs = estimateDtzAudioDurationMsFromServerSegments(serverSegments);
           setDtzAudioDurationMs(key, durationMs);
           clearDtzModuleStatus(module);
@@ -8999,7 +9049,7 @@
       }
       const browserDurationMs = estimateDtzAudioDurationMsFromBrowserSegments(segments);
       setDtzAudioDurationMs(key, browserDurationMs);
-      markModelltestAudioPlayed(key);
+      markDtzAudioPlayed(key);
       const speakers = segments.map(segment => segment.speaker || "NARRATOR");
       const preferredSpeakers = Array.isArray(source.speakerMeta)
         ? source.speakerMeta.map(s => String(s || "").trim().toUpperCase()).filter(Boolean)
@@ -10269,12 +10319,20 @@
         el.style.display = locked ? "none" : "";
       });
       if (ui.evaluateBtn && locked) {
-        ui.evaluateBtn.textContent = "ABGEGEBEN";
+        ui.evaluateBtn.classList.add("hidden");
         ui.evaluateBtn.disabled = true;
       }
       if (ui.newBtn && locked) {
         ui.newBtn.disabled = true;
         ui.newBtn.classList.add("hidden");
+      }
+      if (!locked) {
+        if (ui.evaluateBtn) {
+          ui.evaluateBtn.classList.remove("hidden");
+        }
+        if (ui.newBtn) {
+          ui.newBtn.classList.remove("hidden");
+        }
       }
       setDtzBackPortalVisible(module, locked);
     }
@@ -10330,6 +10388,7 @@
         state.evaluated = false;
         state.lockedAfterSubmit = false;
         state.lastLoadedAt = new Date().toISOString();
+        currentDtzAudioPlayCountByKey = {};
 
         resetDtzModuleResultUi(normalizedModule, true);
         renderDtzTrainingSet(normalizedModule);
@@ -10342,6 +10401,7 @@
         state.evaluated = false;
         state.lockedAfterSubmit = false;
         state.lastLoadedAt = "";
+        currentDtzAudioPlayCountByKey = {};
         resetDtzModuleResultUi(normalizedModule, false);
         setDtzModuleStatus(normalizedModule, "error", err.message || "DTZ-Aufgaben konnten nicht geladen werden.");
       } finally {
