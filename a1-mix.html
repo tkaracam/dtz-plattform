@@ -15,9 +15,12 @@
     p { margin:0 0 6px; color:#35507a; }
     .hero { background:linear-gradient(130deg,#eef4ff 0%,#fff3f7 100%); border:1px solid #d9e4f5; border-radius:16px; padding:16px; display:grid; gap:8px; }
     .back-row { display:flex; gap:8px; flex-wrap:wrap; }
-    .btn { border:1px solid #cad8ef; border-radius:10px; padding:9px 13px; font:inherit; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; color:#29476f; background:#eef4ff; }
+    .btn { border:1px solid #cad8ef; border-radius:10px; padding:9px 13px; font:inherit; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; color:#29476f; background:#eef4ff; }
     .btn.primary { color:#fff; border-color:#d9afc5; background:linear-gradient(90deg,#e78fb0,#6e83e8); }
+    .btn.submit { color:#fff; border-color:#1f7b54; background:linear-gradient(90deg,#2d9f70,#1f7b54); }
+    .btn.portal { color:#fff; border-color:#b8444f; background:linear-gradient(90deg,#d56470,#b8444f); }
     .btn:hover { opacity:0.9; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
     .btn.small { padding:6px 10px; font-size:.9rem; }
     .checkbox-grid { display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin:12px 0; }
     .checkbox-item { display:flex; gap:8px; align-items:center; }
@@ -43,7 +46,7 @@
 <body>
 <main class="wrap">
   <section class="hero">
-    <h1 id="heroTitle">Gemischter A1-Test</h1>
+    <h1 id="heroTitle">A1-Themen</h1>
     <p id="heroSubtitle" style="color:#4a6492">Fragen aus allen A1-Themen vermischt</p>
     <div class="back-row" id="heroBackRow">
       <a class="btn" href="./a1-themen.html">← Zurück zu A1-Themen</a>
@@ -70,8 +73,9 @@
     </div>
     <div class="question-list" id="questionList"></div>
     <div class="actions" id="actions" style="display:none;">
-      <button class="btn" id="checkBtn">✓ Auswerten</button>
-      <button class="btn" id="solutionBtn">Lösungen zeigen</button>
+      <button class="btn submit" id="submitBtn">ABGEBEN</button>
+      <button class="btn" id="solutionBtn" disabled>Lösungen zeigen</button>
+      <button class="btn portal hidden" id="portalBtn" disabled>Zum Portal</button>
       <button class="btn primary" id="newBtn">Neu</button>
     </div>
     <div class="result" id="resultBox" style="display:none;"></div>
@@ -86,12 +90,16 @@ const actions = document.getElementById('actions');
 const topicCheckboxes = document.getElementById('topicCheckboxes');
 const generateBtn = document.getElementById('generateBtn');
 const newBtn = document.getElementById('newBtn');
+const submitBtn = document.getElementById('submitBtn');
+const solutionBtn = document.getElementById('solutionBtn');
+const portalBtn = document.getElementById('portalBtn');
 const topicConfigCard = document.getElementById('topicConfigCard');
 const heroTitle = document.getElementById('heroTitle');
 const heroSubtitle = document.getElementById('heroSubtitle');
 const heroBackRow = document.getElementById('heroBackRow');
 const selectAllBtn = document.getElementById('selectAllBtn');
 const deselectAllBtn = document.getElementById('deselectAllBtn');
+const homeworkMode = isHomeworkMode();
 
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
 function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
@@ -366,6 +374,7 @@ const TOPICS = {
 let questions = [];
 let activeTopics = {};
 let questionCount = 50;
+let submitted = false;
 
 function normalizeTopicKey(value) {
   const raw = String(value || '')
@@ -465,6 +474,7 @@ function generateQuestions(total = questionCount) {
 
 function render() {
   ql.innerHTML = '';
+  submitted = false;
   questions.forEach((q, i) => {
     const c = document.createElement('article');
     c.className = 'q-card';
@@ -498,6 +508,13 @@ function render() {
   pb.textContent = `Gelöst: 0/${questionCount}`;
   rb.style.display = 'none';
   actions.style.display = 'grid';
+  ql.classList.remove('show-sol');
+  if (solutionBtn) solutionBtn.disabled = true;
+  if (portalBtn) {
+    portalBtn.disabled = true;
+    if (homeworkMode) portalBtn.classList.remove('hidden');
+    else portalBtn.classList.add('hidden');
+  }
 }
 
 function grade() {
@@ -515,13 +532,54 @@ function grade() {
   rb.style.display = 'block';
   const pct = questionCount ? Math.round((n / questionCount) * 100) : 0;
   rb.textContent = `Richtig: ${n}/${questionCount}\nPunkte: ${n*2}/${questionCount * 2}\nErgebnis: ${pct}%`;
+  return { correct: n, total: questionCount, percent: pct };
 }
 
-document.getElementById('checkBtn').addEventListener('click', grade);
-document.getElementById('solutionBtn').addEventListener('click', () => ql.classList.add('show-sol'));
+function lockAnswers() {
+  ql.querySelectorAll('input[type="radio"]').forEach(input => {
+    input.disabled = true;
+  });
+}
+
+function notifyParent(type, payload = {}) {
+  if (window.parent && window.parent !== window) {
+    try {
+      window.parent.postMessage({ type, ...payload }, window.location.origin);
+    } catch (_) {}
+  }
+}
+
+submitBtn.addEventListener('click', () => {
+  const answered = ql.querySelectorAll('input:checked').length;
+  if (answered < questionCount) {
+    rb.style.display = 'block';
+    rb.textContent = `Bitte zuerst alle Fragen beantworten (${answered}/${questionCount}).`;
+    return;
+  }
+  const score = grade();
+  submitted = true;
+  lockAnswers();
+  if (solutionBtn) solutionBtn.disabled = false;
+  if (homeworkMode) {
+    notifyParent('dtz-a1-submit', { score });
+    if (portalBtn) portalBtn.disabled = false;
+  }
+});
+
+solutionBtn.addEventListener('click', () => {
+  if (!submitted) return;
+  ql.classList.add('show-sol');
+});
+
+if (portalBtn) {
+  portalBtn.addEventListener('click', () => {
+    if (!submitted) return;
+    notifyParent('dtz-a1-go-portal');
+  });
+}
+
 newBtn.addEventListener('click', () => {
   questions = generateQuestions();
-  ql.classList.remove('show-sol');
   render();
   window.scrollTo({top: 0, behavior: 'smooth'});
 });
@@ -539,13 +597,12 @@ const presetTopics = parsePresetTopics();
 if (presetTopics.length) {
   applyPresetTopics(presetTopics);
 }
-if (isHomeworkMode()) {
+if (homeworkMode) {
   if (topicConfigCard) topicConfigCard.style.display = 'none';
   if (heroBackRow) heroBackRow.style.display = 'none';
-  if (heroTitle) heroTitle.textContent = 'A1-Test (Hausaufgabe)';
-  if (heroSubtitle) heroSubtitle.textContent = `Automatisch zugewiesen: ${questionCount} Fragen`;
+  if (heroSubtitle) heroSubtitle.style.display = 'none';
   if (newBtn) newBtn.style.display = 'none';
-  if (actions) actions.style.gridTemplateColumns = 'repeat(2,1fr)';
+  if (actions) actions.style.gridTemplateColumns = 'repeat(3,1fr)';
   questions = generateQuestions();
   render();
 }

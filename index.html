@@ -4316,6 +4316,7 @@
     const SPEAKING_PROGRESS_KEY = "dtz_speaking_progress_v1";
     let currentA2HomeworkConfig = null;
     let currentOpenedHomeworkContext = {
+      a1AssignmentId: "",
       a2AssignmentId: "",
       a2AssignmentIds: [],
       dtzByModule: {
@@ -12914,7 +12915,10 @@
         toolbar.classList.toggle("hidden", assignmentMode);
       }
       if (backBtn) {
-        backBtn.classList.toggle("hidden", !assignmentMode);
+        backBtn.classList.add("hidden");
+      }
+      if (!assignmentMode) {
+        currentOpenedHomeworkContext.a1AssignmentId = "";
       }
     }
 
@@ -13015,12 +13019,53 @@
         setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
         return;
       }
+      currentOpenedHomeworkContext.a1AssignmentId = assignmentId;
       const parsed = parseA1HomeworkTemplate(row);
       if (!parsed || !parsed.url) {
         setStatus("error", "Für diese Aufgabe ist kein A1-Test-Link hinterlegt.", "portalStatus");
         return;
       }
       openA1ThemesInApp(parsed.url, { assignmentMode: true });
+    }
+
+    async function handleA1HomeworkFrameMessage(event) {
+      if (!event || event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      const type = String(data.type || "").trim().toLowerCase();
+      if (!type) return;
+      if (type === "dtz-a1-submit") {
+        const assignmentId = String((currentOpenedHomeworkContext && currentOpenedHomeworkContext.a1AssignmentId) || "").trim();
+        if (!assignmentId || isClientSolvedAssignment(assignmentId)) return;
+        let scoreData = null;
+        if (data.score && typeof data.score === "object") {
+          const correct = Number.parseInt(String(data.score.correct || 0), 10);
+          const total = Number.parseInt(String(data.score.total || 0), 10);
+          if (Number.isFinite(correct) && Number.isFinite(total) && total > 0) {
+            scoreData = {
+              correct: Math.max(0, correct),
+              wrong: Math.max(0, total - Math.max(0, correct)),
+              total
+            };
+          }
+        }
+        const completed = await submitHomeworkCompleteById(assignmentId, scoreData);
+        if (!completed) {
+          setStatus("error", "A1-Aufgabe konnte nicht abgegeben werden.", "portalStatus");
+          return;
+        }
+        markAssignmentSolvedClient(assignmentId);
+        currentOpenedHomeworkContext.a1AssignmentId = "";
+        setStatus("ok", "A1-Aufgabe wurde abgegeben.", "portalStatus");
+        await refreshPortalHomeworks();
+        renderPortalAssignmentCards();
+        renderPortalHomeworksGrouped();
+        return;
+      }
+      if (type === "dtz-a1-go-portal") {
+        openPortalView();
+        openPortalPanel("a1Homework", false);
+      }
     }
 
     function openHomeworkB1Task(assignment) {
@@ -13899,7 +13944,7 @@
         resetLetterWritingTimer();
         clearStudentSessionCache();
         solvedHomeworkAssignments = new Set();
-        currentOpenedHomeworkContext = { a2AssignmentId: "", a2AssignmentIds: [], dtzByModule: { hoeren: "", lesen: "" } };
+        currentOpenedHomeworkContext = { a1AssignmentId: "", a2AssignmentId: "", a2AssignmentIds: [], dtzByModule: { hoeren: "", lesen: "" } };
         currentOpenedHomeworkContext.dtzRequirement = null;
         currentStudentUsername = "";
         currentRoom = null;
@@ -15149,6 +15194,9 @@
         openPortalPanel("a1Homework", false);
       });
     }
+    window.addEventListener("message", event => {
+      void handleA1HomeworkFrameMessage(event);
+    });
     const b1StartBtn = document.getElementById("b1StartBtn");
     if (b1StartBtn) b1StartBtn.addEventListener("click", () => {
       const select = document.getElementById("b1TopicSelect");
