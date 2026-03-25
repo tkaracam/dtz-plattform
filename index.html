@@ -12063,7 +12063,12 @@
       ["hoeren", "lesen"].forEach(module => {
         const ui = getDtzUi(module);
         const state = getDtzState(module);
-        const lockedAfterSubmit = !!(state && state.lockedAfterSubmit);
+        const moduleAssignmentId = String((((currentOpenedHomeworkContext || {}).dtzByModule || {})[module] || "")).trim();
+        const solvedByClient = !!(moduleAssignmentId && isClientSolvedAssignment(moduleAssignmentId));
+        const lockedAfterSubmit = !!(state && (state.lockedAfterSubmit || solvedByClient));
+        if (state && lockedAfterSubmit) {
+          state.lockedAfterSubmit = true;
+        }
         const forcedForModule = !!(requirement && requirement.module === module);
         if (ui.teilSelect) {
           if (forcedForModule) {
