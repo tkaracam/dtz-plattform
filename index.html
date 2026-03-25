@@ -1009,6 +1009,32 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
+    .portal-main-tabs {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .portal-main-tab-btn {
+      border-radius: 12px;
+      border: 1px solid #e6d4c6;
+      background: #fff8f1;
+      color: #7a4f3a;
+      padding: 10px 12px;
+      font-size: 0.84rem;
+      text-transform: none;
+      letter-spacing: 0.01em;
+      box-shadow: none;
+    }
+
+    .portal-main-tab-btn.active {
+      color: #ffffff;
+      border-color: #ffc2b0;
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      box-shadow: 0 10px 20px rgba(205, 98, 87, 0.24);
+    }
+
     .portal-quick-btn {
       border-radius: 12px;
       border: 1px solid #efd3c2;
@@ -3495,10 +3521,15 @@
         </div>
         <div id="portalStatus" class="hidden"></div>
 
+        <div class="portal-main-tabs">
+          <button id="portalTabHomeworkBtn" type="button" class="portal-main-tab-btn active">Hausaufgaben</button>
+          <button id="portalTabTestergebnisseBtn" type="button" class="portal-main-tab-btn">Testergebnisse</button>
+        </div>
+
         <details id="portalTestResultCard" class="card-accordion hidden" style="margin:16px 0;" open>
           <summary class="card-accordion-summary">
             <div class="title-wrap">
-              <h3 style="margin:0;">📋 Testergebnis</h3>
+              <h3 style="margin:0;">📋 Testergebnisse</h3>
             </div>
             <div style="display:flex;gap:16px;align-items:center;margin-right:8px;">
               <span style="font-size:0.8rem;color:var(--text-muted,#666);">Prüfungen: <strong id="portalTestResultExamCount">–</strong></span>
@@ -3529,7 +3560,7 @@
           </div>
         </details>
 
-        <section class="portal-section">
+        <section id="portalHomeworkSection" class="portal-section">
           <div class="portal-grid" style="margin-top:10px;">
             <section class="portal-block">
               <details id="portalTeacherNotesAccordion" class="card-accordion" style="margin-top:12px;">
@@ -10397,9 +10428,23 @@
       });
     }
 
+    function setPortalMainTab(tab) {
+      const safeTab = tab === "results" ? "results" : "homework";
+      const homeworkSection = document.getElementById("portalHomeworkSection");
+      const resultSection = document.getElementById("portalTestResultCard");
+      const homeworkBtn = document.getElementById("portalTabHomeworkBtn");
+      const resultsBtn = document.getElementById("portalTabTestergebnisseBtn");
+
+      if (homeworkSection) homeworkSection.classList.toggle("hidden", safeTab !== "homework");
+      if (resultSection) resultSection.classList.toggle("hidden", safeTab !== "results");
+      if (homeworkBtn) homeworkBtn.classList.toggle("active", safeTab === "homework");
+      if (resultsBtn) resultsBtn.classList.toggle("active", safeTab === "results");
+    }
+
     function openPortalPanel(panel, smooth = true) {
       const targetId = PORTAL_PANEL_TO_ACCORDION[panel];
       if (!targetId) return;
+      setPortalMainTab("homework");
       Object.values(PORTAL_PANEL_TO_ACCORDION).forEach(id => {
         const node = document.getElementById(id);
         if (!node) return;
@@ -14467,7 +14512,16 @@
     if (portalQuickCorrectionsBtn) {
       portalQuickCorrectionsBtn.addEventListener("click", () => openPortalPanel("corrections"));
     }
+    const portalTabHomeworkBtn = document.getElementById("portalTabHomeworkBtn");
+    if (portalTabHomeworkBtn) {
+      portalTabHomeworkBtn.addEventListener("click", () => setPortalMainTab("homework"));
+    }
+    const portalTabTestergebnisseBtn = document.getElementById("portalTabTestergebnisseBtn");
+    if (portalTabTestergebnisseBtn) {
+      portalTabTestergebnisseBtn.addEventListener("click", () => setPortalMainTab("results"));
+    }
     syncPortalPanelToggleBehavior();
+    setPortalMainTab("homework");
     setPortalQuickActive("homework");
     document.getElementById("startSimulationBtn")?.addEventListener("click", startSimulation);
     document.getElementById("finishSimulationBtn")?.addEventListener("click", () => finishSimulation(false));
