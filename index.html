@@ -12776,8 +12776,97 @@
       const row = assignment && typeof assignment === "object" ? assignment : {};
       const templateId = String(row.template_id || "").trim().toLowerCase();
       const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
-      if (attachment && (attachment.toLowerCase().includes("/a1/") || attachment.toLowerCase().includes("/a1-themen.html"))) {
-        return { url: attachment };
+      const A1_MIX_TOPIC_KEYS = [
+        "praesens",
+        "sein-haben",
+        "pronomen",
+        "artikel",
+        "unbestimmte-artikel",
+        "negation",
+        "w-fragen",
+        "ja-nein-fragen",
+        "possessivartikel",
+        "modalverben",
+        "akkusativ",
+        "adjektive",
+        "trennbare-verben",
+        "imperativ",
+        "uhrzeit-datum",
+        "praepositionen",
+        "satzstellung"
+      ];
+      const toA1MixUrl = (topics, countRaw) => {
+        const pickedTopics = (Array.isArray(topics) ? topics : [])
+          .map(item => String(item || "").trim().toLowerCase())
+          .filter(Boolean)
+          .filter((item, index, arr) => arr.indexOf(item) === index)
+          .filter(item => A1_MIX_TOPIC_KEYS.includes(item));
+        const countNum = Number.parseInt(String(countRaw || ""), 10);
+        const count = Number.isFinite(countNum) ? Math.max(10, Math.min(50, countNum)) : 50;
+        const params = new URLSearchParams();
+        params.set("hw", "1");
+        if (pickedTopics.length) params.set("topics", pickedTopics.join(","));
+        params.set("count", String(count));
+        return `./a1-mix.html?${params.toString()}`;
+      };
+      const inferA1TopicsFromText = () => {
+        const bag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
+        const topicHints = [
+          { needle: "präsens", key: "praesens" },
+          { needle: "praesens", key: "praesens" },
+          { needle: "sein & haben", key: "sein-haben" },
+          { needle: "sein und haben", key: "sein-haben" },
+          { needle: "pronomen", key: "pronomen" },
+          { needle: "artikel", key: "artikel" },
+          { needle: "unbestimmte artikel", key: "unbestimmte-artikel" },
+          { needle: "negation", key: "negation" },
+          { needle: "w-fragen", key: "w-fragen" },
+          { needle: "ja/nein-fragen", key: "ja-nein-fragen" },
+          { needle: "ja-nein-fragen", key: "ja-nein-fragen" },
+          { needle: "possessivartikel", key: "possessivartikel" },
+          { needle: "modalverben", key: "modalverben" },
+          { needle: "akkusativ", key: "akkusativ" },
+          { needle: "adjektive", key: "adjektive" },
+          { needle: "trennbare verben", key: "trennbare-verben" },
+          { needle: "imperativ", key: "imperativ" },
+          { needle: "uhrzeit", key: "uhrzeit-datum" },
+          { needle: "datum", key: "uhrzeit-datum" },
+          { needle: "präposition", key: "praepositionen" },
+          { needle: "praeposition", key: "praepositionen" },
+          { needle: "satzstellung", key: "satzstellung" }
+        ];
+        const picked = [];
+        topicHints.forEach(item => {
+          if (!bag.includes(item.needle)) return;
+          if (!picked.includes(item.key)) picked.push(item.key);
+        });
+        return picked;
+      };
+      const textBag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
+      const countMatch = textBag.match(/(\d{1,3})\s*fragen/);
+      const inferredCount = countMatch ? Number.parseInt(countMatch[1], 10) : 50;
+      if (attachment) {
+        const lower = attachment.toLowerCase();
+        if (lower.includes("/a1-mix.html")) {
+          return { url: attachment };
+        }
+        if (lower.includes("/a1-themen.html")) {
+          try {
+            const base = window.location.origin;
+            const inputUrl = new URL(attachment, base);
+            const topics = String(inputUrl.searchParams.get("topics") || "")
+              .split(",")
+              .map(item => item.trim().toLowerCase())
+              .filter(Boolean);
+            const count = inputUrl.searchParams.get("count") || inferredCount;
+            return { url: toA1MixUrl(topics, count) };
+          } catch (_) {
+            return { url: toA1MixUrl(inferA1TopicsFromText(), inferredCount) };
+          }
+        }
+        if (lower.includes("/a1/")) {
+          return { url: attachment };
+        }
       }
       const singleMap = {
         "a1-test-praesens": "praesens",
@@ -12799,9 +12888,9 @@
         "a1-test-satzstellung": "satzstellung"
       };
       const topic = singleMap[templateId];
-      if (topic) return { url: `./a1/${topic}.html` };
+      if (topic) return { url: toA1MixUrl([topic], inferredCount) };
       if (templateId.startsWith("a1-test-generator-")) {
-        return { url: "./a1-themen.html" };
+        return { url: toA1MixUrl(inferA1TopicsFromText(), inferredCount) };
       }
       return null;
     }
