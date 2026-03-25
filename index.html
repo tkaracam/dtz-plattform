@@ -13028,6 +13028,13 @@
       openA1ThemesInApp(parsed.url, { assignmentMode: true });
     }
 
+    function isA1HomeworkAttachmentUrl(rawUrl) {
+      const safe = resolveSafeHttpUrl(String(rawUrl || "").trim());
+      if (!safe) return false;
+      const lower = safe.toLowerCase();
+      return lower.includes("/a1-mix.html") || lower.includes("/a1-themen.html");
+    }
+
     async function handleA1HomeworkFrameMessage(event) {
       if (!event || event.origin !== window.location.origin) return;
       const data = event.data;
@@ -15196,6 +15203,18 @@
     }
     window.addEventListener("message", event => {
       void handleA1HomeworkFrameMessage(event);
+    });
+    ["currentAssignmentAttachment", "portalCurrentAssignmentAttachment"].forEach(id => {
+      const link = document.getElementById(id);
+      if (!link) return;
+      link.addEventListener("click", event => {
+        const href = String(link.getAttribute("href") || "").trim();
+        if (!isA1HomeworkAttachmentUrl(href)) return;
+        event.preventDefault();
+        if (currentAssignedHomework && typeof currentAssignedHomework === "object") {
+          openHomeworkA1Task(currentAssignedHomework);
+        }
+      });
     });
     const b1StartBtn = document.getElementById("b1StartBtn");
     if (b1StartBtn) b1StartBtn.addEventListener("click", () => {
