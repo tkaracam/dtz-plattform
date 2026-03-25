@@ -3972,7 +3972,7 @@
 
       <section id="a1EmbedCard" class="card hidden">
         <h2 class="section-title">A1-Themen</h2>
-        <div class="a2-toolbar">
+        <div id="a1Toolbar" class="a2-toolbar">
           <div class="a2-controls">
             <div>
               <label for="a1TopicSelect">Thema</label>
@@ -4002,7 +4002,14 @@
           </div>
         </div>
         <div id="a1Status" class="hidden"></div>
-        <p class="section-subtitle" style="margin-top:12px;">Das Thema wird in einem neuen Tab geöffnet. Bearbeiten Sie den Test und kommen Sie danach hierher zurück.</p>
+        <div id="a1AssignedWrap" class="portal-item" style="margin-top:12px; padding:10px;">
+          <div class="row-end" style="margin:0 0 8px;">
+            <div class="btn-wrap">
+              <button id="a1BackToPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
+            </div>
+          </div>
+          <iframe id="a1EmbedFrame" title="A1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
+        </div>
       </section>
 
       <section id="b1EmbedCard" class="card hidden">
@@ -10776,6 +10783,8 @@
         openSpeakingView();
       } else if (normalizedTarget === "niveau") {
         openNiveauView();
+      } else if (normalizedTarget === "a1") {
+        openA1ThemesInApp("./a1-themen.html");
       } else if (normalizedTarget === "a2") {
         openA2ThemesInApp("./a2-themen.html");
       } else if (normalizedTarget === "dtz") {
@@ -12758,6 +12767,63 @@
       return null;
     }
 
+    function parseA1HomeworkTemplate(assignment) {
+      const row = assignment && typeof assignment === "object" ? assignment : {};
+      const templateId = String(row.template_id || "").trim().toLowerCase();
+      const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
+      if (attachment && (attachment.toLowerCase().includes("/a1/") || attachment.toLowerCase().includes("/a1-themen.html"))) {
+        return { url: attachment };
+      }
+      const singleMap = {
+        "a1-test-praesens": "praesens",
+        "a1-test-sein-haben": "sein-haben",
+        "a1-test-pronomen": "pronomen",
+        "a1-test-artikel": "artikel",
+        "a1-test-unbestimmte-artikel": "unbestimmte-artikel",
+        "a1-test-negation": "negation",
+        "a1-test-w-fragen": "w-fragen",
+        "a1-test-ja-nein-fragen": "ja-nein-fragen",
+        "a1-test-possessivartikel": "possessivartikel",
+        "a1-test-modalverben": "modalverben",
+        "a1-test-akkusativ": "akkusativ",
+        "a1-test-adjektive": "adjektive",
+        "a1-test-trennbare-verben": "trennbare-verben",
+        "a1-test-imperativ": "imperativ",
+        "a1-test-uhrzeit-datum": "uhrzeit-datum",
+        "a1-test-praepositionen": "praepositionen",
+        "a1-test-satzstellung": "satzstellung"
+      };
+      const topic = singleMap[templateId];
+      if (topic) return { url: `./a1/${topic}.html` };
+      if (templateId.startsWith("a1-test-generator-")) {
+        return { url: "./a1-themen.html" };
+      }
+      return null;
+    }
+
+    function openA1ThemesInApp(rawInput = "./a1-themen.html", options = {}) {
+      const url = resolveSafeHttpUrl(String(rawInput || "").trim());
+      if (!url) {
+        setStatus("error", "Für A1 ist kein gültiger Link hinterlegt.", "portalStatus");
+        return;
+      }
+      setMainView("a1");
+      setHomeDashboardSection("a1");
+      const frame = document.getElementById("a1EmbedFrame");
+      const backBtn = document.getElementById("a1BackToPortalBtn");
+      const toolbar = document.getElementById("a1Toolbar");
+      const assignmentMode = !!(options && options.assignmentMode);
+      if (frame) {
+        frame.src = url;
+      }
+      if (toolbar) {
+        toolbar.classList.toggle("hidden", assignmentMode);
+      }
+      if (backBtn) {
+        backBtn.classList.toggle("hidden", !assignmentMode);
+      }
+    }
+
     function getHomeworkOpenBlockReason(row) {
       if (!row || typeof row !== "object") return "";
       const status = String(row.status || "").trim().toLowerCase();
@@ -12855,12 +12921,12 @@
         setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
         return;
       }
-      const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
-      if (!attachment) {
+      const parsed = parseA1HomeworkTemplate(row);
+      if (!parsed || !parsed.url) {
         setStatus("error", "Für diese Aufgabe ist kein A1-Test-Link hinterlegt.", "portalStatus");
         return;
       }
-      window.open(attachment, "_blank", "noopener");
+      openA1ThemesInApp(parsed.url, { assignmentMode: true });
     }
 
     function openHomeworkB1Task(assignment) {
@@ -14980,8 +15046,15 @@
     if (a1StartBtn) a1StartBtn.addEventListener("click", () => {
       const select = document.getElementById("a1TopicSelect");
       const topic = String(select?.value || "praesens");
-      window.open(`/a1/${topic}.html`, "_blank", "noopener");
+      openA1ThemesInApp(`./a1/${topic}.html`, { assignmentMode: false });
     });
+    const a1BackToPortalBtn = document.getElementById("a1BackToPortalBtn");
+    if (a1BackToPortalBtn) {
+      a1BackToPortalBtn.addEventListener("click", () => {
+        openPortalView();
+        openPortalPanel("a1Homework", false);
+      });
+    }
     const b1StartBtn = document.getElementById("b1StartBtn");
     if (b1StartBtn) b1StartBtn.addEventListener("click", () => {
       const select = document.getElementById("b1TopicSelect");
