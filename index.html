@@ -3557,6 +3557,7 @@
               </div>
             </div>
             <p id="portalTestResultMsg" style="margin:10px 0 0;font-size:0.85rem;color:var(--text-muted,#555);"></p>
+            <div id="portalDtzTeilStatsWrap" style="margin-top:12px;"></div>
           </div>
         </details>
 
@@ -12826,6 +12827,78 @@
       });
     }
 
+    function computePortalDtzTeilStats(homeworks) {
+      const rows = Array.isArray(homeworks) ? homeworks : [];
+      const stats = { hoeren: {}, lesen: {} };
+      const ensure = (module, teil) => {
+        if (!stats[module][teil]) {
+          stats[module][teil] = {
+            attempts: 0,
+            avgSum: 0,
+            successCount: 0
+          };
+        }
+        return stats[module][teil];
+      };
+      rows.forEach(row => {
+        if (!row || typeof row !== "object") return;
+        const parsed = parseDtzHomeworkTemplate(String(row.template_id || ""));
+        if (!parsed) return;
+        const result = row.last_dtz_result && typeof row.last_dtz_result === "object" ? row.last_dtz_result : null;
+        if (!result) return;
+        const correct = Math.max(0, Number.parseInt(String(result.correct || 0), 10) || 0);
+        const total = Math.max(0, Number.parseInt(String(result.total || 0), 10) || 0);
+        if (total <= 0) return;
+        const percent = Math.max(0, Math.min(100, Math.round((correct / total) * 100)));
+        const bucket = ensure(parsed.module, parsed.teil);
+        bucket.attempts += 1;
+        bucket.avgSum += percent;
+        if (percent >= 60) bucket.successCount += 1;
+      });
+      return stats;
+    }
+
+    function renderPortalDtzTeilStats(homeworks) {
+      const wrap = document.getElementById("portalDtzTeilStatsWrap");
+      if (!wrap) return;
+      const stats = computePortalDtzTeilStats(homeworks);
+      const renderRow = (module, teil) => {
+        const bucket = (((stats || {})[module] || {})[teil]) || null;
+        const attempts = bucket ? Math.max(0, Number(bucket.attempts || 0)) : 0;
+        if (!attempts) {
+          return `
+            <div class="portal-item" style="padding:8px 10px;margin:6px 0;">
+              <strong>${module === "lesen" ? "Lesen" : "Hören"} Teil ${teil}</strong>
+              <div class="section-subtitle" style="margin-top:2px;">Ø: - | Erfolg: - | Tests: 0</div>
+            </div>
+          `;
+        }
+        const avg = Math.round(Number(bucket.avgSum || 0) / attempts);
+        const success = Math.round((Number(bucket.successCount || 0) / attempts) * 100);
+        return `
+          <div class="portal-item" style="padding:8px 10px;margin:6px 0;">
+            <strong>${module === "lesen" ? "Lesen" : "Hören"} Teil ${teil}</strong>
+            <div class="section-subtitle" style="margin-top:2px;">Ø: ${avg}% | Erfolg: ${success}% | Tests: ${attempts}</div>
+          </div>
+        `;
+      };
+
+      const hoerenRows = [1, 2, 3, 4].map(teil => renderRow("hoeren", teil)).join("");
+      const lesenRows = [1, 2, 3, 4, 5].map(teil => renderRow("lesen", teil)).join("");
+      wrap.innerHTML = `
+        <div class="portal-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
+          <section class="portal-block">
+            <h4 style="margin:0 0 8px;">Hören Teil 1-4</h4>
+            ${hoerenRows}
+          </section>
+          <section class="portal-block">
+            <h4 style="margin:0 0 8px;">Lesen Teil 1-5</h4>
+            ${lesenRows}
+          </section>
+        </div>
+      `;
+    }
+
     function renderPortalHomeworksGrouped(homeworks) {
       const hoerenWrap = document.getElementById("portalHoerenHomeworkWrap");
       const lesenWrap = document.getElementById("portalLesenHomeworkWrap");
@@ -13037,6 +13110,11 @@
       const results = Array.isArray(payload.results) ? payload.results : [];
       const homeworks = Array.isArray(payload.homeworks) ? payload.homeworks : [];
       portalHomeworksCache = homeworks.slice();
+      const testResultCard = document.getElementById("portalTestResultCard");
+      if (testResultCard) {
+        testResultCard.classList.remove("hidden");
+      }
+      renderPortalDtzTeilStats(homeworks);
       const notes = Array.isArray(payload.teacher_notes) ? payload.teacher_notes : [];
       const readiness = payload.readiness || {};
       const corrections = Array.isArray(payload.letter_corrections) ? payload.letter_corrections.slice() : [];

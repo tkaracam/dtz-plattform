@@ -222,7 +222,9 @@ foreach (load_homework_assignments() as $assignment) {
         continue;
     }
 
-    $state = assignment_user_state($assignment, $username);
+    $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
+    $rawState = is_array($assignees[$username] ?? null) ? $assignees[$username] : [];
+    $state = assignment_state_from_raw($assignment, $rawState);
     $submittedAt = trim((string)($state['submitted_at'] ?? ''));
     $startedAt = trim((string)($state['started_at'] ?? ''));
     $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
@@ -259,6 +261,38 @@ foreach (load_homework_assignments() as $assignment) {
         $statusLabel = 'geplant';
     }
 
+    $lastDtzRaw = is_array($rawState['last_dtz_result'] ?? null) ? $rawState['last_dtz_result'] : [];
+    $lastDtzResult = null;
+    if ($lastDtzRaw) {
+        $lastDtzModule = mb_strtolower(trim((string)($lastDtzRaw['module'] ?? '')));
+        $lastDtzTeil = (int)($lastDtzRaw['teil'] ?? 0);
+        $lastDtzCorrect = max(0, (int)($lastDtzRaw['correct'] ?? 0));
+        $lastDtzWrong = max(0, (int)($lastDtzRaw['wrong'] ?? 0));
+        $lastDtzUnanswered = max(0, (int)($lastDtzRaw['unanswered'] ?? 0));
+        $lastDtzTotal = max(0, (int)($lastDtzRaw['total'] ?? 0));
+        $lastDtzPoints = max(0, (int)($lastDtzRaw['points'] ?? 0));
+        $lastDtzMaxPoints = max(0, (int)($lastDtzRaw['max_points'] ?? 0));
+        $lastDtzSavedAt = trim((string)($lastDtzRaw['saved_at'] ?? ''));
+        if (
+            in_array($lastDtzModule, ['hoeren', 'lesen'], true)
+            && $lastDtzTeil > 0
+            && $lastDtzTotal > 0
+            && ($lastDtzCorrect + $lastDtzWrong + $lastDtzUnanswered) === $lastDtzTotal
+        ) {
+            $lastDtzResult = [
+                'module' => $lastDtzModule,
+                'teil' => $lastDtzTeil,
+                'correct' => $lastDtzCorrect,
+                'wrong' => $lastDtzWrong,
+                'unanswered' => $lastDtzUnanswered,
+                'total' => $lastDtzTotal,
+                'points' => $lastDtzPoints,
+                'max_points' => $lastDtzMaxPoints,
+                'saved_at' => $lastDtzSavedAt,
+            ];
+        }
+    }
+
     $homeworks[] = [
         'id' => (string)($assignment['id'] ?? ''),
         'template_id' => (string)($assignment['template_id'] ?? ''),
@@ -279,6 +313,7 @@ foreach (load_homework_assignments() as $assignment) {
             static fn($it) => trim((string)($it['template_id'] ?? '')),
             is_array(($assignment['dtz_bundle']['items'] ?? null)) ? $assignment['dtz_bundle']['items'] : []
         ))),
+        'last_dtz_result' => $lastDtzResult,
     ];
 }
 usort($homeworks, static function (array $a, array $b): int {
