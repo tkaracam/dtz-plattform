@@ -4077,6 +4077,10 @@
             <textarea id="modelltestWriteText" rows="8" placeholder="Schreiben Sie Ihren Text hier..."></textarea>
           </div>
           <div id="modelltestResultBox" class="hidden" style="margin-top:10px;"></div>
+          <div id="modelltestPostSubmitActions" class="row-end hidden" style="margin-top:10px; gap:8px;">
+            <button id="modelltestShowSolutionsBtn" type="button" class="secondary-btn">Lösungen zeigen</button>
+            <button id="modelltestPortalBtn" type="button" class="portal-open-btn">Zum Portal</button>
+          </div>
         </div>
         <div id="dtzModuleSwitchWrap" class="dtz-training-modules">
           <button id="dtzHoerenOpenBtn" type="button" class="dtz-module-btn">Hören (Teil 1-4)</button>
@@ -4339,7 +4343,8 @@
       writePromptA: "",
       writePromptB: "",
       playedAudioByKey: {},
-      finished: false
+      finished: false,
+      submitted: false
     };
     let solvedHomeworkAssignments = new Set();
     let portalHomeworksCache = [];
@@ -6438,6 +6443,8 @@
       if (modelltestCloseHoerenBtn) modelltestCloseHoerenBtn.classList.add("hidden");
       const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
       if (modelltestToLesenBtn) modelltestToLesenBtn.classList.add("hidden");
+      const modelltestPostSubmitActions = document.getElementById("modelltestPostSubmitActions");
+      if (modelltestPostSubmitActions) modelltestPostSubmitActions.classList.add("hidden");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
       const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
       if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
@@ -6831,6 +6838,8 @@
       if (modelltestCloseHoerenBtn) modelltestCloseHoerenBtn.classList.add("hidden");
       const modelltestToLesenBtn = document.getElementById("modelltestToLesenBtn");
       if (modelltestToLesenBtn) modelltestToLesenBtn.classList.add("hidden");
+      const modelltestPostSubmitActions = document.getElementById("modelltestPostSubmitActions");
+      if (modelltestPostSubmitActions) modelltestPostSubmitActions.classList.add("hidden");
       const hoerenTeilButtons = document.getElementById("dtzHoerenTeilButtons");
       const lesenTeilButtons = document.getElementById("dtzLesenTeilButtons");
       if (hoerenTeilButtons) hoerenTeilButtons.classList.remove("hidden");
@@ -7169,6 +7178,9 @@
       const toLesenBtn = document.getElementById("modelltestToLesenBtn");
       const toSchreibenBtn = document.getElementById("modelltestToSchreibenBtn");
       const finishBtn = document.getElementById("modelltestFinishBtn");
+      const postSubmitActions = document.getElementById("modelltestPostSubmitActions");
+      const showSolutionsBtn = document.getElementById("modelltestShowSolutionsBtn");
+      const portalBtn = document.getElementById("modelltestPortalBtn");
       const writePanel = document.getElementById("modelltestWritePanel");
       const promptBox = document.getElementById("modelltestTaskPrompt");
       const variantSelect = document.getElementById("modelltestTaskVariant");
@@ -7179,6 +7191,8 @@
       const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
       const hoerenNewBtn = document.getElementById("dtzHoerenNewBtn");
       const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
+      const hoerenBackPortalBtn = document.getElementById("dtzHoerenBackPortalBtn");
+      const lesenBackPortalBtn = document.getElementById("dtzLesenBackPortalBtn");
       const isAssignedModelltest = !!currentModelltestAssignmentId();
       const hoerenStats = getModelltestModuleStats("hoeren");
       const lesenStats = getModelltestModuleStats("lesen");
@@ -7208,7 +7222,18 @@
           lesenNewBtn.classList.add("hidden");
           lesenNewBtn.disabled = true;
         }
+        if (hoerenBackPortalBtn) {
+          hoerenBackPortalBtn.classList.add("hidden");
+          hoerenBackPortalBtn.disabled = true;
+        }
+        if (lesenBackPortalBtn) {
+          lesenBackPortalBtn.classList.add("hidden");
+          lesenBackPortalBtn.disabled = true;
+        }
       }
+      if (postSubmitActions) postSubmitActions.classList.add("hidden");
+      if (showSolutionsBtn) showSolutionsBtn.disabled = !modelltestFlowState.submitted;
+      if (portalBtn) portalBtn.disabled = !modelltestFlowState.submitted;
 
       if (modelltestFlowState.stage === "hoeren") {
         if (stageChip) stageChip.textContent = "Phase: Hören (35:00)";
@@ -7242,7 +7267,7 @@
         if (toSchreibenBtn) {
           toSchreibenBtn.textContent = modelltestFlowState.hasWritingTask
             ? "Lesen abschließen · Schreiben starten"
-            : "ERGEBNIS";
+            : "ABGEBEN";
           toSchreibenBtn.disabled = !lesenStats.allAnswered || !lesenEvaluated;
         }
         if (finishBtn) finishBtn.classList.add("hidden");
@@ -7283,6 +7308,13 @@
         if (toSchreibenBtn) toSchreibenBtn.classList.add("hidden");
         if (finishBtn) finishBtn.classList.add("hidden");
         if (writePanel) writePanel.classList.add("hidden");
+        lockDtzModuleInputs("hoeren", true);
+        lockDtzModuleInputs("lesen", true);
+        if (isAssignedModelltest && !modelltestFlowState.hasWritingTask && modelltestFlowState.submitted) {
+          if (postSubmitActions) postSubmitActions.classList.remove("hidden");
+          if (showSolutionsBtn) showSolutionsBtn.disabled = false;
+          if (portalBtn) portalBtn.disabled = false;
+        }
       }
     }
 
@@ -7350,6 +7382,7 @@
 
     async function advanceModelltestAfterLesen(fromTimeout = false) {
       const lesenStats = getModelltestModuleStats("lesen");
+      const isAssignedModelltest = !!currentModelltestAssignmentId();
       if (!fromTimeout && !lesenStats.allAnswered) {
         setDtzModuleStatus("lesen", "error", "Bitte zuerst alle Lesen-Fragen beantworten.");
         return;
@@ -7368,7 +7401,10 @@
         persistModelltestProgress();
         return;
       }
-      await finalizeModelltest(fromTimeout, { skipWriting: true });
+      await finalizeModelltest(fromTimeout, {
+        skipWriting: true,
+        stayAfterSubmit: isAssignedModelltest
+      });
     }
 
     function modelltestLevelFromPercent(percent) {
@@ -7383,6 +7419,7 @@
       markModelltestModuleEvaluated("hoeren");
       markModelltestModuleEvaluated("lesen");
       const skipWriting = !!(options && options.skipWriting);
+      const stayAfterSubmit = !!(options && options.stayAfterSubmit);
       const writeText = document.getElementById("modelltestWriteText");
       const variant = String(modelltestFlowState.writeVariant || "A");
       const text = String(writeText ? writeText.value || "" : "").trim();
@@ -7445,9 +7482,16 @@
           const completed = await submitHomeworkCompleteById(assignmentId);
           if (completed) {
             markAssignmentSolvedClient(assignmentId);
-            await refreshPortalData();
-            openPortalView();
-            openPortalPanel("modelltestHomework", false);
+            if (stayAfterSubmit) {
+              modelltestFlowState.submitted = true;
+              updateModelltestFlowUi();
+              await refreshPortalData();
+              setStatus("ok", "Modelltest wurde abgegeben.", "statusBox");
+            } else {
+              await refreshPortalData();
+              openPortalView();
+              openPortalPanel("modelltestHomework", false);
+            }
           } else {
             setStatus("error", "Modelltest wurde gespeichert, aber Abgabe konnte nicht abgeschlossen werden.", "statusBox");
           }
@@ -7455,7 +7499,7 @@
           setStatus("error", "Modelltest nicht als gelöst markiert: Speichern fehlgeschlagen.", "statusBox");
         }
       }
-      clearModelltestProgress();
+      if (!stayAfterSubmit) clearModelltestProgress();
     }
 
     async function loadModelltestModuleAllTeils(module) {
@@ -7544,6 +7588,7 @@
       modelltestFlowState.writePromptA = "";
       modelltestFlowState.writePromptB = "";
       modelltestFlowState.playedAudioByKey = {};
+      modelltestFlowState.submitted = false;
       ensureModelltestWritePrompts();
 
       const resultBox = document.getElementById("modelltestResultBox");
@@ -14899,6 +14944,25 @@
     if (modelltestFinishBtn) {
       modelltestFinishBtn.addEventListener("click", () => {
         void finalizeModelltest(false);
+      });
+    }
+    const modelltestShowSolutionsBtn = document.getElementById("modelltestShowSolutionsBtn");
+    if (modelltestShowSolutionsBtn) {
+      modelltestShowSolutionsBtn.addEventListener("click", () => {
+        if (!modelltestFlowState.submitted) return;
+        markModelltestModuleEvaluated("hoeren");
+        markModelltestModuleEvaluated("lesen");
+        setAccordionOpen("dtzHoerenAccordion", false);
+        setAccordionOpen("dtzLesenAccordion", true);
+      });
+    }
+    const modelltestPortalBtn = document.getElementById("modelltestPortalBtn");
+    if (modelltestPortalBtn) {
+      modelltestPortalBtn.addEventListener("click", () => {
+        if (!modelltestFlowState.submitted) return;
+        clearModelltestProgress();
+        openPortalView();
+        openPortalPanel("modelltestHomework", false);
       });
     }
     const modelltestTaskVariant = document.getElementById("modelltestTaskVariant");
