@@ -3670,6 +3670,7 @@
                 <button id="saveReminderPolicyBtn" type="button">Policy speichern</button>
                 <button id="dryRunReminderPolicyBtn" type="button" class="ghost-btn">Dry-Run Simulation</button>
               </div>
+              <pre id="homeworkReminderPolicyErrors" class="bulk-preview" style="margin-top:10px; white-space:pre-wrap;"></pre>
               <pre id="homeworkReminderPolicyPreview" class="bulk-preview" style="margin-top:10px; white-space:pre-wrap;"></pre>
               <pre id="homeworkReminderDryRunPreview" class="bulk-preview" style="margin-top:10px; white-space:pre-wrap;"></pre>
               <div id="homeworkReminderPolicyStatus" class="hidden"></div>
@@ -8990,36 +8991,50 @@
       return v === "1" || v === "true" || v === "yes" || v === "on" || v === "ja";
     }
 
+    function parseReminderBoolStrict(value) {
+      const v = String(value || "").trim().toLowerCase();
+      if (["1", "true", "yes", "on", "ja"].includes(v)) return true;
+      if (["0", "false", "no", "off", "nein"].includes(v)) return false;
+      return null;
+    }
+
     function parseReminderOverrideLines(raw, scopeLabel = "override") {
       const out = {};
       const errors = [];
-      const lines = String(raw || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-      lines.forEach((line, idx) => {
-        if (line.startsWith("#")) return;
+      const sourceLines = String(raw || "").split(/\r?\n/);
+      sourceLines.forEach((sourceLine, idx) => {
+        const lineNo = idx + 1;
+        const line = String(sourceLine || "").trim();
+        if (!line || line.startsWith("#")) return;
         const parts = line.split("|").map(part => part.trim());
         if (parts.length < 5) {
-          errors.push(`${scopeLabel} Zeile ${idx + 1}: Erwartet 5 Felder (key|level|enabled|cooldown|max_per_day).`);
+          errors.push(`${scopeLabel} Zeile ${lineNo}: Erwartet 5 Felder (key|level|enabled|cooldown|max_per_day).`);
           return;
         }
         const [scopeKey, level, enabledRaw, cooldownRaw, maxRaw] = parts;
         const safeScope = String(scopeKey || "").trim();
         const safeLevel = String(level || "").trim().toLowerCase();
         if (!safeScope) {
-          errors.push(`${scopeLabel} Zeile ${idx + 1}: scope key fehlt.`);
+          errors.push(`${scopeLabel} Zeile ${lineNo}: scope key fehlt.`);
           return;
         }
         if (!["warn24", "warn2", "expired"].includes(safeLevel)) {
-          errors.push(`${scopeLabel} Zeile ${idx + 1}: level muss warn24, warn2 oder expired sein.`);
+          errors.push(`${scopeLabel} Zeile ${lineNo}: level muss warn24, warn2 oder expired sein.`);
+          return;
+        }
+        const enabled = parseReminderBoolStrict(enabledRaw);
+        if (enabled === null) {
+          errors.push(`${scopeLabel} Zeile ${lineNo}: enabled muss 1/0, true/false oder ja/nein sein.`);
           return;
         }
         const cooldownParsed = Number.parseInt(cooldownRaw, 10);
         const maxParsed = Number.parseInt(maxRaw, 10);
         if (!Number.isFinite(cooldownParsed) || !Number.isFinite(maxParsed)) {
-          errors.push(`${scopeLabel} Zeile ${idx + 1}: cooldown/max_per_day müssen Zahlen sein.`);
+          errors.push(`${scopeLabel} Zeile ${lineNo}: cooldown/max_per_day müssen Zahlen sein.`);
           return;
         }
         const policy = {
-          enabled: parseReminderBool(enabledRaw),
+          enabled,
           cooldown_hours: Math.max(0, Math.min(24 * 30, cooldownParsed)),
           max_per_day: Math.max(0, Math.min(48, maxParsed))
         };
@@ -9027,6 +9042,15 @@
         out[safeScope][safeLevel] = policy;
       });
       return { out, errors };
+    }
+
+    function renderHomeworkReminderPolicyParseErrors(errors = []) {
+      const node = document.getElementById("homeworkReminderPolicyErrors");
+      if (!node) return;
+      const list = Array.isArray(errors) ? errors.filter(Boolean) : [];
+      node.textContent = list.length
+        ? `Parse-Fehler (${list.length}):\n- ${list.join("\n- ")}`
+        : "Keine Parse-Fehler.";
     }
 
     function reminderOverrideLinesFromObject(obj) {
@@ -9049,6 +9073,7 @@
       const parsedCourse = parseReminderOverrideLines(String(document.getElementById("rpCourseOverrides")?.value || ""), "course");
       const parsedTemplate = parseReminderOverrideLines(String(document.getElementById("rpTemplateOverrides")?.value || ""), "template");
       const parseErrors = [...parsedCourse.errors, ...parsedTemplate.errors];
+      renderHomeworkReminderPolicyParseErrors(parseErrors);
       if (parseErrors.length) {
         throw new Error(parseErrors.join(" | "));
       }
@@ -9115,6 +9140,7 @@
       const templateNode = document.getElementById("rpTemplateOverrides");
       if (courseNode) courseNode.value = courseOverrides;
       if (templateNode) templateNode.value = templateOverrides;
+      renderHomeworkReminderPolicyParseErrors([]);
       renderHomeworkReminderPolicyPreview();
     }
 
@@ -9219,6 +9245,13 @@
           policy_override: policy
         });
         const targets = Array.isArray(payload?.targets) ? payload.targets : [];
+        const toSortedTop = (obj, topN = 10) => {
+          const entries = Object.entries(obj && typeof obj === "object" ? obj : {})
+            .map(([key, val]) => [String(key || "-"), Number(val || 0)])
+            .filter(([, val]) => Number.isFinite(val) && val > 0)
+            .sort((a, b) => b[1] - a[1]);
+          return entries.slice(0, topN);
+        };
         const compactTargets = targets.slice(0, 30).map(item => ({
           assignment_id: item?.assignment_id || "",
           student_username: item?.student_username || "",
@@ -9231,6 +9264,11 @@
           candidates_found: targets.length,
           skipped_already_sent: Number(payload?.skipped_already_sent || 0),
           skipped_by_policy: Number(payload?.skipped_by_policy || 0),
+          summary: {
+            would_send_total: targets.length,
+            courses_top: toSortedTop(payload?.would_send_by_course),
+            templates_top: toSortedTop(payload?.would_send_by_template)
+          },
           sample_targets: compactTargets,
           would_send_by_course: payload?.would_send_by_course || {},
           would_send_by_template: payload?.would_send_by_template || {},
