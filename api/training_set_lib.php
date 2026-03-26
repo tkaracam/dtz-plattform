@@ -38,6 +38,9 @@ function load_training_template_bank(): array
     return $decoded;
 }
 
+const DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL = 40;
+const DTZ_LESEN_SCENARIO_TARGET_PER_TEIL = 40;
+
 function normalize_training_module(string $module): string
 {
     $value = lower_text($module);
@@ -2163,8 +2166,8 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
 {
     $pools = build_hoeren_teil_structured_pools();
     $pool = (array)($pools[$teil] ?? []);
-    $targetByTeil = [1 => 10, 2 => 10, 3 => 10, 4 => 10];
-    $pool = expand_structured_scenarios($pool, (int)($targetByTeil[$teil] ?? 10), 'hoeren_t' . $teil);
+    $targetByTeil = [1 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL, 2 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL, 3 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL, 4 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL];
+    $pool = expand_structured_scenarios($pool, (int)($targetByTeil[$teil] ?? DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL), 'hoeren_t' . $teil);
     if (!$pool) {
         throw new RuntimeException('Für diesen Hören-Teil sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2451,7 +2454,7 @@ function build_lesen_teil3_textblock_pools(): array
 function create_lesen_teil3_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil3_textblock_pools();
-    $pool = expand_structured_scenarios($pool, 12, 'lesen_t3');
+    $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t3');
     if (!$pool) {
         throw new RuntimeException('Für Lesen Teil 3 sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2624,7 +2627,7 @@ function build_lesen_teil4_richtig_falsch_pools(): array
 function create_lesen_teil4_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil4_richtig_falsch_pools();
-    $pool = expand_structured_scenarios($pool, 12, 'lesen_t4');
+    $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t4');
     if (!$pool) {
         throw new RuntimeException('Für Lesen Teil 4 sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2754,7 +2757,7 @@ function build_lesen_teil5_cloze_pools(): array
 function create_lesen_teil5_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil5_cloze_pools();
-    $pool = expand_structured_scenarios($pool, 12, 'lesen_t5');
+    $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t5');
     if (!$pool) {
         throw new RuntimeException('Fuer Lesen Teil 5 sind keine strukturierten Aufgaben verfuegbar.');
     }
@@ -2972,7 +2975,7 @@ function build_lesen_teil1_wegweiser_pools(): array
 function create_lesen_teil1_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil1_wegweiser_pools();
-    $pool = expand_structured_scenarios($pool, 12, 'lesen_t1');
+    $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t1');
     if (!$pool) {
         throw new RuntimeException('Keine Lesen-Teil-1-Pools verfügbar.');
     }
@@ -3079,7 +3082,7 @@ function build_lesen_teil2_matching_pools(): array
 function create_lesen_teil2_structured_set(bool $includeExplanation): array
 {
     $pool = build_lesen_teil2_matching_pools();
-    $pool = expand_structured_scenarios($pool, 12, 'lesen_t2');
+    $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t2');
     if (!$pool) {
         throw new RuntimeException('Keine Lesen-Teil-2-Pools verfügbar.');
     }
