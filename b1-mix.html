@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>B1 - Gemischter Test | DTZ-LiD</title>
+  <style>
+    :root { --bg:#fff8f2; --card:#ffffff; --line:#ecd7c9; --text:#3f2f31; --accent-1:#f45a87; --accent-2:#f79a63; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Comfortaa","Segoe UI",sans-serif; color:var(--text); background:linear-gradient(180deg,#fffdf9 0%, var(--bg) 100%); }
+    .wrap { max-width:1080px; margin:0 auto; padding:14px; display:grid; gap:12px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; }
+    .hero { background:linear-gradient(135deg,#fff7f1 0%,#ffefdf 52%,#ffe3d2 100%); border:1px solid #efcfbf; border-radius:16px; padding:16px; display:grid; gap:8px; }
+    .btn { border:1px solid #efcdbf; border-radius:10px; padding:9px 13px; font:inherit; font-weight:700; cursor:pointer; color:#6d4a3c; background:#fff4ed; }
+    .btn.submit { color:#fff; border-color:#1f7b54; background:linear-gradient(90deg,#2d9f70,#1f7b54); }
+    .btn.portal { color:#fff; border-color:#b8444f; background:linear-gradient(90deg,#d56470,#b8444f); }
+    .question-list { display:grid; gap:10px; }
+    .q-card { border:1px solid #eeded2; border-radius:12px; padding:12px; background:#fffdfa; display:grid; gap:8px; }
+    .q-card.correct { border-color:#b8e3cf; background:#f4fff9; }
+    .q-card.wrong { border-color:#f0c8d1; background:#fff7f9; }
+    .opt { border:1px solid #eeded2; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:flex-start; cursor:pointer; }
+    .opt.correct-answer { border-color:#96cdb5; background:#eefcf4; }
+    .progress-badge { display:inline-block; padding:6px 12px; background:#fff4ed; border:1px solid #efcdbf; border-radius:999px; color:#6d4a3c; font-weight:700; font-size:.95rem; }
+    .actions { margin-top:10px; display:grid; gap:8px; grid-template-columns:repeat(2,1fr); }
+    .solution { margin:0; color:#7d5648; font-size:.93rem; display:none; }
+    .show-sol .solution { display:block; }
+    .result { margin-top:8px; border:1px dashed #efcdbf; border-radius:10px; padding:10px; color:#6d4a3c; white-space:pre-wrap; background:#fffaf6; }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <h1 id="heroTitle" style="margin:0;">B1-Themen</h1>
+    <p id="heroSubtitle" style="margin:0;color:#4a6492">B1-Grammatiktest (A2-ähnlicher Ablauf)</p>
+  </section>
+
+  <section class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h2 id="testTitle" style="margin:0;">B1-Test</h2>
+      <span class="progress-badge" id="progressBadge">Gelöst: 0/30</span>
+    </div>
+    <div class="question-list" id="questionList"></div>
+    <div class="actions">
+      <button class="btn submit" id="submitBtn">ABGEBEN</button>
+      <button class="btn portal" id="portalBtn" disabled>Zum Portal</button>
+    </div>
+    <div class="result" id="resultBox" style="display:none;"></div>
+  </section>
+</main>
+
+<script>
+const homeworkMode = String(new URLSearchParams(window.location.search).get("hw") || "") === "1";
+const selectedTopic = String(new URLSearchParams(window.location.search).get("topic") || "konjunktiv2").trim().toLowerCase();
+const countRaw = Number.parseInt(String(new URLSearchParams(window.location.search).get("count") || "30"), 10);
+const questionCount = Number.isFinite(countRaw) ? Math.max(10, Math.min(50, countRaw)) : 30;
+
+const ql = document.getElementById("questionList");
+const pb = document.getElementById("progressBadge");
+const rb = document.getElementById("resultBox");
+const submitBtn = document.getElementById("submitBtn");
+const portalBtn = document.getElementById("portalBtn");
+const heroTitle = document.getElementById("heroTitle");
+const testTitle = document.getElementById("testTitle");
+
+const TOPIC_LABELS = {
+  "konjunktiv2":"Konjunktiv II","passiv":"Passiv","praeteritum":"Präteritum","perfekt":"Perfekt","futur":"Futur I & II",
+  "reflexivverben":"Reflexivverben","zu-infinitiv":"Infinitiv mit zu","kasus":"Kasus","artikel-nomen":"Artikel & Nomen",
+  "pronomen":"Pronomen","adjektive":"Adjektive","praepositionen":"Präpositionen","nebensaetze":"Nebensätze","satzverbindungen":"Satzverbindungen","wortbildung":"Wortbildung"
+};
+
+const STEMS = {
+  konjunktiv2:[
+    ["Ich habe kein Geld.","Ich hätte gern mehr Geld.","Ich habe gern mehr Geld."],
+    ["Kannst du helfen?","Könntest du bitte helfen?","Du könntest bitte hilft."],
+    ["Er kommt heute nicht.","Er würde heute nicht kommen.","Er würde heute nicht kommt."]
+  ],
+  passiv:[
+    ["Die Firma baut das Haus.","Das Haus wird gebaut.","Das Haus wird bauen."],
+    ["Man repariert den Aufzug.","Der Aufzug wird repariert.","Der Aufzug wird repariere."],
+    ["Jemand hat den Brief geschrieben.","Der Brief ist geschrieben worden.","Der Brief hat geschrieben worden."]
+  ],
+  praeteritum:[
+    ["Gestern ___ ich im Büro.","war","bin"],
+    ["Letzte Woche ___ wir nach Köln.","fuhren","fahren"],
+    ["Früher ___ er in Bonn.","wohnte","wohnt"]
+  ],
+  perfekt:[
+    ["Heute ___ ich früh aufgestanden.","bin","habe"],
+    ["Wir ___ den Text gelesen.","haben","sind"],
+    ["Sie ___ nach Hause gegangen.","ist","hat"]
+  ],
+  futur:[
+    ["Morgen ___ ich den Bericht schreiben.","werde","wurde"],
+    ["Nächstes Jahr ___ wir umziehen.","werden","wurden"],
+    ["In zwei Stunden ___ es regnen.","wird","ist"]
+  ],
+  reflexivverben:[
+    ["Ich ___ mich auf den Kurs.","freue","freut"],
+    ["Wir ___ uns an den Termin.","erinnern","erinnert"],
+    ["Sie ___ sich für Musik.","interessiert","interessieren"]
+  ],
+  "zu-infinitiv":[
+    ["Ich habe vor, mehr zu lernen.","vor","um"],
+    ["Er ging früh, um den Zug zu erreichen.","um","ohne"],
+    ["Sie spricht leise, ohne andere zu stören.","ohne","anstatt"]
+  ],
+  kasus:[
+    ["Ich helfe ___ Mann.","dem","den"],
+    ["Sie sieht ___ Frau.","die","der"],
+    ["Das Buch gehört ___ Kind.","dem","den"]
+  ],
+  "artikel-nomen":[
+    ["Das ist ___ interessante Idee.","eine","ein"],
+    ["Wir suchen ___ neuen Mitarbeiter.","einen","ein"],
+    ["Er hat ___ E-Mail geschrieben.","eine","einen"]
+  ],
+  pronomen:[
+    ["Ich kenne ihn, aber er kennt ___ nicht.","mich","mir"],
+    ["Das ist meine Kollegin. Ich spreche mit ___.","ihr","sie"],
+    ["Wir sehen ___ morgen.","euch","ihr"]
+  ],
+  adjektive:[
+    ["Das ist ein ___ Film.","spannender","spannende"],
+    ["Sie kauft eine ___ Tasche.","rote","roter"],
+    ["Wir wohnen in einem ___ Haus.","großen","große"]
+  ],
+  praepositionen:[
+    ["Wir treffen uns ___ Montag.","am","im"],
+    ["Der Kurs beginnt ___ 18 Uhr.","um","an"],
+    ["Sie kommt ___ der Türkei.","aus","von"]
+  ],
+  nebensaetze:[
+    ["Ich bleibe zu Hause, weil ich krank ___.","bin","ist"],
+    ["Obwohl es regnet, ___ wir spazieren.","gehen","geht"],
+    ["Er fragt, ob du heute Zeit ___.","hast","hat"]
+  ],
+  satzverbindungen:[
+    ["Ich war müde, ___ habe ich weitergearbeitet.","trotzdem","denn"],
+    ["Sie lernt viel, ___ sie die Prüfung bestehen will.","weil","aber"],
+    ["Wir fahren mit dem Bus, ___ der Zug ausfällt.","denn","und"]
+  ],
+  wortbildung:[
+    ["Das Gegenteil von \"bekannt\" ist ___.","unbekannt","bekanntlich"],
+    ["Das Nomen zu \"entscheiden\" ist ___.","die Entscheidung","der Entscheider"],
+    ["Das Adjektiv zu \"Hilfe\" ist ___.","hilfreich","hilfbar"]
+  ]
+};
+
+function notifyParent(type, payload = {}) {
+  if (!homeworkMode) return;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type, ...payload }, window.location.origin);
+  }
+}
+
+function buildQuestions() {
+  const topic = STEMS[selectedTopic] ? selectedTopic : "konjunktiv2";
+  const label = TOPIC_LABELS[topic] || "B1";
+  heroTitle.textContent = `${label} – B1`;
+  testTitle.textContent = `${label} Test`;
+  const base = STEMS[topic];
+  const out = [];
+  for (let i = 0; i < questionCount; i++) {
+    const raw = base[i % base.length];
+    const prompt = raw[0];
+    const correct = raw[1];
+    const wrong = raw[2];
+    const opts = Math.random() < 0.5 ? [correct, wrong, "beide möglich"] : [wrong, correct, "beide möglich"];
+    out.push({ id: i + 1, prompt, opts, correct: opts.indexOf(correct), solution: correct });
+  }
+  return out;
+}
+
+let questions = buildQuestions();
+let submitted = false;
+
+function render() {
+  ql.innerHTML = questions.map((q, i) => `
+    <article class="q-card" data-q="${i}">
+      <h4 style="margin:0;">Frage ${i + 1}/${questions.length}</h4>
+      <p style="margin:0;">${q.prompt}</p>
+      <div>
+        ${q.opts.map((o, j) => `<label class="opt"><input type="radio" name="q_${i}" value="${j}"> <span>${o}</span></label>`).join("")}
+      </div>
+      <p class="solution">Lösung: ${q.solution}</p>
+    </article>
+  `).join("");
+  updateProgress();
+  ql.querySelectorAll("input[type='radio']").forEach(el => el.addEventListener("change", updateProgress));
+}
+
+function updateProgress() {
+  const answered = ql.querySelectorAll("input:checked").length;
+  pb.textContent = `Gelöst: ${answered}/${questions.length}`;
+}
+
+function grade() {
+  let correct = 0;
+  questions.forEach((q, i) => {
+    const card = ql.querySelector(`article[data-q="${i}"]`);
+    const checked = ql.querySelector(`input[name="q_${i}"]:checked`);
+    if (!card) return;
+    card.classList.remove("correct", "wrong");
+    if (!checked) return;
+    const val = Number.parseInt(String(checked.value), 10);
+    if (val === q.correct) { correct++; card.classList.add("correct"); }
+    else { card.classList.add("wrong"); }
+    const opts = card.querySelectorAll(".opt");
+    if (opts[q.correct]) opts[q.correct].classList.add("correct-answer");
+  });
+  const total = questions.length;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  rb.style.display = "block";
+  rb.textContent = `B1-Test: ${total}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
+  ql.classList.add("show-sol");
+  return { correct, total, wrong: Math.max(0, total - correct) };
+}
+
+submitBtn.addEventListener("click", () => {
+  const answered = ql.querySelectorAll("input:checked").length;
+  if (answered < questions.length) {
+    rb.style.display = "block";
+    rb.textContent = `Bitte zuerst alle Fragen beantworten (${answered}/${questions.length}).`;
+    return;
+  }
+  const score = grade();
+  submitted = true;
+  ql.querySelectorAll("input").forEach(el => el.disabled = true);
+  portalBtn.disabled = false;
+  notifyParent("dtz-b1-submit", { score });
+});
+
+portalBtn.addEventListener("click", () => {
+  if (!submitted) return;
+  notifyParent("dtz-b1-go-portal");
+});
+
+render();
+</script>
+</body>
+</html>

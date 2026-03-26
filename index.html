@@ -4014,7 +4014,7 @@
 
       <section id="b1EmbedCard" class="card hidden">
         <h2 class="section-title">B1-Themen</h2>
-        <div class="a2-toolbar">
+        <div id="b1Toolbar" class="a2-toolbar">
           <div class="a2-controls">
             <div>
               <label for="b1TopicSelect">Thema</label>
@@ -4038,11 +4038,18 @@
             </div>
           </div>
           <div class="btn-wrap">
-            <button id="b1StartBtn" type="button">Thema öffnen</button>
+            <button id="b1StartBtn" type="button">Test starten</button>
           </div>
         </div>
         <div id="b1Status" class="hidden"></div>
-        <p class="section-subtitle" style="margin-top:12px;">Das Thema wird in einem neuen Tab geöffnet. Bearbeiten Sie den Test und kommen Sie danach hierher zurück.</p>
+        <div id="b1AssignedWrap" class="portal-item" style="margin-top:12px; padding:10px;">
+          <div class="row-end" style="margin:0 0 8px;">
+            <div class="btn-wrap">
+              <button id="b1BackToPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
+            </div>
+          </div>
+          <iframe id="b1EmbedFrame" title="B1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
+        </div>
       </section>
 
       <section id="dtzHubCard" class="card hidden">
@@ -4321,6 +4328,7 @@
     let currentA2HomeworkConfig = null;
     let currentOpenedHomeworkContext = {
       a1AssignmentId: "",
+      b1AssignmentId: "",
       a2AssignmentId: "",
       a2AssignmentIds: [],
       dtzByModule: {
@@ -12950,6 +12958,53 @@
       return null;
     }
 
+    function parseB1HomeworkTemplate(assignment) {
+      const row = assignment && typeof assignment === "object" ? assignment : {};
+      const templateId = String(row.template_id || "").trim().toLowerCase();
+      const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
+      const toB1MixUrl = (topicRaw, countRaw) => {
+        const topic = String(topicRaw || "konjunktiv2").trim().toLowerCase();
+        const countNum = Number.parseInt(String(countRaw || ""), 10);
+        const count = Number.isFinite(countNum) ? Math.max(10, Math.min(50, countNum)) : 30;
+        const params = new URLSearchParams();
+        params.set("hw", "1");
+        params.set("topic", topic || "konjunktiv2");
+        params.set("count", String(count));
+        return `./b1-mix.html?${params.toString()}`;
+      };
+      const inferTopic = () => {
+        const bag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
+        const map = [
+          ["konjunktiv", "konjunktiv2"], ["passiv", "passiv"], ["präteritum", "praeteritum"], ["praeteritum", "praeteritum"],
+          ["perfekt", "perfekt"], ["futur", "futur"], ["reflexiv", "reflexivverben"], ["infinitiv mit zu", "zu-infinitiv"],
+          ["kasus", "kasus"], ["artikel", "artikel-nomen"], ["pronomen", "pronomen"], ["adjektiv", "adjektive"],
+          ["präposition", "praepositionen"], ["praeposition", "praepositionen"], ["nebensatz", "nebensaetze"],
+          ["satzverbindung", "satzverbindungen"], ["wortbildung", "wortbildung"]
+        ];
+        for (const [needle, topic] of map) {
+          if (bag.includes(needle)) return topic;
+        }
+        return "konjunktiv2";
+      };
+      const textBag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
+      const countMatch = textBag.match(/(\d{1,3})\s*fragen/);
+      const inferredCount = countMatch ? Number.parseInt(countMatch[1], 10) : 30;
+      if (attachment) {
+        const lower = attachment.toLowerCase();
+        if (lower.includes("/b1-mix.html")) return { url: attachment };
+        if (lower.includes("/b1/")) {
+          const parts = lower.split("/b1/");
+          const file = String(parts[1] || "").split("?")[0];
+          const topic = file.replace(".html", "").trim() || "konjunktiv2";
+          return { url: toB1MixUrl(topic, inferredCount) };
+        }
+      }
+      if (templateId.startsWith("b1-test-") || templateId.startsWith("b1-test-generator-")) {
+        return { url: toB1MixUrl(inferTopic(), inferredCount) };
+      }
+      return { url: toB1MixUrl(inferTopic(), inferredCount) };
+    }
+
     function openA1ThemesInApp(rawInput = "./a1-themen.html", options = {}) {
       const url = resolveSafeHttpUrl(String(rawInput || "").trim());
       if (!url) {
@@ -12973,6 +13028,26 @@
       }
       if (!assignmentMode) {
         currentOpenedHomeworkContext.a1AssignmentId = "";
+      }
+    }
+
+    function openB1ThemesInApp(rawInput = "./b1-mix.html?topic=konjunktiv2&count=30", options = {}) {
+      const url = resolveSafeHttpUrl(String(rawInput || "").trim());
+      if (!url) {
+        setStatus("error", "Für B1 ist kein gültiger Link hinterlegt.", "portalStatus");
+        return;
+      }
+      setMainView("b1");
+      setHomeDashboardSection("b1");
+      const frame = document.getElementById("b1EmbedFrame");
+      const backBtn = document.getElementById("b1BackToPortalBtn");
+      const toolbar = document.getElementById("b1Toolbar");
+      const assignmentMode = !!(options && options.assignmentMode);
+      if (frame) frame.src = url;
+      if (toolbar) toolbar.classList.toggle("hidden", assignmentMode);
+      if (backBtn) backBtn.classList.toggle("hidden", !assignmentMode);
+      if (!assignmentMode) {
+        currentOpenedHomeworkContext.b1AssignmentId = "";
       }
     }
 
@@ -13129,6 +13204,46 @@
       }
     }
 
+    async function handleB1HomeworkFrameMessage(event) {
+      if (!event || event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      const type = String(data.type || "").trim().toLowerCase();
+      if (!type) return;
+      if (type === "dtz-b1-submit") {
+        const assignmentId = String((currentOpenedHomeworkContext && currentOpenedHomeworkContext.b1AssignmentId) || "").trim();
+        if (!assignmentId || isClientSolvedAssignment(assignmentId)) return;
+        let scoreData = null;
+        if (data.score && typeof data.score === "object") {
+          const correct = Number.parseInt(String(data.score.correct || 0), 10);
+          const total = Number.parseInt(String(data.score.total || 0), 10);
+          if (Number.isFinite(correct) && Number.isFinite(total) && total > 0) {
+            scoreData = {
+              correct: Math.max(0, correct),
+              wrong: Math.max(0, total - Math.max(0, correct)),
+              total
+            };
+          }
+        }
+        const completed = await submitHomeworkCompleteById(assignmentId, scoreData);
+        if (!completed) {
+          setStatus("error", "B1-Aufgabe konnte nicht abgegeben werden.", "portalStatus");
+          return;
+        }
+        markAssignmentSolvedClient(assignmentId);
+        currentOpenedHomeworkContext.b1AssignmentId = "";
+        setStatus("ok", "B1-Aufgabe wurde abgegeben.", "portalStatus");
+        await refreshPortalHomeworks();
+        renderPortalAssignmentCards();
+        renderPortalHomeworksGrouped();
+        return;
+      }
+      if (type === "dtz-b1-go-portal") {
+        openPortalView();
+        openPortalPanel("b1Homework", false);
+      }
+    }
+
     function openHomeworkB1Task(assignment) {
       const row = assignment && typeof assignment === "object" ? assignment : {};
       const blockedReason = getHomeworkOpenBlockReason(row);
@@ -13141,12 +13256,13 @@
         setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
         return;
       }
-      const attachment = resolveSafeHttpUrl(String(row.attachment || ""));
-      if (!attachment) {
+      const parsed = parseB1HomeworkTemplate(row);
+      if (!parsed || !parsed.url) {
         setStatus("error", "Für diese Aufgabe ist kein B1-Test-Link hinterlegt.", "portalStatus");
         return;
       }
-      window.open(attachment, "_blank", "noopener");
+      currentOpenedHomeworkContext.b1AssignmentId = assignmentId;
+      openB1ThemesInApp(parsed.url, { assignmentMode: true });
     }
 
     function inferA2TopicsFromAssignment(row) {
@@ -14005,7 +14121,7 @@
         resetLetterWritingTimer();
         clearStudentSessionCache();
         solvedHomeworkAssignments = new Set();
-        currentOpenedHomeworkContext = { a1AssignmentId: "", a2AssignmentId: "", a2AssignmentIds: [], dtzByModule: { hoeren: "", lesen: "" } };
+        currentOpenedHomeworkContext = { a1AssignmentId: "", b1AssignmentId: "", a2AssignmentId: "", a2AssignmentIds: [], dtzByModule: { hoeren: "", lesen: "" } };
         currentOpenedHomeworkContext.dtzRequirement = null;
         currentStudentUsername = "";
         currentRoom = null;
@@ -15276,6 +15392,7 @@
     }
     window.addEventListener("message", event => {
       void handleA1HomeworkFrameMessage(event);
+      void handleB1HomeworkFrameMessage(event);
     });
     ["currentAssignmentAttachment", "portalCurrentAssignmentAttachment"].forEach(id => {
       const link = document.getElementById(id);
@@ -15293,8 +15410,15 @@
     if (b1StartBtn) b1StartBtn.addEventListener("click", () => {
       const select = document.getElementById("b1TopicSelect");
       const topic = String(select?.value || "konjunktiv2");
-      window.open(`/b1/${topic}.html`, "_blank", "noopener");
+      openB1ThemesInApp(`./b1-mix.html?topic=${encodeURIComponent(topic)}&count=30`, { assignmentMode: false });
     });
+    const b1BackToPortalBtn = document.getElementById("b1BackToPortalBtn");
+    if (b1BackToPortalBtn) {
+      b1BackToPortalBtn.addEventListener("click", () => {
+        openPortalView();
+        openPortalPanel("b1Homework", false);
+      });
+    }
     const niveauA2Btn = document.getElementById("niveauA2Btn");
     if (niveauA2Btn) niveauA2Btn.addEventListener("click", () => {
       navigateToSection("a2");
