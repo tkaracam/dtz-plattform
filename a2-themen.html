@@ -816,11 +816,23 @@
       { pp: "geschrieben", aux: "haben", obj: "eine E-Mail" },
       { pp: "aufgeräumt", aux: "haben", obj: "die Wohnung" },
       { pp: "telefoniert", aux: "haben", obj: "mit der Lehrerin" },
+      { pp: "gelesen", aux: "haben", obj: "die Anzeige" },
+      { pp: "gesucht", aux: "haben", obj: "eine Wohnung" },
+      { pp: "bezahlt", aux: "haben", obj: "die Rechnung" },
+      { pp: "gekocht", aux: "haben", obj: "für die Familie" },
+      { pp: "geputzt", aux: "haben", obj: "das Bad" },
+      { pp: "gekauft", aux: "haben", obj: "ein Ticket" },
+      { pp: "erklärt", aux: "haben", obj: "den Plan" },
+      { pp: "besucht", aux: "haben", obj: "meine Tante" },
       { pp: "gegangen", aux: "sein", obj: "in den Kurs" },
       { pp: "gefahren", aux: "sein", obj: "mit dem Bus zur Arbeit" },
       { pp: "gekommen", aux: "sein", obj: "pünktlich zum Termin" },
       { pp: "aufgestanden", aux: "sein", obj: "um sechs Uhr" },
-      { pp: "umgezogen", aux: "sein", obj: "nach Berlin" }
+      { pp: "umgezogen", aux: "sein", obj: "nach Berlin" },
+      { pp: "angekommen", aux: "sein", obj: "am Bahnhof" },
+      { pp: "abgereist", aux: "sein", obj: "am Samstag" },
+      { pp: "eingeschlafen", aux: "sein", obj: "im Zug" },
+      { pp: "zurückgekommen", aux: "sein", obj: "aus dem Urlaub" }
     ];
 
     const reasonPairs = [
@@ -829,7 +841,13 @@
       { main: "Sie ruft später an", reason: "sie jetzt arbeitet" },
       { main: "Ich gehe früher", reason: "ich ein wichtiges Gespräch habe" },
       { main: "Er nimmt den Bus", reason: "es stark regnet" },
-      { main: "Wir bleiben heute daheim", reason: "das Kind krank ist" }
+      { main: "Wir bleiben heute daheim", reason: "das Kind krank ist" },
+      { main: "Ich schreibe eine E-Mail", reason: "ich den Termin verschieben möchte" },
+      { main: "Sie lernt abends", reason: "sie tagsüber arbeitet" },
+      { main: "Wir treffen uns online", reason: "der Raum besetzt ist" },
+      { main: "Er geht zur Behörde", reason: "er ein Formular abgeben muss" },
+      { main: "Ich kaufe jetzt ein", reason: "der Kühlschrank leer ist" },
+      { main: "Sie spricht langsam", reason: "alle alles verstehen sollen" }
     ];
 
     const modalSentences = [
@@ -837,21 +855,37 @@
       { prompt: "Erlaubnis", text: "Du ___ heute früher gehen.", ans: "darfst", sol: "Du darfst heute früher gehen." },
       { prompt: "Fähigkeit", text: "Wir ___ den Text gut verstehen.", ans: "können", sol: "Wir können den Text gut verstehen." },
       { prompt: "Absicht", text: "Ich ___ am Wochenende mehr üben.", ans: "will", sol: "Ich will am Wochenende mehr üben." },
-      { prompt: "Höfliche Bitte", text: "___ Sie bitte langsamer sprechen?", ans: "können", sol: "Können Sie bitte langsamer sprechen?" }
+      { prompt: "Höfliche Bitte", text: "___ Sie bitte langsamer sprechen?", ans: "können", sol: "Können Sie bitte langsamer sprechen?" },
+      { prompt: "Rat", text: "Du ___ heute früh schlafen gehen.", ans: "sollst", sol: "Du sollst heute früh schlafen gehen." },
+      { prompt: "Wunsch", text: "Ich ___ nächstes Jahr die Prüfung bestehen.", ans: "möchte", sol: "Ich möchte nächstes Jahr die Prüfung bestehen." },
+      { prompt: "Verbot", text: "Ihr ___ hier nicht rauchen.", ans: "dürft", sol: "Ihr dürft hier nicht rauchen." },
+      { prompt: "Plan", text: "Wir ___ am Samstag die Wohnung putzen.", ans: "wollen", sol: "Wir wollen am Samstag die Wohnung putzen." },
+      { prompt: "Pflicht", text: "Sie ___ das Formular heute noch abgeben.", ans: "müssen", sol: "Sie müssen das Formular heute noch abgeben." }
     ];
 
     const prepTime = [
       { prompt: "Der Termin ist ___ Montag ___ 9 Uhr.", ans: ["am um"], sol: "Der Termin ist am Montag um 9 Uhr." },
       { prompt: "Der Kurs beginnt ___ Oktober.", ans: ["im"], sol: "Der Kurs beginnt im Oktober." },
       { prompt: "Ich fahre ___ Berlin und gehe dann ___ Arzt.", ans: ["nach zum"], sol: "Ich fahre nach Berlin und gehe dann zum Arzt." },
-      { prompt: "Ich komme ___ der Türkei und wohne ___ meinen Eltern.", ans: ["aus bei"], sol: "Ich komme aus der Türkei und wohne bei meinen Eltern." }
+      { prompt: "Ich komme ___ der Türkei und wohne ___ meinen Eltern.", ans: ["aus bei"], sol: "Ich komme aus der Türkei und wohne bei meinen Eltern." },
+      { prompt: "Wir treffen uns ___ Bahnhof ___ 18 Uhr.", ans: ["am um"], sol: "Wir treffen uns am Bahnhof um 18 Uhr." },
+      { prompt: "Die Besprechung ist ___ März.", ans: ["im"], sol: "Die Besprechung ist im März." },
+      { prompt: "Nach der Arbeit gehe ich ___ Supermarkt.", ans: ["in den"], sol: "Nach der Arbeit gehe ich in den Supermarkt." },
+      { prompt: "Der Bus fährt ___ dem Rathaus ab.", ans: ["von"], sol: "Der Bus fährt von dem Rathaus ab." },
+      { prompt: "Ich bleibe heute ___ Hause.", ans: ["zu"], sol: "Ich bleibe heute zu Hause." },
+      { prompt: "Wir fahren ___ dem Fahrrad zur Schule.", ans: ["mit"], sol: "Wir fahren mit dem Fahrrad zur Schule." }
     ];
 
     const separable = [
       { words: "ich / jeden Tag / um 6 Uhr / aufstehen", sol: "Ich stehe jeden Tag um 6 Uhr auf.", fill: "Ich ___ jeden Tag um 6 Uhr ___.", ans: "stehe auf" },
       { words: "wir / morgen / die Lehrerin / anrufen", sol: "Wir rufen morgen die Lehrerin an.", fill: "Wir ___ morgen die Lehrerin ___.", ans: "rufen an" },
       { words: "er / am Abend / den Tisch / abräumen", sol: "Er räumt am Abend den Tisch ab.", fill: "Er ___ am Abend den Tisch ___.", ans: "räumt ab" },
-      { words: "ihr / am Samstag / im Supermarkt / einkaufen", sol: "Ihr kauft am Samstag im Supermarkt ein.", fill: "Ihr ___ am Samstag im Supermarkt ___.", ans: "kauft ein" }
+      { words: "ihr / am Samstag / im Supermarkt / einkaufen", sol: "Ihr kauft am Samstag im Supermarkt ein.", fill: "Ihr ___ am Samstag im Supermarkt ___.", ans: "kauft ein" },
+      { words: "ich / den Fernseher / um 22 Uhr / ausmachen", sol: "Ich mache den Fernseher um 22 Uhr aus.", fill: "Ich ___ den Fernseher um 22 Uhr ___.", ans: "mache aus" },
+      { words: "wir / die Gäste / vom Bahnhof / abholen", sol: "Wir holen die Gäste vom Bahnhof ab.", fill: "Wir ___ die Gäste vom Bahnhof ___.", ans: "holen ab" },
+      { words: "du / bitte / das Fenster / zumachen", sol: "Du machst bitte das Fenster zu.", fill: "Du ___ bitte das Fenster ___.", ans: "machst zu" },
+      { words: "sie / jeden Abend / die Kinder / anrufen", sol: "Sie ruft jeden Abend die Kinder an.", fill: "Sie ___ jeden Abend die Kinder ___.", ans: "ruft an" },
+      { words: "er / morgen früh / mit der Arbeit / anfangen", sol: "Er fängt morgen früh mit der Arbeit an.", fill: "Er ___ morgen früh mit der Arbeit ___.", ans: "fängt an" }
     ];
 
     const kasusData = [
@@ -859,7 +893,13 @@
       { prompt: "Ich helfe ___ (du).", ans: ["dir"], sol: "Ich helfe dir." },
       { prompt: "Wir besuchen ___ Lehrer.", ans: ["den"], sol: "Wir besuchen den Lehrer." },
       { prompt: "Ich spreche mit ___ Lehrerin.", ans: ["der"], sol: "Ich spreche mit der Lehrerin." },
-      { prompt: "Er gibt ___ Frau einen Brief.", ans: ["der"], sol: "Er gibt der Frau einen Brief." }
+      { prompt: "Er gibt ___ Frau einen Brief.", ans: ["der"], sol: "Er gibt der Frau einen Brief." },
+      { prompt: "Kannst du ___ bitte helfen? (ich)", ans: ["mir"], sol: "Kannst du mir bitte helfen?" },
+      { prompt: "Wir danken ___ Nachbarn.", ans: ["den"], sol: "Wir danken den Nachbarn." },
+      { prompt: "Sie zeigt ___ Ausweis. (ich)", ans: ["mir meinen"], sol: "Sie zeigt mir meinen Ausweis." },
+      { prompt: "Ich kaufe ___ Mantel.", ans: ["einen"], sol: "Ich kaufe einen Mantel." },
+      { prompt: "Er antwortet ___ Kollegin sofort.", ans: ["der"], sol: "Er antwortet der Kollegin sofort." },
+      { prompt: "Wir treffen ___ neuen Trainer.", ans: ["den"], sol: "Wir treffen den neuen Trainer." }
     ];
 
     const topicKeys = ["Perfekt", "Nebensatz", "Modalverben", "Präpositionen", "Trennbare Verben", "Kasus"];
