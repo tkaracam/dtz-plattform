@@ -122,6 +122,108 @@ function save_used_dtz_question_ids(array $payload): bool
     return file_put_contents(homework_used_dtz_questions_file(), $json . PHP_EOL, LOCK_EX) !== false;
 }
 
+function read_json_array_from_locked_fp($fp): array
+{
+    rewind($fp);
+    $raw = stream_get_contents($fp);
+    if (!is_string($raw) || trim($raw) === '') {
+        return [];
+    }
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function write_json_to_locked_fp($fp, string $json): bool
+{
+    rewind($fp);
+    if (!ftruncate($fp, 0)) {
+        return false;
+    }
+    if (fwrite($fp, $json . PHP_EOL) === false) {
+        return false;
+    }
+    return fflush($fp);
+}
+
+/**
+ * Atomically persist batch assignments, and optionally the DTZ usage payload, under file locks.
+ * If usage write fails, assignment write is rolled back while lock is still held.
+ */
+function persist_batch_all_or_nothing(array $newItems, ?array $usedPayload, bool &$rollbackFailed = false): bool
+{
+    $rollbackFailed = false;
+    $storageDir = __DIR__ . '/storage';
+    if (!is_dir($storageDir) && !mkdir($storageDir, 0775, true) && !is_dir($storageDir)) {
+        return false;
+    }
+
+    $assignPath = homework_file_path();
+    $assignFp = fopen($assignPath, 'c+');
+    if ($assignFp === false) {
+        return false;
+    }
+    if (!flock($assignFp, LOCK_EX)) {
+        fclose($assignFp);
+        return false;
+    }
+
+    $usedFp = null;
+    if ($usedPayload !== null) {
+        $usedPath = homework_used_dtz_questions_file();
+        $usedFp = fopen($usedPath, 'c+');
+        if ($usedFp === false) {
+            flock($assignFp, LOCK_UN);
+            fclose($assignFp);
+            return false;
+        }
+        if (!flock($usedFp, LOCK_EX)) {
+            fclose($usedFp);
+            flock($assignFp, LOCK_UN);
+            fclose($assignFp);
+            return false;
+        }
+    }
+
+    try {
+        $currentAssignments = read_json_array_from_locked_fp($assignFp);
+        $nextAssignments = array_merge($currentAssignments, $newItems);
+        $assignJson = json_encode(array_values($nextAssignments), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        if (!is_string($assignJson)) {
+            return false;
+        }
+        if (!write_json_to_locked_fp($assignFp, $assignJson)) {
+            return false;
+        }
+
+        if ($usedPayload !== null && $usedFp !== null) {
+            $normalizedUsed = [
+                'version' => 2,
+                'updated_at' => (string)($usedPayload['updated_at'] ?? gmdate('c')),
+                'recent' => is_array($usedPayload['recent'] ?? null) ? $usedPayload['recent'] : [],
+                'stats' => is_array($usedPayload['stats'] ?? null) ? $usedPayload['stats'] : [],
+                'events' => is_array($usedPayload['events'] ?? null) ? $usedPayload['events'] : [],
+            ];
+            $usedJson = json_encode($normalizedUsed, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            if (!is_string($usedJson) || !write_json_to_locked_fp($usedFp, $usedJson)) {
+                $rollbackJson = json_encode(array_values($currentAssignments), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                if (!is_string($rollbackJson) || !write_json_to_locked_fp($assignFp, $rollbackJson)) {
+                    $rollbackFailed = true;
+                }
+                return false;
+            }
+        }
+
+        return true;
+    } finally {
+        if ($usedFp !== null) {
+            flock($usedFp, LOCK_UN);
+            fclose($usedFp);
+        }
+        flock($assignFp, LOCK_UN);
+        fclose($assignFp);
+    }
+}
+
 function load_deleted_dtz_question_ids(): array
 {
     $file = homework_deleted_dtz_questions_file();
@@ -786,27 +888,14 @@ if ($action === 'create_batch') {
         $newIds[] = $id;
     }
 
-    $savedBatch = homework_assignments_mutate(static function (array $current) use ($newItems): array {
-        return array_merge($current, $newItems);
-    });
+    $rollbackFailed = false;
+    $savedBatch = persist_batch_all_or_nothing($newItems, $usedDtzChanged ? $usedDtz : null, $rollbackFailed);
     if (!$savedBatch) {
         http_response_code(500);
-        echo json_encode(['error' => 'Aufgaben konnten nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-    if ($usedDtzChanged && !save_used_dtz_question_ids($usedDtz)) {
-        $newIdSet = array_flip($newIds);
-        $rolledBack = homework_assignments_mutate(static function (array $current) use ($newIdSet): array {
-            return array_values(array_filter($current, static function ($row) use ($newIdSet): bool {
-                $id = trim((string)($row['id'] ?? ''));
-                return $id === '' || !isset($newIdSet[$id]);
-            }));
-        });
-        http_response_code(500);
         echo json_encode([
-            'error' => $rolledBack
-                ? 'Fragen-Status konnte nicht gespeichert werden. Batch wurde zurückgerollt.'
-                : 'Fragen-Status konnte nicht gespeichert werden und Rollback ist fehlgeschlagen. Bitte sofort prüfen.'
+            'error' => $rollbackFailed
+                ? 'Batch-Commit fehlgeschlagen und Rollback ist fehlgeschlagen. Bitte sofort prüfen.'
+                : 'Batch-Commit fehlgeschlagen. Es wurden keine Teiländerungen übernommen.'
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
