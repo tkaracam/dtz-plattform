@@ -4044,7 +4044,7 @@
               <button id="a1BackToPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
             </div>
           </div>
-          <iframe id="a1EmbedFrame" class="embed-frame" title="A1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
+          <iframe id="a1EmbedFrame" class="embed-frame" title="A1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy" scrolling="no"></iframe>
         </div>
       </section>
 
@@ -4094,7 +4094,7 @@
               <button id="b1BackToPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
             </div>
           </div>
-          <iframe id="b1EmbedFrame" class="embed-frame" title="B1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
+          <iframe id="b1EmbedFrame" class="embed-frame" title="B1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy" scrolling="no"></iframe>
         </div>
       </section>
 
@@ -13107,7 +13107,7 @@
       if (frame) frame.src = url;
       if (toolbar) toolbar.classList.toggle("hidden", assignmentMode);
       if (card) card.classList.toggle("embed-assignment-seamless", assignmentMode);
-      if (backBtn) backBtn.classList.toggle("hidden", !assignmentMode);
+      if (backBtn) backBtn.classList.add("hidden");
       if (!assignmentMode) {
         currentOpenedHomeworkContext.b1AssignmentId = "";
       }
@@ -13303,6 +13303,26 @@
       if (type === "dtz-b1-go-portal") {
         openPortalView();
         openPortalPanel("b1Homework", false);
+      }
+    }
+
+    function handleHomeworkFrameResizeMessage(event) {
+      if (!event || event.origin !== window.location.origin) return;
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      const type = String(data.type || "").trim().toLowerCase();
+      if (type !== "dtz-frame-height") return;
+      const raw = Number.parseInt(String(data.height || 0), 10);
+      if (!Number.isFinite(raw) || raw <= 0) return;
+      const next = Math.max(760, Math.min(6000, raw + 20));
+      const a1Frame = document.getElementById("a1EmbedFrame");
+      const b1Frame = document.getElementById("b1EmbedFrame");
+      if (a1Frame && event.source === a1Frame.contentWindow) {
+        a1Frame.style.height = `${next}px`;
+        return;
+      }
+      if (b1Frame && event.source === b1Frame.contentWindow) {
+        b1Frame.style.height = `${next}px`;
       }
     }
 
@@ -15470,6 +15490,7 @@
       });
     }
     window.addEventListener("message", event => {
+      handleHomeworkFrameResizeMessage(event);
       void handleA1HomeworkFrameMessage(event);
       void handleB1HomeworkFrameMessage(event);
     });

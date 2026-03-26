@@ -194,6 +194,19 @@ function notifyParent(type, payload = {}) {
   }
 }
 
+function notifyParentHeight() {
+  if (!window.parent || window.parent === window) return;
+  const doc = document.documentElement;
+  const body = document.body;
+  const h = Math.max(
+    Number(doc?.scrollHeight || 0),
+    Number(body?.scrollHeight || 0),
+    Number(doc?.offsetHeight || 0),
+    760
+  );
+  notifyParent("dtz-frame-height", { height: h });
+}
+
 function buildQuestions() {
   const topic = STEMS[selectedTopic] ? selectedTopic : "konjunktiv2";
   const label = TOPIC_LABELS[topic] || "B1";
@@ -234,6 +247,7 @@ function render() {
     homeworkStatBar.textContent = `B1-Test: 0/${questions.length} geprüft · Richtig: 0/${questions.length} · 0%`;
   }
   ql.querySelectorAll("input[type='radio']").forEach(el => el.addEventListener("change", updateProgress));
+  notifyParentHeight();
 }
 
 function updateProgress() {
@@ -263,6 +277,7 @@ function grade() {
     homeworkStatBar.textContent = `B1-Test: ${total}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
   }
   ql.classList.add("show-sol");
+  notifyParentHeight();
   return { correct, total, wrong: Math.max(0, total - correct) };
 }
 
@@ -278,6 +293,7 @@ submitBtn.addEventListener("click", () => {
   ql.querySelectorAll("input").forEach(el => el.disabled = true);
   portalBtn.disabled = false;
   if (homeworkMode) portalBtn.style.display = "";
+  notifyParentHeight();
   notifyParent("dtz-b1-submit", { score });
 });
 
@@ -285,6 +301,9 @@ portalBtn.addEventListener("click", () => {
   if (!submitted) return;
   notifyParent("dtz-b1-go-portal");
 });
+
+window.addEventListener("load", () => setTimeout(notifyParentHeight, 40));
+window.addEventListener("resize", () => notifyParentHeight());
 
 if (homeworkMode) {
   if (heroCard) heroCard.style.display = "none";

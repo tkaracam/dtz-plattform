@@ -580,6 +580,7 @@ function render() {
     if (homeworkMode) portalBtn.classList.remove('hidden');
     else portalBtn.classList.add('hidden');
   }
+  notifyParentHeight();
 }
 
 function grade() {
@@ -614,6 +615,19 @@ function notifyParent(type, payload = {}) {
   }
 }
 
+function notifyParentHeight() {
+  if (!window.parent || window.parent === window) return;
+  const doc = document.documentElement;
+  const body = document.body;
+  const h = Math.max(
+    Number(doc?.scrollHeight || 0),
+    Number(body?.scrollHeight || 0),
+    Number(doc?.offsetHeight || 0),
+    760
+  );
+  notifyParent('dtz-frame-height', { height: h });
+}
+
 submitBtn.addEventListener('click', () => {
   const answered = ql.querySelectorAll('input:checked').length;
   if (answered < questionCount) {
@@ -631,6 +645,7 @@ submitBtn.addEventListener('click', () => {
     if (solutionBtn) solutionBtn.style.display = '';
     if (portalBtn) portalBtn.style.display = '';
   }
+  notifyParentHeight();
 });
 
 solutionBtn.addEventListener('click', () => {
@@ -656,6 +671,9 @@ generateBtn.addEventListener('click', () => {
   render();
   window.scrollTo({top: ql.offsetTop - 50, behavior: 'smooth'});
 });
+
+window.addEventListener('load', () => setTimeout(notifyParentHeight, 40));
+window.addEventListener('resize', () => notifyParentHeight());
 
 initTopics();
 questionCount = parseQuestionCount();
