@@ -18,7 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-check_rate_limit_json('member-login', 12, 900);
+$loginBucket = 'member-login';
+$loginMaxAttempts = 8;
+$loginWindowSeconds = 15 * 60;
+$loginLockSeconds = 15 * 60;
+check_login_guard_json($loginBucket, '', $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
+check_rate_limit_json($loginBucket, 12, 900);
 
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
@@ -30,8 +35,10 @@ if (!is_array($body)) {
 
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
 $password = (string)($body['password'] ?? '');
+check_login_guard_json($loginBucket, $username, $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
 
 if ($username === '' || $password === '') {
+    register_login_guard_failure($loginBucket, $username, $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
     http_response_code(400);
     echo json_encode(['error' => 'Benutzername und Passwort sind erforderlich.'], JSON_UNESCAPED_UNICODE);
     exit;
@@ -49,6 +56,7 @@ foreach (load_member_users() as $member) {
 }
 
 if (!$found || empty($found['password_hash']) || !password_verify($password, (string)$found['password_hash'])) {
+    register_login_guard_failure($loginBucket, $username, $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
     register_rate_limit_failure('member-login');
     http_response_code(401);
     echo json_encode(['error' => 'Ungültige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
@@ -64,6 +72,7 @@ $_SESSION['member_role_key'] = 'member';
 $_SESSION['member_login_at'] = gmdate('c');
 $_SESSION['last_activity_at'] = time();
 clear_rate_limit_failures('member-login');
+clear_login_guard_failures($loginBucket, (string)$found['username']);
 append_audit_log('member_login_success', [
     'username' => (string)$found['username'],
 ]);

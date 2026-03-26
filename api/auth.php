@@ -591,6 +591,229 @@ function rate_limit_file(string $bucket): string
     return __DIR__ . '/storage/ratelimit-' . ($safe !== '' ? $safe : 'default') . '.json';
 }
 
+function login_guard_file(string $bucket): string
+{
+    $safe = preg_replace('/[^a-z0-9._-]+/i', '-', strtolower(trim($bucket)));
+    return __DIR__ . '/storage/ratelimit-' . ($safe !== '' ? $safe : 'default') . '-v2.json';
+}
+
+function login_guard_identifier(string $username): string
+{
+    $u = auth_lower_text($username);
+    if ($u === '') {
+        return '';
+    }
+    return 'u:' . sha1($u);
+}
+
+function login_guard_ip_key(string $ip): string
+{
+    $v = trim($ip);
+    if ($v === '') {
+        $v = '0.0.0.0';
+    }
+    return 'ip:' . $v;
+}
+
+function login_guard_read_locked($fp): array
+{
+    rewind($fp);
+    $raw = stream_get_contents($fp);
+    if (!is_string($raw) || trim($raw) === '') {
+        return [];
+    }
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        return [];
+    }
+    return $decoded;
+}
+
+function login_guard_write_locked($fp, array $payload): bool
+{
+    $json = json_encode($payload, JSON_UNESCAPED_UNICODE);
+    if (!is_string($json)) {
+        return false;
+    }
+    rewind($fp);
+    if (!ftruncate($fp, 0)) {
+        return false;
+    }
+    if (fwrite($fp, $json) === false) {
+        return false;
+    }
+    return fflush($fp);
+}
+
+function login_guard_prune_state(array $data, int $now, int $windowSeconds): array
+{
+    $cutoff = $now - max(1, $windowSeconds);
+    $out = [];
+    foreach ($data as $key => $entry) {
+        if (!is_string($key) || !is_array($entry)) {
+            continue;
+        }
+        $failsRaw = is_array($entry['fails'] ?? null) ? $entry['fails'] : [];
+        $fails = [];
+        foreach ($failsRaw as $tsRaw) {
+            $ts = (int)$tsRaw;
+            if ($ts >= $cutoff) {
+                $fails[] = $ts;
+            }
+        }
+        $lockUntil = max(0, (int)($entry['lock_until'] ?? 0));
+        if ($fails || $lockUntil > $now) {
+            $out[$key] = [
+                'fails' => $fails,
+                'lock_until' => $lockUntil,
+            ];
+        }
+    }
+    return $out;
+}
+
+function login_guard_fail_response(int $retryAfterSec): void
+{
+    $wait = max(1, $retryAfterSec);
+    header('Retry-After: ' . (string)$wait);
+    http_response_code(429);
+    echo json_encode([
+        'error' => 'Zu viele Anmeldeversuche. Bitte später erneut versuchen.',
+        'retry_after_sec' => $wait,
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function check_login_guard_json(string $bucket, string $username, int $maxAttempts, int $windowSeconds, int $lockSeconds): void
+{
+    $maxAttempts = max(1, $maxAttempts);
+    $windowSeconds = max(30, $windowSeconds);
+    $lockSeconds = max(60, $lockSeconds);
+    $now = time();
+    $file = login_guard_file($bucket);
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return;
+    }
+    $fp = fopen($file, 'c+');
+    if ($fp === false) {
+        return;
+    }
+    if (!flock($fp, LOCK_EX)) {
+        fclose($fp);
+        return;
+    }
+    try {
+        $state = login_guard_prune_state(login_guard_read_locked($fp), $now, $windowSeconds);
+        $keys = [login_guard_ip_key(get_client_ip())];
+        $idKey = login_guard_identifier($username);
+        if ($idKey !== '') {
+            $keys[] = $idKey;
+        }
+        $retryAfter = 0;
+        foreach ($keys as $k) {
+            $entry = is_array($state[$k] ?? null) ? $state[$k] : ['fails' => [], 'lock_until' => 0];
+            $lockedUntil = max(0, (int)($entry['lock_until'] ?? 0));
+            if ($lockedUntil > $now) {
+                $retryAfter = max($retryAfter, $lockedUntil - $now);
+                continue;
+            }
+            $fails = is_array($entry['fails'] ?? null) ? $entry['fails'] : [];
+            if (count($fails) >= $maxAttempts) {
+                $entry['lock_until'] = $now + $lockSeconds;
+                $state[$k] = $entry;
+                $retryAfter = max($retryAfter, $lockSeconds);
+            }
+        }
+        if (!login_guard_write_locked($fp, $state)) {
+            // best effort; continue with request if lock file cannot be written
+        }
+        if ($retryAfter > 0) {
+            login_guard_fail_response($retryAfter);
+        }
+    } finally {
+        flock($fp, LOCK_UN);
+        fclose($fp);
+    }
+}
+
+function register_login_guard_failure(string $bucket, string $username, int $maxAttempts, int $windowSeconds, int $lockSeconds): void
+{
+    $maxAttempts = max(1, $maxAttempts);
+    $windowSeconds = max(30, $windowSeconds);
+    $lockSeconds = max(60, $lockSeconds);
+    $now = time();
+    $file = login_guard_file($bucket);
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return;
+    }
+    $fp = fopen($file, 'c+');
+    if ($fp === false) {
+        return;
+    }
+    if (!flock($fp, LOCK_EX)) {
+        fclose($fp);
+        return;
+    }
+    try {
+        $state = login_guard_prune_state(login_guard_read_locked($fp), $now, $windowSeconds);
+        $keys = [login_guard_ip_key(get_client_ip())];
+        $idKey = login_guard_identifier($username);
+        if ($idKey !== '') {
+            $keys[] = $idKey;
+        }
+        foreach ($keys as $k) {
+            $entry = is_array($state[$k] ?? null) ? $state[$k] : ['fails' => [], 'lock_until' => 0];
+            $fails = is_array($entry['fails'] ?? null) ? $entry['fails'] : [];
+            $fails[] = $now;
+            if (count($fails) > ($maxAttempts * 3)) {
+                $fails = array_slice($fails, count($fails) - ($maxAttempts * 3));
+            }
+            $entry['fails'] = $fails;
+            if (count($fails) >= $maxAttempts) {
+                $entry['lock_until'] = max((int)($entry['lock_until'] ?? 0), $now + $lockSeconds);
+            }
+            $state[$k] = $entry;
+        }
+        @login_guard_write_locked($fp, $state);
+    } finally {
+        flock($fp, LOCK_UN);
+        fclose($fp);
+    }
+}
+
+function clear_login_guard_failures(string $bucket, string $username): void
+{
+    $file = login_guard_file($bucket);
+    if (!is_file($file)) {
+        return;
+    }
+    $fp = fopen($file, 'c+');
+    if ($fp === false) {
+        return;
+    }
+    if (!flock($fp, LOCK_EX)) {
+        fclose($fp);
+        return;
+    }
+    try {
+        $state = login_guard_read_locked($fp);
+        if (!is_array($state)) {
+            return;
+        }
+        unset($state[login_guard_ip_key(get_client_ip())]);
+        $idKey = login_guard_identifier($username);
+        if ($idKey !== '') {
+            unset($state[$idKey]);
+        }
+        @login_guard_write_locked($fp, $state);
+    } finally {
+        flock($fp, LOCK_UN);
+        fclose($fp);
+    }
+}
+
 function check_rate_limit_json(string $bucket, int $maxAttempts, int $windowSeconds): void
 {
     $ip = get_client_ip();

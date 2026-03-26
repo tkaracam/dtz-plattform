@@ -18,7 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/auth.php';
-check_rate_limit_json('admin-login', 30, 180);
+$loginBucket = 'admin-login';
+$loginMaxAttempts = 8;
+$loginWindowSeconds = 10 * 60;
+$loginLockSeconds = 15 * 60;
+check_login_guard_json($loginBucket, '', $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
+check_rate_limit_json($loginBucket, 30, 180);
 
 $configPath = __DIR__ . '/config.php';
 if (file_exists($configPath)) {
@@ -69,7 +74,9 @@ if (!is_array($body)) {
 
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
 $password = trim((string)($body['password'] ?? ''));
+check_login_guard_json($loginBucket, $username, $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
 if ($password === '') {
+    register_login_guard_failure($loginBucket, $username, $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
     register_rate_limit_failure('admin-login');
     http_response_code(401);
     echo json_encode(['error' => 'Passwort ist erforderlich.'], JSON_UNESCAPED_UNICODE);
@@ -136,6 +143,7 @@ if ($loginRole === '') {
 }
 
 if ($loginRole === '') {
+    register_login_guard_failure($loginBucket, $username, $loginMaxAttempts, $loginWindowSeconds, $loginLockSeconds);
     register_rate_limit_failure('admin-login');
     http_response_code(401);
     echo json_encode(['error' => 'Ungültige Zugangsdaten.'], JSON_UNESCAPED_UNICODE);
@@ -151,6 +159,7 @@ $_SESSION['admin_display_name'] = $loginDisplayName;
 $_SESSION['admin_login_at'] = gmdate('c');
 $_SESSION['last_activity_at'] = time();
 clear_rate_limit_failures('admin-login');
+clear_login_guard_failures($loginBucket, $username);
 append_audit_log('admin_login_success', [
     'username' => $username,
     'role' => $loginRole,
