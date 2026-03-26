@@ -41,6 +41,27 @@
     .solution { margin:0; color:#7d5648; font-size:.93rem; display:none; }
     .show-sol .solution { display:block; }
     .result { margin-top:8px; border:1px dashed #efcdbf; border-radius:10px; padding:10px; color:#6d4a3c; white-space:pre-wrap; background:#fffaf6; }
+    .homework-stat {
+      margin-top: 8px;
+      border: 1px solid #d9e1ef;
+      border-radius: 10px;
+      background: #f7fafd;
+      color: #57535d;
+      padding: 7px 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    .homework-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .homework-actions .btn.submit {
+      width: 210px;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -56,7 +77,8 @@
       <span class="progress-badge" id="progressBadge">Gelöst: 0/30</span>
     </div>
     <div class="question-list" id="questionList"></div>
-    <div class="actions">
+    <div class="homework-stat hidden" id="homeworkStatBar">B1-Test: 0/0 geprüft · Richtig: 0/0 · 0%</div>
+    <div class="actions" id="actions">
       <button class="btn submit" id="submitBtn">ABGEBEN</button>
       <button class="btn portal" id="portalBtn" disabled>Zum Portal</button>
     </div>
@@ -75,6 +97,8 @@ const pb = document.getElementById("progressBadge");
 const rb = document.getElementById("resultBox");
 const submitBtn = document.getElementById("submitBtn");
 const portalBtn = document.getElementById("portalBtn");
+const actions = document.getElementById("actions");
+const homeworkStatBar = document.getElementById("homeworkStatBar");
 const heroTitle = document.getElementById("heroTitle");
 const testTitle = document.getElementById("testTitle");
 
@@ -205,6 +229,9 @@ function render() {
     </article>
   `).join("");
   updateProgress();
+  if (homeworkMode && homeworkStatBar) {
+    homeworkStatBar.textContent = `B1-Test: 0/${questions.length} geprüft · Richtig: 0/${questions.length} · 0%`;
+  }
   ql.querySelectorAll("input[type='radio']").forEach(el => el.addEventListener("change", updateProgress));
 }
 
@@ -231,6 +258,9 @@ function grade() {
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   rb.style.display = "block";
   rb.textContent = `B1-Test: ${total}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
+  if (homeworkMode && homeworkStatBar) {
+    homeworkStatBar.textContent = `B1-Test: ${total}/${total} geprüft · Richtig: ${correct}/${total} · ${pct}%`;
+  }
   ql.classList.add("show-sol");
   return { correct, total, wrong: Math.max(0, total - correct) };
 }
@@ -246,6 +276,7 @@ submitBtn.addEventListener("click", () => {
   submitted = true;
   ql.querySelectorAll("input").forEach(el => el.disabled = true);
   portalBtn.disabled = false;
+  if (homeworkMode) portalBtn.style.display = "";
   notifyParent("dtz-b1-submit", { score });
 });
 
@@ -253,6 +284,15 @@ portalBtn.addEventListener("click", () => {
   if (!submitted) return;
   notifyParent("dtz-b1-go-portal");
 });
+
+if (homeworkMode) {
+  if (actions) {
+    actions.classList.add("homework-actions");
+    actions.style.gridTemplateColumns = "none";
+  }
+  if (portalBtn) portalBtn.style.display = "none";
+  if (homeworkStatBar) homeworkStatBar.classList.remove("hidden");
+}
 
 render();
 </script>
