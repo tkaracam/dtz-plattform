@@ -38,8 +38,8 @@ function load_training_template_bank(): array
     return $decoded;
 }
 
-const DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL = 40;
-const DTZ_LESEN_SCENARIO_TARGET_PER_TEIL = 40;
+const DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL = 120;
+const DTZ_LESEN_SCENARIO_TARGET_PER_TEIL = 120;
 
 function normalize_training_module(string $module): string
 {
@@ -125,6 +125,34 @@ function build_structured_variant_maps(): array
         ['Raum 7' => 'Raum 9', 'Raum 8' => 'Raum 11', 'Raum 12' => 'Raum 14'],
         ['Bahnhof' => 'ZOB', 'Marktplatz' => 'Rathausplatz', 'Rathaus' => 'Bürgerzentrum'],
         ['Apotheke' => 'Filiale', 'Bürgeramt' => 'Einwohnermeldeamt', 'Sprachschule' => 'Bildungszentrum'],
+        ['Montag' => 'Freitag', 'montags' => 'freitags', 'Montags' => 'Freitags'],
+        ['Dienstag' => 'Donnerstag', 'dienstags' => 'donnerstags', 'Dienstags' => 'Donnerstags'],
+        ['Mittwoch' => 'Samstag', 'mittwochs' => 'samstags', 'Mittwochs' => 'Samstags'],
+        ['8 Uhr' => '9 Uhr', '8:00 Uhr' => '9:00 Uhr', '8:30 Uhr' => '9:30 Uhr'],
+        ['12 Uhr' => '13 Uhr', '12:00 Uhr' => '13:00 Uhr', '12:30 Uhr' => '13:30 Uhr'],
+        ['13 Uhr' => '14 Uhr', '13:00 Uhr' => '14:00 Uhr', '13:30 Uhr' => '14:30 Uhr'],
+        ['14 Uhr' => '15 Uhr', '14:00 Uhr' => '15:00 Uhr', '14:30 Uhr' => '15:30 Uhr'],
+        ['15 Uhr' => '16 Uhr', '15:00 Uhr' => '16:00 Uhr', '15:30 Uhr' => '16:30 Uhr'],
+        ['16 Uhr' => '17 Uhr', '16:00 Uhr' => '17:00 Uhr', '16:30 Uhr' => '17:30 Uhr'],
+        ['17 Uhr' => '18 Uhr', '17:00 Uhr' => '18:00 Uhr', '17:30 Uhr' => '18:30 Uhr'],
+        ['18 Uhr' => '19 Uhr', '18:00 Uhr' => '19:00 Uhr', '18:30 Uhr' => '19:30 Uhr'],
+        ['Raum 1' => 'Raum 5', 'Raum 2' => 'Raum 6', 'Raum 3' => 'Raum 8'],
+        ['Zimmer 1' => 'Zimmer 4', 'Zimmer 2' => 'Zimmer 5', 'Zimmer 3' => 'Zimmer 6'],
+        ['Bürgerzentrum' => 'Stadthaus', 'Rathausplatz' => 'Marktstraße', 'Marktplatz' => 'Innenstadt'],
+        ['Sprachzentrum' => 'Lernzentrum', 'Sprachschule' => 'Kurszentrum', 'Bildungszentrum' => 'Weiterbildungszentrum'],
+        ['Jobcenter' => 'Arbeitsagentur', 'Arbeitsagentur' => 'Beratungszentrum', 'Beratungszentrum' => 'Servicezentrum'],
+        ['Stadtbibliothek' => 'Mediothek', 'Bibliothek' => 'Lernbibliothek', 'Mediothek' => 'Stadtbibliothek'],
+        ['Apotheke' => 'Notdienst-Apotheke', 'Filiale' => 'Servicefiliale', 'Praxis' => 'Hausarztpraxis'],
+        ['Bahnhof' => 'Hauptbahnhof', 'ZOB' => 'Busbahnhof', 'Gleis' => 'Bahnsteig'],
+        ['Nordstadt' => 'Weststadt', 'Weststadt' => 'Südstadt', 'Südstadt' => 'Oststadt'],
+        ['A3' => 'A5', 'A5' => 'A7', 'B12' => 'B14'],
+        ['Montag bis Mittwoch' => 'Dienstag bis Donnerstag', 'Montag bis Freitag' => 'Dienstag bis Samstag'],
+        ['morgens' => 'vormittags', 'vormittags' => 'nachmittags', 'abends' => 'spätabends'],
+        ['Frühschicht' => 'Spätschicht', 'Spätschicht' => 'Frühschicht', 'Teilzeit' => 'Vollzeit'],
+        ['E-Mail' => 'Online-Formular', 'telefonisch' => 'per App', 'anrufen' => 'eine Nachricht senden'],
+        ['kostenlos' => 'gebührenfrei', 'günstig' => 'preiswert', 'schnell' => 'zügig'],
+        ['heute' => 'morgen', 'morgen' => 'übermorgen', 'Freitag' => 'Samstag'],
+        ['8 bis 11 Uhr' => '9 bis 12 Uhr', '9 bis 12 Uhr' => '10 bis 13 Uhr', '13 bis 15 Uhr' => '14 bis 16 Uhr'],
     ];
 }
 
@@ -198,7 +226,7 @@ function expand_structured_scenarios(array $basePool, int $targetCount, string $
         }
         $push($clone);
         $cursor++;
-        if ($cursor > 2000) {
+        if ($cursor > 10000) {
             break;
         }
     }
