@@ -269,7 +269,10 @@ $teacherName = trim((string)($admin['display_name'] ?? ''));
 if ($teacherName === '') {
     $teacherName = trim((string)($admin['username'] ?? 'Lehrkraft'));
 }
-$teacherUsername = auth_lower_text((string)($admin['username'] ?? ''));
+$runnerUsername = auth_lower_text((string)($admin['username'] ?? ''));
+if ($runnerUsername === '') {
+    $runnerUsername = 'system-cron';
+}
 
 $sentKeys = load_reminder_log_local($storageDir);
 $reminderHistory = load_reminder_history_local($storageDir);
@@ -301,7 +304,10 @@ foreach ($items as $assignment) {
         continue;
     }
     $assignmentTeacher = auth_lower_text((string)($assignment['teacher_username'] ?? ''));
-    $policyKey = $assignmentTeacher !== '' ? $assignmentTeacher : $teacherUsername;
+    $policyKey = $assignmentTeacher !== '' ? $assignmentTeacher : $runnerUsername;
+    if ($policyKey === '') {
+        $policyKey = 'system-cron';
+    }
     if (!isset($policyCache[$policyKey]) || !is_array($policyCache[$policyKey])) {
         $policyCache[$policyKey] = load_homework_reminder_policy_for_teacher($policyKey);
     }
