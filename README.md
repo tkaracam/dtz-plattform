@@ -100,6 +100,26 @@ Manuel tetikleme için:
 2. `Run workflow`
 3. Gerekirse `base_url` ve `warmup_seconds` alanlarını değiştir
 
+## Prod Sağlamlık ve Test Planı
+
+- Prod checklist: `docs/PROD_SAGLAMLIK_CHECKLIST.md`
+- Otomatik test planı: `docs/AUTOMATIK_TEST_PLAN.md`
+
+### CI Smoke (lokal veya prod URL)
+
+```bash
+BASE_URL="https://dtz-lid.com" ./tools/ci_smoke.sh
+```
+
+Auth smoke dahil çalıştırmak için:
+
+```bash
+BASE_URL="https://dtz-lid.com" \
+ADMIN_USER="..." ADMIN_PASS="..." \
+STUDENT_USER="..." STUDENT_PASS="..." \
+./tools/ci_smoke.sh
+```
+
 ### Persistent Storage
 
 `render.yaml` bindet eine Disk auf `/var/data`.
