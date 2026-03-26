@@ -174,6 +174,10 @@
       letter-spacing: 0.02em;
     }
 
+    body.docent-mode .docent-flow-steps {
+      display: none;
+    }
+
     .hero-course-switch {
       margin-top: 10px;
       display: grid;
@@ -1006,7 +1010,8 @@
     }
 
     #hwMultiAssignBox {
-      width: 70%;
+      width: 100%;
+      max-width: 100%;
       margin-left: 0;
       margin-right: auto;
       margin-bottom: 14px;
@@ -1020,7 +1025,7 @@
 
     @media (max-width: 900px) {
       #hwMultiAssignBox {
-        width: 80%;
+        width: 100%;
       }
     }
 
@@ -3359,12 +3364,12 @@
         <div id="paneHomeworks" class="admin-pane">
         <div id="homeworksSection" class="bulk-wrap">
           <h2 class="section-title" style="font-size: 1.35rem;">Hausaufgaben</h2>
-          <p class="section-subtitle">Aufgabenvorlage auswählen, Kurs/Gruppe oder ausgewählten Teilnehmenden zuweisen und Fortschritt verfolgen.</p>
+          <p class="section-subtitle">Schnell zuweisen: Aufgabe wählen, Zeit setzen, veröffentlichen.</p>
         </div>
 
         <div id="homeworksAssignSection" class="bulk-wrap">
           <details id="homeworksAssignDetails" class="fold-section">
-            <summary>+ Aufgabe zuweisen</summary>
+            <summary>+ Aufgabe zuweisen (Schnell)</summary>
             <div class="fold-section-content">
               <div class="docent-flow-steps" aria-hidden="true">
                 <span class="docent-flow-step">1. Vorlage wählen</span>
@@ -3380,8 +3385,8 @@
               </div>
               <input id="hwTargetType" type="hidden" value="course">
               <div id="hwMultiAssignBox">
-                <label for="hwTaskTemplatesMulti"><strong>Mehrfachauswahl</strong> · Aufgaben zusammen zuweisen</label>
-                <select id="hwTaskTemplatesMulti" class="hw-multi-source-select" multiple size="10">
+                <label for="hwTaskTemplatesMulti"><strong>Aufgaben auswählen</strong> · Mehrfachauswahl</label>
+                <select id="hwTaskTemplatesMulti" class="hw-multi-source-select" multiple size="7">
                   <option value="">Bitte Aufgaben wählen</option>
                 </select>
                 <div id="hwTaskTemplatesMultiChecks" class="hw-multi-checklist"></div>
@@ -3417,6 +3422,9 @@
                 </div>
                 <div id="hwBatchInlineStatus" class="muted" style="margin-top:8px;"></div>
               </div>
+              <details id="hwAdvancedDetails" class="fold-section">
+                <summary>Erweitert: Test-Generatoren (A1/A2/B1)</summary>
+                <div class="fold-section-content">
               <div id="hwA1GeneratorBox">
                 <details class="fold-section">
                   <summary>A1-Test Generator</summary>
@@ -3563,6 +3571,8 @@
                   </div>
                 </details>
               </div>
+                </div>
+              </details>
               <div id="homeworkStatus" class="hidden"></div>
             </div>
           </details>
