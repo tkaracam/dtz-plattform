@@ -1,5 +1,11 @@
 # Prod Sağlamlık Checklist (DTZ-LiD)
 
+Durum güncelleme tarihi: 26.03.2026
+
+Not:
+- Aşağıdaki işaretlemeler teknik doğrulama (kod ve smoke çıktısı) üzerinden yapıldı.
+- Login gerektiren bazı maddeler credential ile tam E2E doğrulama bekliyor.
+
 ## 1) Deploy ve Sürüm
 - [ ] `main` branch protection aktif (force-push kapalı).
 - [ ] Deploy öncesi zorunlu CI pass var.
@@ -19,27 +25,27 @@
 - [ ] Session cookie güvenlik ayarları (`HttpOnly`, `SameSite`, mümkünse `Secure`) doğrulandı.
 
 ## 4) Veri Bütünlüğü
-- [ ] JSON write işlemleri lock ile yapılıyor.
+- [x] JSON write işlemleri lock ile yapılıyor.
 - [ ] Batch create/delete akışlarında kısmi bozulma durumu test edildi.
-- [ ] Ödev target modeli frozen (`assignees`) ve geriye dönük genişleme yok.
+- [x] Ödev target modeli frozen (`assignees`) ve geriye dönük genişleme yok.
 - [ ] Dosya bozulması durumunda restore prosedürü var.
 
 ## 5) Ödev / Sınav Kuralları
 - [ ] Deadline + active + submitted server-side enforce ediliyor.
 - [ ] DTZ/Modelltest sonuç payload anti-tamper doğrulanıyor.
-- [ ] Silinen ödev sorularının tekrarını düşüren blok mekanizması aktif.
-- [ ] Atanan ödevde yasak buton/akışlar (Neue Aufgaben/Teil geçişi vb.) kilitli.
+- [x] Silinen ödev sorularının tekrarını düşüren blok mekanizması aktif.
+- [x] Atanan ödevde yasak buton/akışlar (Neue Aufgaben/Teil geçişi vb.) kilitli.
 
 ## 6) Frontend Stabilite
 - [ ] Schüler login sonrası doğru landing (portal) çalışıyor.
-- [ ] A1/A2/B1 assignment iframe akışları sorunsuz.
+- [x] A1/A2/B1 assignment iframe akışları sorunsuz.
 - [ ] Modelltest faz geçişleri (Hören → Lesen → Schreiben) stabil.
 - [ ] Mobilde kritik ekranlarda yatay taşma yok.
 
 ## 7) Gözlemlenebilirlik
 - [ ] `audit_log` aksiyonları kritik akışları kapsıyor.
 - [ ] 5xx oranı, login başarısızlığı, assignment hata oranı izleniyor.
-- [ ] Deploy sonrası ilk 30 dakika için hızlı health kontrol var.
+- [x] Deploy sonrası ilk 30 dakika için hızlı health kontrol var.
 
 ## 8) Yedekleme ve Kurtarma
 - [ ] `api/storage/*` için düzenli backup var.
