@@ -1,0 +1,60 @@
+name: CI Smoke
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Test URL"
+        required: false
+        default: "https://dtz-lid.com"
+      run_anti_repeat:
+        description: "Anti-repeat testini çalıştır (1/0)"
+        required: false
+        default: "1"
+      test_student_user:
+        description: "Anti-repeat için hedef öğrenci (opsiyonel, secret yoksa)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      BASE_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url || 'https://dtz-lid.com' }}
+      ADMIN_USER: ${{ secrets.SMOKE_ADMIN_USER }}
+      ADMIN_PASS: ${{ secrets.SMOKE_ADMIN_PASS }}
+      STUDENT_USER: ${{ secrets.SMOKE_STUDENT_USER }}
+      STUDENT_PASS: ${{ secrets.SMOKE_STUDENT_PASS }}
+      TEST_STUDENT_USER: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_student_user || secrets.SMOKE_TEST_STUDENT_USER }}
+      ANTI_REPEAT_SMOKE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_anti_repeat || '1' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure scripts executable
+        run: |
+          chmod +x tools/ci_smoke.sh
+          chmod +x tools/anti_repeat_smoke.sh
+
+      - name: Run ci smoke
+        run: |
+          set -euo pipefail
+          ./tools/ci_smoke.sh | tee "${RUNNER_TEMP}/ci_smoke.log"
+
+      - name: Upload smoke log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-smoke-log-${{ github.run_id }}
+          path: ${{ runner.temp }}/ci_smoke.log
+          if-no-files-found: ignore

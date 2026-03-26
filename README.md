@@ -120,6 +120,27 @@ STUDENT_USER="..." STUDENT_PASS="..." \
 ./tools/ci_smoke.sh
 ```
 
+Anti-repeat smoke dahil:
+
+```bash
+ANTI_REPEAT_SMOKE=1 \
+BASE_URL="https://dtz-lid.com" \
+ADMIN_USER="..." ADMIN_PASS="..." \
+TEST_STUDENT_USER="..." \
+./tools/ci_smoke.sh
+```
+
+### CI Smoke (GitHub Actions)
+
+- Workflow: `.github/workflows/ci-smoke.yml`
+- Trigger: her gün schedule + manuel `Run workflow`
+- Önerilen repo secrets:
+  - `SMOKE_ADMIN_USER`
+  - `SMOKE_ADMIN_PASS`
+  - `SMOKE_STUDENT_USER`
+  - `SMOKE_STUDENT_PASS`
+  - `SMOKE_TEST_STUDENT_USER`
+
 ### Persistent Storage
 
 `render.yaml` bindet eine Disk auf `/var/data`.
