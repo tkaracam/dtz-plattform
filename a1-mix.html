@@ -40,11 +40,36 @@
     .q-card { border:1px solid #eeded2; border-radius:12px; padding:12px; background:#fffdfa; display:grid; gap:8px; }
     .q-card.correct { border-color:#b8e3cf; background:#f4fff9; }
     .q-card.wrong { border-color:#f0c8d1; background:#fff7f9; }
+    .q-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .q-title { margin:0; font-size:1rem; color:#5d4037; font-weight:700; }
+    .q-topic {
+      font-size: .82rem;
+      color: #8f6b5d;
+      font-weight: 700;
+      border: 1px solid #eeded2;
+      background: #fff7f1;
+      border-radius: 999px;
+      padding: 3px 9px;
+      white-space: nowrap;
+    }
     .q-prompt { margin:0; color:#6d4a3c; white-space:pre-line; }
     .opts { display:grid; gap:5px; }
-    .opt { border:1px solid #eeded2; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:flex-start; cursor:pointer; }
+    .opt { border:1px solid #eeded2; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:center; cursor:pointer; }
     .opt input { margin-top:3px; }
+    .opt-letter {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid #e8d2c4;
+      background: #fff1e6;
+      color: #8c634f;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      font-size: 0.86rem;
+    }
     .opt.correct-answer { border-color:#96cdb5; background:#eefcf4; }
     .solution { margin:0; color:#7d5648; font-size:.93rem; display:none; }
     .show-sol .solution { display:block; }
@@ -479,10 +504,17 @@ function applyPresetTopics(topics) {
 }
 
 function generateQuestions(total = questionCount) {
-  const makers = Object.entries(TOPICS).filter(([k]) => activeTopics[k]).map(([, t]) => t.makeQ);
+  const makers = Object.entries(TOPICS)
+    .filter(([k]) => activeTopics[k])
+    .map(([key, topic]) => ({ key, label: topic.label, makeQ: topic.makeQ }));
   if(!makers.length) return [];
   const out = [];
-  for(let i = 0; i < total; i++) out.push(makers[i % makers.length]());
+  for(let i = 0; i < total; i++) {
+    const picked = makers[i % makers.length];
+    const q = picked.makeQ();
+    q.topicLabel = picked.label;
+    out.push(q);
+  }
   return shuffle(out);
 }
 
@@ -492,9 +524,15 @@ function render() {
   questions.forEach((q, i) => {
     const c = document.createElement('article');
     c.className = 'q-card';
+    const head = document.createElement('div');
+    head.className = 'q-head';
     const t = document.createElement('p');
     t.className = 'q-title';
     t.textContent = `Frage ${i+1}/${questionCount}`;
+    const topic = document.createElement('span');
+    topic.className = 'q-topic';
+    topic.textContent = String(q.topicLabel || 'A1');
+    head.append(t, topic);
     const pr = document.createElement('p');
     pr.className = 'q-prompt';
     pr.textContent = q.prompt;
@@ -508,15 +546,18 @@ function render() {
       r.name = `q_${i}`;
       r.value = j;
       r.addEventListener('change', () => pb.textContent = `Gelöst: ${ql.querySelectorAll('input:checked').length}/${questionCount}`);
+      const letter = document.createElement('span');
+      letter.className = 'opt-letter';
+      letter.textContent = String.fromCharCode(65+j);
       const tx = document.createElement('span');
-      tx.innerHTML = `<strong>${String.fromCharCode(65+j)})</strong> ${o}`;
-      l.append(r, tx);
+      tx.textContent = o;
+      l.append(r, letter, tx);
       od.appendChild(l);
     });
     const s = document.createElement('p');
     s.className = 'solution';
     s.textContent = `Lösung: ${q.solution} | ${q.hint}`;
-    c.append(t, pr, od, s);
+    c.append(head, pr, od, s);
     ql.appendChild(c);
   });
   pb.textContent = `Gelöst: 0/${questionCount}`;

@@ -18,7 +18,23 @@
     .q-card { border:1px solid #eeded2; border-radius:12px; padding:12px; background:#fffdfa; display:grid; gap:8px; }
     .q-card.correct { border-color:#b8e3cf; background:#f4fff9; }
     .q-card.wrong { border-color:#f0c8d1; background:#fff7f9; }
-    .opt { border:1px solid #eeded2; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:flex-start; cursor:pointer; }
+    .q-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .q-topic { font-size:.82rem; color:#8f6b5d; font-weight:700; border:1px solid #eeded2; background:#fff7f1; border-radius:999px; padding:3px 9px; white-space:nowrap; }
+    .opt { border:1px solid #eeded2; border-radius:10px; background:#fff; padding:8px; display:flex; gap:8px; align-items:center; cursor:pointer; }
+    .opt-letter {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid #e8d2c4;
+      background: #fff1e6;
+      color: #8c634f;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      font-size: 0.86rem;
+    }
     .opt.correct-answer { border-color:#96cdb5; background:#eefcf4; }
     .progress-badge { display:inline-block; padding:6px 12px; background:#fff4ed; border:1px solid #efcdbf; border-radius:999px; color:#6d4a3c; font-weight:700; font-size:.95rem; }
     .actions { margin-top:10px; display:grid; gap:8px; grid-template-columns:repeat(2,1fr); }
@@ -166,7 +182,7 @@ function buildQuestions() {
     const correct = raw[1];
     const wrong = raw[2];
     const opts = Math.random() < 0.5 ? [correct, wrong, "beide möglich"] : [wrong, correct, "beide möglich"];
-    out.push({ id: i + 1, prompt, opts, correct: opts.indexOf(correct), solution: correct });
+    out.push({ id: i + 1, prompt, opts, correct: opts.indexOf(correct), solution: correct, topicLabel: label });
   }
   return out;
 }
@@ -177,10 +193,13 @@ let submitted = false;
 function render() {
   ql.innerHTML = questions.map((q, i) => `
     <article class="q-card" data-q="${i}">
-      <h4 style="margin:0;">Frage ${i + 1}/${questions.length}</h4>
+      <div class="q-head">
+        <h4 style="margin:0;">Frage ${i + 1}/${questions.length}</h4>
+        <span class="q-topic">${q.topicLabel || "B1"}</span>
+      </div>
       <p style="margin:0;">${q.prompt}</p>
       <div>
-        ${q.opts.map((o, j) => `<label class="opt"><input type="radio" name="q_${i}" value="${j}"> <span>${o}</span></label>`).join("")}
+        ${q.opts.map((o, j) => `<label class="opt"><input type="radio" name="q_${i}" value="${j}"><span class="opt-letter">${String.fromCharCode(65 + j)}</span><span>${o}</span></label>`).join("")}
       </div>
       <p class="solution">Lösung: ${q.solution}</p>
     </article>
