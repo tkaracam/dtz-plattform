@@ -1,6 +1,6 @@
 # Prod Sağlamlık Checklist (DTZ-LiD)
 
-Durum güncelleme tarihi: 26.03.2026
+Durum güncelleme tarihi: 26.03.2026 (güncel)
 
 Not:
 - Aşağıdaki işaretlemeler teknik doğrulama (kod ve smoke çıktısı) üzerinden yapıldı.
@@ -30,9 +30,13 @@ Not:
 - [x] Ödev target modeli frozen (`assignees`) ve geriye dönük genişleme yok.
 - [ ] Dosya bozulması durumunda restore prosedürü var.
 
+Not:
+- Batch `create` akışı all-or-nothing olacak şekilde atomik hale getirildi.
+- `delete` ve eşzamanlı yarış senaryoları için otomatik test halen açık.
+
 ## 5) Ödev / Sınav Kuralları
-- [ ] Deadline + active + submitted server-side enforce ediliyor.
-- [ ] DTZ/Modelltest sonuç payload anti-tamper doğrulanıyor.
+- [x] Deadline + active + submitted server-side enforce ediliyor.
+- [x] DTZ/Modelltest sonuç payload anti-tamper doğrulanıyor.
 - [x] Silinen ödev sorularının tekrarını düşüren blok mekanizması aktif.
 - [x] Atanan ödevde yasak buton/akışlar (Neue Aufgaben/Teil geçişi vb.) kilitli.
 
@@ -46,6 +50,9 @@ Not:
 - [ ] `audit_log` aksiyonları kritik akışları kapsıyor.
 - [ ] 5xx oranı, login başarısızlığı, assignment hata oranı izleniyor.
 - [x] Deploy sonrası ilk 30 dakika için hızlı health kontrol var.
+
+Not:
+- `Fortschritt` ekranında reminder kırılımı geliştirildi: course/template/level + kurs-detay popup.
 
 ## 8) Yedekleme ve Kurtarma
 - [ ] `api/storage/*` için düzenli backup var.
