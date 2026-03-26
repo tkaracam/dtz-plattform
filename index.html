@@ -13602,12 +13602,27 @@
         if (!grouped.a2.length) {
           a2Wrap.textContent = "Keine A2-Aufgaben vorhanden.";
         } else {
-          a2Wrap.innerHTML = grouped.a2.map(itemHtml).join("");
-          a2Wrap.querySelectorAll("[data-open-a2-homework]").forEach(btn => {
+          const doneCount = grouped.a2.filter(row => isHomeworkRowSolved(row)).length;
+          const openCount = Math.max(0, grouped.a2.length - doneCount);
+          const summaryClass = openCount <= 0 ? "homework-done" : "homework-pending";
+          a2Wrap.innerHTML = `
+            <div class="portal-item ${summaryClass}">
+              <strong>A2 Sammeltest (${grouped.a2.length} Aufgaben)</strong>
+              <div>Offen: ${openCount} | Gelöst: ${doneCount}</div>
+              <div class="row-end" style="margin-top:8px;">
+                <button
+                  type="button"
+                  class="${openCount <= 0 ? "task-solved-btn" : "portal-open-btn"}"
+                  ${openCount <= 0 ? "disabled aria-disabled=\"true\"" : ""}
+                  data-open-a2-homework-combined="1"
+                >${openCount <= 0 ? "Gelöst" : "A2-Sammeltest öffnen"}</button>
+              </div>
+            </div>
+          `;
+          a2Wrap.querySelectorAll("[data-open-a2-homework-combined]").forEach(btn => {
             btn.addEventListener("click", () => {
               if (btn.hasAttribute("disabled")) return;
-              const assignmentId = String(btn.getAttribute("data-open-a2-homework") || "").trim();
-              openHomeworkA2Task(homeworkRowById.get(assignmentId) || null);
+              openCombinedA2Homework(grouped.a2);
             });
           });
         }
