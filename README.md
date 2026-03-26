@@ -155,6 +155,7 @@ Damit bleiben Schülerdaten, Räume und Archive über Deploys hinweg erhalten.
 
 - Keine Secrets in HTML/JS ablegen.
 - `api/storage/.htaccess` sperrt Direktzugriff.
+- Root `.htaccess` setzt Security Headers (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, nosniff).
 - HTTPS erzwingen (Render standardmäßig via TLS).
 - Session + Rate-Limits sind aktiv.
 
