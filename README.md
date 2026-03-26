@@ -141,6 +141,10 @@ TEST_STUDENT_USER="..." \
   - `SMOKE_STUDENT_PASS`
   - `SMOKE_TEST_STUDENT_USER`
 
+Opsiyonel hata bildirimi için:
+- `DISCORD_WEBHOOK_URL` (Discord kanal webhook URL)
+- `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` (Telegram bildirim)
+
 ### Persistent Storage
 
 `render.yaml` bindet eine Disk auf `/var/data`.
