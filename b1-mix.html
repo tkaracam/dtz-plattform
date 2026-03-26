@@ -198,7 +198,10 @@ function notifyParentHeight() {
   if (!window.parent || window.parent === window) return;
   const doc = document.documentElement;
   const body = document.body;
+  const wrap = document.querySelector("main.wrap");
   const h = Math.max(
+    Number(wrap?.scrollHeight || 0),
+    Number(wrap?.offsetHeight || 0),
     Number(doc?.scrollHeight || 0),
     Number(body?.scrollHeight || 0),
     Number(doc?.offsetHeight || 0),

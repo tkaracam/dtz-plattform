@@ -13308,7 +13308,7 @@
       if (type !== "dtz-frame-height") return;
       const raw = Number.parseInt(String(data.height || 0), 10);
       if (!Number.isFinite(raw) || raw <= 0) return;
-      const next = Math.max(760, Math.min(20000, raw + 20));
+      const next = Math.max(760, Math.min(9000, raw + 20));
       const a1Frame = document.getElementById("a1EmbedFrame");
       const b1Frame = document.getElementById("b1EmbedFrame");
       if (a1Frame && event.source === a1Frame.contentWindow) {
