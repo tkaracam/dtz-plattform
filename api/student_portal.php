@@ -180,6 +180,32 @@ function detect_student_homework_category(array $assignment): string
     return 'unknown';
 }
 
+function derive_student_portal_assignment_status(
+    string $assignmentStatus,
+    bool $plannedInFuture,
+    bool $hasStarted,
+    bool $isExpired,
+    bool $isSubmitted
+): array {
+    $normalized = mb_strtolower(trim($assignmentStatus));
+    if ($isSubmitted) {
+        return ['status' => 'submitted', 'label' => 'abgegeben'];
+    }
+    if ($normalized !== 'active') {
+        return ['status' => 'archived', 'label' => 'archiviert'];
+    }
+    if ($isExpired) {
+        return ['status' => 'expired', 'label' => 'abgelaufen'];
+    }
+    if ($hasStarted) {
+        return ['status' => 'active', 'label' => 'läuft'];
+    }
+    if ($plannedInFuture) {
+        return ['status' => 'planned', 'label' => 'geplant'];
+    }
+    return ['status' => 'active', 'label' => 'offen'];
+}
+
 $simRecords = [];
 $letterRecords = [];
 $approvedLetterResults = [];
@@ -300,24 +326,15 @@ foreach (load_homework_assignments() as $assignment) {
     $startsAtTs = $startsAt !== '' ? strtotime($startsAt) : false;
     $plannedInFuture = ($startsAtTs !== false && (int)$startsAtTs > $nowTs);
 
-    $status = 'active';
-    $statusLabel = 'offen';
-    if ($submittedAt !== '') {
-        $status = 'submitted';
-        $statusLabel = 'abgegeben';
-    } elseif ($assignmentStatus !== 'active') {
-        $status = 'archived';
-        $statusLabel = 'archiviert';
-    } elseif ($expired) {
-        $status = 'expired';
-        $statusLabel = 'abgelaufen';
-    } elseif ($startedAt !== '') {
-        $status = 'active';
-        $statusLabel = 'läuft';
-    } elseif ($plannedInFuture) {
-        $status = 'planned';
-        $statusLabel = 'geplant';
-    }
+    $derivedStatus = derive_student_portal_assignment_status(
+        $assignmentStatus,
+        $plannedInFuture,
+        $startedAt !== '',
+        $expired,
+        $submittedAt !== ''
+    );
+    $status = (string)($derivedStatus['status'] ?? 'active');
+    $statusLabel = (string)($derivedStatus['label'] ?? 'offen');
 
     $lastDtzRaw = is_array($rawState['last_dtz_result'] ?? null) ? $rawState['last_dtz_result'] : [];
     $lastDtzResult = null;
