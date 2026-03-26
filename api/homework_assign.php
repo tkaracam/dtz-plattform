@@ -25,6 +25,11 @@ function homework_used_dtz_questions_file(): string
     return __DIR__ . '/storage/homework_used_dtz_questions.json';
 }
 
+function homework_deleted_dtz_questions_file(): string
+{
+    return __DIR__ . '/storage/homework_deleted_dtz_questions.json';
+}
+
 function load_used_dtz_question_ids(): array
 {
     $file = homework_used_dtz_questions_file();
@@ -117,6 +122,57 @@ function save_used_dtz_question_ids(array $payload): bool
     return file_put_contents(homework_used_dtz_questions_file(), $json . PHP_EOL, LOCK_EX) !== false;
 }
 
+function load_deleted_dtz_question_ids(): array
+{
+    $file = homework_deleted_dtz_questions_file();
+    if (!is_file($file)) {
+        return [
+            'version' => 1,
+            'updated_at' => '',
+            'buckets' => [],
+        ];
+    }
+    $raw = file_get_contents($file);
+    if (!is_string($raw) || trim($raw) === '') {
+        return [
+            'version' => 1,
+            'updated_at' => '',
+            'buckets' => [],
+        ];
+    }
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        return [
+            'version' => 1,
+            'updated_at' => '',
+            'buckets' => [],
+        ];
+    }
+    return [
+        'version' => 1,
+        'updated_at' => (string)($decoded['updated_at'] ?? ''),
+        'buckets' => is_array($decoded['buckets'] ?? null) ? $decoded['buckets'] : [],
+    ];
+}
+
+function save_deleted_dtz_question_ids(array $payload): bool
+{
+    $dir = __DIR__ . '/storage';
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return false;
+    }
+    $normalized = [
+        'version' => 1,
+        'updated_at' => (string)($payload['updated_at'] ?? gmdate('c')),
+        'buckets' => is_array($payload['buckets'] ?? null) ? $payload['buckets'] : [],
+    ];
+    $json = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    if (!is_string($json)) {
+        return false;
+    }
+    return file_put_contents(homework_deleted_dtz_questions_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
 function dtz_usage_bucket_key(string $module, int $teil): string
 {
     return $module . '_teil_' . $teil;
@@ -142,6 +198,78 @@ function dtz_usage_compact_recent(array $recent, int $max = 240): array
         $out = array_slice($out, count($out) - $max);
     }
     return array_values($out);
+}
+
+function dtz_extract_bundle_records_for_delete(array $assignment): array
+{
+    $templateId = trim((string)($assignment['template_id'] ?? ''));
+    $parsed = parse_dtz_template_id($templateId);
+    if (!is_array($parsed)) {
+        return [];
+    }
+    $module = (string)($parsed['module'] ?? '');
+    $teil = (int)($parsed['teil'] ?? 0);
+    if ($module === '' || $teil <= 0) {
+        return [];
+    }
+    $bundle = is_array($assignment['dtz_bundle'] ?? null) ? $assignment['dtz_bundle'] : [];
+    $items = is_array($bundle['items'] ?? null) ? $bundle['items'] : [];
+    $out = [];
+    foreach ($items as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $qid = trim((string)($row['template_id'] ?? ''));
+        if ($qid === '') {
+            continue;
+        }
+        $out[] = [
+            'module' => $module,
+            'teil' => $teil,
+            'template_id' => $qid,
+            'assignment_id' => trim((string)($assignment['id'] ?? '')),
+            'teacher_username' => trim((string)($assignment['teacher_username'] ?? '')),
+            'course_id' => trim((string)($assignment['course_id'] ?? '')),
+        ];
+    }
+    return $out;
+}
+
+function mark_deleted_dtz_bundle_records(array $records): bool
+{
+    if (!$records) {
+        return true;
+    }
+    $state = load_deleted_dtz_question_ids();
+    $buckets = is_array($state['buckets'] ?? null) ? $state['buckets'] : [];
+    $nowIso = gmdate('c');
+    foreach ($records as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $module = trim((string)($row['module'] ?? ''));
+        $teil = (int)($row['teil'] ?? 0);
+        $qid = trim((string)($row['template_id'] ?? ''));
+        if (($module !== 'hoeren' && $module !== 'lesen') || $teil <= 0 || $qid === '') {
+            continue;
+        }
+        $bucket = dtz_usage_bucket_key($module, $teil);
+        $list = is_array($buckets[$bucket] ?? null) ? $buckets[$bucket] : [];
+        $list[] = [
+            'template_id' => $qid,
+            'deleted_at' => $nowIso,
+            'assignment_id' => trim((string)($row['assignment_id'] ?? '')),
+            'teacher_username' => trim((string)($row['teacher_username'] ?? '')),
+            'course_id' => trim((string)($row['course_id'] ?? '')),
+        ];
+        if (count($list) > 500) {
+            $list = array_slice($list, count($list) - 500);
+        }
+        $buckets[$bucket] = $list;
+    }
+    $state['buckets'] = $buckets;
+    $state['updated_at'] = $nowIso;
+    return save_deleted_dtz_question_ids($state);
 }
 
 function parse_dtz_template_id(string $templateId): ?array
@@ -173,6 +301,25 @@ function build_unique_dtz_bundle_from_used(string $module, int $teil, array $use
     foreach ($recentWindow as $qid) {
         $recentLookup[(string)$qid] = true;
     }
+    $deletedState = load_deleted_dtz_question_ids();
+    $deletedBuckets = is_array($deletedState['buckets'] ?? null) ? $deletedState['buckets'] : [];
+    $deletedRows = is_array($deletedBuckets[$bucketKey] ?? null) ? $deletedBuckets[$bucketKey] : [];
+    $deletedLookup = [];
+    $blockSeconds = 14 * 24 * 3600; // avoid immediate repeats after teacher deletes an assignment
+    $nowTs = time();
+    foreach ($deletedRows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $qid = trim((string)($row['template_id'] ?? ''));
+        if ($qid === '') {
+            continue;
+        }
+        $deletedAtTs = dtz_usage_parse_ts((string)($row['deleted_at'] ?? ''));
+        if ($deletedAtTs <= 0 || ($nowTs - $deletedAtTs) <= $blockSeconds) {
+            $deletedLookup[$qid] = true;
+        }
+    }
 
     $availableByQid = [];
     foreach ($items as $item) {
@@ -201,6 +348,7 @@ function build_unique_dtz_bundle_from_used(string $module, int $teil, array $use
         $qid = trim((string)($item['template_id'] ?? ''));
         $stat = is_array($bucketStats[$qid] ?? null) ? $bucketStats[$qid] : [];
         $available[$idx]['__rank_qid'] = $qid;
+        $available[$idx]['__rank_deleted'] = isset($deletedLookup[$qid]) ? 1 : 0;
         $available[$idx]['__rank_recent'] = isset($recentLookup[$qid]) ? 1 : 0;
         $available[$idx]['__rank_count'] = max(0, (int)($stat['count'] ?? 0));
         $available[$idx]['__rank_ts'] = dtz_usage_parse_ts((string)($stat['last_used_at'] ?? ''));
@@ -211,6 +359,9 @@ function build_unique_dtz_bundle_from_used(string $module, int $teil, array $use
         }
     }
     usort($available, static function (array $a, array $b): int {
+        if ((int)$a['__rank_deleted'] !== (int)$b['__rank_deleted']) {
+            return (int)$a['__rank_deleted'] <=> (int)$b['__rank_deleted'];
+        }
         if ((int)$a['__rank_recent'] !== (int)$b['__rank_recent']) {
             return (int)$a['__rank_recent'] <=> (int)$b['__rank_recent'];
         }
@@ -229,7 +380,7 @@ function build_unique_dtz_bundle_from_used(string $module, int $teil, array $use
         if ($qid !== '') {
             $pickedQids[] = $qid;
         }
-        unset($row['__rank_qid'], $row['__rank_recent'], $row['__rank_count'], $row['__rank_ts'], $row['__rank_rnd']);
+        unset($row['__rank_qid'], $row['__rank_deleted'], $row['__rank_recent'], $row['__rank_count'], $row['__rank_ts'], $row['__rank_rnd']);
     }
     unset($row);
 
@@ -281,7 +432,7 @@ function build_unique_dtz_bundle_from_used(string $module, int $teil, array $use
         'items' => $picked,
         'reused_cycle' => false,
         'repeat_risk' => array_values(array_filter($pickedQids, static fn($qid) => isset($recentLookup[(string)$qid]))),
-        'selection_mode' => 'least_used_then_least_recent',
+        'selection_mode' => 'avoid_deleted_then_least_used_then_least_recent',
         'used' => $used,
     ];
 }
@@ -946,7 +1097,7 @@ if ($action === 'delete') {
         exit;
     }
 
-    $delState = ['found' => false, 'forbidden' => false];
+    $delState = ['found' => false, 'forbidden' => false, 'deleted_dtz_records' => []];
     if (!homework_assignments_mutate(function (array $items) use ($assignmentId, $admin, &$delState): array|false {
         foreach ($items as $i => $item) {
             if (!is_array($item)) {
@@ -959,6 +1110,7 @@ if ($action === 'delete') {
                 $delState['forbidden'] = true;
                 return false;
             }
+            $delState['deleted_dtz_records'] = dtz_extract_bundle_records_for_delete($item);
             unset($items[$i]);
             $delState['found'] = true;
             return array_values($items);
@@ -979,9 +1131,15 @@ if ($action === 'delete') {
         echo json_encode(['error' => 'Aufgabe nicht gefunden.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    if (!mark_deleted_dtz_bundle_records(is_array($delState['deleted_dtz_records'] ?? null) ? $delState['deleted_dtz_records'] : [])) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Gelöschte Fragen konnten nicht protokolliert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
     append_audit_log('homework_assign_delete', [
         'assignment_id' => $assignmentId,
+        'dtz_deleted_questions' => is_array($delState['deleted_dtz_records'] ?? null) ? count($delState['deleted_dtz_records']) : 0,
     ]);
 
     echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
@@ -996,10 +1154,11 @@ if ($action === 'delete_group') {
         exit;
     }
 
-    $grpState = ['removed' => 0];
+    $grpState = ['removed' => 0, 'deleted_dtz_records' => []];
     if (!homework_assignments_mutate(function (array $items) use ($groupId, $admin, &$grpState): array|false {
         $next = [];
         $removed = 0;
+        $deletedDtz = [];
         foreach ($items as $item) {
             if (!is_array($item)) {
                 continue;
@@ -1013,12 +1172,14 @@ if ($action === 'delete_group') {
                 $next[] = $item;
                 continue;
             }
+            $deletedDtz = array_merge($deletedDtz, dtz_extract_bundle_records_for_delete($item));
             $removed++;
         }
         if ($removed <= 0) {
             return false;
         }
         $grpState['removed'] = $removed;
+        $grpState['deleted_dtz_records'] = $deletedDtz;
         return $next;
     })) {
         http_response_code(500);
@@ -1031,11 +1192,17 @@ if ($action === 'delete_group') {
         echo json_encode(['error' => 'Gruppe nicht gefunden oder keine Berechtigung.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    if (!mark_deleted_dtz_bundle_records(is_array($grpState['deleted_dtz_records'] ?? null) ? $grpState['deleted_dtz_records'] : [])) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Gelöschte Fragen konnten nicht protokolliert werden.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     $removed = $grpState['removed'];
 
     append_audit_log('homework_assign_delete_group', [
         'batch_group_id' => $groupId,
         'removed_count' => $removed,
+        'dtz_deleted_questions' => is_array($grpState['deleted_dtz_records'] ?? null) ? count($grpState['deleted_dtz_records']) : 0,
     ]);
 
     echo json_encode(['ok' => true, 'removed_count' => $removed], JSON_UNESCAPED_UNICODE);
