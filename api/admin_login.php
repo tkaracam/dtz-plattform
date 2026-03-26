@@ -64,13 +64,7 @@ if ($ownerUsername === '') {
     $ownerUsername = 'admin';
 }
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(32768);
 
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
 $password = trim((string)($body['password'] ?? ''));

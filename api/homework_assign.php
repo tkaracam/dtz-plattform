@@ -630,13 +630,7 @@ function build_dtz_usage_report(array $usageState): array
 }
 
 $admin = require_admin_role_json(['hauptadmin', 'docent']);
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(524288);
 
 $action = trim((string)($body['action'] ?? 'create'));
 $items = load_homework_assignments();

@@ -585,6 +585,54 @@ function get_client_ip(): string
     return '0.0.0.0';
 }
 
+function request_content_type(): string
+{
+    $raw = (string)($_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '');
+    return auth_lower_text($raw);
+}
+
+function request_content_type_is_json(): bool
+{
+    $ct = request_content_type();
+    if ($ct === '') {
+        return false;
+    }
+    return str_starts_with($ct, 'application/json');
+}
+
+function require_json_body_or_400(int $maxBytes = 262144): array
+{
+    $maxBytes = max(1024, $maxBytes);
+    $raw = file_get_contents('php://input');
+    if (!is_string($raw)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Anfrage.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (strlen($raw) > $maxBytes) {
+        http_response_code(413);
+        echo json_encode(['error' => 'Request ist zu groß.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (trim($raw) === '') {
+        http_response_code(400);
+        echo json_encode(['error' => 'JSON-Body fehlt.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (!request_content_type_is_json()) {
+        http_response_code(415);
+        echo json_encode(['error' => 'Content-Type muss application/json sein.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    return $decoded;
+}
+
 function rate_limit_file(string $bucket): string
 {
     $safe = preg_replace('/[^a-z0-9._-]+/i', '-', strtolower(trim($bucket)));

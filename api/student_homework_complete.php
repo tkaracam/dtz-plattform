@@ -34,13 +34,7 @@ function payload_optional_non_negative_int(array $body, string $key): ?int
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(65536);
 
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 if ($assignmentId === '') {

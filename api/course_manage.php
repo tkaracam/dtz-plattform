@@ -314,13 +314,7 @@ function delete_student_accounts_for_course_members(array $usernames, array &$st
     return true;
 }
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(262144);
 
 $action = trim((string)($body['action'] ?? ''));
 $courses = load_courses();
