@@ -4022,9 +4022,19 @@
                 <option value="satzstellung">Satzstellung</option>
               </select>
             </div>
+            <div>
+              <label for="a1QuestionCountSelect">Fragen</label>
+              <select id="a1QuestionCountSelect">
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50" selected>50</option>
+                <option value="60">60</option>
+              </select>
+            </div>
           </div>
           <div class="btn-wrap">
-            <button id="a1StartBtn" type="button">Thema öffnen</button>
+            <button id="a1StartBtn" type="button">Test starten</button>
           </div>
         </div>
         <div id="a1Status" class="hidden"></div>
@@ -4060,6 +4070,16 @@
                 <option value="nebensaetze">Nebensätze</option>
                 <option value="satzverbindungen">Satzverbindungen</option>
                 <option value="wortbildung">Wortbildung</option>
+              </select>
+            </div>
+            <div>
+              <label for="b1QuestionCountSelect">Fragen</label>
+              <select id="b1QuestionCountSelect">
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+                <option value="50" selected>50</option>
+                <option value="60">60</option>
               </select>
             </div>
           </div>
@@ -10883,7 +10903,7 @@
       } else if (normalizedTarget === "niveau") {
         openNiveauView();
       } else if (normalizedTarget === "a1") {
-        openA1ThemesInApp("./a1-themen.html");
+        openA1ThemesInApp("./a1-mix.html?topics=praesens&count=50");
       } else if (normalizedTarget === "a2") {
         openA2ThemesInApp("./a2-themen.html");
       } else if (normalizedTarget === "dtz") {
@@ -13041,7 +13061,7 @@
       return { url: toB1MixUrl(inferTopic(), inferredCount) };
     }
 
-    function openA1ThemesInApp(rawInput = "./a1-themen.html", options = {}) {
+    function openA1ThemesInApp(rawInput = "./a1-mix.html?topics=praesens&count=50", options = {}) {
       const url = resolveSafeHttpUrl(String(rawInput || "").trim());
       if (!url) {
         setStatus("error", "Für A1 ist kein gültiger Link hinterlegt.", "portalStatus");
@@ -15437,8 +15457,10 @@
     const a1StartBtn = document.getElementById("a1StartBtn");
     if (a1StartBtn) a1StartBtn.addEventListener("click", () => {
       const select = document.getElementById("a1TopicSelect");
+      const countSelect = document.getElementById("a1QuestionCountSelect");
       const topic = String(select?.value || "praesens");
-      openA1ThemesInApp(`./a1/${topic}.html`, { assignmentMode: false });
+      const count = Math.max(20, Math.min(60, Number(countSelect?.value || 50)));
+      openA1ThemesInApp(`./a1-mix.html?topics=${encodeURIComponent(topic)}&count=${encodeURIComponent(String(count))}`, { assignmentMode: false });
     });
     const a1BackToPortalBtn = document.getElementById("a1BackToPortalBtn");
     if (a1BackToPortalBtn) {
@@ -15466,8 +15488,10 @@
     const b1StartBtn = document.getElementById("b1StartBtn");
     if (b1StartBtn) b1StartBtn.addEventListener("click", () => {
       const select = document.getElementById("b1TopicSelect");
+      const countSelect = document.getElementById("b1QuestionCountSelect");
       const topic = String(select?.value || "konjunktiv2");
-      openB1ThemesInApp(`./b1-mix.html?topic=${encodeURIComponent(topic)}&count=30`, { assignmentMode: false });
+      const count = Math.max(20, Math.min(60, Number(countSelect?.value || 50)));
+      openB1ThemesInApp(`./b1-mix.html?topic=${encodeURIComponent(topic)}&count=${encodeURIComponent(String(count))}`, { assignmentMode: false });
     });
     const b1BackToPortalBtn = document.getElementById("b1BackToPortalBtn");
     if (b1BackToPortalBtn) {
