@@ -7211,15 +7211,23 @@
       flowCard.classList.toggle("hidden", !modelltestFlowState.active);
       if (variantSelect) variantSelect.value = modelltestFlowState.writeVariant;
       if (promptBox) promptBox.textContent = writePromptForVariant(modelltestFlowState.writeVariant);
-      if (hoerenTeilButtons) hoerenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
-      if (lesenTeilButtons) lesenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
+      if (hoerenTeilButtons) {
+        hoerenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
+        hoerenTeilButtons.style.display = modelltestFlowState.active ? "none" : "";
+      }
+      if (lesenTeilButtons) {
+        lesenTeilButtons.classList.toggle("hidden", !!modelltestFlowState.active);
+        lesenTeilButtons.style.display = modelltestFlowState.active ? "none" : "";
+      }
       if (hoerenOpenBtn) hoerenOpenBtn.classList.toggle("hidden", !!modelltestFlowState.active);
       if (lesenOpenBtn) lesenOpenBtn.classList.toggle("hidden", !!modelltestFlowState.active);
       if (hoerenNewBtn) hoerenNewBtn.classList.toggle("hidden", !!modelltestFlowState.active);
       if (lesenNewBtn) lesenNewBtn.classList.toggle("hidden", !!modelltestFlowState.active);
       if (isAssignedModelltest) {
         if (hoerenTeilButtons) hoerenTeilButtons.classList.add("hidden");
+        if (hoerenTeilButtons) hoerenTeilButtons.style.display = "none";
         if (lesenTeilButtons) lesenTeilButtons.classList.add("hidden");
+        if (lesenTeilButtons) lesenTeilButtons.style.display = "none";
         if (hoerenOpenBtn) hoerenOpenBtn.classList.add("hidden");
         if (lesenOpenBtn) lesenOpenBtn.classList.add("hidden");
         if (hoerenNewBtn) {
