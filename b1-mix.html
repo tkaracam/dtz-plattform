@@ -99,6 +99,7 @@ const submitBtn = document.getElementById("submitBtn");
 const portalBtn = document.getElementById("portalBtn");
 const actions = document.getElementById("actions");
 const homeworkStatBar = document.getElementById("homeworkStatBar");
+const heroCard = document.querySelector(".hero");
 const heroTitle = document.getElementById("heroTitle");
 const testTitle = document.getElementById("testTitle");
 
@@ -197,7 +198,7 @@ function buildQuestions() {
   const topic = STEMS[selectedTopic] ? selectedTopic : "konjunktiv2";
   const label = TOPIC_LABELS[topic] || "B1";
   heroTitle.textContent = `${label} – B1`;
-  testTitle.textContent = `${label} Test`;
+  testTitle.textContent = homeworkMode ? "Test" : `${label} Test`;
   const base = STEMS[topic];
   const out = [];
   for (let i = 0; i < questionCount; i++) {
@@ -286,6 +287,7 @@ portalBtn.addEventListener("click", () => {
 });
 
 if (homeworkMode) {
+  if (heroCard) heroCard.style.display = "none";
   if (actions) {
     actions.classList.add("homework-actions");
     actions.style.gridTemplateColumns = "none";
