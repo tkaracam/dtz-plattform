@@ -280,6 +280,7 @@ foreach ($visibleCourses as $courseId => $course) {
         'assigned_window' => 0,
         'submitted_window' => 0,
         'pending_reviews' => 0,
+        'reminders_sent_window' => 0,
         'avg_score_window' => null,
         '_score_sum_window' => 0,
         '_score_count_window' => 0,
@@ -519,6 +520,9 @@ foreach ($reminderRows as $row) {
     $remindersByLevel[$level] = (int)($remindersByLevel[$level] ?? 0) + 1;
     $remindersByCourse[$courseKey] = (int)($remindersByCourse[$courseKey] ?? 0) + 1;
     $remindersByTemplate[$templateKey] = (int)($remindersByTemplate[$templateKey] ?? 0) + 1;
+    if ($courseId !== '' && isset($courseStats[$courseId])) {
+        $courseStats[$courseId]['reminders_sent_window'] = (int)($courseStats[$courseId]['reminders_sent_window'] ?? 0) + 1;
+    }
 }
 arsort($remindersByCourse, SORT_NUMERIC);
 arsort($remindersByTemplate, SORT_NUMERIC);

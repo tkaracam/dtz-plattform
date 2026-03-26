@@ -9644,6 +9644,7 @@
           <td>${escapeHtml(String(course.name || "-"))}</td>
           <td class="mono">${escapeHtml(String(course.members_total ?? 0))}</td>
           <td class="mono">${escapeHtml(String(course.active_homeworks ?? 0))}</td>
+          <td class="mono">${escapeHtml(String(course.reminders_sent_window ?? 0))}</td>
           <td class="mono">${escapeHtml(String(course.submitted_window ?? 0))}/${escapeHtml(String(course.assigned_window ?? 0))}</td>
           <td class="mono">${escapeHtml(String(course.completion_window_percent ?? 0))}%</td>
           <td class="mono">${course.avg_score_window == null ? "-" : `${escapeHtml(String(course.avg_score_window))}/20`}</td>
@@ -9658,6 +9659,7 @@
               <th>Kurs</th>
               <th>TN</th>
               <th>Aktive HW</th>
+              <th>Reminder</th>
               <th>Abgaben</th>
               <th>Quote</th>
               <th>Ø Punkte</th>
