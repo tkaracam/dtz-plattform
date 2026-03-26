@@ -7940,6 +7940,7 @@
       if (requirement && requirement.module === module) {
         return "";
       }
+      const hideReload = !!modelltestFlowState.active;
       return `
         <div class="row-end dtz-inline-action-row">
           <div class="btn-wrap">
@@ -7947,11 +7948,12 @@
               AUSWERTEN
             </button>
           </div>
+          ${hideReload ? "" : `
           <div class="btn-wrap">
             <button type="button" data-dtz-reload-inline="${escapeHtml(String(module || ""))}">
               NEUE AUFGABEN
             </button>
-          </div>
+          </div>`}
         </div>
       `;
     }
