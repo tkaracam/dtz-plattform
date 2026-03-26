@@ -90,7 +90,7 @@
 const homeworkMode = String(new URLSearchParams(window.location.search).get("hw") || "") === "1";
 const selectedTopic = String(new URLSearchParams(window.location.search).get("topic") || "konjunktiv2").trim().toLowerCase();
 const countRaw = Number.parseInt(String(new URLSearchParams(window.location.search).get("count") || "30"), 10);
-const questionCount = Number.isFinite(countRaw) ? Math.max(10, Math.min(50, countRaw)) : 30;
+const questionCount = Number.isFinite(countRaw) ? Math.max(10, Math.min(30, countRaw)) : 30;
 
 const ql = document.getElementById("questionList");
 const pb = document.getElementById("progressBadge");

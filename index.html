@@ -3974,11 +3974,9 @@
             <div>
               <label for="a2QuestionCountSelect">Fragen</label>
               <select id="a2QuestionCountSelect">
+                <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50" selected>50</option>
-                <option value="60">60</option>
+                <option value="30" selected>30</option>
               </select>
             </div>
           </div>
@@ -4025,11 +4023,9 @@
             <div>
               <label for="a1QuestionCountSelect">Fragen</label>
               <select id="a1QuestionCountSelect">
+                <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50" selected>50</option>
-                <option value="60">60</option>
+                <option value="30" selected>30</option>
               </select>
             </div>
           </div>
@@ -4075,11 +4071,9 @@
             <div>
               <label for="b1QuestionCountSelect">Fragen</label>
               <select id="b1QuestionCountSelect">
+                <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50" selected>50</option>
-                <option value="60">60</option>
+                <option value="30" selected>30</option>
               </select>
             </div>
           </div>
@@ -6527,13 +6521,13 @@
     }
 
     function parseA2ConfigFromInput(rawInput) {
-      const fallback = { topics: [], count: 50, homeworkMode: false };
+      const fallback = { topics: [], count: 30, homeworkMode: false };
       if (rawInput && typeof rawInput === "object" && !Array.isArray(rawInput)) {
         const topics = Array.isArray(rawInput.topics) ? rawInput.topics : [];
-        const count = Number.parseInt(String(rawInput.count || "50"), 10);
+        const count = Number.parseInt(String(rawInput.count || "30"), 10);
         return {
           topics: topics.filter(Boolean),
-          count: Number.isFinite(count) ? Math.max(10, Math.min(100, count)) : 50,
+          count: Number.isFinite(count) ? Math.max(10, Math.min(30, count)) : 30,
           homeworkMode: !!rawInput.homeworkMode
         };
       }
@@ -6542,7 +6536,7 @@
       try {
         const url = new URL(safeUrl);
         const rawTopics = String(url.searchParams.get("topics") || "");
-        const rawCount = Number.parseInt(String(url.searchParams.get("count") || "50"), 10);
+        const rawCount = Number.parseInt(String(url.searchParams.get("count") || "30"), 10);
         const rawHw = String(url.searchParams.get("hw") || "").trim().toLowerCase();
         const topicAliases = {
           perfekt: "Perfekt",
@@ -6563,7 +6557,7 @@
           .filter(Boolean);
         return {
           topics: topics.filter((item, index, arr) => arr.indexOf(item) === index),
-          count: Number.isFinite(rawCount) ? Math.max(10, Math.min(100, rawCount)) : 50,
+          count: Number.isFinite(rawCount) ? Math.max(10, Math.min(30, rawCount)) : 30,
           homeworkMode: rawHw === "1" || rawHw === "true"
         };
       } catch (_) {
@@ -6719,10 +6713,10 @@
       const status = document.getElementById("a2Status");
       const toolbar = document.getElementById("a2Toolbar");
       const topics = Array.isArray(config.topics) ? config.topics.filter(Boolean) : [];
-      const count = Math.max(10, Math.min(100, Number.parseInt(String(config.count || (countSelect ? countSelect.value : "50")), 10) || 50));
+      const count = Math.max(10, Math.min(30, Number.parseInt(String(config.count || (countSelect ? countSelect.value : "30")), 10) || 30));
       const homeworkMode = !!config.homeworkMode;
       if (toolbar) toolbar.style.display = homeworkMode ? "none" : "";
-      if (countSelect) countSelect.value = String(Math.min(60, Math.max(20, count)));
+      if (countSelect) countSelect.value = String(Math.min(30, Math.max(10, count)));
       const baseTopic = topics.length > 1 ? "Gemischt" : (topics[0] || String((topicSelect && topicSelect.value) || "Perfekt"));
       if (topicSelect) topicSelect.value = baseTopic;
       const sourceTopics = topics.length ? topics : (baseTopic === "Gemischt"
@@ -10903,7 +10897,7 @@
       } else if (normalizedTarget === "niveau") {
         openNiveauView();
       } else if (normalizedTarget === "a1") {
-        openA1ThemesInApp("./a1-mix.html?topics=praesens&count=50");
+        openA1ThemesInApp("./a1-mix.html?topics=praesens&count=30");
       } else if (normalizedTarget === "a2") {
         openA2ThemesInApp("./a2-themen.html");
       } else if (normalizedTarget === "dtz") {
@@ -12857,7 +12851,7 @@
       };
       const topic = singleMap[templateId];
       if (topic) {
-        return { url: `./a2-themen.html?hw=1&topics=${encodeURIComponent(topic)}&count=50` };
+        return { url: `./a2-themen.html?hw=1&topics=${encodeURIComponent(topic)}&count=30` };
       }
       if (templateId.startsWith("a2-test-generator-") || templateId.startsWith("a2-test-")) {
         const textBag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
@@ -12881,7 +12875,7 @@
           if (!pickedTopics.includes(item.value)) pickedTopics.push(item.value);
         });
         const countMatch = textBag.match(/(\d{1,3})\s*fragen/);
-        const count = countMatch ? Math.max(10, Math.min(100, Number.parseInt(countMatch[1], 10) || 50)) : 50;
+        const count = countMatch ? Math.max(10, Math.min(30, Number.parseInt(countMatch[1], 10) || 30)) : 30;
         const params = new URLSearchParams();
         params.set("hw", "1");
         if (pickedTopics.length) params.set("topics", pickedTopics.join(","));
@@ -12921,7 +12915,7 @@
           .filter((item, index, arr) => arr.indexOf(item) === index)
           .filter(item => A1_MIX_TOPIC_KEYS.includes(item));
         const countNum = Number.parseInt(String(countRaw || ""), 10);
-        const count = Number.isFinite(countNum) ? Math.max(10, Math.min(50, countNum)) : 50;
+        const count = Number.isFinite(countNum) ? Math.max(10, Math.min(30, countNum)) : 30;
         const params = new URLSearchParams();
         params.set("hw", "1");
         if (pickedTopics.length) params.set("topics", pickedTopics.join(","));
@@ -12963,7 +12957,7 @@
       };
       const textBag = `${String(row.title || "")}\n${String(row.description || "")}`.toLowerCase();
       const countMatch = textBag.match(/(\d{1,3})\s*fragen/);
-      const inferredCount = countMatch ? Number.parseInt(countMatch[1], 10) : 50;
+      const inferredCount = countMatch ? Number.parseInt(countMatch[1], 10) : 30;
       if (attachment) {
         const lower = attachment.toLowerCase();
         if (lower.includes("/a1-mix.html")) {
@@ -13021,7 +13015,7 @@
       const toB1MixUrl = (topicRaw, countRaw) => {
         const topic = String(topicRaw || "konjunktiv2").trim().toLowerCase();
         const countNum = Number.parseInt(String(countRaw || ""), 10);
-        const count = Number.isFinite(countNum) ? Math.max(10, Math.min(50, countNum)) : 30;
+        const count = Number.isFinite(countNum) ? Math.max(10, Math.min(30, countNum)) : 30;
         const params = new URLSearchParams();
         params.set("hw", "1");
         params.set("topic", topic || "konjunktiv2");
@@ -13061,7 +13055,7 @@
       return { url: toB1MixUrl(inferTopic(), inferredCount) };
     }
 
-    function openA1ThemesInApp(rawInput = "./a1-mix.html?topics=praesens&count=50", options = {}) {
+    function openA1ThemesInApp(rawInput = "./a1-mix.html?topics=praesens&count=30", options = {}) {
       const url = resolveSafeHttpUrl(String(rawInput || "").trim());
       if (!url) {
         setStatus("error", "Für A1 ist kein gültiger Link hinterlegt.", "portalStatus");
@@ -15479,7 +15473,7 @@
       const select = document.getElementById("a1TopicSelect");
       const countSelect = document.getElementById("a1QuestionCountSelect");
       const topic = String(select?.value || "praesens");
-      const count = Math.max(20, Math.min(60, Number(countSelect?.value || 50)));
+      const count = Math.max(10, Math.min(30, Number(countSelect?.value || 30)));
       openA1ThemesInApp(`./a1-mix.html?topics=${encodeURIComponent(topic)}&count=${encodeURIComponent(String(count))}`, { assignmentMode: false });
     });
     const a1BackToPortalBtn = document.getElementById("a1BackToPortalBtn");
@@ -15511,7 +15505,7 @@
       const select = document.getElementById("b1TopicSelect");
       const countSelect = document.getElementById("b1QuestionCountSelect");
       const topic = String(select?.value || "konjunktiv2");
-      const count = Math.max(20, Math.min(60, Number(countSelect?.value || 50)));
+      const count = Math.max(10, Math.min(30, Number(countSelect?.value || 30)));
       openB1ThemesInApp(`./b1-mix.html?topic=${encodeURIComponent(topic)}&count=${encodeURIComponent(String(count))}`, { assignmentMode: false });
     });
     const b1BackToPortalBtn = document.getElementById("b1BackToPortalBtn");
@@ -15548,10 +15542,10 @@
         const topicSelect = document.getElementById("a2TopicSelect");
         const countSelect = document.getElementById("a2QuestionCountSelect");
         const topic = String((topicSelect && topicSelect.value) || "Perfekt");
-        const count = Number.parseInt(String((countSelect && countSelect.value) || "50"), 10);
+        const count = Number.parseInt(String((countSelect && countSelect.value) || "30"), 10);
         startA2IntegratedTest({
           topics: topic === "Gemischt" ? [] : [topic],
-          count: Number.isFinite(count) ? count : 50,
+          count: Number.isFinite(count) ? count : 30,
           homeworkMode: false
         });
       });

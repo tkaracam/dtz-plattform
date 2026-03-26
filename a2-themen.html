@@ -699,7 +699,7 @@
               <option value="Gemischt">Gemischter Test</option>
             </select>
           </div>
-          <button type="button" id="startTestBtn">50-Fragen-Test starten</button>
+          <button type="button" id="startTestBtn">30-Fragen-Test starten</button>
         </div>
 
         <div class="task-box">
@@ -709,7 +709,7 @@
             <span class="badge" id="badgeProgress">Gelöst: 0/50</span>
           </div>
 
-          <p class="prompt" id="questionPrompt">Bitte Test starten. Danach sehen Sie alle 50 Fragen als A/B/C-Aufgaben.</p>
+          <p class="prompt" id="questionPrompt">Bitte Test starten. Danach sehen Sie alle Fragen als A/B/C-Aufgaben.</p>
           <div id="questionsList" class="questions-list"></div>
           <div id="examActions" class="exam-actions" hidden>
             <button type="button" id="checkAllBtn">Prüfen</button>
@@ -1426,9 +1426,9 @@
 
     function parseHomeworkQuestionCount() {
       const params = new URLSearchParams(window.location.search);
-      const raw = Number.parseInt(String(params.get("count") || "50"), 10);
-      if (!Number.isFinite(raw)) return 50;
-      return Math.max(10, Math.min(100, raw));
+      const raw = Number.parseInt(String(params.get("count") || "30"), 10);
+      if (!Number.isFinite(raw)) return 30;
+      return Math.max(10, Math.min(30, raw));
     }
 
     function isHomeworkMode() {
@@ -1834,7 +1834,7 @@
 
     function startTest(options = {}) {
       const forcedTopics = Array.isArray(options.topics) ? options.topics.filter(topic => topicKeys.includes(topic)) : [];
-      const questionCount = Math.max(10, Math.min(100, Number(options.count) || 50));
+      const questionCount = Math.max(10, Math.min(30, Number(options.count) || 30));
       if (forcedTopics.length === 1) {
         state.topic = forcedTopics[0];
         topicSelect.value = forcedTopics[0];

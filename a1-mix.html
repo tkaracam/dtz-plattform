@@ -108,7 +108,7 @@
     </div>
     <div class="checkbox-grid" id="topicCheckboxes"></div>
     <div class="back-row" style="margin-top:12px;">
-      <button class="btn primary" id="generateBtn">Test generieren (50 Fragen)</button>
+      <button class="btn primary" id="generateBtn">Test generieren (30 Fragen)</button>
     </div>
   </section>
 
@@ -422,7 +422,7 @@ const TOPICS = {
 
 let questions = [];
 let activeTopics = {};
-let questionCount = 50;
+let questionCount = 30;
 let submitted = false;
 
 function normalizeTopicKey(value) {
@@ -459,9 +459,9 @@ function parsePresetTopics() {
 
 function parseQuestionCount() {
   const params = new URLSearchParams(window.location.search);
-  const raw = Number.parseInt(String(params.get('count') || '50'), 10);
-  if (!Number.isFinite(raw)) return 50;
-  return Math.max(10, Math.min(50, raw));
+  const raw = Number.parseInt(String(params.get('count') || '30'), 10);
+  if (!Number.isFinite(raw)) return 30;
+  return Math.max(10, Math.min(30, raw));
 }
 
 function isHomeworkMode() {

@@ -3470,7 +3470,7 @@
                     <div class="grid" style="margin-top:8px;">
                       <div>
                         <label for="hwA1QuestionCount">Fragenzahl</label>
-                        <input id="hwA1QuestionCount" type="number" min="10" max="50" value="50">
+                        <input id="hwA1QuestionCount" type="number" min="10" max="30" value="30">
                       </div>
                     </div>
                     <div class="grid" style="margin-top:8px;">
@@ -3512,7 +3512,7 @@
                     <div class="grid" style="margin-top:8px;">
                       <div>
                         <label for="hwA2QuestionCount">Fragenzahl</label>
-                        <input id="hwA2QuestionCount" type="number" min="10" max="50" value="50">
+                        <input id="hwA2QuestionCount" type="number" min="10" max="30" value="30">
                       </div>
                     </div>
                     <div class="grid" style="margin-top:8px;">
@@ -3563,7 +3563,7 @@
                     <div class="grid" style="margin-top:8px;">
                       <div>
                         <label for="hwB1QuestionCount">Fragenzahl</label>
-                        <input id="hwB1QuestionCount" type="number" min="10" max="50" value="50">
+                        <input id="hwB1QuestionCount" type="number" min="10" max="30" value="30">
                       </div>
                     </div>
                     <div class="grid" style="margin-top:8px;">
@@ -7850,8 +7850,8 @@
         throw new Error("Bitte mindestens ein A2-Thema auswählen.");
       }
 
-      const countInput = Number(document.getElementById("hwA2QuestionCount")?.value || 50);
-      const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+      const countInput = Number(document.getElementById("hwA2QuestionCount")?.value || 30);
+      const questionCount = Math.max(10, Math.min(30, Number.isFinite(countInput) ? Math.floor(countInput) : 30));
       const topicLabels = selectedTopics.map(item => item.label);
       const topicKeys = selectedTopics.map(item => item.key);
       const topicQueryValues = selectedTopics.map(item => item.a2Topic);
@@ -7974,8 +7974,8 @@
       if (!selectedTopics.length) {
         throw new Error("Bitte mindestens ein A1-Thema auswählen.");
       }
-      const countInput = Number(document.getElementById("hwA1QuestionCount")?.value || 50);
-      const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+      const countInput = Number(document.getElementById("hwA1QuestionCount")?.value || 30);
+      const questionCount = Math.max(10, Math.min(30, Number.isFinite(countInput) ? Math.floor(countInput) : 30));
       const topicLabels = selectedTopics.map(item => item.label);
       const topicKeys = selectedTopics.map(item => item.key);
       const shortTitle = topicLabels.length <= 3
@@ -8093,8 +8093,8 @@
       if (!selectedTopics.length) {
         throw new Error("Bitte mindestens ein B1-Thema auswählen.");
       }
-      const countInput = Number(document.getElementById("hwB1QuestionCount")?.value || 50);
-      const questionCount = Math.max(10, Math.min(50, Number.isFinite(countInput) ? Math.floor(countInput) : 50));
+      const countInput = Number(document.getElementById("hwB1QuestionCount")?.value || 30);
+      const questionCount = Math.max(10, Math.min(30, Number.isFinite(countInput) ? Math.floor(countInput) : 30));
       const topicLabels = selectedTopics.map(item => item.label);
       const topicKeys = selectedTopics.map(item => item.key);
       const shortTitle = topicLabels.length <= 3
