@@ -633,6 +633,33 @@ function require_json_body_or_400(int $maxBytes = 262144): array
     return $decoded;
 }
 
+function validate_password_policy(string $password, string $username = ''): array
+{
+    $len = mb_strlen($password);
+    if ($len < 8 || $len > 128) {
+        return ['ok' => false, 'error' => 'Passwort muss 8-128 Zeichen haben.'];
+    }
+    if (preg_match('/\s/u', $password)) {
+        return ['ok' => false, 'error' => 'Passwort darf keine Leerzeichen enthalten.'];
+    }
+    if (!preg_match('/[A-ZÄÖÜ]/u', $password)) {
+        return ['ok' => false, 'error' => 'Passwort muss mindestens einen Großbuchstaben enthalten.'];
+    }
+    if (!preg_match('/[a-zäöüß]/u', $password)) {
+        return ['ok' => false, 'error' => 'Passwort muss mindestens einen Kleinbuchstaben enthalten.'];
+    }
+    if (!preg_match('/\d/u', $password)) {
+        return ['ok' => false, 'error' => 'Passwort muss mindestens eine Zahl enthalten.'];
+    }
+    $u = auth_lower_text($username);
+    if ($u !== '' && mb_strlen($u) >= 3) {
+        if (mb_strpos(auth_lower_text($password), $u) !== false) {
+            return ['ok' => false, 'error' => 'Passwort darf den Benutzernamen nicht enthalten.'];
+        }
+    }
+    return ['ok' => true, 'error' => ''];
+}
+
 function rate_limit_file(string $bucket): string
 {
     $safe = preg_replace('/[^a-z0-9._-]+/i', '-', strtolower(trim($bucket)));

@@ -20,13 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 check_rate_limit_json('member-register', 8, 900);
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(65536);
 
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
 $password = (string)($body['password'] ?? '');
@@ -45,15 +39,16 @@ if ($username === 'admin') {
     exit;
 }
 
-if (mb_strlen($password) < 6) {
+if (auth_lower_text($password) === auth_lower_text($username)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Passwort muss mindestens 6 Zeichen haben.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Passwort darf nicht dem Benutzernamen entsprechen.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-if (!preg_match('/[A-ZÄÖÜ]/u', $password)) {
+$pwdCheck = validate_password_policy($password, $username);
+if (empty($pwdCheck['ok'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Passwort muss mindestens einen Großbuchstaben enthalten.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => (string)($pwdCheck['error'] ?? 'Ungültiges Passwort.')], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

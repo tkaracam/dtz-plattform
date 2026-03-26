@@ -20,13 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 $admin = require_admin_role_json(['hauptadmin', 'docent']);
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(65536);
 
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
 $password = (string)($body['password'] ?? '');
@@ -45,9 +39,13 @@ if (($admin['role'] ?? '') === 'docent') {
     $teacherUsername = (string)($admin['username'] ?? '');
 }
 
-if (mb_strlen($password) < 6 || mb_strlen($password) > 128) {
+[$pwdOk, $pwdErr] = [false, ''];
+$pwdCheck = validate_password_policy($password, $username);
+$pwdOk = !empty($pwdCheck['ok']);
+$pwdErr = (string)($pwdCheck['error'] ?? 'Ungültiges Passwort.');
+if (!$pwdOk) {
     http_response_code(400);
-    echo json_encode(['error' => 'Passwort muss 6-128 Zeichen haben.'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => $pwdErr], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

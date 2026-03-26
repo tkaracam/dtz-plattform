@@ -20,13 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 $admin = require_admin_role_json(['hauptadmin', 'docent']);
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(65536);
 
 $action = trim((string)($body['action'] ?? ''));
 $username = mb_strtolower(trim((string)($body['username'] ?? '')));
@@ -61,9 +55,16 @@ if (!admin_can_access_student_record((array)$users[$foundIndex], $admin)) {
 
 if ($action === 'reset_password') {
     $newPassword = (string)($body['new_password'] ?? '');
-    if (mb_strlen($newPassword) < 6 || mb_strlen($newPassword) > 128) {
+    $pwdCheck = validate_password_policy($newPassword, $username);
+    if (empty($pwdCheck['ok'])) {
         http_response_code(400);
-        echo json_encode(['error' => 'Passwort muss 6-128 Zeichen haben.'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['error' => (string)($pwdCheck['error'] ?? 'Ungültiges Passwort.')], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $existingHash = (string)($users[$foundIndex]['password_hash'] ?? '');
+    if ($existingHash !== '' && password_verify($newPassword, $existingHash)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Neues Passwort darf nicht dem aktuellen Passwort entsprechen.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     $users[$foundIndex]['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);

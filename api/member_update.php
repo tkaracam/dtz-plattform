@@ -20,13 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 $member = require_member_session_json();
 
-$raw = file_get_contents('php://input') ?: '';
-$body = json_decode($raw, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+$body = require_json_body_or_400(65536);
 
 $displayName = trim((string)($body['display_name'] ?? ''));
 $email = trim((string)($body['email'] ?? ''));
@@ -55,9 +49,15 @@ foreach ($members as &$row) {
             echo json_encode(['error' => 'Aktuelles Passwort ist falsch.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
-        if (mb_strlen($newPassword) < 6 || !preg_match('/[A-ZÄÖÜ]/u', $newPassword)) {
+        $pwdCheck = validate_password_policy($newPassword, (string)($member['username'] ?? ''));
+        if (empty($pwdCheck['ok'])) {
             http_response_code(400);
-            echo json_encode(['error' => 'Neues Passwort muss mindestens 6 Zeichen haben und einen Großbuchstaben enthalten.'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error' => (string)($pwdCheck['error'] ?? 'Ungültiges Passwort.')], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if (!empty($row['password_hash']) && password_verify($newPassword, (string)$row['password_hash'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Neues Passwort darf nicht dem aktuellen Passwort entsprechen.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
         $row['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
