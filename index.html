@@ -2763,6 +2763,32 @@
       color: #9a2f2f;
     }
 
+    .card.embed-assignment-seamless {
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      animation: none;
+    }
+
+    .card.embed-assignment-seamless > .section-title {
+      display: none;
+    }
+
+    .card.embed-assignment-seamless .portal-item.embed-frame-wrap {
+      margin-top: 0 !important;
+      border: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    .card.embed-assignment-seamless iframe.embed-frame {
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent;
+      min-height: 78vh;
+    }
+
     .portal-homework-group + .portal-homework-group {
       margin-top: 10px;
     }
@@ -4002,13 +4028,13 @@
           </div>
         </div>
         <div id="a1Status" class="hidden"></div>
-        <div id="a1AssignedWrap" class="portal-item" style="margin-top:12px; padding:10px;">
+        <div id="a1AssignedWrap" class="portal-item embed-frame-wrap" style="margin-top:12px; padding:10px;">
           <div class="row-end" style="margin:0 0 8px;">
             <div class="btn-wrap">
               <button id="a1BackToPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
             </div>
           </div>
-          <iframe id="a1EmbedFrame" title="A1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
+          <iframe id="a1EmbedFrame" class="embed-frame" title="A1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
         </div>
       </section>
 
@@ -4042,13 +4068,13 @@
           </div>
         </div>
         <div id="b1Status" class="hidden"></div>
-        <div id="b1AssignedWrap" class="portal-item" style="margin-top:12px; padding:10px;">
+        <div id="b1AssignedWrap" class="portal-item embed-frame-wrap" style="margin-top:12px; padding:10px;">
           <div class="row-end" style="margin:0 0 8px;">
             <div class="btn-wrap">
               <button id="b1BackToPortalBtn" type="button" class="portal-open-btn hidden">Zurück zum Portal</button>
             </div>
           </div>
-          <iframe id="b1EmbedFrame" title="B1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
+          <iframe id="b1EmbedFrame" class="embed-frame" title="B1-Themen" style="width:100%;min-height:72vh;border:1px solid #d9e1ef;border-radius:12px;background:#fff;" loading="lazy"></iframe>
         </div>
       </section>
 
@@ -13026,12 +13052,16 @@
       const frame = document.getElementById("a1EmbedFrame");
       const backBtn = document.getElementById("a1BackToPortalBtn");
       const toolbar = document.getElementById("a1Toolbar");
+      const card = document.getElementById("a1EmbedCard");
       const assignmentMode = !!(options && options.assignmentMode);
       if (frame) {
         frame.src = url;
       }
       if (toolbar) {
         toolbar.classList.toggle("hidden", assignmentMode);
+      }
+      if (card) {
+        card.classList.toggle("embed-assignment-seamless", assignmentMode);
       }
       if (backBtn) {
         backBtn.classList.add("hidden");
@@ -13052,9 +13082,11 @@
       const frame = document.getElementById("b1EmbedFrame");
       const backBtn = document.getElementById("b1BackToPortalBtn");
       const toolbar = document.getElementById("b1Toolbar");
+      const card = document.getElementById("b1EmbedCard");
       const assignmentMode = !!(options && options.assignmentMode);
       if (frame) frame.src = url;
       if (toolbar) toolbar.classList.toggle("hidden", assignmentMode);
+      if (card) card.classList.toggle("embed-assignment-seamless", assignmentMode);
       if (backBtn) backBtn.classList.toggle("hidden", !assignmentMode);
       if (!assignmentMode) {
         currentOpenedHomeworkContext.b1AssignmentId = "";
