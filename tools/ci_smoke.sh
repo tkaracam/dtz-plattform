@@ -18,17 +18,31 @@ need_cmd() {
 
 need_cmd php
 need_cmd curl
-need_cmd rg
+
+HAS_RG=0
+if command -v rg >/dev/null 2>&1; then
+  HAS_RG=1
+fi
+
+contains_match() {
+  local pattern="$1"
+  local file="$2"
+  if [[ "$HAS_RG" == "1" ]]; then
+    rg -q "$pattern" "$file"
+  else
+    grep -E -q "$pattern" "$file"
+  fi
+}
 
 echo "[SMOKE] 1/5 PHP lint"
 while IFS= read -r f; do
   php -l "$f" >/dev/null || fail "php lint failed: $f"
-done < <(cd "$ROOT_DIR" && rg --files api | rg '\.php$')
+done < <(find "$ROOT_DIR/api" -type f -name '*.php' | sort)
 
 echo "[SMOKE] 2/5 unauth endpoint checks"
 resp_code="$(curl -sS -o /tmp/dtz_smoke_home.out -w "%{http_code}" "$BASE_URL/")"
 [[ "$resp_code" == "200" ]] || fail "GET / returned $resp_code"
-rg -q "dtz-build|DTZ|dtz" /tmp/dtz_smoke_home.out || fail "home page marker not found"
+contains_match "dtz-build|DTZ|dtz" /tmp/dtz_smoke_home.out || fail "home page marker not found"
 
 portal_code="$(curl -sS -o /tmp/dtz_smoke_portal.out -w "%{http_code}" "$BASE_URL/api/student_portal.php")"
 [[ "$portal_code" == "401" || "$portal_code" == "403" ]] || fail "unauth portal expected 401/403, got $portal_code"
@@ -43,20 +57,20 @@ JSON
     -H "Content-Type: application/json" \
     --data-binary @/tmp/dtz_admin_login.json)"
   [[ "$admin_code" == "200" ]] || fail "admin login failed ($admin_code)"
-  rg -q '"ok":true|"authenticated":true' /tmp/dtz_admin_login.out || fail "admin login response not authenticated"
+  contains_match '"ok":true|"authenticated":true' /tmp/dtz_admin_login.out || fail "admin login response not authenticated"
 
   report_code="$(curl -sS -b /tmp/dtz_admin.cookie -o /tmp/dtz_admin_report.out -w "%{http_code}" \
     -X POST "$BASE_URL/api/homework_assign.php" \
     -H "Content-Type: application/json" \
     --data '{"action":"dtz_usage_report"}')"
   [[ "$report_code" == "200" ]] || fail "dtz_usage_report failed ($report_code)"
-  rg -q '"ok":true' /tmp/dtz_admin_report.out || fail "dtz_usage_report response invalid"
+  contains_match '"ok":true' /tmp/dtz_admin_report.out || fail "dtz_usage_report response invalid"
 
   progress_code="$(curl -sS -b /tmp/dtz_admin.cookie -o /tmp/dtz_admin_progress.out -w "%{http_code}" \
     "$BASE_URL/api/admin_progress.php?days=7")"
   [[ "$progress_code" == "200" ]] || fail "admin_progress failed ($progress_code)"
-  rg -q '"summary"|\"courses\"|\"students\"' /tmp/dtz_admin_progress.out || fail "admin_progress base payload invalid"
-  rg -q '"reminders_by_course"|\"reminders_by_template\"|\"reminders_by_level\"|\"reminders_by_course_details\"' /tmp/dtz_admin_progress.out || fail "admin_progress reminder payload invalid"
+  contains_match '"summary"|\"courses\"|\"students\"' /tmp/dtz_admin_progress.out || fail "admin_progress base payload invalid"
+  contains_match '"reminders_by_course"|\"reminders_by_template\"|\"reminders_by_level\"|\"reminders_by_course_details\"' /tmp/dtz_admin_progress.out || fail "admin_progress reminder payload invalid"
 else
   echo "[SMOKE] admin creds not provided -> skipped"
 fi
@@ -71,11 +85,11 @@ JSON
     -H "Content-Type: application/json" \
     --data-binary @/tmp/dtz_student_login.json)"
   [[ "$student_code" == "200" ]] || fail "student login failed ($student_code)"
-  rg -q '"ok":true|"authenticated":true' /tmp/dtz_student_login.out || fail "student login response not authenticated"
+  contains_match '"ok":true|"authenticated":true' /tmp/dtz_student_login.out || fail "student login response not authenticated"
 
   sp_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_student_portal.out -w "%{http_code}" "$BASE_URL/api/student_portal.php")"
   [[ "$sp_code" == "200" ]] || fail "student portal failed ($sp_code)"
-  rg -q '"homeworks"|"authenticated"' /tmp/dtz_student_portal.out || fail "student portal payload invalid"
+  contains_match '"homeworks"|"authenticated"' /tmp/dtz_student_portal.out || fail "student portal payload invalid"
 else
   echo "[SMOKE] student creds not provided -> skipped"
 fi
