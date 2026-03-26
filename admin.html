@@ -2402,6 +2402,22 @@
       gap: 8px;
     }
 
+    .admin-fastlane-course-chip {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      border: 1px solid #d8ccd3;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #6f4f5f;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .admin-fastlane-head {
       margin: 0;
       font-size: 0.9rem;
@@ -2411,20 +2427,20 @@
 
     .admin-fastlane-actions {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
     .admin-fastlane-btn {
       width: 100%;
       min-width: 0;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid #e4c7d4;
       background: #fff7fa;
       color: #6f4f5f;
       box-shadow: none;
-      font-size: 0.88rem;
-      padding: 8px 9px;
+      font-size: 0.92rem;
+      padding: 12px 10px;
       font-weight: 700;
     }
 
@@ -2510,14 +2526,8 @@
     }
 
     #fastHomeworksBtn {
-      border-color: #f2b7c9;
-      background: linear-gradient(120deg, #ff5f87, #ff8f66);
-      color: #ffffff;
-    }
-
-    #fastTeacherNotesBtn {
-      border-color: #c9b5e6;
-      background: linear-gradient(120deg, #7d6acb, #a07ed9);
+      border-color: #f2cfad;
+      background: linear-gradient(120deg, #e8904f, #f0a96a);
       color: #ffffff;
     }
 
@@ -2528,8 +2538,8 @@
     }
 
     #fastArchiveBtn {
-      border-color: #e7c39d;
-      background: linear-gradient(120deg, #c9843d, #e0a357);
+      border-color: #efb5b5;
+      background: linear-gradient(120deg, #cf5555, #e07171);
       color: #ffffff;
     }
 
@@ -2539,53 +2549,10 @@
       color: #ffffff;
     }
 
-    #fastAccountsBtn {
-      border-color: #f1c3a9;
-      background: linear-gradient(120deg, #f08b68, #e9a564);
-      color: #ffffff;
-    }
-
-    #fastCoursesBtn {
-      border-color: #a9bfdc;
-      background: linear-gradient(120deg, #4d78b9, #5f8cd1);
-      color: #ffffff;
-    }
-
-    #fastTeachersBtn {
-      border-color: #c6b2df;
-      background: linear-gradient(120deg, #8b63b6, #9d74c7);
-      color: #ffffff;
-    }
-
-    #fastKursBtn {
-      border-color: #9fd1dd;
-      background: linear-gradient(120deg, #3ea9b8, #60b8c4);
-      color: #ffffff;
-    }
-
-    #fastMod6Btn {
-      border-color: #ecc58f;
-      background: linear-gradient(120deg, #d89a4b, #e6b062);
-      color: #ffffff;
-    }
-
-    #fastSelectedCourseWorkspaceBtn {
-      border-color: #9dc0e6;
-      background: linear-gradient(120deg, #4f86ca, #6b9ad7);
-      color: #ffffff;
-    }
-
     #fastHomeworksBtn:hover,
-    #fastTeacherNotesBtn:hover,
     #fastAttendanceBtn:hover,
     #fastArchiveBtn:hover,
-    #fastProgressBtn:hover,
-    #fastAccountsBtn:hover,
-    #fastCoursesBtn:hover,
-    #fastTeachersBtn:hover,
-    #fastKursBtn:hover,
-    #fastMod6Btn:hover,
-    #fastSelectedCourseWorkspaceBtn:hover {
+    #fastProgressBtn:hover {
       color: #ffffff;
       box-shadow: 0 12px 24px rgba(75, 79, 95, 0.22);
     }
@@ -3089,23 +3056,12 @@
 
         <div class="admin-fastlane">
           <p class="admin-fastlane-head">Schnellzugriff</p>
+          <div id="fastlaneActiveCourse" class="admin-fastlane-course-chip">Aktiver Kurs: keiner</div>
           <div class="admin-fastlane-actions">
             <button id="fastHomeworksBtn" type="button" class="admin-fastlane-btn">Hausaufgaben</button>
-            <button id="fastTeacherNotesBtn" type="button" class="admin-fastlane-btn">Notiz senden</button>
             <button id="fastAttendanceBtn" type="button" class="admin-fastlane-btn">Anwesenheit</button>
             <button id="fastArchiveBtn" type="button" class="admin-fastlane-btn">Mail Korrekturen <span id="fastArchiveNotifyBadge" class="fastlane-notify-badge hidden">0</span></button>
             <button id="fastProgressBtn" type="button" class="admin-fastlane-btn">Fortschritt</button>
-            <button id="fastTeacherGuideBtn" type="button" class="admin-fastlane-btn">Lehrkraft-Anleitung</button>
-            <button id="fastCourseBuilderBtn" type="button" class="admin-fastlane-btn">Kurs erstellen</button>
-            <button id="fastDeleteCourseBtn" type="button" class="admin-fastlane-btn course-shortcut-delete-btn">Kurs löschen</button>
-            <button id="fastAccountsBtn" type="button" class="admin-fastlane-btn">Schülerzugänge</button>
-            <button id="fastCoursesBtn" type="button" class="admin-fastlane-btn">Kurse</button>
-            <button id="fastTeachersBtn" type="button" class="admin-fastlane-btn owner-only hidden">Lehrkräfte verwalten</button>
-            <button id="fastKursBtn" type="button" class="admin-fastlane-btn">Kurs</button>
-            <button id="fastMod6Btn" type="button" class="admin-fastlane-btn owner-only hidden">MOD6</button>
-          </div>
-          <div style="margin-top:8px;">
-            <button id="fastSelectedCourseWorkspaceBtn" type="button" class="admin-fastlane-btn hidden">Kursbereich öffnen</button>
           </div>
         </div>
 
@@ -6481,28 +6437,15 @@
     }
 
     function updateFastSelectedCourseWorkspaceButton() {
-      const btn = document.getElementById("fastSelectedCourseWorkspaceBtn");
-      if (!btn) return;
-      const isDocent = String(adminContext.role || "").trim().toLowerCase() === "docent";
-      if (isDocent) {
-        btn.classList.add("hidden");
-        btn.classList.remove("is-course-selected");
-        btn.disabled = true;
-        btn.textContent = "Kursbereich öffnen";
-        return;
-      }
+      const chip = document.getElementById("fastlaneActiveCourse");
+      if (!chip) return;
       const course = getCourseById(selectedCourseId);
       if (!course) {
-        btn.classList.add("hidden");
-        btn.classList.remove("is-course-selected");
-        btn.disabled = true;
-        btn.textContent = "Kursbereich öffnen";
+        chip.textContent = "Aktiver Kurs: keiner";
         return;
       }
-      btn.classList.remove("hidden");
-      btn.classList.add("is-course-selected");
-      btn.disabled = false;
-      btn.textContent = String(course.name || course.course_id || "Kurs");
+      const label = String(course.name || course.course_id || "Kurs");
+      chip.textContent = `Aktiver Kurs: ${label}`;
     }
 
     function getCourseSwitcherSelects() {
