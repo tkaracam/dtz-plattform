@@ -51,6 +51,8 @@
     .actions { margin-top:10px; display:grid; gap:8px; grid-template-columns:repeat(3,1fr); }
     .progress-badge { display:inline-block; padding:6px 12px; background:#fff4ed; border:1px solid #efcdbf; border-radius:999px; color:#6d4a3c; font-weight:700; font-size:.95rem; }
     .result { margin-top:8px; border:1px dashed #efcdbf; border-radius:10px; padding:10px; color:#6d4a3c; white-space:pre-wrap; background:#fffaf6; }
+    .homework-flat { border:none; background:transparent; padding:0; }
+    .homework-flat-head { display:none; }
   </style>
 </head>
 <body>
@@ -76,9 +78,9 @@
     </div>
   </section>
 
-  <section class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2>Test</h2>
+  <section class="card" id="testCard">
+    <div id="testCardHead" style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 id="testTitle">Test</h2>
       <span class="progress-badge" id="progressBadge">Gelöst: 0/50</span>
     </div>
     <div class="question-list" id="questionList"></div>
@@ -104,6 +106,8 @@ const submitBtn = document.getElementById('submitBtn');
 const solutionBtn = document.getElementById('solutionBtn');
 const portalBtn = document.getElementById('portalBtn');
 const topicConfigCard = document.getElementById('topicConfigCard');
+const testCard = document.getElementById('testCard');
+const testCardHead = document.getElementById('testCardHead');
 const heroTitle = document.getElementById('heroTitle');
 const heroSubtitle = document.getElementById('heroSubtitle');
 const heroBackRow = document.getElementById('heroBackRow');
@@ -611,6 +615,8 @@ if (homeworkMode) {
   if (topicConfigCard) topicConfigCard.style.display = 'none';
   if (heroBackRow) heroBackRow.style.display = 'none';
   if (heroSubtitle) heroSubtitle.style.display = 'none';
+  if (testCard) testCard.classList.add('homework-flat');
+  if (testCardHead) testCardHead.classList.add('homework-flat-head');
   if (newBtn) newBtn.style.display = 'none';
   if (actions) actions.style.gridTemplateColumns = 'repeat(3,1fr)';
   questions = generateQuestions();
