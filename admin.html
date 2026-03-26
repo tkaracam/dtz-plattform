@@ -9639,12 +9639,27 @@
         wrap.innerHTML = "<h4>Kursvergleich</h4><p>Keine Kursdaten verfügbar.</p>";
         return;
       }
+      const reminderCellHtml = (course) => {
+        const count = Number(course && course.reminders_sent_window || 0);
+        const cid = String(course && course.course_id || "").trim();
+        if (!count || !cid) {
+          return `<span class="mono">${escapeHtml(String(count || 0))}</span>`;
+        }
+        return `
+          <button
+            type="button"
+            class="ghost-btn"
+            data-progress-reminder-course="${escapeHtml(cid)}"
+            style="padding:4px 8px; font-size:0.78rem; min-width:56px;"
+          >${escapeHtml(String(count))}</button>
+        `;
+      };
       const tableRows = rows.map(course => `
         <tr>
           <td>${escapeHtml(String(course.name || "-"))}</td>
           <td class="mono">${escapeHtml(String(course.members_total ?? 0))}</td>
           <td class="mono">${escapeHtml(String(course.active_homeworks ?? 0))}</td>
-          <td class="mono">${escapeHtml(String(course.reminders_sent_window ?? 0))}</td>
+          <td>${reminderCellHtml(course)}</td>
           <td class="mono">${escapeHtml(String(course.submitted_window ?? 0))}/${escapeHtml(String(course.assigned_window ?? 0))}</td>
           <td class="mono">${escapeHtml(String(course.completion_window_percent ?? 0))}%</td>
           <td class="mono">${course.avg_score_window == null ? "-" : `${escapeHtml(String(course.avg_score_window))}/20`}</td>
@@ -9669,7 +9684,48 @@
           <tbody>${tableRows}</tbody>
         </table>
       `;
+      wrap.querySelectorAll("button[data-progress-reminder-course]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const courseId = String(btn.getAttribute("data-progress-reminder-course") || "").trim();
+          if (!courseId) return;
+          openProgressReminderCourseDetail(courseId);
+        });
+      });
       applyResponsiveTableLabels(wrap);
+    }
+
+    function openProgressReminderCourseDetail(courseId) {
+      const payload = latestProgressPayload && typeof latestProgressPayload === "object" ? latestProgressPayload : {};
+      const detailRows = Array.isArray(payload.reminders_by_course_details) ? payload.reminders_by_course_details : [];
+      const detail = detailRows.find(row => String(row && row.course_id || "").trim() === String(courseId || "").trim());
+      if (!detail) {
+        setBox("progressStatus", "error", "Keine Reminder-Details für diesen Kurs verfügbar.");
+        return;
+      }
+      const levels = detail.levels && typeof detail.levels === "object" ? detail.levels : {};
+      const students = Array.isArray(detail.students) ? detail.students : [];
+      const studentRows = students.length
+        ? students.map(row => `
+          <tr>
+            <td>${escapeHtml(String(row.student_name || row.student_username || "-"))}</td>
+            <td class="mono">${escapeHtml(String(row.student_username || "-"))}</td>
+            <td class="mono">${escapeHtml(String(row.count || 0))}</td>
+            <td class="mono">${escapeHtml(String((row.levels && row.levels.warn24) || 0))}</td>
+            <td class="mono">${escapeHtml(String((row.levels && row.levels.warn2) || 0))}</td>
+            <td class="mono">${escapeHtml(String((row.levels && row.levels.expired) || 0))}</td>
+            <td class="mono">${escapeHtml(String((row.levels && row.levels.other) || 0))}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="7">Keine Details.</td></tr>`;
+      const title = String(detail.label || detail.course_id || courseId);
+      const win = window.open("", "_blank", "noopener,noreferrer,width=1080,height=760");
+      if (!win) {
+        setBox("progressStatus", "error", "Detailfenster konnte nicht geöffnet werden.");
+        return;
+      }
+      win.document.open();
+      win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Reminder-Details</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;margin:18px;color:#1d3557}table{width:100%;border-collapse:collapse}th,td{border:1px solid #d2deea;padding:8px;font-size:13px;text-align:left}th{background:#f2f7fc}.mono{font-family:'SF Mono',Menlo,Consolas,monospace}.meta{margin:8px 0 12px;color:#4f5f75}</style></head><body><h2 style="margin-top:0;">Reminder-Details · ${escapeHtml(title)}</h2><div class="meta">Gesamt: ${escapeHtml(String(detail.total || 0))} · warn24: ${escapeHtml(String(levels.warn24 || 0))} · warn2: ${escapeHtml(String(levels.warn2 || 0))} · expired: ${escapeHtml(String(levels.expired || 0))} · other: ${escapeHtml(String(levels.other || 0))}</div><table><thead><tr><th>Name</th><th>Benutzername</th><th>Gesamt</th><th>warn24</th><th>warn2</th><th>expired</th><th>other</th></tr></thead><tbody>${studentRows}</tbody></table></body></html>`);
+      win.document.close();
     }
 
     function renderProgressStudents(students) {

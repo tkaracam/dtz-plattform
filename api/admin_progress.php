@@ -362,6 +362,7 @@ $remindersByLevel = [
     'expired' => 0,
     'other' => 0,
 ];
+$remindersByCourseDetail = [];
 
 foreach ($visibleAssignments as $assignment) {
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
@@ -523,6 +524,57 @@ foreach ($reminderRows as $row) {
     if ($courseId !== '' && isset($courseStats[$courseId])) {
         $courseStats[$courseId]['reminders_sent_window'] = (int)($courseStats[$courseId]['reminders_sent_window'] ?? 0) + 1;
     }
+    if (!isset($remindersByCourseDetail[$courseKey]) || !is_array($remindersByCourseDetail[$courseKey])) {
+        $courseLabel = $courseKey;
+        if ($courseKey === '-') {
+            $courseLabel = 'Ohne Kurs';
+        } elseif (isset($visibleCourses[$courseKey])) {
+            $courseLabel = (string)($visibleCourses[$courseKey]['name'] ?? $courseKey);
+        }
+        $remindersByCourseDetail[$courseKey] = [
+            'course_id' => $courseKey,
+            'label' => $courseLabel,
+            'total' => 0,
+            'levels' => [
+                'warn24' => 0,
+                'warn2' => 0,
+                'expired' => 0,
+                'other' => 0,
+            ],
+            'students' => [],
+        ];
+    }
+    $detail = $remindersByCourseDetail[$courseKey];
+    $detail['total'] = (int)($detail['total'] ?? 0) + 1;
+    if (!isset($detail['levels'][$level])) {
+        $detail['levels'][$level] = 0;
+    }
+    $detail['levels'][$level] = (int)($detail['levels'][$level] ?? 0) + 1;
+    if (!isset($detail['students'][$studentUsername]) || !is_array($detail['students'][$studentUsername])) {
+        $studentName = trim((string)($studentStats[$studentUsername]['student_name'] ?? ''));
+        if ($studentName === '') {
+            $studentName = (string)($studentStats[$studentUsername]['student_username'] ?? $studentUsername);
+        }
+        $detail['students'][$studentUsername] = [
+            'student_username' => (string)($studentStats[$studentUsername]['student_username'] ?? $studentUsername),
+            'student_name' => $studentName,
+            'count' => 0,
+            'levels' => [
+                'warn24' => 0,
+                'warn2' => 0,
+                'expired' => 0,
+                'other' => 0,
+            ],
+        ];
+    }
+    $studentDetail = $detail['students'][$studentUsername];
+    $studentDetail['count'] = (int)($studentDetail['count'] ?? 0) + 1;
+    if (!isset($studentDetail['levels'][$level])) {
+        $studentDetail['levels'][$level] = 0;
+    }
+    $studentDetail['levels'][$level] = (int)($studentDetail['levels'][$level] ?? 0) + 1;
+    $detail['students'][$studentUsername] = $studentDetail;
+    $remindersByCourseDetail[$courseKey] = $detail;
 }
 arsort($remindersByCourse, SORT_NUMERIC);
 arsort($remindersByTemplate, SORT_NUMERIC);
@@ -545,6 +597,37 @@ foreach (array_slice($remindersByTemplate, 0, 20, true) as $templateId => $count
         'count' => (int)$count,
     ];
 }
+$remindersByCourseDetailRows = [];
+foreach ($remindersByCourseDetail as $courseKey => $detail) {
+    if (!is_array($detail)) {
+        continue;
+    }
+    $studentsMap = is_array($detail['students'] ?? null) ? $detail['students'] : [];
+    $students = array_values($studentsMap);
+    usort($students, static function (array $a, array $b): int {
+        $countA = (int)($a['count'] ?? 0);
+        $countB = (int)($b['count'] ?? 0);
+        if ($countA !== $countB) {
+            return $countB <=> $countA;
+        }
+        return strcmp((string)($a['student_username'] ?? ''), (string)($b['student_username'] ?? ''));
+    });
+    $remindersByCourseDetailRows[] = [
+        'course_id' => (string)($detail['course_id'] ?? $courseKey),
+        'label' => (string)($detail['label'] ?? $courseKey),
+        'total' => (int)($detail['total'] ?? 0),
+        'levels' => is_array($detail['levels'] ?? null) ? $detail['levels'] : [],
+        'students' => array_slice($students, 0, 200),
+    ];
+}
+usort($remindersByCourseDetailRows, static function (array $a, array $b): int {
+    $totalA = (int)($a['total'] ?? 0);
+    $totalB = (int)($b['total'] ?? 0);
+    if ($totalA !== $totalB) {
+        return $totalB <=> $totalA;
+    }
+    return strcmp((string)($a['course_id'] ?? ''), (string)($b['course_id'] ?? ''));
+});
 
 $reviewsByUpload = is_dir($storageDir) ? load_letter_reviews_index($storageDir) : [];
 $letterRows = is_dir($storageDir) ? progress_read_letters($storageDir) : [];
@@ -788,4 +871,5 @@ echo json_encode([
     'reminders_by_course' => $remindersByCourseRows,
     'reminders_by_template' => $remindersByTemplateRows,
     'reminders_by_level' => $remindersByLevel,
+    'reminders_by_course_details' => $remindersByCourseDetailRows,
 ], JSON_UNESCAPED_UNICODE);
