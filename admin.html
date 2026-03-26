@@ -9841,13 +9841,14 @@
       applyResponsiveTableLabels(wrap);
     }
 
-    function renderProgressRecent(recentRows, modelltestRows = [], reminderCourses = [], reminderTemplates = []) {
+    function renderProgressRecent(recentRows, modelltestRows = [], reminderCourses = [], reminderTemplates = [], reminderLevels = null) {
       const wrap = document.getElementById("progressRecentWrap");
       if (!wrap) return;
       const rows = Array.isArray(recentRows) ? recentRows : [];
       const mtRows = Array.isArray(modelltestRows) ? modelltestRows : [];
       const reminderCourseRows = Array.isArray(reminderCourses) ? reminderCourses : [];
       const reminderTemplateRows = Array.isArray(reminderTemplates) ? reminderTemplates : [];
+      const levelMap = reminderLevels && typeof reminderLevels === "object" ? reminderLevels : {};
       const approvedHtml = rows.length
         ? `
         <h4>Zuletzt freigegebene Korrekturen</h4>
@@ -9878,6 +9879,10 @@
         ? `
         <h4 style="margin-top:12px;">Reminder-Verteilung</h4>
         <div class="progress-recent-list">
+          <div class="progress-recent-item">
+            <div><strong>Nach Level</strong></div>
+            <div class="mono">warn24: ${escapeHtml(String(Number(levelMap.warn24 || 0)))} · warn2: ${escapeHtml(String(Number(levelMap.warn2 || 0)))} · expired: ${escapeHtml(String(Number(levelMap.expired || 0)))} · other: ${escapeHtml(String(Number(levelMap.other || 0)))}</div>
+          </div>
           <div class="progress-recent-item">
             <div><strong>Nach Kurs</strong></div>
             <div class="mono">${reminderCourseRows.map(row => `${escapeHtml(String(row.label || row.course_id || "-"))}: ${escapeHtml(String(row.count || 0))}`).join(" · ") || "-"}</div>
@@ -10040,7 +10045,8 @@
           payload.recent_approved || [],
           payload.recent_modelltest_results || [],
           payload.reminders_by_course || [],
-          payload.reminders_by_template || []
+          payload.reminders_by_template || [],
+          payload.reminders_by_level || {}
         );
         setBox("progressStatus", "ok", "Fortschritt wurde aktualisiert.");
       } catch (err) {

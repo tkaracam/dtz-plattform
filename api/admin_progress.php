@@ -355,6 +355,12 @@ $summaryActiveHomeworks = 0;
 $summaryRemindersWindow = 0;
 $remindersByCourse = [];
 $remindersByTemplate = [];
+$remindersByLevel = [
+    'warn24' => 0,
+    'warn2' => 0,
+    'expired' => 0,
+    'other' => 0,
+];
 
 foreach ($visibleAssignments as $assignment) {
     $assignees = is_array($assignment['assignees'] ?? null) ? $assignment['assignees'] : [];
@@ -487,6 +493,13 @@ foreach ($reminderRows as $row) {
     if ($assignmentId === '') {
         continue;
     }
+    $studentUsername = progress_normalize_username((string)($row['student_username'] ?? ''));
+    if ($studentUsername === '' || !isset($visibleStudents[$studentUsername])) {
+        continue;
+    }
+    if ($studentUsernameFilter !== '' && $studentUsername !== $studentUsernameFilter) {
+        continue;
+    }
     $assignment = is_array($visibleAssignmentsById[$assignmentId] ?? null) ? $visibleAssignmentsById[$assignmentId] : null;
     if (!$assignment) {
         continue;
@@ -499,6 +512,11 @@ foreach ($reminderRows as $row) {
     $summaryRemindersWindow++;
     $courseKey = $courseId !== '' ? $courseId : '-';
     $templateKey = $templateId !== '' ? $templateId : '-';
+    $level = strtolower(trim((string)($row['level'] ?? '')));
+    if (!isset($remindersByLevel[$level])) {
+        $level = 'other';
+    }
+    $remindersByLevel[$level] = (int)($remindersByLevel[$level] ?? 0) + 1;
     $remindersByCourse[$courseKey] = (int)($remindersByCourse[$courseKey] ?? 0) + 1;
     $remindersByTemplate[$templateKey] = (int)($remindersByTemplate[$templateKey] ?? 0) + 1;
 }
@@ -765,4 +783,5 @@ echo json_encode([
     'recent_modelltest_results' => $recentModelltestResults,
     'reminders_by_course' => $remindersByCourseRows,
     'reminders_by_template' => $remindersByTemplateRows,
+    'reminders_by_level' => $remindersByLevel,
 ], JSON_UNESCAPED_UNICODE);
