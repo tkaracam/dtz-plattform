@@ -19,6 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
 
+function payload_optional_non_negative_int(array $body, string $key): ?int
+{
+    if (!array_key_exists($key, $body)) {
+        return null;
+    }
+    $value = filter_var($body[$key], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    if ($value === false) {
+        return null;
+    }
+    return (int)$value;
+}
+
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 
@@ -34,6 +46,35 @@ $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 if ($assignmentId === '') {
     http_response_code(400);
     echo json_encode(['error' => 'assignment_id fehlt.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$correct = payload_optional_non_negative_int($body, 'correct');
+$wrong = payload_optional_non_negative_int($body, 'wrong');
+$total = payload_optional_non_negative_int($body, 'total');
+$unanswered = payload_optional_non_negative_int($body, 'unanswered');
+$elapsedSeconds = payload_optional_non_negative_int($body, 'elapsed_seconds');
+$hasAnyAttemptField = array_key_exists('correct', $body) || array_key_exists('wrong', $body) || array_key_exists('total', $body) || array_key_exists('unanswered', $body);
+if ($hasAnyAttemptField) {
+    if ($correct === null || $wrong === null || $total === null || $unanswered === null) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Versuchswerte: correct/wrong/unanswered/total müssen nicht-negative Ganzzahlen sein.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($total <= 0 || $total > 200) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Versuchswerte: total muss zwischen 1 und 200 liegen.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if ($correct > $total || $wrong > $total || $unanswered > $total || ($correct + $wrong + $unanswered) !== $total) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Ungültige Versuchswerte: correct + wrong + unanswered muss total entsprechen.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+if (array_key_exists('elapsed_seconds', $body) && $elapsedSeconds === null) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültiger elapsed_seconds-Wert.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -90,15 +131,16 @@ $mutateOk = homework_assignments_mutate(function (array $items) use ($assignment
 
     $startedAt = trim((string)($state['started_at'] ?? ''));
     $deadlineAt = trim((string)($state['deadline_at'] ?? ''));
+    if ($startedAt === '') {
+        $txn['http'] = 409;
+        $txn['err'] = 'Die Aufgabe wurde noch nicht gestartet.';
+        return false;
+    }
     $deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
     if ($deadlineTs !== false && $now > (int)$deadlineTs) {
         $txn['http'] = 409;
         $txn['err'] = 'Die Frist ist abgelaufen.';
         return false;
-    }
-    if ($startedAt === '') {
-        $startedAt = gmdate('c', $now);
-        $deadlineAt = gmdate('c', $now + assignment_duration_minutes($assignment) * 60);
     }
 
     $submittedAt = gmdate('c', $now);
@@ -117,13 +159,13 @@ $mutateOk = homework_assignments_mutate(function (array $items) use ($assignment
 });
 
 if (!$mutateOk) {
+    if ($txn['http'] !== 200) {
+        http_response_code((int)$txn['http']);
+        echo json_encode(['error' => (string)$txn['err']], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     http_response_code(500);
     echo json_encode(['error' => 'Aufgabenstatus konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ($txn['http'] !== 200) {
-    http_response_code($txn['http']);
-    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -142,13 +184,7 @@ $submittedAt = (string)$txn['submitted_at'];
 $now = (int)$txn['server_ts'];
 
 // Skor verisi varsa homework_attempts.jsonl dosyasına yaz
-$correct = isset($body['correct']) ? max(0, (int)$body['correct']) : null;
-$wrong = isset($body['wrong']) ? max(0, (int)$body['wrong']) : null;
-$total = isset($body['total']) ? max(0, (int)$body['total']) : null;
-$unanswered = isset($body['unanswered']) ? max(0, (int)$body['unanswered']) : null;
-$elapsedSeconds = isset($body['elapsed_seconds']) ? max(0, (int)$body['elapsed_seconds']) : null;
-
-if ($total !== null && $total > 0) {
+if ($hasAnyAttemptField && $total !== null && $total > 0) {
     $attemptRecord = [
         'assignment_id' => $assignmentId,
         'student_username' => $username,

@@ -19,6 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
 
+function payload_required_non_negative_int(array $body, string $key): ?int
+{
+    if (!array_key_exists($key, $body)) {
+        return null;
+    }
+    $value = filter_var($body[$key], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    if ($value === false) {
+        return null;
+    }
+    return (int)$value;
+}
+
 function modelltest_level_from_percent_local(int $percent): string
 {
     $p = max(0, min(100, $percent));
@@ -54,12 +66,22 @@ if ($assignmentId === '') {
     exit;
 }
 
-$hoerenCorrect = max(0, (int)($body['hoeren_correct'] ?? 0));
-$hoerenTotal = max(0, (int)($body['hoeren_total'] ?? 0));
-$lesenCorrect = max(0, (int)($body['lesen_correct'] ?? 0));
-$lesenTotal = max(0, (int)($body['lesen_total'] ?? 0));
-$schreibenScore = max(0, (int)($body['schreiben_score'] ?? 0));
-$schreibenMax = max(0, (int)($body['schreiben_max'] ?? 0));
+$hoerenCorrect = payload_required_non_negative_int($body, 'hoeren_correct');
+$hoerenTotal = payload_required_non_negative_int($body, 'hoeren_total');
+$lesenCorrect = payload_required_non_negative_int($body, 'lesen_correct');
+$lesenTotal = payload_required_non_negative_int($body, 'lesen_total');
+$schreibenScore = payload_required_non_negative_int($body, 'schreiben_score');
+$schreibenMax = payload_required_non_negative_int($body, 'schreiben_max');
+if ($hoerenCorrect === null || $hoerenTotal === null || $lesenCorrect === null || $lesenTotal === null || $schreibenScore === null || $schreibenMax === null) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Modelltest-Werte: alle Ergebnisfelder müssen nicht-negative Ganzzahlen sein.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($hoerenTotal > 200 || $lesenTotal > 200 || $schreibenMax > 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Modelltest-Werte: totals/max außerhalb des erlaubten Bereichs.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 if ($hoerenTotal <= 0 || $lesenTotal <= 0) {
     http_response_code(400);
     echo json_encode(['error' => 'Ungültige Modelltest-Teile: Hören und Lesen müssen > 0 sein.'], JSON_UNESCAPED_UNICODE);
@@ -216,13 +238,13 @@ $mutateOk = homework_assignments_mutate(function (array $items) use (
 });
 
 if (!$mutateOk) {
+    if ($txn['http'] !== 200) {
+        http_response_code((int)$txn['http']);
+        echo json_encode(['error' => (string)$txn['err']], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     http_response_code(500);
     echo json_encode(['error' => 'Modelltest-Ergebnis konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ($txn['http'] !== 200) {
-    http_response_code($txn['http']);
-    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
     exit;
 }
 

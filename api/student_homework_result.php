@@ -19,6 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/homework_lib.php';
 
+function payload_required_non_negative_int(array $body, string $key): ?int
+{
+    if (!array_key_exists($key, $body)) {
+        return null;
+    }
+    $value = filter_var($body[$key], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+    if ($value === false) {
+        return null;
+    }
+    return (int)$value;
+}
+
 function homework_attempts_file_path(): string
 {
     return __DIR__ . '/storage/homework_attempts.jsonl';
@@ -72,12 +84,22 @@ if (!is_array($body)) {
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 $module = mb_strtolower(trim((string)($body['module'] ?? '')));
 $teil = (int)($body['teil'] ?? 0);
-$correct = max(0, (int)($body['correct'] ?? 0));
-$wrong = max(0, (int)($body['wrong'] ?? 0));
-$unanswered = max(0, (int)($body['unanswered'] ?? 0));
-$total = max(0, (int)($body['total'] ?? 0));
-$points = max(0, (int)($body['points'] ?? 0));
-$maxPoints = max(0, (int)($body['max_points'] ?? 0));
+$correct = payload_required_non_negative_int($body, 'correct');
+$wrong = payload_required_non_negative_int($body, 'wrong');
+$unanswered = payload_required_non_negative_int($body, 'unanswered');
+$total = payload_required_non_negative_int($body, 'total');
+$points = payload_required_non_negative_int($body, 'points');
+$maxPoints = payload_required_non_negative_int($body, 'max_points');
+if ($correct === null || $wrong === null || $unanswered === null || $total === null || $points === null || $maxPoints === null) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Ergebniswerte: correct/wrong/unanswered/total/points/max_points müssen nicht-negative Ganzzahlen sein.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+if ($total > 200 || $maxPoints > 200) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige Ergebniswerte: total/max_points außerhalb des erlaubten Bereichs.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 if ($assignmentId === '' || $total <= 0) {
     http_response_code(400);
@@ -254,13 +276,13 @@ $mutateOk = homework_assignments_mutate(function (array $items) use (
 });
 
 if (!$mutateOk) {
+    if ($txn['http'] !== 200) {
+        http_response_code((int)$txn['http']);
+        echo json_encode(['error' => (string)$txn['err']], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     http_response_code(500);
     echo json_encode(['error' => 'Aufgabenstatus konnte nicht aktualisiert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
-}
-if ($txn['http'] !== 200) {
-    http_response_code($txn['http']);
-    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
     exit;
 }
 $now = (int)$txn['now'];
