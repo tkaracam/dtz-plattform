@@ -36,7 +36,65 @@ function load_used_dtz_question_ids(): array
         return [];
     }
     $decoded = json_decode($raw, true);
-    return is_array($decoded) ? $decoded : [];
+    if (!is_array($decoded)) {
+        return [
+            'version' => 2,
+            'updated_at' => '',
+            'recent' => [],
+            'stats' => [],
+            'events' => [],
+        ];
+    }
+
+    // v2 format (detailed tracking)
+    if (isset($decoded['version']) && (int)$decoded['version'] >= 2) {
+        return [
+            'version' => 2,
+            'updated_at' => (string)($decoded['updated_at'] ?? ''),
+            'recent' => is_array($decoded['recent'] ?? null) ? $decoded['recent'] : [],
+            'stats' => is_array($decoded['stats'] ?? null) ? $decoded['stats'] : [],
+            'events' => is_array($decoded['events'] ?? null) ? $decoded['events'] : [],
+        ];
+    }
+
+    // Legacy format: { "<bucket>": ["template_id", ...] }
+    $stats = [];
+    $recent = [];
+    foreach ($decoded as $bucketKey => $ids) {
+        if (!is_string($bucketKey) || !is_array($ids)) {
+            continue;
+        }
+        $bucketRecent = [];
+        $bucketStats = [];
+        foreach ($ids as $qidRaw) {
+            $qid = trim((string)$qidRaw);
+            if ($qid === '') {
+                continue;
+            }
+            if (!isset($bucketStats[$qid])) {
+                $bucketStats[$qid] = [
+                    'count' => 1,
+                    'last_used_at' => '',
+                    'last_assignment_id' => '',
+                    'last_teacher' => '',
+                    'last_course_id' => '',
+                    'last_target_count' => 0,
+                ];
+                $bucketRecent[] = $qid;
+            }
+        }
+        if ($bucketStats) {
+            $stats[$bucketKey] = $bucketStats;
+            $recent[$bucketKey] = $bucketRecent;
+        }
+    }
+    return [
+        'version' => 2,
+        'updated_at' => gmdate('c'),
+        'recent' => $recent,
+        'stats' => $stats,
+        'events' => [],
+    ];
 }
 
 function save_used_dtz_question_ids(array $payload): bool
@@ -45,11 +103,45 @@ function save_used_dtz_question_ids(array $payload): bool
     if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
         return false;
     }
-    $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    $normalized = [
+        'version' => 2,
+        'updated_at' => (string)($payload['updated_at'] ?? gmdate('c')),
+        'recent' => is_array($payload['recent'] ?? null) ? $payload['recent'] : [],
+        'stats' => is_array($payload['stats'] ?? null) ? $payload['stats'] : [],
+        'events' => is_array($payload['events'] ?? null) ? $payload['events'] : [],
+    ];
+    $json = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     if (!is_string($json)) {
         return false;
     }
     return file_put_contents(homework_used_dtz_questions_file(), $json . PHP_EOL, LOCK_EX) !== false;
+}
+
+function dtz_usage_bucket_key(string $module, int $teil): string
+{
+    return $module . '_teil_' . $teil;
+}
+
+function dtz_usage_parse_ts(string $value): int
+{
+    $ts = strtotime($value);
+    return $ts === false ? 0 : (int)$ts;
+}
+
+function dtz_usage_compact_recent(array $recent, int $max = 240): array
+{
+    $out = [];
+    foreach ($recent as $qidRaw) {
+        $qid = trim((string)$qidRaw);
+        if ($qid === '') {
+            continue;
+        }
+        $out[] = $qid;
+    }
+    if (count($out) > $max) {
+        $out = array_slice($out, count($out) - $max);
+    }
+    return array_values($out);
 }
 
 function parse_dtz_template_id(string $templateId): ?array
@@ -68,41 +160,34 @@ function parse_dtz_template_id(string $templateId): ?array
     return ['module' => $module, 'teil' => $teil];
 }
 
-function build_unique_dtz_bundle_from_used(string $module, int $teil, array $used): array
+function build_unique_dtz_bundle_from_used(string $module, int $teil, array $used, array $context = []): array
 {
-    $set = create_training_set($module, 50, false, $teil);
+    $set = create_training_set($module, 120, false, $teil);
     $items = is_array($set['items'] ?? null) ? $set['items'] : [];
-    $bucketKey = $module . '_teil_' . $teil;
-    $usedIds = is_array($used[$bucketKey] ?? null) ? $used[$bucketKey] : [];
-    $usedLookup = [];
-    foreach ($usedIds as $qid) {
-        $key = trim((string)$qid);
-        if ($key !== '') {
-            $usedLookup[$key] = true;
-        }
+    $bucketKey = dtz_usage_bucket_key($module, $teil);
+    $bucketRecent = is_array($used['recent'][$bucketKey] ?? null) ? $used['recent'][$bucketKey] : [];
+    $bucketStats = is_array($used['stats'][$bucketKey] ?? null) ? $used['stats'][$bucketKey] : [];
+    $bucketRecent = dtz_usage_compact_recent($bucketRecent, 240);
+    $recentWindow = array_slice($bucketRecent, -120);
+    $recentLookup = [];
+    foreach ($recentWindow as $qid) {
+        $recentLookup[(string)$qid] = true;
     }
 
-    $available = [];
+    $availableByQid = [];
     foreach ($items as $item) {
         if (!is_array($item)) {
             continue;
         }
         $qid = trim((string)($item['template_id'] ?? ''));
-        if ($qid === '' || isset($usedLookup[$qid])) {
+        if ($qid === '') {
             continue;
         }
-        $available[] = $item;
+        if (!isset($availableByQid[$qid])) {
+            $availableByQid[$qid] = $item;
+        }
     }
-
-    $reusedCycle = false;
-    if (!$available) {
-        // Pool is exhausted for this Teil: start a fresh cycle instead of failing assignment creation.
-        $reusedCycle = true;
-        $available = array_values(array_filter($items, static function ($item): bool {
-            return is_array($item) && trim((string)($item['template_id'] ?? '')) !== '';
-        }));
-        $usedLookup = [];
-    }
+    $available = array_values($availableByQid);
 
     if (!$available) {
         throw new RuntimeException('Für dieses Teil sind aktuell keine Fragen verfügbar.');
@@ -112,25 +197,91 @@ function build_unique_dtz_bundle_from_used(string $module, int $teil, array $use
     if ($targetCount > count($available)) {
         $targetCount = count($available);
     }
-    shuffle($available);
-    $picked = array_slice($available, 0, $targetCount);
-
-    foreach ($picked as $row) {
-        $qid = trim((string)($row['template_id'] ?? ''));
-        if ($qid !== '') {
-            $usedLookup[$qid] = true;
+    foreach ($available as $idx => $item) {
+        $qid = trim((string)($item['template_id'] ?? ''));
+        $stat = is_array($bucketStats[$qid] ?? null) ? $bucketStats[$qid] : [];
+        $available[$idx]['__rank_qid'] = $qid;
+        $available[$idx]['__rank_recent'] = isset($recentLookup[$qid]) ? 1 : 0;
+        $available[$idx]['__rank_count'] = max(0, (int)($stat['count'] ?? 0));
+        $available[$idx]['__rank_ts'] = dtz_usage_parse_ts((string)($stat['last_used_at'] ?? ''));
+        try {
+            $available[$idx]['__rank_rnd'] = random_int(1, PHP_INT_MAX);
+        } catch (Throwable $e) {
+            $available[$idx]['__rank_rnd'] = mt_rand(1, PHP_INT_MAX);
         }
     }
+    usort($available, static function (array $a, array $b): int {
+        if ((int)$a['__rank_recent'] !== (int)$b['__rank_recent']) {
+            return (int)$a['__rank_recent'] <=> (int)$b['__rank_recent'];
+        }
+        if ((int)$a['__rank_count'] !== (int)$b['__rank_count']) {
+            return (int)$a['__rank_count'] <=> (int)$b['__rank_count'];
+        }
+        if ((int)$a['__rank_ts'] !== (int)$b['__rank_ts']) {
+            return (int)$a['__rank_ts'] <=> (int)$b['__rank_ts'];
+        }
+        return (int)$a['__rank_rnd'] <=> (int)$b['__rank_rnd'];
+    });
+    $picked = array_slice($available, 0, $targetCount);
+    $pickedQids = [];
+    foreach ($picked as &$row) {
+        $qid = trim((string)($row['template_id'] ?? ''));
+        if ($qid !== '') {
+            $pickedQids[] = $qid;
+        }
+        unset($row['__rank_qid'], $row['__rank_recent'], $row['__rank_count'], $row['__rank_ts'], $row['__rank_rnd']);
+    }
+    unset($row);
 
-    $nextUsedIds = array_keys($usedLookup);
-    sort($nextUsedIds, SORT_STRING);
-    $used[$bucketKey] = $nextUsedIds;
+    $nowIso = gmdate('c');
+    $assignmentId = trim((string)($context['assignment_id'] ?? ''));
+    $teacher = trim((string)($context['teacher_username'] ?? ''));
+    $courseId = trim((string)($context['course_id'] ?? ''));
+    $targetUsersCount = max(0, (int)($context['target_users_count'] ?? 0));
+    foreach ($pickedQids as $qid) {
+        $row = is_array($bucketStats[$qid] ?? null) ? $bucketStats[$qid] : [];
+        $count = max(0, (int)($row['count'] ?? 0)) + 1;
+        $bucketStats[$qid] = [
+            'count' => $count,
+            'last_used_at' => $nowIso,
+            'last_assignment_id' => $assignmentId,
+            'last_teacher' => $teacher,
+            'last_course_id' => $courseId,
+            'last_target_count' => $targetUsersCount,
+        ];
+        $bucketRecent[] = $qid;
+    }
+    $bucketRecent = dtz_usage_compact_recent($bucketRecent, 240);
+    $used['stats'][$bucketKey] = $bucketStats;
+    $used['recent'][$bucketKey] = $bucketRecent;
+    $events = is_array($used['events'] ?? null) ? $used['events'] : [];
+    foreach ($picked as $row) {
+        $events[] = [
+            'ts' => $nowIso,
+            'bucket' => $bucketKey,
+            'module' => $module,
+            'teil' => $teil,
+            'template_id' => trim((string)($row['template_id'] ?? '')),
+            'title' => trim((string)($row['title'] ?? $row['question'] ?? '')),
+            'assignment_id' => $assignmentId,
+            'teacher_username' => $teacher,
+            'course_id' => $courseId,
+            'target_users_count' => $targetUsersCount,
+        ];
+    }
+    if (count($events) > 4000) {
+        $events = array_slice($events, count($events) - 4000);
+    }
+    $used['events'] = $events;
+    $used['updated_at'] = $nowIso;
 
     return [
         'module' => $module,
         'teil' => $teil,
         'items' => $picked,
-        'reused_cycle' => $reusedCycle,
+        'reused_cycle' => false,
+        'repeat_risk' => array_values(array_filter($pickedQids, static fn($qid) => isset($recentLookup[(string)$qid]))),
+        'selection_mode' => 'least_used_then_least_recent',
         'used' => $used,
     ];
 }
@@ -162,6 +313,11 @@ function format_dtz_bundle_description(string $baseDescription, array $bundle): 
     $lines[] = $reusedCycle
         ? 'Hinweis: Fragenpool wurde neu gestartet (Wiederholung möglich).'
         : 'Hinweis: Diese Fragen wurden für diese Aufgabe neu vergeben (ohne Wiederholung).';
+    if (($bundle['selection_mode'] ?? '') === 'least_used_then_least_recent') {
+        $repeatRiskCount = is_array($bundle['repeat_risk'] ?? null) ? count($bundle['repeat_risk']) : 0;
+        $lines[] = 'Verteilungsmodus: Gleichmäßig (niedrige Wiederholungswahrscheinlichkeit).';
+        $lines[] = 'Wiederholungsrisiko in diesem Paket: ' . $repeatRiskCount . ' von ' . count($items);
+    }
     foreach ($items as $idx => $item) {
         $qid = trim((string)($item['template_id'] ?? ''));
         $question = trim((string)($item['question'] ?? $item['title'] ?? ''));
@@ -172,6 +328,52 @@ function format_dtz_bundle_description(string $baseDescription, array $bundle): 
         $lines[] = ($idx + 1) . '. [' . $qid . '] ' . $shortQuestion;
     }
     return trim(implode("\n", array_filter($lines, static fn($v) => $v !== null)));
+}
+
+function build_dtz_usage_report(array $usageState): array
+{
+    $stats = is_array($usageState['stats'] ?? null) ? $usageState['stats'] : [];
+    $recent = is_array($usageState['recent'] ?? null) ? $usageState['recent'] : [];
+    $events = is_array($usageState['events'] ?? null) ? $usageState['events'] : [];
+    $buckets = [];
+    foreach ($stats as $bucket => $rows) {
+        if (!is_string($bucket) || !is_array($rows)) {
+            continue;
+        }
+        $usageTotal = 0;
+        $maxCount = 0;
+        $lastUsedAt = '';
+        foreach ($rows as $qid => $row) {
+            if (!is_string($qid) || !is_array($row)) {
+                continue;
+            }
+            $count = max(0, (int)($row['count'] ?? 0));
+            $usageTotal += $count;
+            if ($count > $maxCount) {
+                $maxCount = $count;
+            }
+            $ts = (string)($row['last_used_at'] ?? '');
+            if ($ts !== '' && strcmp($ts, $lastUsedAt) > 0) {
+                $lastUsedAt = $ts;
+            }
+        }
+        $buckets[] = [
+            'bucket' => $bucket,
+            'question_count' => count($rows),
+            'usage_total' => $usageTotal,
+            'max_usage_per_question' => $maxCount,
+            'recent_window_size' => is_array($recent[$bucket] ?? null) ? count((array)$recent[$bucket]) : 0,
+            'last_used_at' => $lastUsedAt,
+        ];
+    }
+    usort($buckets, static fn(array $a, array $b): int => strcmp((string)$a['bucket'], (string)$b['bucket']));
+    $eventTail = array_slice($events, -250);
+    return [
+        'updated_at' => (string)($usageState['updated_at'] ?? ''),
+        'bucket_count' => count($buckets),
+        'buckets' => $buckets,
+        'events_tail' => array_values($eventTail),
+    ];
 }
 
 $admin = require_admin_role_json(['hauptadmin', 'docent']);
@@ -233,6 +435,15 @@ if ($action === 'list') {
     });
 
     echo json_encode(['assignments' => $out], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($action === 'dtz_usage_report') {
+    $usageState = load_used_dtz_question_ids();
+    echo json_encode([
+        'ok' => true,
+        'report' => build_dtz_usage_report($usageState),
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -355,11 +566,28 @@ if ($action === 'create_batch') {
             exit;
         }
 
+        try {
+            $suffix = bin2hex(random_bytes(4));
+        } catch (Throwable $e) {
+            $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 8);
+        }
+        $id = 'hw-' . gmdate('YmdHis') . '-' . $suffix;
+
         $dtzBundle = null;
         $dtzTemplate = parse_dtz_template_id($templateId);
         if (is_array($dtzTemplate)) {
             try {
-                $bundleWithUsed = build_unique_dtz_bundle_from_used((string)$dtzTemplate['module'], (int)$dtzTemplate['teil'], $usedDtz);
+                $bundleWithUsed = build_unique_dtz_bundle_from_used(
+                    (string)$dtzTemplate['module'],
+                    (int)$dtzTemplate['teil'],
+                    $usedDtz,
+                    [
+                        'assignment_id' => $id,
+                        'teacher_username' => (string)($admin['username'] ?? ''),
+                        'course_id' => $targetType === 'course' ? $courseId : '',
+                        'target_users_count' => count($targetUsers),
+                    ]
+                );
                 $usedDtz = is_array($bundleWithUsed['used'] ?? null) ? $bundleWithUsed['used'] : $usedDtz;
                 unset($bundleWithUsed['used']);
                 $dtzBundle = $bundleWithUsed;
@@ -371,13 +599,6 @@ if ($action === 'create_batch') {
                 exit;
             }
         }
-
-        try {
-            $suffix = bin2hex(random_bytes(4));
-        } catch (Throwable $e) {
-            $suffix = substr(md5(uniqid((string)mt_rand(), true)), 0, 8);
-        }
-        $id = 'hw-' . gmdate('YmdHis') . '-' . $suffix;
 
         $assignees = [];
         foreach ($targetUsers as $uname) {
@@ -439,10 +660,23 @@ if ($action === 'create_batch') {
         exit;
     }
 
+    $dtzAuditRows = array_values(array_filter($newItems, static fn($row) => is_array($row) && is_array($row['dtz_bundle'] ?? null)));
+    $dtzAuditRows = array_values(array_map(static function (array $row): array {
+        $bundle = is_array($row['dtz_bundle'] ?? null) ? $row['dtz_bundle'] : [];
+        return [
+            'assignment_id' => (string)($row['id'] ?? ''),
+            'template_id' => (string)($row['template_id'] ?? ''),
+            'selection_mode' => (string)($bundle['selection_mode'] ?? ''),
+            'repeat_risk_count' => is_array($bundle['repeat_risk'] ?? null) ? count($bundle['repeat_risk']) : 0,
+            'bundle_size' => is_array($bundle['items'] ?? null) ? count($bundle['items']) : 0,
+        ];
+    }, $dtzAuditRows));
+
     append_audit_log('homework_assign_create_batch', [
         'batch_group_id' => $batchGroupId,
         'created_count' => count($newIds),
         'target_count' => count($targetUsers),
+        'dtz_assignments' => $dtzAuditRows,
     ]);
 
     echo json_encode([
@@ -551,19 +785,6 @@ if ($action === 'create') {
         exit;
     }
 
-    $dtzBundle = null;
-    $dtzTemplate = parse_dtz_template_id($templateId);
-    if (is_array($dtzTemplate)) {
-        try {
-            $dtzBundle = build_unique_dtz_bundle((string)$dtzTemplate['module'], (int)$dtzTemplate['teil']);
-            $description = format_dtz_bundle_description($description, $dtzBundle);
-        } catch (Throwable $e) {
-            http_response_code(409);
-            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-    }
-
     try {
         $suffix = bin2hex(random_bytes(4));
     } catch (Throwable $e) {
@@ -572,6 +793,38 @@ if ($action === 'create') {
 
     $id = 'hw-' . gmdate('YmdHis') . '-' . $suffix;
     $createdAt = gmdate('c');
+
+    $dtzBundle = null;
+    $dtzTemplate = parse_dtz_template_id($templateId);
+    if (is_array($dtzTemplate)) {
+        $usedDtz = load_used_dtz_question_ids();
+        try {
+            $bundleWithUsed = build_unique_dtz_bundle_from_used(
+                (string)$dtzTemplate['module'],
+                (int)$dtzTemplate['teil'],
+                $usedDtz,
+                [
+                    'assignment_id' => $id,
+                    'teacher_username' => (string)($admin['username'] ?? ''),
+                    'course_id' => $targetType === 'course' ? $courseId : '',
+                    'target_users_count' => count($targetUsers),
+                ]
+            );
+            $nextUsed = is_array($bundleWithUsed['used'] ?? null) ? $bundleWithUsed['used'] : $usedDtz;
+            if (!save_used_dtz_question_ids($nextUsed)) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Fragen-Status konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+            unset($bundleWithUsed['used']);
+            $dtzBundle = $bundleWithUsed;
+            $description = format_dtz_bundle_description($description, $dtzBundle);
+        } catch (Throwable $e) {
+            http_response_code(409);
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+    }
 
     $assignees = [];
     foreach ($targetUsers as $uname) {
@@ -619,6 +872,9 @@ if ($action === 'create') {
         'assignment_id' => $id,
         'target_type' => $targetType,
         'target_count' => count($targetUsers),
+        'dtz_selection_mode' => is_array($dtzBundle) ? (string)($dtzBundle['selection_mode'] ?? '') : '',
+        'dtz_repeat_risk_count' => is_array($dtzBundle) && is_array($dtzBundle['repeat_risk'] ?? null) ? count($dtzBundle['repeat_risk']) : 0,
+        'dtz_bundle_size' => is_array($dtzBundle) && is_array($dtzBundle['items'] ?? null) ? count($dtzBundle['items']) : 0,
     ]);
 
     echo json_encode([
