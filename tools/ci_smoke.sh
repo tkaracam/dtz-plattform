@@ -51,6 +51,12 @@ JSON
     --data '{"action":"dtz_usage_report"}')"
   [[ "$report_code" == "200" ]] || fail "dtz_usage_report failed ($report_code)"
   rg -q '"ok":true' /tmp/dtz_admin_report.out || fail "dtz_usage_report response invalid"
+
+  progress_code="$(curl -sS -b /tmp/dtz_admin.cookie -o /tmp/dtz_admin_progress.out -w "%{http_code}" \
+    "$BASE_URL/api/admin_progress.php?days=7")"
+  [[ "$progress_code" == "200" ]] || fail "admin_progress failed ($progress_code)"
+  rg -q '"summary"|\"courses\"|\"students\"' /tmp/dtz_admin_progress.out || fail "admin_progress base payload invalid"
+  rg -q '"reminders_by_course"|\"reminders_by_template\"|\"reminders_by_level\"|\"reminders_by_course_details\"' /tmp/dtz_admin_progress.out || fail "admin_progress reminder payload invalid"
 else
   echo "[SMOKE] admin creds not provided -> skipped"
 fi
