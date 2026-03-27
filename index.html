@@ -7657,9 +7657,7 @@
 
             state.set = items;
             state.tasks = buildDtzTasks(normalizedModule, teil, items);
-            if (!state.answers || typeof state.answers !== "object") {
-              state.answers = {};
-            }
+            state.answers = {};
             state.evaluated = false;
             state.lockedAfterSubmit = false;
             state.lastLoadedAt = new Date().toISOString();
@@ -7694,9 +7692,7 @@
             if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
             state.set = items;
             state.tasks = buildDtzTasks(normalizedModule, teil, items);
-            if (!state.answers || typeof state.answers !== "object") {
-              state.answers = {};
-            }
+            state.answers = {};
             state.evaluated = false;
             state.lockedAfterSubmit = false;
             state.lastLoadedAt = new Date().toISOString();
@@ -7724,9 +7720,7 @@
             if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
             state.set = items;
             state.tasks = buildDtzTasks(normalizedModule, teil, items);
-            if (!state.answers || typeof state.answers !== "object") {
-              state.answers = {};
-            }
+            state.answers = {};
             state.evaluated = false;
             state.lockedAfterSubmit = false;
             state.lastLoadedAt = new Date().toISOString();
@@ -7786,6 +7780,14 @@
         resultBox.className = "hidden";
         resultBox.textContent = "";
       }
+      ["hoeren", "lesen"].forEach((mod) => {
+        const ui = getDtzUi(mod);
+        if (ui && ui.summary) {
+          ui.summary.classList.add("hidden");
+          ui.summary.textContent = "";
+        }
+        clearDtzModuleStatus(mod);
+      });
       const writeText = document.getElementById("modelltestWriteText");
       if (writeText) {
         writeText.value = "";
