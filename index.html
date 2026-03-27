@@ -12838,6 +12838,15 @@
       if (["hoeren", "lesen", "a1", "a2", "b1", "mail", "modelltest", "schreiben", "unknown"].includes(serverCategory)) {
         return serverCategory;
       }
+      const title = String(row && row.title ? row.title : "");
+      const description = String(row && row.description ? row.description : "");
+      const titleLower = title.toLowerCase();
+      const bag = `${titleLower} ${description.toLowerCase()}`;
+
+      // Priorität: Modelltest-Titel/Label vor Template-Heuristik.
+      if (/^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/.test(titleLower)) return "modelltest";
+      if (bag.includes("modelltest") || bag.includes("mock-prüfung") || bag.includes("mock-pruefung")) return "modelltest";
+
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
       if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(templateId)) return "hoeren";
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(templateId)) return "lesen";
@@ -12851,14 +12860,9 @@
       if (templateId.startsWith("a1-test-")) return "a1";
       if (templateId.startsWith("a2-thema-") || templateId.startsWith("a2-test-") || templateId.startsWith("a2-test-generator-")) return "a2";
       if (templateId.startsWith("b1-test-")) return "b1";
-      const title = String(row && row.title ? row.title : "");
-      const description = String(row && row.description ? row.description : "");
-      const titleLower = title.toLowerCase();
-      const bag = `${titleLower} ${description.toLowerCase()}`;
 
       // Priorität: Überschrift/Titel (Mehrfachauswahl-Gruppen) vor Fließtext.
       if (/^(mail|mail-aufgabe)\b/.test(titleLower)) return "mail";
-      if (/^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/.test(titleLower)) return "modelltest";
       if (/^h[öo]ren\b/.test(titleLower) || /h[öo]ren\s*teil\s*[1-4]/.test(titleLower)) return "hoeren";
       if (/^lesen\b/.test(titleLower) || /lesen\s*teil\s*[1-5]/.test(titleLower)) return "lesen";
       if (/^a1\b|^a1-/.test(titleLower) || titleLower.includes("a1-grammatik") || titleLower.includes("a1-test")) return "a1";
@@ -12866,7 +12870,6 @@
 
       if (bag.includes("a1-test")) return "a1";
       if (bag.includes("a2")) return "a2";
-      if (bag.includes("modelltest") || bag.includes("mock-prüfung") || bag.includes("mock-pruefung")) return "modelltest";
       if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
       if (bag.includes("lesen")) return "lesen";
       if (bag.includes("schreiben") || bag.includes("mail")) return "mail";
@@ -13191,6 +13194,17 @@
       const blockedReason = getHomeworkOpenBlockReason(row);
       if (blockedReason) {
         setStatus("error", blockedReason, "portalStatus");
+        return;
+      }
+      if (row && detectStudentHomeworkCategory(row) === "modelltest") {
+        const assignmentId = String(assignmentIdRaw || "").trim();
+        if (assignmentId && isClientSolvedAssignment(assignmentId)) {
+          setStatus("ok", "Diese Aufgabe wurde bereits gelöst.", "portalStatus");
+          return;
+        }
+        currentOpenedHomeworkContext.dtzByModule.hoeren = assignmentId;
+        currentOpenedHomeworkContext.dtzByModule.lesen = assignmentId;
+        openDtzModelltestView();
         return;
       }
       const parsed = parseDtzHomeworkTemplate(templateIdRaw);
