@@ -101,4 +101,39 @@ else
   echo "[SMOKE] ANTI_REPEAT_SMOKE=1 not set -> skipped"
 fi
 
+echo "[SMOKE] 6/6 modelltest pool smoke (optional)"
+if [[ -n "${STUDENT_USER:-}" && -n "${STUDENT_PASS:-}" ]]; then
+  if [[ ! -s /tmp/dtz_student.cookie ]]; then
+    cat > /tmp/dtz_student_login.json <<JSON
+{"username":"${STUDENT_USER}","password":"${STUDENT_PASS}"}
+JSON
+    student_code="$(curl -sS -c /tmp/dtz_student.cookie -o /tmp/dtz_student_login.out -w "%{http_code}" \
+      -X POST "$BASE_URL/api/student_login.php" \
+      -H "Content-Type: application/json" \
+      --data-binary @/tmp/dtz_student_login.json)"
+    [[ "$student_code" == "200" ]] || fail "student login failed for modelltest smoke ($student_code)"
+    contains_match '"ok":true|"authenticated":true' /tmp/dtz_student_login.out || fail "student auth invalid for modelltest smoke"
+  fi
+
+  for module in hoeren lesen; do
+    if [[ "$module" == "hoeren" ]]; then
+      max_teil=4
+    else
+      max_teil=5
+    fi
+    for teil in $(seq 1 "$max_teil"); do
+      out="/tmp/dtz_modelltest_${module}_${teil}.out"
+      code="$(curl -sS -b /tmp/dtz_student.cookie -o "$out" -w "%{http_code}" \
+        -X POST "$BASE_URL/api/student_training_set.php" \
+        -H "Content-Type: application/json" \
+        --data "{\"module\":\"${module}\",\"teil\":${teil},\"count\":1,\"pool\":\"modelltest\"}")"
+      [[ "$code" == "200" ]] || fail "modelltest pool load failed (${module} teil ${teil}) code=$code"
+      contains_match '"ok":true' "$out" || fail "modelltest pool payload invalid (${module} teil ${teil})"
+      contains_match '"items":\\[' "$out" || fail "modelltest pool empty items (${module} teil ${teil})"
+    done
+  done
+else
+  echo "[SMOKE] student creds not provided -> modelltest pool smoke skipped"
+fi
+
 echo "[SMOKE][OK] all enabled checks passed"
