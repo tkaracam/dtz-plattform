@@ -4392,7 +4392,8 @@
       writePromptB: "",
       playedAudioByKey: {},
       finished: false,
-      submitted: false
+      submitted: false,
+      noWriteReadyHintShown: false
     };
     let solvedHomeworkAssignments = new Set();
     let portalHomeworksCache = [];
@@ -7314,9 +7315,19 @@
           const writingReady = isModelltestWritingCompleted();
           const canFinishWithoutWriting = !modelltestFlowState.hasWritingTask && canProceedAfterDtz;
           const canFinishWithWriting = modelltestFlowState.hasWritingTask && modelltestFlowState.stage === "schreiben" && writingReady;
-          finishBtn.textContent = "TEST ABGEBEN";
+          finishBtn.textContent = "ABGEBEN";
           finishBtn.classList.toggle("hidden", !(canFinishWithoutWriting || canFinishWithWriting));
           finishBtn.disabled = !(canFinishWithoutWriting || canFinishWithWriting);
+          if (canFinishWithoutWriting && !modelltestFlowState.noWriteReadyHintShown) {
+            modelltestFlowState.noWriteReadyHintShown = true;
+            setStatus("ok", "Hören und Lesen sind fertig. Sie können jetzt abgeben.", "statusBox");
+            setTimeout(() => {
+              try { finishBtn.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (_) {}
+            }, 80);
+          }
+          if (!canFinishWithoutWriting && !modelltestFlowState.hasWritingTask) {
+            modelltestFlowState.noWriteReadyHintShown = false;
+          }
         }
         if (writePanel) {
           writePanel.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || modelltestFlowState.stage !== "schreiben");
@@ -7687,6 +7698,7 @@
       modelltestFlowState.writePromptB = "";
       modelltestFlowState.playedAudioByKey = {};
       modelltestFlowState.submitted = false;
+      modelltestFlowState.noWriteReadyHintShown = false;
       ["hoeren", "lesen"].forEach(mod => {
         const maxTeil = getDtzMaxTeil(mod);
         for (let teil = 1; teil <= maxTeil; teil += 1) {
