@@ -12325,6 +12325,54 @@
     }
 
     function applyAssignedDtzLock() {
+      if (modelltestFlowState.active && currentModelltestAssignmentId()) {
+        const moduleSwitchWrap = document.getElementById("dtzModuleSwitchWrap");
+        const hoerenTeilButtonsWrap = document.getElementById("dtzHoerenTeilButtons");
+        const lesenTeilButtonsWrap = document.getElementById("dtzLesenTeilButtons");
+        const hoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
+        const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
+        const hoerenNewBtn = document.getElementById("dtzHoerenNewBtn");
+        const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
+        const hoerenEvaluateBtn = document.getElementById("dtzHoerenEvaluateBtn");
+        if (moduleSwitchWrap) {
+          moduleSwitchWrap.classList.add("hidden");
+          moduleSwitchWrap.style.display = "none";
+        }
+        if (hoerenTeilButtonsWrap) {
+          hoerenTeilButtonsWrap.classList.add("hidden");
+          hoerenTeilButtonsWrap.style.display = "none";
+        }
+        if (lesenTeilButtonsWrap) {
+          lesenTeilButtonsWrap.classList.add("hidden");
+          lesenTeilButtonsWrap.style.display = "none";
+        }
+        if (hoerenOpenBtn) hoerenOpenBtn.classList.add("hidden");
+        if (lesenOpenBtn) lesenOpenBtn.classList.add("hidden");
+        if (hoerenNewBtn) {
+          hoerenNewBtn.classList.add("hidden");
+          hoerenNewBtn.disabled = true;
+        }
+        if (lesenNewBtn) {
+          lesenNewBtn.classList.add("hidden");
+          lesenNewBtn.disabled = true;
+        }
+        if (hoerenEvaluateBtn) {
+          hoerenEvaluateBtn.classList.add("hidden");
+          hoerenEvaluateBtn.disabled = true;
+        }
+        ["hoeren", "lesen"].forEach((module) => {
+          const ui = getDtzUi(module);
+          if (!ui) return;
+          if (ui.teilSelect) ui.teilSelect.disabled = true;
+          const teilButtons = document.querySelectorAll(`.dtz-teil-btn[data-dtz-module="${module}"]`);
+          teilButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add("hidden");
+          });
+        });
+        return;
+      }
+
       const requirement = getActiveAssignedDtzRequirement();
       const hoerenOpenBtn = document.getElementById("dtzHoerenOpenBtn");
       const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
