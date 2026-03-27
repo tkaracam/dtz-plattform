@@ -136,4 +136,74 @@ else
   echo "[SMOKE] student creds not provided -> modelltest pool smoke skipped"
 fi
 
+echo "[SMOKE] 7/7 modelltest assignment + schreiben smoke (optional)"
+if [[ -n "${ADMIN_USER:-}" && -n "${ADMIN_PASS:-}" && -n "${STUDENT_USER:-}" && -n "${STUDENT_PASS:-}" ]]; then
+  if [[ ! -s /tmp/dtz_admin.cookie ]]; then
+    cat > /tmp/dtz_admin_login.json <<JSON
+{"username":"${ADMIN_USER}","password":"${ADMIN_PASS}"}
+JSON
+    admin_code="$(curl -sS -c /tmp/dtz_admin.cookie -o /tmp/dtz_admin_login.out -w "%{http_code}" \
+      -X POST "$BASE_URL/api/admin_login.php" \
+      -H "Content-Type: application/json" \
+      --data-binary @/tmp/dtz_admin_login.json)"
+    [[ "$admin_code" == "200" ]] || fail "admin login failed for modelltest assign smoke ($admin_code)"
+  fi
+
+  now_iso="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  cat > /tmp/dtz_modelltest_assign_create.json <<JSON
+{
+  "action": "create",
+  "template_id": "dtz-mock-pruefung-komplett",
+  "title": "SMOKE Modelltest mit Schreiben",
+  "description": "Automated smoke assignment for modelltest + schreiben",
+  "attachment": "mock_mail=1",
+  "target_type": "users",
+  "usernames": ["${STUDENT_USER}"],
+  "duration_minutes": 20,
+  "starts_at": "${now_iso}"
+}
+JSON
+  create_code="$(curl -sS -b /tmp/dtz_admin.cookie -o /tmp/dtz_modelltest_assign_create.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/homework_assign.php" \
+    -H "Content-Type: application/json" \
+    --data-binary @/tmp/dtz_modelltest_assign_create.json)"
+  [[ "$create_code" == "200" ]] || fail "modelltest assignment create failed ($create_code)"
+  modelltest_assignment_id="$(php -r '
+    $j=json_decode(file_get_contents($argv[1]), true);
+    $id=trim((string)($j["assignment_id"] ?? ""));
+    if ($id === "") { exit(2); }
+    echo $id;
+  ' /tmp/dtz_modelltest_assign_create.out)" || fail "modelltest assignment_id missing"
+
+  cleanup_modelltest_assignment() {
+    curl -sS -b /tmp/dtz_admin.cookie \
+      -X POST "$BASE_URL/api/homework_assign.php" \
+      -H "Content-Type: application/json" \
+      --data "{\"action\":\"delete\",\"assignment_id\":\"${modelltest_assignment_id}\"}" >/dev/null 2>&1 || true
+  }
+  trap cleanup_modelltest_assignment EXIT
+
+  start_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_modelltest_start.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/student_homework_start.php" \
+    -H "Content-Type: application/json" \
+    --data "{\"assignment_id\":\"${modelltest_assignment_id}\"}")"
+  [[ "$start_code" == "200" ]] || fail "modelltest start failed ($start_code)"
+  contains_match '"ok":true' /tmp/dtz_modelltest_start.out || fail "modelltest start payload invalid"
+
+  save_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_modelltest_save.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/student_modelltest_result.php" \
+    -H "Content-Type: application/json" \
+    --data "{\"assignment_id\":\"${modelltest_assignment_id}\",\"hoeren_correct\":16,\"hoeren_total\":20,\"lesen_correct\":18,\"lesen_total\":25,\"schreiben_score\":12,\"schreiben_max\":20}")"
+  [[ "$save_code" == "200" ]] || fail "modelltest result save failed ($save_code)"
+  contains_match '"ok":true' /tmp/dtz_modelltest_save.out || fail "modelltest result payload invalid"
+
+  save2_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_modelltest_save2.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/student_modelltest_result.php" \
+    -H "Content-Type: application/json" \
+    --data "{\"assignment_id\":\"${modelltest_assignment_id}\",\"hoeren_correct\":16,\"hoeren_total\":20,\"lesen_correct\":18,\"lesen_total\":25,\"schreiben_score\":12,\"schreiben_max\":20}")"
+  [[ "$save2_code" == "409" ]] || fail "modelltest second save should be locked (expected 409, got $save2_code)"
+else
+  echo "[SMOKE] admin/student creds not provided -> modelltest assignment smoke skipped"
+fi
+
 echo "[SMOKE][OK] all enabled checks passed"
