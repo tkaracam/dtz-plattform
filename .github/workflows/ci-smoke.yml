@@ -7,19 +7,6 @@ on:
   schedule:
     - cron: "30 4 * * *"
   workflow_dispatch:
-    inputs:
-      base_url:
-        description: "Test URL"
-        required: false
-        default: "https://dtz-lid.com"
-      run_anti_repeat:
-        description: "Anti-repeat testini çalıştır (1/0)"
-        required: false
-        default: "1"
-      test_student_user:
-        description: "Anti-repeat için hedef öğrenci (opsiyonel, secret yoksa)"
-        required: false
-        default: ""
 
 permissions:
   contents: read
@@ -43,23 +30,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Apply workflow_dispatch overrides
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          set -euo pipefail
-          BASE_URL_OVERRIDE="$(jq -r '.inputs.base_url // empty' "$GITHUB_EVENT_PATH")"
-          ANTI_REPEAT_OVERRIDE="$(jq -r '.inputs.run_anti_repeat // empty' "$GITHUB_EVENT_PATH")"
-          TEST_STUDENT_OVERRIDE="$(jq -r '.inputs.test_student_user // empty' "$GITHUB_EVENT_PATH")"
-          if [ -n "${BASE_URL_OVERRIDE}" ]; then
-            echo "BASE_URL=${BASE_URL_OVERRIDE}" >> "$GITHUB_ENV"
-          fi
-          if [ -n "${ANTI_REPEAT_OVERRIDE}" ]; then
-            echo "ANTI_REPEAT_SMOKE=${ANTI_REPEAT_OVERRIDE}" >> "$GITHUB_ENV"
-          fi
-          if [ -n "${TEST_STUDENT_OVERRIDE}" ]; then
-            echo "TEST_STUDENT_USER=${TEST_STUDENT_OVERRIDE}" >> "$GITHUB_ENV"
-          fi
 
       - name: Ensure scripts executable
         run: |
@@ -85,7 +55,7 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           set -euo pipefail
-          MSG="❌ CI Smoke failed | Repo: ${GITHUB_REPOSITORY} | Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} | Branch: ${GITHUB_REF_NAME} | Commit: ${GITHUB_SHA}"
+          MSG="CI Smoke failed | Repo: ${GITHUB_REPOSITORY} | Run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} | Branch: ${GITHUB_REF_NAME} | Commit: ${GITHUB_SHA}"
           curl -sS -X POST "${DISCORD_WEBHOOK_URL}" \
             -H "Content-Type: application/json" \
             --data "$(printf '{"content":"%s"}' "$(printf '%s' "${MSG}" | sed 's/"/\\"/g')")"
@@ -97,7 +67,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           set -euo pipefail
-          TEXT="❌ CI Smoke failed%0ARepo: ${GITHUB_REPOSITORY}%0ARun: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}%0ABranch: ${GITHUB_REF_NAME}%0ACommit: ${GITHUB_SHA}"
+          TEXT="CI Smoke failed%0ARepo: ${GITHUB_REPOSITORY}%0ARun: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}%0ABranch: ${GITHUB_REF_NAME}%0ACommit: ${GITHUB_SHA}"
           curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d "chat_id=${TELEGRAM_CHAT_ID}" \
             -d "text=${TEXT}" \
