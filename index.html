@@ -7246,6 +7246,8 @@
       const lesenStats = getModelltestModuleStats("lesen");
       const hoerenEvaluated = isModelltestModuleEvaluated("hoeren");
       const lesenEvaluated = isModelltestModuleEvaluated("lesen");
+      const bothAnswered = hoerenStats.allAnswered && lesenStats.allAnswered;
+      const bothEvaluated = hoerenEvaluated && lesenEvaluated;
       if (!flowCard) return;
 
       flowCard.classList.toggle("hidden", !modelltestFlowState.active);
@@ -7290,6 +7292,42 @@
       if (postSubmitActions) postSubmitActions.classList.add("hidden");
       if (showSolutionsBtn) showSolutionsBtn.disabled = !modelltestFlowState.submitted;
       if (portalBtn) portalBtn.disabled = !modelltestFlowState.submitted;
+
+      // Assigned modelltest: Hören + Lesen in one page, then optional Schreiben.
+      if (isAssignedModelltest) {
+        if (stageChip) {
+          stageChip.textContent = modelltestFlowState.stage === "schreiben"
+            ? "Phase: Schreiben"
+            : "Modelltest: Hören + Lesen";
+        }
+        if (timerChip) timerChip.classList.add("hidden");
+        if (closeHoerenBtn) closeHoerenBtn.classList.add("hidden");
+        if (toLesenBtn) toLesenBtn.classList.add("hidden");
+
+        const canProceedAfterDtz = bothAnswered && bothEvaluated;
+        if (toSchreibenBtn) {
+          toSchreibenBtn.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || modelltestFlowState.stage === "schreiben" || !!modelltestFlowState.submitted);
+          toSchreibenBtn.textContent = "Schreiben starten";
+          toSchreibenBtn.disabled = !canProceedAfterDtz;
+        }
+        if (finishBtn) {
+          const writingReady = isModelltestWritingCompleted();
+          const canFinishWithoutWriting = !modelltestFlowState.hasWritingTask && canProceedAfterDtz;
+          const canFinishWithWriting = modelltestFlowState.hasWritingTask && modelltestFlowState.stage === "schreiben" && writingReady;
+          finishBtn.textContent = "TEST ABGEBEN";
+          finishBtn.classList.toggle("hidden", !(canFinishWithoutWriting || canFinishWithWriting));
+          finishBtn.disabled = !(canFinishWithoutWriting || canFinishWithWriting);
+        }
+        if (writePanel) {
+          writePanel.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || modelltestFlowState.stage !== "schreiben");
+        }
+        setAccordionOpen("dtzHoerenAccordion", true);
+        setAccordionOpen("dtzLesenAccordion", true);
+        setAccordionOpen("workAccordion", !!(modelltestFlowState.hasWritingTask && modelltestFlowState.stage === "schreiben"));
+        lockDtzModuleInputs("hoeren", false);
+        lockDtzModuleInputs("lesen", false);
+        return;
+      }
 
       if (modelltestFlowState.stage === "hoeren") {
         if (stageChip) stageChip.textContent = "Phase: Hören (35:00)";
@@ -7634,6 +7672,7 @@
       const flowCard = document.getElementById("modelltestFlowCard");
       if (!flowCard) return;
       const assignmentId = currentModelltestAssignmentId();
+      const isAssignedModelltest = !!assignmentId;
       modelltestFlowState.active = true;
       modelltestFlowState.finished = false;
       modelltestFlowState.assignmentId = assignmentId;
@@ -7671,7 +7710,11 @@
       await loadModelltestModuleAllTeils("hoeren");
       await loadModelltestModuleAllTeils("lesen");
       const restored = restoreModelltestProgress();
-      if (restored && (modelltestFlowState.stage === "hoeren" || modelltestFlowState.stage === "lesen" || modelltestFlowState.stage === "schreiben")) {
+      if (isAssignedModelltest) {
+        stopModelltestFlowTimer();
+        if (!restored) modelltestFlowState.stage = "hoeren";
+        updateModelltestFlowUi();
+      } else if (restored && (modelltestFlowState.stage === "hoeren" || modelltestFlowState.stage === "lesen" || modelltestFlowState.stage === "schreiben")) {
         startModelltestStageTimer(modelltestFlowState.stage);
       } else {
         startModelltestStageTimer("hoeren");
@@ -10389,6 +10432,20 @@
         const lesenStats = getModelltestModuleStats("lesen");
         if (lesenStats.allAnswered && isModelltestModuleEvaluated("lesen")) {
           void advanceModelltestAfterLesen(false);
+        }
+      }
+
+      if (modelltestFlowState.active && currentModelltestAssignmentId()) {
+        const assignedHoeren = getModelltestModuleStats("hoeren");
+        const assignedLesen = getModelltestModuleStats("lesen");
+        const assignedReady = assignedHoeren.allAnswered
+          && assignedLesen.allAnswered
+          && isModelltestModuleEvaluated("hoeren")
+          && isModelltestModuleEvaluated("lesen");
+        if (assignedReady && modelltestFlowState.hasWritingTask && modelltestFlowState.stage !== "schreiben") {
+          modelltestFlowState.stage = "schreiben";
+          updateModelltestFlowUi();
+          persistModelltestProgress();
         }
       }
     }
@@ -15154,6 +15211,18 @@
     const modelltestToSchreibenBtn = document.getElementById("modelltestToSchreibenBtn");
     if (modelltestToSchreibenBtn) {
       modelltestToSchreibenBtn.addEventListener("click", () => {
+        if (currentModelltestAssignmentId()) {
+          const hoerenReady = getModelltestModuleStats("hoeren").allAnswered && isModelltestModuleEvaluated("hoeren");
+          const lesenReady = getModelltestModuleStats("lesen").allAnswered && isModelltestModuleEvaluated("lesen");
+          if (!hoerenReady || !lesenReady) {
+            setStatus("error", "Bitte zuerst Hören und Lesen vollständig lösen und auswerten.", "statusBox");
+            return;
+          }
+          modelltestFlowState.stage = "schreiben";
+          updateModelltestFlowUi();
+          persistModelltestProgress();
+          return;
+        }
         void advanceModelltestAfterLesen(false);
       });
     }
