@@ -33,16 +33,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      BASE_URL: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.base_url || 'https://dtz-lid.com' }}
+      BASE_URL: https://dtz-lid.com
       ADMIN_USER: ${{ secrets.SMOKE_ADMIN_USER }}
       ADMIN_PASS: ${{ secrets.SMOKE_ADMIN_PASS }}
       STUDENT_USER: ${{ secrets.SMOKE_STUDENT_USER }}
       STUDENT_PASS: ${{ secrets.SMOKE_STUDENT_PASS }}
-      TEST_STUDENT_USER: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.test_student_user || secrets.SMOKE_TEST_STUDENT_USER }}
-      ANTI_REPEAT_SMOKE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_anti_repeat || '1' }}
+      TEST_STUDENT_USER: ${{ secrets.SMOKE_TEST_STUDENT_USER }}
+      ANTI_REPEAT_SMOKE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Apply workflow_dispatch overrides
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          if [ -n "${{ github.event.inputs.base_url }}" ]; then
+            echo "BASE_URL=${{ github.event.inputs.base_url }}" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${{ github.event.inputs.run_anti_repeat }}" ]; then
+            echo "ANTI_REPEAT_SMOKE=${{ github.event.inputs.run_anti_repeat }}" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${{ github.event.inputs.test_student_user }}" ]; then
+            echo "TEST_STUDENT_USER=${{ github.event.inputs.test_student_user }}" >> "$GITHUB_ENV"
+          fi
 
       - name: Ensure scripts executable
         run: |
