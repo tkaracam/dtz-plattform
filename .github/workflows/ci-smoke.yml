@@ -48,14 +48,17 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           set -euo pipefail
-          if [ -n "${{ github.event.inputs.base_url }}" ]; then
-            echo "BASE_URL=${{ github.event.inputs.base_url }}" >> "$GITHUB_ENV"
+          BASE_URL_OVERRIDE="$(jq -r '.inputs.base_url // empty' "$GITHUB_EVENT_PATH")"
+          ANTI_REPEAT_OVERRIDE="$(jq -r '.inputs.run_anti_repeat // empty' "$GITHUB_EVENT_PATH")"
+          TEST_STUDENT_OVERRIDE="$(jq -r '.inputs.test_student_user // empty' "$GITHUB_EVENT_PATH")"
+          if [ -n "${BASE_URL_OVERRIDE}" ]; then
+            echo "BASE_URL=${BASE_URL_OVERRIDE}" >> "$GITHUB_ENV"
           fi
-          if [ -n "${{ github.event.inputs.run_anti_repeat }}" ]; then
-            echo "ANTI_REPEAT_SMOKE=${{ github.event.inputs.run_anti_repeat }}" >> "$GITHUB_ENV"
+          if [ -n "${ANTI_REPEAT_OVERRIDE}" ]; then
+            echo "ANTI_REPEAT_SMOKE=${ANTI_REPEAT_OVERRIDE}" >> "$GITHUB_ENV"
           fi
-          if [ -n "${{ github.event.inputs.test_student_user }}" ]; then
-            echo "TEST_STUDENT_USER=${{ github.event.inputs.test_student_user }}" >> "$GITHUB_ENV"
+          if [ -n "${TEST_STUDENT_OVERRIDE}" ]; then
+            echo "TEST_STUDENT_USER=${TEST_STUDENT_OVERRIDE}" >> "$GITHUB_ENV"
           fi
 
       - name: Ensure scripts executable
