@@ -7612,6 +7612,7 @@
       const maxTeil = getDtzMaxTeil(normalizedModule);
       const isAssignedModelltest = !!currentModelltestAssignmentId();
       const excludeMap = isAssignedModelltest ? buildAssignedDtzExcludeMap() : {};
+      const missingTeils = [];
 
       for (let teil = 1; teil <= maxTeil; teil += 1) {
         const state = ensureDtzTeilState(normalizedModule, teil);
@@ -7620,7 +7621,6 @@
         const excludeSet = (excludeMap && excludeMap[excludeKey] instanceof Set) ? excludeMap[excludeKey] : new Set();
         const maxAttempts = excludeSet.size > 0 ? 8 : 1;
         let loaded = false;
-        let lastErr = null;
 
         for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
           try {
@@ -7662,7 +7662,6 @@
             loaded = true;
             break;
           } catch (_) {
-            lastErr = _;
             state.set = [];
             state.tasks = [];
             state.answers = {};
@@ -7671,12 +7670,52 @@
           }
         }
 
+        if (!loaded && excludeSet.size) {
+          // Fallback ohne Exclude-Filter, damit der Modelltest-Flow nicht hängen bleibt.
+          try {
+            const response = await fetch("./api/student_training_set.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                module: normalizedModule,
+                count,
+                teil,
+                pool: "modelltest"
+              })
+            });
+            const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
+            if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+            const set = payload && payload.set ? payload.set : {};
+            const items = Array.isArray(set.items) ? set.items : [];
+            if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
+            state.set = items;
+            state.tasks = buildDtzTasks(normalizedModule, teil, items);
+            if (!state.answers || typeof state.answers !== "object") {
+              state.answers = {};
+            }
+            state.evaluated = false;
+            state.lockedAfterSubmit = false;
+            state.lastLoadedAt = new Date().toISOString();
+            loaded = true;
+          } catch (_) {}
+        }
+
         if (!loaded) {
-          throw new Error(lastErr && lastErr.message ? lastErr.message : "Keine konfliktfreien Aufgaben verfügbar.");
+          missingTeils.push(teil);
+          state.set = [];
+          state.tasks = [];
+          state.answers = {};
+          state.evaluated = false;
+          state.lockedAfterSubmit = false;
+          state.lastLoadedAt = new Date().toISOString();
         }
       }
 
       renderDtzTrainingSet(normalizedModule);
+      return {
+        module: normalizedModule,
+        missingTeils
+      };
     }
 
     async function setupModelltestFlow() {
@@ -7719,8 +7758,8 @@
         writeText.disabled = false;
       }
 
-      await loadModelltestModuleAllTeils("hoeren");
-      await loadModelltestModuleAllTeils("lesen");
+      const loadHoeren = await loadModelltestModuleAllTeils("hoeren");
+      const loadLesen = await loadModelltestModuleAllTeils("lesen");
       const restored = restoreModelltestProgress();
       if (isAssignedModelltest) {
         stopModelltestFlowTimer();
@@ -7730,6 +7769,14 @@
         startModelltestStageTimer(modelltestFlowState.stage);
       } else {
         startModelltestStageTimer("hoeren");
+      }
+      const missingHoeren = Array.isArray(loadHoeren && loadHoeren.missingTeils) ? loadHoeren.missingTeils : [];
+      const missingLesen = Array.isArray(loadLesen && loadLesen.missingTeils) ? loadLesen.missingTeils : [];
+      if (missingHoeren.length || missingLesen.length) {
+        const parts = [];
+        if (missingHoeren.length) parts.push(`Hören Teil ${missingHoeren.join(", ")}`);
+        if (missingLesen.length) parts.push(`Lesen Teil ${missingLesen.join(", ")}`);
+        setStatus("error", `Einige Teile konnten nicht geladen werden: ${parts.join(" · ")}. Bitte „Portal aktualisieren“ und erneut öffnen.`, "statusBox");
       }
       persistModelltestProgress();
     }
