@@ -10494,12 +10494,16 @@
       clearBox("homeworkStatus");
       const safeCategory = String(category || "hoeren").toLowerCase();
       const selectedTemplate = getSelectedHomeworkTemplate(safeCategory);
-      const title = String(selectedTemplate?.title || "").trim();
+      let title = String(selectedTemplate?.title || "").trim();
       const customDescription = String(document.getElementById(homeworkTemplatePreviewIdByCategory(safeCategory))?.value || "").trim();
       let description = customDescription || (selectedTemplate ? buildHomeworkTemplateDescription(selectedTemplate) : "");
       let attachment = "";
       if (isModelltestTemplateId(String(selectedTemplate?.id || ""))) {
         const includeMail = isMockMailOptionEnabled();
+        if (includeMail) {
+          title = title.replace(/\(\s*ohne\s*Mail Schreiben\s*\)/i, "").trim();
+          title = `${title} (mit Mail Schreiben)`;
+        }
         description = applyMockMailOptionToDescription(description, includeMail);
         const params = new URLSearchParams();
         params.set("mock_mail", includeMail ? "1" : "0");
@@ -10621,12 +10625,16 @@
       const groupLabel = `Mehrfachzuweisung ${formatDisplayDateTime(new Date().toISOString()) || new Date().toLocaleString("de-DE")}`;
       const assignmentRows = [];
       for (const template of selectedTemplates) {
-        const title = String(template?.title || "").trim();
+        let title = String(template?.title || "").trim();
         const includeMail = isModelltestTemplateId(String(template?.id || "")) ? isMockMailOptionEnabled() : false;
         const baseDescription = buildHomeworkTemplateDescription(template);
         const description = isModelltestTemplateId(String(template?.id || ""))
           ? applyMockMailOptionToDescription(baseDescription, includeMail)
           : baseDescription;
+        if (isModelltestTemplateId(String(template?.id || "")) && includeMail) {
+          title = title.replace(/\(\s*ohne\s*Mail Schreiben\s*\)/i, "").trim();
+          title = `${title} (mit Mail Schreiben)`;
+        }
         let attachment = "";
         if (isModelltestTemplateId(String(template?.id || ""))) {
           const params = new URLSearchParams();
