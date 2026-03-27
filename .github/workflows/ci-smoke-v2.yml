@@ -1,0 +1,31 @@
+name: CI Smoke V2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: https://dtz-lid.com
+      ADMIN_USER: ${{ secrets.SMOKE_ADMIN_USER }}
+      ADMIN_PASS: ${{ secrets.SMOKE_ADMIN_PASS }}
+      STUDENT_USER: ${{ secrets.SMOKE_STUDENT_USER }}
+      STUDENT_PASS: ${{ secrets.SMOKE_STUDENT_PASS }}
+      TEST_STUDENT_USER: ${{ secrets.SMOKE_TEST_STUDENT_USER }}
+      ANTI_REPEAT_SMOKE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run smoke script
+        run: |
+          chmod +x tools/ci_smoke.sh
+          chmod +x tools/anti_repeat_smoke.sh
+          ./tools/ci_smoke.sh
