@@ -1028,15 +1028,64 @@ function append_audit_log(string $action, array $meta = []): void
         $actorId = (string)($_SESSION['member_username'] ?? '');
     }
 
+    $requestMethod = strtoupper(trim((string)($_SERVER['REQUEST_METHOD'] ?? '')));
+    $requestUri = trim((string)($_SERVER['REQUEST_URI'] ?? ''));
+    $endpoint = trim((string)parse_url($requestUri, PHP_URL_PATH));
+    $query = trim((string)parse_url($requestUri, PHP_URL_QUERY));
+    $requestId = trim((string)($_SERVER['HTTP_X_REQUEST_ID'] ?? ''));
+    if ($requestId === '') {
+        $requestId = substr(sha1((string)microtime(true) . '|' . (string)mt_rand()), 0, 16);
+    }
+
     $record = [
         'created_at' => gmdate('c'),
+        'request_id' => $requestId,
         'action' => $action,
         'actor_type' => $actorType,
         'actor_id' => $actorId,
+        'actor_role_key' => (string)($_SESSION['admin_role_key'] ?? $_SESSION['admin_role'] ?? ''),
         'ip' => get_client_ip(),
+        'request_method' => $requestMethod,
+        'request_uri' => $requestUri,
+        'endpoint' => $endpoint,
+        'query' => $query,
+        'user_agent' => trim((string)($_SERVER['HTTP_USER_AGENT'] ?? '')),
         'meta' => $meta,
     ];
 
     $line = json_encode($record, JSON_UNESCAPED_UNICODE) . PHP_EOL;
     @file_put_contents($dir . '/audit_log.jsonl', $line, FILE_APPEND | LOCK_EX);
+}
+
+function api_status_payload(bool $ok, string $code, string $message, int $http, array $extra = []): array
+{
+    $base = [
+        'ok' => $ok,
+        'status' => [
+            'code' => trim($code) !== '' ? trim($code) : ($ok ? 'ok' : 'error'),
+            'message' => $message,
+            'http' => $http,
+        ],
+    ];
+    if (!$ok) {
+        $base['error'] = $message;
+    }
+    return array_merge($base, $extra);
+}
+
+function api_respond(bool $ok, int $http, string $code, string $message, array $extra = []): void
+{
+    http_response_code($http);
+    echo json_encode(api_status_payload($ok, $code, $message, $http, $extra), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function api_error(int $http, string $code, string $message, array $extra = []): void
+{
+    api_respond(false, $http, $code, $message, $extra);
+}
+
+function api_ok(string $code, string $message, array $extra = []): void
+{
+    api_respond(true, 200, $code, $message, $extra);
 }

@@ -11,9 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    require_once __DIR__ . '/auth.php';
+    api_error(405, 'method_not_allowed', 'Nur POST wird unterstützt.');
 }
 
 require_once __DIR__ . '/auth.php';
@@ -25,16 +24,12 @@ $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 $raw = file_get_contents('php://input') ?: '';
 $body = json_decode($raw, true);
 if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiges JSON wurde gesendet.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_json', 'Ungültiges JSON wurde gesendet.');
 }
 
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 if ($assignmentId === '') {
-    http_response_code(400);
-    echo json_encode(['error' => 'assignment_id fehlt.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'assignment_id_missing', 'assignment_id fehlt.');
 }
 
 $txn = [
@@ -113,14 +108,10 @@ $mutateOk = homework_assignments_mutate(function (array $items) use ($assignment
 });
 
 if (!$mutateOk) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Startzeit konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(500, 'homework_start_store_failed', 'Startzeit konnte nicht gespeichert werden.');
 }
 if ($txn['http'] !== 200) {
-    http_response_code($txn['http']);
-    echo json_encode(['error' => $txn['err']], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error((int)$txn['http'], 'homework_start_rejected', (string)$txn['err']);
 }
 
 if ($txn['audit']) {
@@ -135,11 +126,10 @@ $deadlineAt = (string)$txn['deadline_at'];
 $deadlineTs = $deadlineAt !== '' ? strtotime($deadlineAt) : false;
 $remaining = ($deadlineTs === false) ? 0 : max(0, (int)$deadlineTs - time());
 
-echo json_encode([
-    'ok' => true,
+api_ok('homework_started', 'Hausaufgabe gestartet.', [
     'server_ts' => time(),
     'assignment_id' => $assignmentId,
     'started_at' => $startedAt,
     'deadline_at' => $deadlineAt,
     'remaining_seconds' => $remaining,
-], JSON_UNESCAPED_UNICODE);
+]);

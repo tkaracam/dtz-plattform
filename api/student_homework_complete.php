@@ -11,9 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    require_once __DIR__ . '/auth.php';
+    api_error(405, 'method_not_allowed', 'Nur POST wird unterstützt.');
 }
 
 require_once __DIR__ . '/auth.php';
@@ -38,9 +37,7 @@ $body = require_json_body_or_400(65536);
 
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 if ($assignmentId === '') {
-    http_response_code(400);
-    echo json_encode(['error' => 'assignment_id fehlt.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'assignment_id_missing', 'assignment_id fehlt.');
 }
 
 $correct = payload_optional_non_negative_int($body, 'correct');
@@ -51,25 +48,17 @@ $elapsedSeconds = payload_optional_non_negative_int($body, 'elapsed_seconds');
 $hasAnyAttemptField = array_key_exists('correct', $body) || array_key_exists('wrong', $body) || array_key_exists('total', $body) || array_key_exists('unanswered', $body);
 if ($hasAnyAttemptField) {
     if ($correct === null || $wrong === null || $total === null || $unanswered === null) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Ungültige Versuchswerte: correct/wrong/unanswered/total müssen nicht-negative Ganzzahlen sein.'], JSON_UNESCAPED_UNICODE);
-        exit;
+        api_error(400, 'invalid_attempt_payload', 'Ungültige Versuchswerte: correct/wrong/unanswered/total müssen nicht-negative Ganzzahlen sein.');
     }
     if ($total <= 0 || $total > 200) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Ungültige Versuchswerte: total muss zwischen 1 und 200 liegen.'], JSON_UNESCAPED_UNICODE);
-        exit;
+        api_error(400, 'invalid_attempt_total', 'Ungültige Versuchswerte: total muss zwischen 1 und 200 liegen.');
     }
     if ($correct > $total || $wrong > $total || $unanswered > $total || ($correct + $wrong + $unanswered) !== $total) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Ungültige Versuchswerte: correct + wrong + unanswered muss total entsprechen.'], JSON_UNESCAPED_UNICODE);
-        exit;
+        api_error(400, 'invalid_attempt_consistency', 'Ungültige Versuchswerte: correct + wrong + unanswered muss total entsprechen.');
     }
 }
 if (array_key_exists('elapsed_seconds', $body) && $elapsedSeconds === null) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültiger elapsed_seconds-Wert.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_elapsed_seconds', 'Ungültiger elapsed_seconds-Wert.');
 }
 
 $txn = [
@@ -154,24 +143,18 @@ $mutateOk = homework_assignments_mutate(function (array $items) use ($assignment
 
 if (!$mutateOk) {
     if ($txn['http'] !== 200) {
-        http_response_code((int)$txn['http']);
-        echo json_encode(['error' => (string)$txn['err']], JSON_UNESCAPED_UNICODE);
-        exit;
+        api_error((int)$txn['http'], 'homework_complete_rejected', (string)$txn['err']);
     }
-    http_response_code(500);
-    echo json_encode(['error' => 'Aufgabenstatus konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(500, 'homework_complete_store_failed', 'Aufgabenstatus konnte nicht gespeichert werden.');
 }
 
 if ($txn['already_submitted']) {
-    echo json_encode([
-        'ok' => true,
+    api_ok('homework_already_submitted', 'Hausaufgabe war bereits abgegeben.', [
         'already_submitted' => true,
         'assignment_id' => $assignmentId,
         'submitted_at' => (string)$txn['submitted_at'],
         'server_ts' => (int)$txn['server_ts'],
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
+    ]);
 }
 
 $submittedAt = (string)$txn['submitted_at'];
@@ -202,9 +185,8 @@ append_audit_log('homework_complete', [
     'username' => $username,
 ]);
 
-echo json_encode([
-    'ok' => true,
+api_ok('homework_submitted', 'Hausaufgabe abgegeben.', [
     'assignment_id' => $assignmentId,
     'submitted_at' => $submittedAt,
     'server_ts' => $now,
-], JSON_UNESCAPED_UNICODE);
+]);

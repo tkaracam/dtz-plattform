@@ -11,9 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Nur POST wird unterstützt.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    require_once __DIR__ . '/auth.php';
+    api_error(405, 'method_not_allowed', 'Nur POST wird unterstützt.');
 }
 
 require_once __DIR__ . '/auth.php';
@@ -46,18 +45,14 @@ function modelltest_level_from_percent_local(int $percent): string
 $student = require_student_session_json();
 $username = mb_strtolower(trim((string)($student['username'] ?? '')));
 if ($username === '') {
-    http_response_code(401);
-    echo json_encode(['error' => 'Nicht autorisiert.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(401, 'unauthorized', 'Nicht autorisiert.');
 }
 
 $body = require_json_body_or_400(65536);
 
 $assignmentId = trim((string)($body['assignment_id'] ?? ''));
 if ($assignmentId === '') {
-    http_response_code(400);
-    echo json_encode(['error' => 'assignment_id ist erforderlich.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'assignment_id_missing', 'assignment_id ist erforderlich.');
 }
 
 $hoerenCorrect = payload_required_non_negative_int($body, 'hoeren_correct');
@@ -67,34 +62,22 @@ $lesenTotal = payload_required_non_negative_int($body, 'lesen_total');
 $schreibenScore = payload_required_non_negative_int($body, 'schreiben_score');
 $schreibenMax = payload_required_non_negative_int($body, 'schreiben_max');
 if ($hoerenCorrect === null || $hoerenTotal === null || $lesenCorrect === null || $lesenTotal === null || $schreibenScore === null || $schreibenMax === null) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Modelltest-Werte: alle Ergebnisfelder müssen nicht-negative Ganzzahlen sein.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_modelltest_payload', 'Ungültige Modelltest-Werte: alle Ergebnisfelder müssen nicht-negative Ganzzahlen sein.');
 }
 if ($hoerenTotal > 200 || $lesenTotal > 200 || $schreibenMax > 100) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Modelltest-Werte: totals/max außerhalb des erlaubten Bereichs.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_modelltest_bounds', 'Ungültige Modelltest-Werte: totals/max außerhalb des erlaubten Bereichs.');
 }
 if ($hoerenTotal <= 0 || $lesenTotal <= 0) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Modelltest-Teile: Hören und Lesen müssen > 0 sein.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_modelltest_totals', 'Ungültige Modelltest-Teile: Hören und Lesen müssen > 0 sein.');
 }
 if ($hoerenCorrect > $hoerenTotal || $lesenCorrect > $lesenTotal) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Modelltest-Werte: richtig > gesamt.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_modelltest_correctness', 'Ungültige Modelltest-Werte: richtig > gesamt.');
 }
 if ($schreibenMax > 0 && $schreibenScore > $schreibenMax) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Schreibpunkte: score > max.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_schreiben_score', 'Ungültige Schreibpunkte: score > max.');
 }
 if ($schreibenMax <= 0 && $schreibenScore > 0) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Schreibpunkte ohne Maximalwert.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(400, 'invalid_schreiben_max', 'Ungültige Schreibpunkte ohne Maximalwert.');
 }
 
 try {
@@ -233,13 +216,9 @@ $mutateOk = homework_assignments_mutate(function (array $items) use (
 
 if (!$mutateOk) {
     if ($txn['http'] !== 200) {
-        http_response_code((int)$txn['http']);
-        echo json_encode(['error' => (string)$txn['err']], JSON_UNESCAPED_UNICODE);
-        exit;
+        api_error((int)$txn['http'], 'modelltest_result_rejected', (string)$txn['err']);
     }
-    http_response_code(500);
-    echo json_encode(['error' => 'Modelltest-Ergebnis konnte nicht gespeichert werden.'], JSON_UNESCAPED_UNICODE);
-    exit;
+    api_error(500, 'modelltest_result_store_failed', 'Modelltest-Ergebnis konnte nicht gespeichert werden.');
 }
 
 $overallPercent = (int)$txn['overall_percent'];
@@ -254,10 +233,9 @@ append_audit_log('student_modelltest_result_saved', [
     'level' => $level,
 ]);
 
-echo json_encode([
-    'ok' => true,
+api_ok('modelltest_result_saved', 'Modelltest-Ergebnis gespeichert.', [
     'saved_at' => $nowIso,
     'result_id' => $resultId,
     'overall_percent' => $overallPercent,
     'level' => $level,
-], JSON_UNESCAPED_UNICODE);
+]);

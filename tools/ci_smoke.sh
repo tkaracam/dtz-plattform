@@ -12,6 +12,18 @@ fail() {
   exit 1
 }
 
+CLEANUP_CMDS=()
+add_cleanup() {
+  CLEANUP_CMDS+=("$1")
+}
+run_cleanup() {
+  local i
+  for (( i=${#CLEANUP_CMDS[@]}-1; i>=0; i-- )); do
+    eval "${CLEANUP_CMDS[$i]}" || true
+  done
+}
+trap run_cleanup EXIT
+
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "missing command: $1"
 }
@@ -175,13 +187,7 @@ JSON
     echo $id;
   ' /tmp/dtz_modelltest_assign_create.out)" || fail "modelltest assignment_id missing"
 
-  cleanup_modelltest_assignment() {
-    curl -sS -b /tmp/dtz_admin.cookie \
-      -X POST "$BASE_URL/api/homework_assign.php" \
-      -H "Content-Type: application/json" \
-      --data "{\"action\":\"delete\",\"assignment_id\":\"${modelltest_assignment_id}\"}" >/dev/null 2>&1 || true
-  }
-  trap cleanup_modelltest_assignment EXIT
+  add_cleanup "curl -sS -b /tmp/dtz_admin.cookie -X POST \"$BASE_URL/api/homework_assign.php\" -H \"Content-Type: application/json\" --data '{\"action\":\"delete\",\"assignment_id\":\"${modelltest_assignment_id}\"}' >/dev/null 2>&1"
 
   start_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_modelltest_start.out -w "%{http_code}" \
     -X POST "$BASE_URL/api/student_homework_start.php" \
@@ -204,6 +210,71 @@ JSON
   [[ "$save2_code" == "409" ]] || fail "modelltest second save should be locked (expected 409, got $save2_code)"
 else
   echo "[SMOKE] admin/student creds not provided -> modelltest assignment smoke skipped"
+fi
+
+echo "[SMOKE] 8/8 security smoke (auth/deadline/role)"
+# auth bypass: protected endpoints without any session cookie must be denied
+unauth_admin_code="$(curl -sS -o /tmp/dtz_sec_unauth_admin.out -w "%{http_code}" \
+  -X POST "$BASE_URL/api/homework_assign.php" \
+  -H "Content-Type: application/json" \
+  --data '{"action":"list"}')"
+[[ "$unauth_admin_code" == "401" || "$unauth_admin_code" == "403" ]] || fail "auth bypass: homework_assign unauth expected 401/403, got $unauth_admin_code"
+
+unauth_student_code="$(curl -sS -o /tmp/dtz_sec_unauth_student.out -w "%{http_code}" \
+  -X POST "$BASE_URL/api/student_homework_start.php" \
+  -H "Content-Type: application/json" \
+  --data '{"assignment_id":"dummy"}')"
+[[ "$unauth_student_code" == "401" || "$unauth_student_code" == "403" ]] || fail "auth bypass: student_homework_start unauth expected 401/403, got $unauth_student_code"
+
+# role escalation and active/deadline-like bypass checks (when creds exist)
+if [[ -n "${ADMIN_USER:-}" && -n "${ADMIN_PASS:-}" && -n "${STUDENT_USER:-}" && -n "${STUDENT_PASS:-}" ]]; then
+  # student must not access admin-only endpoint
+  student_to_admin_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_sec_student_to_admin.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/homework_assign.php" \
+    -H "Content-Type: application/json" \
+    --data '{"action":"list"}')"
+  [[ "$student_to_admin_code" == "401" || "$student_to_admin_code" == "403" ]] || fail "role escalation: student reached admin endpoint ($student_to_admin_code)"
+
+  # admin must not access student-only endpoint as student
+  admin_to_student_code="$(curl -sS -b /tmp/dtz_admin.cookie -o /tmp/dtz_sec_admin_to_student.out -w "%{http_code}" \
+    "$BASE_URL/api/student_portal.php")"
+  [[ "$admin_to_student_code" == "401" || "$admin_to_student_code" == "403" ]] || fail "role separation: admin reached student portal ($admin_to_student_code)"
+
+  # create assignment in the future and verify student cannot start it yet
+  future_iso="$(date -u -v+20M +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d '+20 minutes' +"%Y-%m-%dT%H:%M:%SZ")"
+  cat > /tmp/dtz_sec_future_create.json <<JSON
+{
+  "action":"create",
+  "template_id":"dtz-hoeren-teil1-fragenpaket",
+  "title":"SMOKE Future Start Lock",
+  "description":"Future start lock smoke",
+  "target_type":"users",
+  "usernames":["${STUDENT_USER}"],
+  "duration_minutes":10,
+  "starts_at":"${future_iso}"
+}
+JSON
+  sec_create_code="$(curl -sS -b /tmp/dtz_admin.cookie -o /tmp/dtz_sec_future_create.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/homework_assign.php" \
+    -H "Content-Type: application/json" \
+    --data-binary @/tmp/dtz_sec_future_create.json)"
+  [[ "$sec_create_code" == "200" ]] || fail "security setup create failed ($sec_create_code)"
+  sec_assignment_id="$(php -r '
+    $j=json_decode(file_get_contents($argv[1]), true);
+    $id=trim((string)($j["assignment_id"] ?? ""));
+    if ($id === "") exit(2);
+    echo $id;
+  ' /tmp/dtz_sec_future_create.out)" || fail "security setup assignment_id missing"
+
+  add_cleanup "curl -sS -b /tmp/dtz_admin.cookie -X POST \"$BASE_URL/api/homework_assign.php\" -H \"Content-Type: application/json\" --data '{\"action\":\"delete\",\"assignment_id\":\"${sec_assignment_id}\"}' >/dev/null 2>&1"
+
+  sec_start_code="$(curl -sS -b /tmp/dtz_student.cookie -o /tmp/dtz_sec_future_start.out -w "%{http_code}" \
+    -X POST "$BASE_URL/api/student_homework_start.php" \
+    -H "Content-Type: application/json" \
+    --data "{\"assignment_id\":\"${sec_assignment_id}\"}")"
+  [[ "$sec_start_code" == "400" || "$sec_start_code" == "409" ]] || fail "future/deadline bypass: start should be blocked (got $sec_start_code)"
+else
+  echo "[SMOKE] admin/student creds missing -> role/deadline security checks skipped"
 fi
 
 echo "[SMOKE][OK] all enabled checks passed"
