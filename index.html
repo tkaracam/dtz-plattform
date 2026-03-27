@@ -7240,6 +7240,7 @@
       const lesenOpenBtn = document.getElementById("dtzLesenOpenBtn");
       const hoerenNewBtn = document.getElementById("dtzHoerenNewBtn");
       const lesenNewBtn = document.getElementById("dtzLesenNewBtn");
+      const hoerenEvaluateBtn = document.getElementById("dtzHoerenEvaluateBtn");
       const hoerenBackPortalBtn = document.getElementById("dtzHoerenBackPortalBtn");
       const lesenBackPortalBtn = document.getElementById("dtzLesenBackPortalBtn");
       const isAssignedModelltest = !!currentModelltestAssignmentId();
@@ -7276,6 +7277,10 @@
         if (hoerenNewBtn) {
           hoerenNewBtn.classList.add("hidden");
           hoerenNewBtn.disabled = true;
+        }
+        if (hoerenEvaluateBtn) {
+          hoerenEvaluateBtn.classList.add("hidden");
+          hoerenEvaluateBtn.disabled = true;
         }
         if (lesenNewBtn) {
           lesenNewBtn.classList.add("hidden");
@@ -7701,6 +7706,36 @@
         }
 
         if (!loaded) {
+          // Letzter Fallback: Default-Pool statt Modelltest-Pool.
+          try {
+            const response = await fetch("./api/student_training_set.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                module: normalizedModule,
+                count,
+                teil,
+                pool: "default"
+              })
+            });
+            const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
+            if (!response.ok) throw new Error(payload.error || `Fehler: ${response.status}`);
+            const set = payload && payload.set ? payload.set : {};
+            const items = Array.isArray(set.items) ? set.items : [];
+            if (!items.length) throw new Error("Keine Aufgaben verfügbar.");
+            state.set = items;
+            state.tasks = buildDtzTasks(normalizedModule, teil, items);
+            if (!state.answers || typeof state.answers !== "object") {
+              state.answers = {};
+            }
+            state.evaluated = false;
+            state.lockedAfterSubmit = false;
+            state.lastLoadedAt = new Date().toISOString();
+            loaded = true;
+          } catch (_) {}
+        }
+
+        if (!loaded) {
           missingTeils.push(teil);
           state.set = [];
           state.tasks = [];
@@ -8088,6 +8123,9 @@
 
     function EvaluateButton(module) {
       const requirement = getActiveAssignedDtzRequirement();
+      if (modelltestFlowState.active && module === "hoeren") {
+        return "";
+      }
       if (requirement && requirement.module === module) {
         return "";
       }
@@ -8137,6 +8175,12 @@
         if (prev === "q" || prev === "Q" || vowels.includes(prev)) return match;
         return match === "UE" ? "Ü" : "ü";
       });
+      text = text
+        .replace(/\bueber\b/gi, (m) => (m[0] === "U" ? "Über" : "über"))
+        .replace(/\bfuer\b/gi, (m) => (m[0] === "F" ? "Für" : "für"))
+        .replace(/\s*\(\s*Variante\s*\d+\s*\)\s*/gi, " ")
+        .replace(/\s{2,}/g, " ")
+        .trim();
       return text;
     }
 
@@ -9996,6 +10040,12 @@
           resolved.teilState.answers[resolved.key] = String(target.value || "");
           persistModelltestProgress();
           if (modelltestFlowState.active) {
+            if (currentModelltestAssignmentId()) {
+              const moduleStats = getModelltestModuleStats(module);
+              if (moduleStats.allAnswered) {
+                markModelltestModuleEvaluated(module);
+              }
+            }
             updateModelltestFlowUi();
           }
           if (resolved.teilState.evaluated) {
@@ -10019,6 +10069,12 @@
           renderDtzTrainingSet(module);
           persistModelltestProgress();
           if (modelltestFlowState.active) {
+            if (currentModelltestAssignmentId()) {
+              const moduleStats = getModelltestModuleStats(module);
+              if (moduleStats.allAnswered) {
+                markModelltestModuleEvaluated(module);
+              }
+            }
             updateModelltestFlowUi();
           }
           if (resolved.teilState.evaluated) {
