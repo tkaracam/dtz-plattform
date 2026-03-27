@@ -1,6 +1,9 @@
 name: CI Smoke
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: "30 4 * * *"
   workflow_dispatch:
