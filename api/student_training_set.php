@@ -51,9 +51,10 @@ if ($teil < 0) {
 $defaultCount = $module === 'lesen' ? 20 : 15;
 $count = (int)($body['count'] ?? $defaultCount);
 $includeExplanation = true;
+$poolName = normalize_training_pool((string)($body['pool'] ?? 'default'));
 
 try {
-    $set = create_training_set($module, $count, $includeExplanation, $teil);
+    $set = create_training_set($module, $count, $includeExplanation, $teil, $poolName);
     echo json_encode([
         'ok' => true,
         'set' => $set,

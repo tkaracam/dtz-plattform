@@ -53,6 +53,42 @@ function normalize_training_module(string $module): string
     return '';
 }
 
+function normalize_training_pool(string $pool): string
+{
+    $value = lower_text($pool);
+    return $value === 'modelltest' ? 'modelltest' : 'default';
+}
+
+function split_training_pool(array $items, string $poolName, string $salt): array
+{
+    $pool = normalize_training_pool($poolName);
+    if ($pool !== 'modelltest') {
+        return array_values($items);
+    }
+
+    $source = array_values($items);
+    if (!$source) {
+        return [];
+    }
+
+    $bucket = [];
+    foreach ($source as $row) {
+        $fingerprint = is_array($row)
+            ? (string)json_encode($row, JSON_UNESCAPED_UNICODE)
+            : (string)$row;
+        $hash = crc32($salt . '|' . $fingerprint);
+        if (($hash % 2) === 0) {
+            $bucket[] = $row;
+        }
+    }
+
+    // Fallback: if the modelltest half is too small, keep the original pool.
+    if (count($bucket) < max(1, (int)floor(count($source) * 0.35))) {
+        return $source;
+    }
+    return $bucket;
+}
+
 function normalize_training_teil(string $module, string $teilRaw): int
 {
     $normalizedModule = normalize_training_module($module);
@@ -2190,12 +2226,14 @@ function build_hoeren_teil_structured_pools(): array
     ];
 }
 
-function create_hoeren_structured_set(int $teil, bool $includeExplanation): array
+function create_hoeren_structured_set(int $teil, bool $includeExplanation, string $poolName = 'default'): array
 {
+    $poolTag = normalize_training_pool($poolName);
     $pools = build_hoeren_teil_structured_pools();
     $pool = (array)($pools[$teil] ?? []);
     $targetByTeil = [1 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL, 2 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL, 3 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL, 4 => DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL];
     $pool = expand_structured_scenarios($pool, (int)($targetByTeil[$teil] ?? DTZ_HOEREN_SCENARIO_TARGET_PER_TEIL), 'hoeren_t' . $teil);
+    $pool = split_training_pool($pool, $poolTag, 'hoeren_t' . $teil);
     if (!$pool) {
         throw new RuntimeException('Für diesen Hören-Teil sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2235,6 +2273,7 @@ function create_hoeren_structured_set(int $teil, bool $includeExplanation): arra
         $questions = [];
         $independentBank = build_hoeren_independent_question_bank();
         $rawQuestions = array_values((array)($independentBank[$teil] ?? []));
+        $rawQuestions = split_training_pool($rawQuestions, $poolTag, 'hoeren_independent_t' . $teil);
         $expected = (int)($expectedCounts[$teil] ?? 0);
         if ($expected > 0) {
             if (count($rawQuestions) < $expected) {
@@ -2479,10 +2518,11 @@ function build_lesen_teil3_textblock_pools(): array
     ];
 }
 
-function create_lesen_teil3_structured_set(bool $includeExplanation): array
+function create_lesen_teil3_structured_set(bool $includeExplanation, string $poolName = 'default'): array
 {
     $pool = build_lesen_teil3_textblock_pools();
     $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t3');
+    $pool = split_training_pool($pool, $poolName, 'lesen_t3');
     if (!$pool) {
         throw new RuntimeException('Für Lesen Teil 3 sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2652,10 +2692,11 @@ function build_lesen_teil4_richtig_falsch_pools(): array
     ];
 }
 
-function create_lesen_teil4_structured_set(bool $includeExplanation): array
+function create_lesen_teil4_structured_set(bool $includeExplanation, string $poolName = 'default'): array
 {
     $pool = build_lesen_teil4_richtig_falsch_pools();
     $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t4');
+    $pool = split_training_pool($pool, $poolName, 'lesen_t4');
     if (!$pool) {
         throw new RuntimeException('Für Lesen Teil 4 sind keine strukturierten Aufgaben verfügbar.');
     }
@@ -2782,10 +2823,11 @@ function build_lesen_teil5_cloze_pools(): array
     ];
 }
 
-function create_lesen_teil5_structured_set(bool $includeExplanation): array
+function create_lesen_teil5_structured_set(bool $includeExplanation, string $poolName = 'default'): array
 {
     $pool = build_lesen_teil5_cloze_pools();
     $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t5');
+    $pool = split_training_pool($pool, $poolName, 'lesen_t5');
     if (!$pool) {
         throw new RuntimeException('Fuer Lesen Teil 5 sind keine strukturierten Aufgaben verfuegbar.');
     }
@@ -3000,10 +3042,11 @@ function build_lesen_teil1_wegweiser_pools(): array
     ];
 }
 
-function create_lesen_teil1_structured_set(bool $includeExplanation): array
+function create_lesen_teil1_structured_set(bool $includeExplanation, string $poolName = 'default'): array
 {
     $pool = build_lesen_teil1_wegweiser_pools();
     $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t1');
+    $pool = split_training_pool($pool, $poolName, 'lesen_t1');
     if (!$pool) {
         throw new RuntimeException('Keine Lesen-Teil-1-Pools verfügbar.');
     }
@@ -3107,10 +3150,11 @@ function build_lesen_teil2_matching_pools(): array
     ];
 }
 
-function create_lesen_teil2_structured_set(bool $includeExplanation): array
+function create_lesen_teil2_structured_set(bool $includeExplanation, string $poolName = 'default'): array
 {
     $pool = build_lesen_teil2_matching_pools();
     $pool = expand_structured_scenarios($pool, DTZ_LESEN_SCENARIO_TARGET_PER_TEIL, 'lesen_t2');
+    $pool = split_training_pool($pool, $poolName, 'lesen_t2');
     if (!$pool) {
         throw new RuntimeException('Keine Lesen-Teil-2-Pools verfügbar.');
     }
@@ -3165,29 +3209,31 @@ function create_lesen_teil2_structured_set(bool $includeExplanation): array
     ];
 }
 
-function create_training_set(string $module, int $count, bool $includeExplanation, int $teil = 0): array
+function create_training_set(string $module, int $count, bool $includeExplanation, int $teil = 0, string $poolName = 'default'): array
 {
+    $normalizedPool = normalize_training_pool($poolName);
     $normalizedModule = normalize_training_module($module);
     if ($normalizedModule === 'hoeren' && $teil >= 1 && $teil <= 4) {
-        return create_hoeren_structured_set($teil, $includeExplanation);
+        return create_hoeren_structured_set($teil, $includeExplanation, $normalizedPool);
     }
     if ($normalizedModule === 'lesen' && $teil === 1) {
-        return create_lesen_teil1_structured_set($includeExplanation);
+        return create_lesen_teil1_structured_set($includeExplanation, $normalizedPool);
     }
     if ($normalizedModule === 'lesen' && $teil === 2) {
-        return create_lesen_teil2_structured_set($includeExplanation);
+        return create_lesen_teil2_structured_set($includeExplanation, $normalizedPool);
     }
     if ($normalizedModule === 'lesen' && $teil === 4) {
-        return create_lesen_teil4_structured_set($includeExplanation);
+        return create_lesen_teil4_structured_set($includeExplanation, $normalizedPool);
     }
     if ($normalizedModule === 'lesen' && $teil === 3) {
-        return create_lesen_teil3_structured_set($includeExplanation);
+        return create_lesen_teil3_structured_set($includeExplanation, $normalizedPool);
     }
     if ($normalizedModule === 'lesen' && $teil === 5) {
-        return create_lesen_teil5_structured_set($includeExplanation);
+        return create_lesen_teil5_structured_set($includeExplanation, $normalizedPool);
     }
 
     $templates = get_training_templates($module, $teil);
+    $templates = split_training_pool($templates, $normalizedPool, $normalizedModule . '_generic_t' . $teil);
     if (!$templates) {
         throw new RuntimeException('Keine gültigen Templates gefunden.');
     }

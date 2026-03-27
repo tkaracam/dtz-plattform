@@ -7581,7 +7581,8 @@
               body: JSON.stringify({
                 module: normalizedModule,
                 count,
-                teil
+                teil,
+                pool: "modelltest"
               })
             });
             const payload = await parseJsonOrThrow(response, "DTZ-Aufgaben konnten nicht geladen werden");
