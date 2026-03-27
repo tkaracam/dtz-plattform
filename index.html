@@ -7249,7 +7249,6 @@
       const hoerenEvaluated = isModelltestModuleEvaluated("hoeren");
       const lesenEvaluated = isModelltestModuleEvaluated("lesen");
       const bothAnswered = hoerenStats.allAnswered && lesenStats.allAnswered;
-      const bothEvaluated = hoerenEvaluated && lesenEvaluated;
       if (!flowCard) return;
 
       flowCard.classList.toggle("hidden", !modelltestFlowState.active);
@@ -7310,7 +7309,7 @@
         if (closeHoerenBtn) closeHoerenBtn.classList.add("hidden");
         if (toLesenBtn) toLesenBtn.classList.add("hidden");
 
-        const canProceedAfterDtz = bothAnswered && bothEvaluated;
+        const canProceedAfterDtz = bothAnswered;
         if (toSchreibenBtn) {
           toSchreibenBtn.classList.toggle("hidden", !modelltestFlowState.hasWritingTask || modelltestFlowState.stage === "schreiben" || !!modelltestFlowState.submitted);
           toSchreibenBtn.textContent = "Schreiben starten";
@@ -10040,12 +10039,6 @@
           resolved.teilState.answers[resolved.key] = String(target.value || "");
           persistModelltestProgress();
           if (modelltestFlowState.active) {
-            if (currentModelltestAssignmentId()) {
-              const moduleStats = getModelltestModuleStats(module);
-              if (moduleStats.allAnswered) {
-                markModelltestModuleEvaluated(module);
-              }
-            }
             updateModelltestFlowUi();
           }
           if (resolved.teilState.evaluated) {
@@ -10069,12 +10062,6 @@
           renderDtzTrainingSet(module);
           persistModelltestProgress();
           if (modelltestFlowState.active) {
-            if (currentModelltestAssignmentId()) {
-              const moduleStats = getModelltestModuleStats(module);
-              if (moduleStats.allAnswered) {
-                markModelltestModuleEvaluated(module);
-              }
-            }
             updateModelltestFlowUi();
           }
           if (resolved.teilState.evaluated) {
@@ -10554,9 +10541,7 @@
         const assignedHoeren = getModelltestModuleStats("hoeren");
         const assignedLesen = getModelltestModuleStats("lesen");
         const assignedReady = assignedHoeren.allAnswered
-          && assignedLesen.allAnswered
-          && isModelltestModuleEvaluated("hoeren")
-          && isModelltestModuleEvaluated("lesen");
+          && assignedLesen.allAnswered;
         if (assignedReady && modelltestFlowState.hasWritingTask && modelltestFlowState.stage !== "schreiben") {
           modelltestFlowState.stage = "schreiben";
           updateModelltestFlowUi();
@@ -12963,10 +12948,6 @@
       const titleLower = title.toLowerCase();
       const bag = `${titleLower} ${description.toLowerCase()}`;
 
-      // Priorität: Modelltest-Titel/Label vor Template-Heuristik.
-      if (/^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/.test(titleLower)) return "modelltest";
-      if (bag.includes("modelltest") || bag.includes("mock-prüfung") || bag.includes("mock-pruefung")) return "modelltest";
-
       const templateId = String(row && row.template_id ? row.template_id : "").toLowerCase();
       if (/^dtz-hoeren-teil[1-4]-fragenpaket$/.test(templateId)) return "hoeren";
       if (/^dtz-lesen-teil[1-5]-fragenpaket$/.test(templateId)) return "lesen";
@@ -12983,6 +12964,7 @@
 
       // Priorität: Überschrift/Titel (Mehrfachauswahl-Gruppen) vor Fließtext.
       if (/^(mail|mail-aufgabe)\b/.test(titleLower)) return "mail";
+      if (/^(modelltest|dtz modelltest|dtz mock-pr[üu]fung|mock-pr[üu]fung)\b/.test(titleLower)) return "modelltest";
       if (/^h[öo]ren\b/.test(titleLower) || /h[öo]ren\s*teil\s*[1-4]/.test(titleLower)) return "hoeren";
       if (/^lesen\b/.test(titleLower) || /lesen\s*teil\s*[1-5]/.test(titleLower)) return "lesen";
       if (/^a1\b|^a1-/.test(titleLower) || titleLower.includes("a1-grammatik") || titleLower.includes("a1-test")) return "a1";
@@ -12990,6 +12972,7 @@
 
       if (bag.includes("a1-test")) return "a1";
       if (bag.includes("a2")) return "a2";
+      if (bag.includes("modelltest") || bag.includes("mock-prüfung") || bag.includes("mock-pruefung")) return "modelltest";
       if (bag.includes("hören") || bag.includes("hoeren")) return "hoeren";
       if (bag.includes("lesen")) return "lesen";
       if (bag.includes("schreiben") || bag.includes("mail")) return "mail";
